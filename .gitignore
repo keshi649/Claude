@@ -1,0 +1,4 @@
+# 第三方渲染库与中间截图，不入库
+work/katex/
+work/package/
+work/out/
