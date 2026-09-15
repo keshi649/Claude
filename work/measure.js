@@ -26,15 +26,6 @@ function space(p){
   if(/求下列|判别下列/.test(t)) mm+=25;
   return Math.min(mm,118);
 }
-const N=order.length;
-let sizes;
-try{ sizes=require('./sizes.json'); }catch(e){
-  const F=7, base=Math.floor(N/F), ex=N%F;
-  sizes=Array.from({length:F},(_,i)=>base+(i<ex?1:0));
-}
-if(sizes.reduce((a,b)=>a+b,0)!==N) throw new Error('sizes mismatch '+sizes.reduce((a,b)=>a+b,0)+' vs '+N);
-const FILES=sizes.length;
-let idx=0, chunks=sizes.map(n=>{const c=order.slice(idx,idx+n); idx+=n; return c;});
 const HEAD=`<meta charset="utf-8"><link rel="stylesheet" href="katex/katex.min.css">
 <style>
 @page{size:A4;margin:16mm 15mm 14mm 15mm;}
@@ -58,19 +49,10 @@ td{border:0.7pt solid #000;padding:2.5pt 10pt;text-align:center;font-size:10.5pt
 .err{color:#b00;font-family:monospace;}
 </style>`;
 const map=[];
-chunks.forEach((ch,f)=>{
-  const n=f+1, pad=String(n).padStart(2,'0');
-  let h='<!doctype html><html><head>'+HEAD+'</head><body>';
-  h+=`<div class="hd"><div class="t">数学练习　第 ${pad} 份（共 ${FILES} 份）</div>
-  <div class="m">本份题量：${ch.length} 题　　开始时间：______ : ______　　结束时间：______ : ______</div></div>`;
-  ch.forEach((gi,k)=>{
-    const p=ps[gi];
-    map.push({src:p.src, file:f+1, no:k+1, flag:p.flag||null, topic:p.topic, board:p.board});
-    h+=`<div class="q"><div class="no">${k+1}.</div><div class="bd">`+p.blocks.map(blockHTML).join('')+
-       `</div><div style="clear:both"></div></div>`;
-  });
-  h+='</body></html>';
-  fs.writeFileSync(`html/练习${pad}.html`,h);
-});
-fs.writeFileSync('map.json', JSON.stringify(map));
-console.log('chunks',chunks.map(c=>c.length).join(','),'total',chunks.reduce((a,c)=>a+c.length,0));
+
+let h='<!doctype html><html><head>'+HEAD+'</head><body>';
+order.forEach((gi,k)=>{const p=ps[gi];
+ h+=`<div class="q"><div class="no">${k+1}.</div><div class="bd">`+p.blocks.map(blockHTML).join('')+
+    `</div><div style="clear:both"></div></div>`;});
+h+='</body></html>';
+fs.writeFileSync('html/measure.html',h); console.log('ok',order.length);

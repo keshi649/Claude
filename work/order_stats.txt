@@ -1,0 +1,25 @@
+adjacent same topic: 0
+max same-board run: 3
+一元微分     n= 32 first=  9 last=496 gap 3~26
+一元积分     n= 21 first= 14 last=502 gap 16~33
+一维随机变量   n= 18 first=  6 last=484 gap 18~41
+二次型      n= 23 first= 15 last=500 gap 17~28
+假设检验     n=  4 first= 49 last=425 gap 124~127
+参数估计     n=  6 first= 11 last=438 gap 82~88
+向量组      n= 17 first= 27 last=495 gap 23~33
+多元微分     n= 45 first= 10 last=506 gap 4~25
+多维随机变量   n= 17 first= 13 last=485 gap 22~36
+大数定律     n=  9 first= 38 last=497 gap 54~67
+微分方程     n= 44 first=  7 last=504 gap 3~19
+数字特征     n= 22 first= 18 last=505 gap 6~38
+数理统计     n=  8 first=  8 last=449 gap 59~67
+无穷级数     n= 44 first=  5 last=501 gap 3~22
+曲线曲面积分   n= 51 first=  2 last=498 gap 3~20
+极限连续     n= 25 first=  0 last=487 gap 13~29
+相似矩阵     n= 21 first= 22 last=503 gap 20~29
+矩阵       n= 26 first=  3 last=489 gap 9~31
+空间解析几何   n= 11 first= 28 last=491 gap 43~51
+线性方程组    n= 27 first=  1 last=486 gap 11~27
+重积分      n= 29 first=  4 last=494 gap 10~27
+随机事件     n=  7 first= 67 last=492 gap 64~74
+HLHLHHPHPHHPHPHLLHPHHLLHHPHLHHLHHPHLHHPHLHHPHHHLHPHHLHLHHLHHHLHPHHHPPHHPLPHHHLHH
