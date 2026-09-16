@@ -2192,7 +2192,8 @@ $$I=u(2,2)-u(1,1)=\frac{2\sqrt2}{2}-\frac{\sqrt2}{1}=\sqrt2-\sqrt2=0 .$$
 [50]
 @题目
 设有方程组
-$$① \begin{cases} x_{1} + x_{2} = 0, \\ x_{2} - x_{4} = 0 \end{cases} \qquad ② \begin{cases} x_{1} - x_{2} + x_{3} = 0, \\ x_{2} - x_{3} + x_{4} = 0 \end{cases}$$
+① $$\begin{cases} x_{1} + x_{2} = 0, \\ x_{2} - x_{4} = 0 \end{cases}$$
+② $$\begin{cases} x_{1} - x_{2} + x_{3} = 0, \\ x_{2} - x_{3} + x_{4} = 0 \end{cases}$$
 求：（Ⅰ）方程组 ① 与 ② 的基础解系；（Ⅱ）方程组 ① 与 ② 的非零公共解.
 
 @切入点
