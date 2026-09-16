@@ -2382,3 +2382,713 @@ $$\mathrm dz|_{(0,0)}=f'_{x}(0,0) \mathrm dx+f'_{y}(0,0) \mathrm dy=\mathrm dx-\
 2. 链式法则漏掉 $f'_{y}\varphi'$ 一项。
 3. $\varphi'(0)$ 算错，例如把 $\sin t^{2}$ 在 $t=0$ 处误取为 $1$。
 4. 求出 $f'_{y}(0,0)$ 后忘记写成全微分的形式。
+
+[49]
+@切入点
+$S$ 是圆锥面 $z=\sqrt{x^{2}+y^{2}}$ 被 $z=1$ 与 $z=2$ 截出的一段，取上侧。它**不是闭曲面**，而且如果补面用高斯公式，要补上、下两个圆环形（或圆盘）盖子，还要算它们上的积分，反而比直接做麻烦。所以本题走**"合一投影"**：把三项统一化到 $dxdy$ 上。
+
+对显式曲面 $z=z(x,y)$，取上侧时有向面积元
+$$d\mathbf S=(-z'_{x},\ -z'_{y},\ 1)dxdy ,$$
+于是
+$$\iint_{S}P dydz+Q dzdx+R dxdy=\iint_{D}[-P z'_{x}-Q z'_{y}+R]dxdy .$$
+**一次投影解决三项，不必分片，这是处理"取上（下）侧的显式曲面"的首选。**
+
+本题 $z=r$（记 $r=\sqrt{x^{2}+y^{2}}$），故
+$$z'_{x}=\frac{x}{r} , z'_{y}=\frac{y}{r} ,$$
+投影区域是圆环 $1\leq r\leq2$（由 $z=1,2$ 截得）。代入 $P=xz^{2}=xr^{2}$、$Q=y^{2}$、$R=zx=rx$：
+$$I=\iint_{D}[-xr^{2}\cdot\frac{x}{r}-y^{2}\cdot\frac{y}{r}+rx]dxdy=\iint_{D}[-x^{2}r-\frac{y^{3}}{r}+rx]dxdy .$$
+
+最后用极坐标。**三项里有两项会因对称性而消失**：$-\frac{y^{3}}{r}$ 关于 $y$ 是奇函数、$rx$ 关于 $x$ 是奇函数，而圆环关于两轴都对称，故只剩第一项。这一步能省掉大半计算（当然按部就班算 $\int_{0}^{2\pi}\sin^{3}\theta d\theta=0$、$\int_{0}^{2\pi}\cos\theta d\theta=0$ 也一样）。
+
+@解答
+$S: z=\sqrt{x^{2}+y^{2}} (1\leq z\leq2)$ 取上侧，在 $xOy$ 面上的投影为圆环
+$$D: 1\leq x^{2}+y^{2}\leq4 .$$
+记 $r=\sqrt{x^{2}+y^{2}}$，则在 $S$ 上 $z=r$，且
+$$z'_{x}=\frac{x}{r} , z'_{y}=\frac{y}{r} .$$
+
+由取上侧的合一投影公式
+$$I=\iint_{D}[-P z'_{x}-Q z'_{y}+R]dxdy , P=xz^{2}=xr^{2},\ Q=y^{2},\ R=zx=rx ,$$
+得
+$$I=\iint_{D}[-xr^{2}\cdot\frac xr-y^{2}\cdot\frac yr+rx]dxdy=\iint_{D}[-x^{2}r-\frac{y^{3}}{r}+rx]dxdy .$$
+
+$D$ 关于 $x$ 轴、$y$ 轴都对称，而 $\frac{y^{3}}{r}$ 关于 $y$ 为奇函数、$rx$ 关于 $x$ 为奇函数，故这两项的积分为零：
+$$I=-\iint_{D}x^{2}r dxdy .$$
+
+用极坐标 $x=r\cos\theta$，$dxdy=r drd\theta$：
+$$I=-\int_{0}^{2\pi}\cos^{2}\theta d\theta\int_{1}^{2}r^{2}\cdot r\cdot r dr=-\pi\int_{1}^{2}r^{4}dr=-\pi\cdot\frac{2^{5}-1}{5}=-\frac{31\pi}{5} .$$
+（用了 $\int_{0}^{2\pi}\cos^{2}\theta d\theta=\pi$。）
+
+@考点
+第二类曲面积分的合一投影公式（上侧 $d\mathbf S=(-z'_{x},-z'_{y},1)dxdy$）；圆锥面的偏导 $z'_{x}=\frac xr$；圆环区域上的奇偶对称性；极坐标计算。
+
+易混：**上侧**对应公式中第三个分量取 $+1$，下侧则整体变号；另外投影区域由 $z=1$ 与 $z=2$ 决定（在锥面上 $z=r$，故 $1\leq r\leq2$），不是整个圆盘。
+
+@易错
+1. 只把 $R dxdy$ 投影，而把 $P dydz$、$Q dzdx$ 另行分片计算，既繁又易错。
+2. 侧向搞反，整体差一个负号。
+3. 投影区域写成 $r\leq2$（漏掉内圈）。
+4. 极坐标下漏掉面积元的 $r$：被积函数 $x^{2}r=r^{3}\cos^{2}\theta$，再乘 $r$ 才是 $r^{4}\cos^{2}\theta$。
+
+[50]
+@切入点
+条件给的是 $P(\overline A)$、$P(B)$、$P(A-B)$，要求的是条件概率 $P(B\mid A\cup\overline B)$。按定义
+$$P(B\mid A\cup\overline B)=\frac{P(B(A\cup\overline B))}{P(A\cup\overline B)} ,$$
+所以要算两件事：**分子的事件化简**与**分母的概率**。
+
+**分子**：用分配律
+$$B(A\cup\overline B)=BA\cup B\overline B=AB\cup\varnothing=AB ,$$
+一步就化成了 $AB$。而 $P(AB)$ 可由 $P(A-B)=P(A)-P(AB)$ 反解：
+$$P(A)=1-P(\overline A)=0.7 , P(AB)=0.7-0.5=0.2 .$$
+**"$P(A-B)=P(A)-P(AB)$"是这类题最常用的桥梁。**
+
+**分母**：用加法公式，并注意 $A\overline B=A-B$：
+$$P(A\cup\overline B)=P(A)+P(\overline B)-P(A\overline B)=0.7+0.6-0.5=0.8 .$$
+
+两者相除即得 $\frac{0.2}{0.8}=\frac14$。整道题的要点是**把复合事件用分配律／差事件公式化简成已知量的组合**，不需要任何独立性假设（题目也没给）。
+
+@解答
+由 $P(\overline A)=0.3$ 得
+$$P(A)=0.7 , P(\overline B)=1-P(B)=0.6 .$$
+由 $P(A-B)=P(A)-P(AB)$ 得
+$$P(AB)=P(A)-P(A-B)=0.7-0.5=0.2 .$$
+
+**分子。** 由分配律
+$$B\cap(A\cup\overline B)=(B\cap A)\cup(B\cap\overline B)=AB\cup\varnothing=AB ,$$
+故 $P(B(A\cup\overline B))=P(AB)=0.2$。
+
+**分母。** 注意 $A\overline B=A-B$，由加法公式
+$$P(A\cup\overline B)=P(A)+P(\overline B)-P(A\overline B)=0.7+0.6-0.5=0.8 .$$
+
+**合并。**
+$$P(B\mid A\cup\overline B)=\frac{P(AB)}{P(A\cup\overline B)}=\frac{0.2}{0.8}=\frac14 .$$
+
+@考点
+条件概率的定义；差事件公式 $P(A-B)=P(A)-P(AB)$ 与 $A-B=A\overline B$；集合的分配律；加法公式。
+
+易混：$P(A-B)=P(A)-P(AB)$ 恒成立；而 $P(A-B)=P(A)-P(B)$ 只在 $B\subset A$ 时才对。本题 $P(A)-P(B)=0.3\neq0.5$，正说明不能用后者。
+
+@易错
+1. 分子不化简，去硬算 $P(B)P(A\cup\overline B)$（需要独立性，题目未给）。
+2. 把 $P(A-B)$ 当成 $P(A)-P(B)$。
+3. 分母的加法公式漏掉减项，或把 $P(A\overline B)$ 错算成 $P(A)P(\overline B)$。
+4. 条件概率的分子分母位置颠倒。
+
+[51]
+@切入点
+判断反常积分 $\int_{2}^{+\infty}(\mathrm e^{\frac{\ln x}{x^{a}}}-1)dx$ 的收敛性，关键是先弄清**指数 $\frac{\ln x}{x^{a}}$ 在 $x\to+\infty$ 时的行为**，因为它决定了能否使用等价无穷小 $\mathrm e^{u}-1\sim u$。
+
+分情况：
+- 若 $a>0$：$\frac{\ln x}{x^{a}}\to0$（幂函数胜过对数），可用 $\mathrm e^{u}-1\sim u$，于是被积函数 $\sim\frac{\ln x}{x^{a}}$，问题化为判断 $\int_{2}^{+\infty}\frac{\ln x}{x^{a}}dx$ 的收敛性。
+- 若 $a\leq0$：$\frac{\ln x}{x^{a}}=\ln x\cdot x^{-a}\to+\infty$，被积函数 $\mathrm e^{u}-1\to+\infty$，**通项不趋于零，积分必发散**。这一支可以直接排除，不用细算。
+
+**所以第一件事是分 $a>0$ 与 $a\leq0$ 两大类**，这也是选项里 A、B 的陷阱所在。
+
+对 $a>0$，用带对数的 $p$-积分结论：
+$$\int_{2}^{+\infty}\frac{\ln x}{x^{a}}dx\ \text{收敛}\iff a>1 .$$
+（$a>1$ 时对数因子不影响收敛，因为可取 $\varepsilon>0$ 使 $\ln x\leq C x^{\varepsilon}$ 且 $a-\varepsilon>1$；$a=1$ 时 $\int\frac{\ln x}{x}dx=\frac{\ln^{2}x}{2}\to\infty$ 发散；$0<a<1$ 时被积函数比 $\frac1x$ 还大，发散。）
+
+综上 $a>1$，选 C。**注意 $a=1$ 必须排除**——这正是 C 与 D 的分歧点。
+
+@解答
+记被积函数 $g(x)=\mathrm e^{u(x)}-1$，$u(x)=\dfrac{\ln x}{x^{a}}$。
+
+**情形一：$a\leq0$。** 此时 $x^{-a}\geq1$ 且不减，$u(x)=\ln x\cdot x^{-a}\to+\infty$，故 $g(x)\to+\infty$，被积函数不趋于零，积分发散。
+
+**情形二：$a>0$。** 此时 $u(x)=\frac{\ln x}{x^{a}}\to0$（幂函数趋于无穷快于对数），由 $\mathrm e^{u}-1\sim u (u\to0)$ 得
+$$g(x)\sim\frac{\ln x}{x^{a}} (x\to+\infty) ,$$
+且当 $x\geq2$ 时 $g(x)>0$。由正函数反常积分的比较判别法（极限形式），$\int_{2}^{+\infty}g(x)dx$ 与 $\int_{2}^{+\infty}\frac{\ln x}{x^{a}}dx$ 同敛散。
+
+对后者：
+- 当 $a>1$ 时，取 $\varepsilon>0$ 使 $a-\varepsilon>1$，由 $\ln x=o(x^{\varepsilon})$ 知存在 $C>0$ 使 $\frac{\ln x}{x^{a}}\leq\frac{C}{x^{a-\varepsilon}}$，而 $\int_{2}^{+\infty}\frac{dx}{x^{a-\varepsilon}}$ 收敛，故收敛。
+- 当 $a=1$ 时，$\int_{2}^{+\infty}\frac{\ln x}{x}dx=[\frac{\ln^{2}x}{2}]_{2}^{+\infty}=+\infty$，发散。
+- 当 $0<a<1$ 时，$x\geq3$ 时 $\frac{\ln x}{x^{a}}\geq\frac{1}{x^{a}}\geq\frac1x$，而 $\int_{3}^{+\infty}\frac{dx}{x}$ 发散，故发散。
+
+综上，积分收敛当且仅当
+$$a>1 ,$$
+选 **C**。
+
+@考点
+反常积分收敛的必要条件（被积函数需趋于零，对正函数而言）；等价无穷小 $\mathrm e^{u}-1\sim u$ 及其使用前提 $u\to0$；带对数因子的 $p$-积分 $\int_{2}^{+\infty}\frac{\ln x}{x^{a}}dx$ 收敛 $\iff a>1$。
+
+易混：$\int_{2}^{+\infty}\frac{dx}{x^{a}}$ 收敛 $\iff a>1$；乘上 $\ln x$ 后**分界点不变**（仍是 $a>1$），但 $a=1$ 这个临界点依然发散。若是 $\int_{2}^{+\infty}\frac{dx}{x\ln^{p}x}$，则分界在 $p>1$，不要混用。
+
+@易错
+1. 不讨论 $a\leq0$，直接用等价无穷小（此时 $u\not\to0$，等价式不成立）。
+2. 认为 $a=1$ 时也收敛，选 D。
+3. 误以为对数因子会把分界点从 $1$ 挪开。
+4. 忘记验证被积函数保号（比较判别法的极限形式要求正函数）。
+
+[52]
+@切入点
+题目说"$\mathrm du=P dx+Q dy$"，即右端是某个函数的**全微分**。全微分的充要条件是
+$$\frac{\partial P}{\partial y}=\frac{\partial Q}{\partial x} ,$$
+这个条件里含有未知函数 $f$ 及其导数，**正好可以反过来把 $f$ 定出来**——这是本题的设计思路：先用"恰当性"求 $f$，再求 $u$。
+
+代入 $P=-6yf(x)$、$Q=x^{2}f'(x)-4xf(x)$：
+$$\frac{\partial P}{\partial y}=-6f(x) ,$$
+$$\frac{\partial Q}{\partial x}=2xf'+x^{2}f''-4f-4xf'=x^{2}f''-2xf'-4f .$$
+令二者相等：
+$$-6f=x^{2}f''-2xf'-4f \Longrightarrow x^{2}f''-2xf'+2f=0 .$$
+这是**欧拉方程**（各项中导数阶数与 $x$ 的幂次相配），标准解法是试 $f=x^{k}$：
+$$k(k-1)-2k+2=k^{2}-3k+2=(k-1)(k-2)=0 \Longrightarrow k=1,2 ,$$
+故 $f=C_{1}x+C_{2}x^{2}$，再由 $f(1)=1$、$f'(1)=2$ 定出 $C_{1}=0$、$C_{2}=1$，即 $f(x)=x^{2}$。
+
+**确定 $f$ 之后，$P,Q$ 都变成具体的多项式**：$P=-6x^{2}y$，$Q=2x^{3}-4x^{3}=-2x^{3}$，最后用"偏积分 $+$ 比对"求原函数 $u$ 即可。
+
+@解答
+**第一步：由全微分条件定 $f$。** 记
+$$P=-6yf(x) , Q=x^{2}f'(x)-4xf(x) .$$
+$P dx+Q dy$ 是全微分，故
+$$\frac{\partial P}{\partial y}=\frac{\partial Q}{\partial x} .$$
+计算两端：
+$$\frac{\partial P}{\partial y}=-6f(x) ,$$
+$$\frac{\partial Q}{\partial x}=2xf'(x)+x^{2}f''(x)-4f(x)-4xf'(x)=x^{2}f''-2xf'-4f .$$
+令相等并整理：
+$$x^{2}f''-2xf'+2f=0 .$$
+
+这是欧拉方程。设 $f=x^{k}$ 代入：
+$$k(k-1)x^{k}-2kx^{k}+2x^{k}=0 \Longrightarrow k^{2}-3k+2=0 \Longrightarrow k=1\ \text{或}\ 2 ,$$
+故
+$$f(x)=C_{1}x+C_{2}x^{2} , f'(x)=C_{1}+2C_{2}x .$$
+由 $f(1)=1$、$f'(1)=2$：
+$$\begin{cases}C_{1}+C_{2}=1,\\ C_{1}+2C_{2}=2,\end{cases} \Longrightarrow C_{2}=1 , C_{1}=0 ,$$
+即
+$$f(x)=x^{2} .$$
+
+**第二步：求 $u$。** 此时
+$$P=-6x^{2}y , Q=x^{2}\cdot2x-4x\cdot x^{2}=2x^{3}-4x^{3}=-2x^{3} ,$$
+$$\mathrm du=-6x^{2}y \mathrm dx-2x^{3} \mathrm dy .$$
+由 $\frac{\partial u}{\partial x}=-6x^{2}y$ 对 $x$ 偏积分：
+$$u=-2x^{3}y+\varphi(y) .$$
+再对 $y$ 求偏导并与 $Q$ 比对：
+$$\frac{\partial u}{\partial y}=-2x^{3}+\varphi'(y)=-2x^{3} \Longrightarrow \varphi'(y)=0 \Longrightarrow \varphi(y)=C .$$
+故
+$$u(x,y)=-2x^{3}y+C (C\ \text{为任意常数}) .$$
+
+@考点
+$P dx+Q dy$ 是全微分的充要条件 $\frac{\partial P}{\partial y}=\frac{\partial Q}{\partial x}$；欧拉方程 $x^{2}y''+pxy'+qy=0$ 用 $y=x^{k}$ 求解；由偏积分与比对求原函数。
+
+易混：欧拉方程的特征方程是 $k(k-1)+pk+q=0$，**第一项是 $k(k-1)$ 而不是 $k^{2}$**；本题 $p=-2,q=2$，得 $k^{2}-3k+2=0$。若写成 $k^{2}-2k+2=0$（用了 $k^{2}$），会得到复根，全错。
+
+@易错
+1. 求 $\frac{\partial Q}{\partial x}$ 时漏项（$x^{2}f'$ 与 $-4xf$ 各产生两项，共四项）。
+2. 欧拉方程的特征方程写错（见上）。
+3. 定常数时只用 $f(1)=1$ 一个条件。
+4. 求 $u$ 时把积分"常数"写成真常数，或最后忘记加 $C$。
+
+[53]
+@切入点
+先把三个事件的概率用正态分布的对称性读出来：对 $X\sim N(\mu,\sigma^{2})$，
+$$P\{X>t\}=\frac12\iff t=\mu .$$
+题设 $P(A)=P(B)$，而 $P(A)=P\{X>\mu\}=\frac12$，故 $P\{X>\sigma\}=\frac12$，于是
+$$\sigma=\mu .$$
+**这一步是全题的钥匙：它把两个参数锁成相等，从而三个事件之间产生了包含关系。**
+
+由 $\sigma=\mu$：
+- $B=\{X>\sigma\}=\{X>\mu\}=A$，**$B$ 与 $A$ 是同一个事件**；
+- $C=\{X>\mu+\sigma\}=\{X>2\mu\}$，而 $2\mu=\mu+\sigma>\mu$（$\sigma>0$），故 $C\subset A$。
+
+于是三个事件的结构极其简单：$A=B\supset C$。此时
+- 若 $A$ 发生，则 $B$ 也发生，**至少有两个事件发生**；
+- 若 $A$ 不发生，则 $B$ 不发生，且由 $C\subset A$ 知 $C$ 也不发生，**一个都不发生**。
+
+所以"至多有一个发生"$\iff$"一个都不发生"$\iff$ $\overline A$，概率为 $\frac12$。
+
+**不必去算 $P(C)$ 的具体值**（它涉及 $\Phi(1)$，题目也没给数值表）——这正说明思路走对了。
+
+@解答
+$X\sim N(\mu,\sigma^{2})$，由正态密度关于 $\mu$ 对称，
+$$P(A)=P\{X>\mu\}=\frac12 .$$
+由题设 $P(B)=P\{X>\sigma\}=P(A)=\frac12$，而 $P\{X>t\}=\frac12$ 当且仅当 $t=\mu$，故
+$$\sigma=\mu .$$
+（注意 $\sigma>0$，故 $\mu>0$。）
+
+于是
+$$B=\{X>\sigma\}=\{X>\mu\}=A ,$$
+$$C=\{X>\mu+\sigma\}=\{X>2\mu\}\subset\{X>\mu\}=A .$$
+
+因此：
+- 当 $A$ 发生时，$B=A$ 也发生，此时至少有两个事件发生；
+- 当 $A$ 不发生时，$B$ 不发生；又 $C\subset A$，故 $C$ 也不发生，此时零个事件发生。
+
+所以"$A,B,C$ 至多有一个发生"等价于"$A$ 不发生"，即
+$$P(\text{至多有一个发生})=P(\overline A)=1-\frac12=\frac12 .$$
+
+@考点
+正态分布关于均值的对称性 $P\{X>\mu\}=\frac12$ 及 $P\{X>t\}=\frac12\Rightarrow t=\mu$；事件的包含关系与相等；"至多有一个发生"的事件分析。
+
+易混："至多有一个发生"包含"零个发生"与"恰好一个发生"两种情形；本题由于 $A=B$，"恰好一个发生"是不可能事件，所以只剩"零个发生"。若不分析事件间的关系而去套容斥公式，会非常繁琐。
+
+@易错
+1. 由 $P(A)=P(B)$ 只想到"两个概率相等"，没推出 $\sigma=\mu$、进而 $A=B$。
+2. 去计算 $P(C)=1-\Phi(1)$ 并代入容斥公式（数值未给，且不必要）。
+3. 把"至多有一个"理解成"恰好有一个"。
+4. 忽略 $C\subset A$，误以为 $C$ 可以单独发生。
+
+[54]
+@切入点
+题目只说"$f(x)=\sum_{n=1}^{\infty}a_{n}x^{n+1}$ 在 $[0,1]$ 上收敛"，没给 $a_{n}$ 的任何具体信息，所以能用的只有**收敛性本身带来的"有界"结论**。
+
+关键的变形是把公因子 $x^{2}$ 提出来：
+$$f(x)=x^{2}\sum_{n=1}^{\infty}a_{n}x^{n-1}=x^{2}h(x) , h(x)=\sum_{n=1}^{\infty}a_{n}x^{n-1} .$$
+$h$ 与原级数只差因子 $x^{2}$，收敛半径相同，且在 $x=1$ 处 $h(1)=\sum a_{n}$ 收敛，故 $h$ 在 $[0,1]$ 上收敛；由**阿贝尔定理**（幂级数在收敛区间的闭子区间上一致收敛、和函数连续），$h$ 在 $[0,1]$ 上连续，从而**有界**：存在 $M>0$ 使 $|h(x)|\leq M$。
+
+于是
+$$|f(\frac1n)|=\frac{1}{n^{2}}|h(\frac1n)|\leq\frac{M}{n^{2}} ,$$
+由 $\sum\frac{1}{n^{2}}$ 收敛及比较判别法，$\sum|f(\frac1n)|$ 收敛，即原级数**绝对收敛**。
+
+**本题的要害是"提出 $x^{2}$ 造出 $\frac{1}{n^{2}}$"**：因为求和点是 $x=\frac1n$，$x^{2}$ 恰好变成 $\frac{1}{n^{2}}$，而剩下的部分只需有界即可。若只写 $f(\frac1n)\to0$，是推不出级数收敛的（那只是必要条件）；若只用莱布尼茨判别法，还需要单调性——题目并未给出，所以也走不通。
+
+@解答
+由题设，幂级数 $\sum_{n=1}^{\infty}a_{n}x^{n+1}$ 在 $[0,1]$ 上收敛，特别地在 $x=1$ 处 $\sum_{n=1}^{\infty}a_{n}$ 收敛。
+
+令
+$$h(x)=\sum_{n=1}^{\infty}a_{n}x^{n-1} ,$$
+则 $f(x)=x^{2}h(x)$。$h$ 与原级数的收敛半径相同（相差因子 $x^{2}$），且 $h(1)=\sum a_{n}$ 收敛，故 $h$ 在 $[0,1]$ 上收敛。由阿贝尔定理，幂级数的和函数在其收敛区间（含收敛的端点）上连续，故 $h$ 在闭区间 $[0,1]$ 上连续，从而有界：存在 $M>0$，使
+$$|h(x)|\leq M , x\in[0,1] .$$
+
+于是对每个 $n\geq1$，$\frac1n\in(0,1]$，
+$$|(-1)^{n-1}f(\frac1n)|=|f(\frac1n)|=\frac{1}{n^{2}}|h(\frac1n)|\leq\frac{M}{n^{2}} .$$
+而 $\sum_{n=1}^{\infty}\frac{M}{n^{2}}$ 收敛，由比较判别法，$\sum_{n=1}^{\infty}|f(\frac1n)|$ 收敛，即
+$$\sum_{n=1}^{\infty}(-1)^{n-1}f(\frac1n)$$
+绝对收敛。
+
+故选 **C**。
+
+@考点
+幂级数在收敛区间上和函数连续（阿贝尔定理）、闭区间上连续函数有界；提取公因子 $x^{2}$ 造出 $\frac{1}{n^{2}}$；绝对收敛的判定（比较判别法）。
+
+易混：绝对收敛 $\Rightarrow$ 收敛，而条件收敛是"收敛但不绝对收敛"。本题证得绝对收敛，故 B 不对；注意**不能**因为级数带 $(-1)^{n-1}$ 就先入为主地判为条件收敛。
+
+@易错
+1. 只用莱布尼茨判别法（需要 $|f(\frac1n)|$ 单调，题目未保证）。
+2. 提因子时提成 $x$（得到 $\frac1n$，只能推出与调和级数比较，判不出收敛）。
+3. 认为"$f$ 在 $[0,1]$ 上收敛"只保证逐点有定义，不敢用有界性（阿贝尔定理保证了连续从而有界）。
+4. 选 D：误以为 $a_{n}$ 未知就无法判断。
+
+[55]
+@切入点
+这是"**二重积分除以 $t$ 的幂**"的极限，标准思路有两条：洛必达（对 $t$ 求导，需要把累次积分的上限对 $t$ 求导，比较麻烦），或者**用等价无穷小替换被积函数**。本题选后者。
+
+理由是：当 $t\to0^{+}$ 时，积分区域 $\{0\leq x\leq t,\ x\leq y\leq t\}$ 收缩到原点，区域内 $|xy|\leq t^{2}\to0$，故
+$$\sin(xy)^{2}\sim(xy)^{2} ,$$
+（无论把 $\sin(xy)^{2}$ 读作 $\sin((xy)^{2})$ 还是 $(\sin(xy))^{2}$，主部都是 $(xy)^{2}$，结论一致）。**把三角函数换成多项式后积分就能显式算出**，这是这类题能做下去的前提。
+
+替换的合理性：$\sin u=u+O(u^{3})$，误差项在区域上贡献的量级是 $O(t^{6}\cdot t^{4})=O(t^{10})$，除以 $t^{6}$ 后趋于零，不影响极限。
+
+替换后
+$$\int_{0}^{t}dx\int_{x}^{t}x^{2}y^{2}dy=\int_{0}^{t}x^{2}\cdot\frac{t^{3}-x^{3}}{3}dx=\frac13(\frac{t^{3}\cdot t^{3}}{3}-\frac{t^{6}}{6})=\frac{t^{6}}{18} ,$$
+**结果恰好是 $t^{6}$ 的常数倍**，与分母的 $t^{6}$ 相配，说明阶数估计正确。极限为 $\frac{1}{18}$。
+
+@解答
+积分区域为
+$$D_{t}=\{(x,y): 0\leq x\leq t,\ x\leq y\leq t\} ,$$
+当 $t\to0^{+}$ 时它收缩到原点，其上 $0\leq xy\leq t^{2}\to0$。由 $\sin u=u+O(u^{3}) (u\to0)$，在 $D_{t}$ 上
+$$\sin(xy)^{2}=(xy)^{2}+O((xy)^{6}) ,$$
+其中余项在 $D_{t}$ 上不超过 $Ct^{12}$，而 $D_{t}$ 的面积为 $\frac{t^{2}}{2}$，故余项对积分的贡献为 $O(t^{14})=o(t^{6})$，不影响所求极限。
+
+于是
+$$\lim_{t\to0^{+}}\frac{1}{t^{6}}\iint_{D_{t}}\sin(xy)^{2}dxdy=\lim_{t\to0^{+}}\frac{1}{t^{6}}\iint_{D_{t}}x^{2}y^{2}dxdy .$$
+
+计算后者：
+$$\iint_{D_{t}}x^{2}y^{2}dxdy=\int_{0}^{t}x^{2}(\int_{x}^{t}y^{2}dy)dx=\int_{0}^{t}x^{2}\cdot\frac{t^{3}-x^{3}}{3}dx$$
+$$=\frac13(t^{3}\int_{0}^{t}x^{2}dx-\int_{0}^{t}x^{5}dx)=\frac13(t^{3}\cdot\frac{t^{3}}{3}-\frac{t^{6}}{6})=\frac13\cdot\frac{t^{6}}{6}=\frac{t^{6}}{18} .$$
+
+故
+$$\lim_{t\to0^{+}}\frac{1}{t^{6}}\int_{0}^{t}dx\int_{x}^{t}\sin(xy)^{2}dy=\lim_{t\to0^{+}}\frac{t^{6}/18}{t^{6}}=\frac{1}{18} .$$
+
+@考点
+区域收缩时在积分号内作等价无穷小替换（需估计余项的量级）；累次积分的计算；$\sin u\sim u$。
+
+易混：在积分号内作等价替换必须保证替换的一致性（即余项在整个区域上一致地小）。本题因为区域收缩且 $xy$ 一致趋于零，替换合法；若区域固定不动，就不能随便替换。
+
+@易错
+1. 直接对 $t$ 用洛必达而不注意上限 $t$ 出现在两处（内外层都要求导）。
+2. 内层积分的下限是 $x$ 不是 $0$，写错会得到 $\frac{t^{6}}{9}$。
+3. 不估计余项就替换（结论对，但论证不完整）。
+4. 把 $\sin(xy)^{2}$ 的主部取成 $xy$（漏掉平方）。
+
+[56]
+（说明：原题写作 $\lim_{x\to\infty}f(x)=b$，但此时 $a[x]$ 无界，唯有 $a=0$ 才有极限，那样 $[x]$ 这一项形同虚设，与本题设置 $[x]$ 的用意不符；此类题的标准形式是 $x\to0$。下面以 $x\to0$ 为主给出解答，并在最后附上按 $x\to\infty$ 读法的答案。）
+
+@切入点
+函数
+$$f(x)=a[x]+\frac{\ln(1+\mathrm e^{\frac2x})}{\ln(1+\mathrm e^{\frac1x})}$$
+在 $x=0$ 两侧的行为**截然不同**，这正是题目的设计：
+- **取整函数 $[x]$**：$0<x<1$ 时 $[x]=0$；$-1\leq x<0$ 时 $[x]=-1$。左右相差 $1$。
+- **$\mathrm e^{\frac1x}$**：$x\to0^{+}$ 时 $\frac1x\to+\infty$，$\mathrm e^{\frac1x}\to+\infty$；$x\to0^{-}$ 时 $\mathrm e^{\frac1x}\to0$。
+
+所以必须**分左右极限计算**，再由"极限存在"要求二者相等，从而定出 $a$。
+
+$x\to0^{+}$：$\ln(1+\mathrm e^{\frac2x})\sim\frac2x$、$\ln(1+\mathrm e^{\frac1x})\sim\frac1x$（因为 $\ln(1+\mathrm e^{t})\sim t$ 当 $t\to+\infty$），比值 $\to2$；而 $[x]=0$，故 $f\to2$。
+
+$x\to0^{-}$：$\mathrm e^{\frac2x},\mathrm e^{\frac1x}\to0$，用 $\ln(1+u)\sim u$：比值 $\sim\frac{\mathrm e^{2/x}}{\mathrm e^{1/x}}=\mathrm e^{\frac1x}\to0$；而 $[x]=-1$，故 $f\to-a$。
+
+**"当 $t\to+\infty$ 时 $\ln(1+\mathrm e^{t})\sim t$、当 $t\to-\infty$ 时 $\ln(1+\mathrm e^{t})\sim\mathrm e^{t}$"是处理这类表达式的两个基本等价式**，左右两侧各用一个。
+
+极限存在要求 $-a=2$，即 $a=-2$，此时 $b=2$。
+
+@解答
+（按 $x\to0$ 计算。）
+
+**右极限 $x\to0^{+}$。** 此时 $\frac1x\to+\infty$。由 $\ln(1+\mathrm e^{t})=t+\ln(1+\mathrm e^{-t})\sim t (t\to+\infty)$ 得
+$$\ln(1+\mathrm e^{\frac2x})\sim\frac2x , \ln(1+\mathrm e^{\frac1x})\sim\frac1x ,$$
+故
+$$\frac{\ln(1+\mathrm e^{\frac2x})}{\ln(1+\mathrm e^{\frac1x})}\longrightarrow2 .$$
+又 $0<x<1$ 时 $[x]=0$，故
+$$\lim_{x\to0^{+}}f(x)=a\cdot0+2=2 .$$
+
+**左极限 $x\to0^{-}$。** 此时 $\frac1x\to-\infty$，$\mathrm e^{\frac1x}\to0$，$\mathrm e^{\frac2x}\to0$。由 $\ln(1+u)\sim u (u\to0)$ 得
+$$\frac{\ln(1+\mathrm e^{\frac2x})}{\ln(1+\mathrm e^{\frac1x})}\sim\frac{\mathrm e^{\frac2x}}{\mathrm e^{\frac1x}}=\mathrm e^{\frac1x}\longrightarrow0 .$$
+又 $-1\leq x<0$ 时 $[x]=-1$，故
+$$\lim_{x\to0^{-}}f(x)=-a+0=-a .$$
+
+**由极限存在定 $a,b$。** 极限 $\lim_{x\to0}f(x)$ 存在要求左右极限相等：
+$$-a=2 \Longrightarrow a=-2 ,$$
+此时
+$$b=\lim_{x\to0}f(x)=2 .$$
+
+即
+$$a=-2 , b=2 .$$
+
+（附：若严格按题面的 $x\to\infty$ 读，则 $\frac1x\to0$，比值 $\to\frac{\ln2}{\ln2}=1$，而 $[x]\to\infty$，故必须 $a=0$，此时 $b=1$。）
+
+@考点
+取整函数 $[x]$ 在整数点两侧的取值；$\mathrm e^{\frac1x}$ 在 $x\to0^{\pm}$ 的两极行为；等价式 $\ln(1+\mathrm e^{t})\sim t (t\to+\infty)$ 与 $\ln(1+u)\sim u (u\to0)$；极限存在 $\iff$ 左右极限存在且相等。
+
+易混：$\ln(1+\mathrm e^{t})$ 在 $t\to+\infty$ 时主部是 $t$（不是 $\mathrm e^{t}$），在 $t\to-\infty$ 时主部才是 $\mathrm e^{t}$。两侧用错等价式会把比值算成 $\mathrm e^{\frac1x}$ 或 $2$ 的反面。
+
+@易错
+1. 不分左右极限，只算一侧。
+2. $x\to0^{-}$ 时把 $[x]$ 取成 $0$（应为 $-1$）。
+3. 右侧把 $\ln(1+\mathrm e^{\frac1x})$ 等价成 $\mathrm e^{\frac1x}$（那是 $u\to0$ 时的式子，此处 $\mathrm e^{\frac1x}\to+\infty$）。
+4. 求出 $a$ 后忘记回代求 $b$。
+
+[57]
+@切入点
+第一类错误的定义是"**弃真**"：原假设 $H_{0}$ 为真时却拒绝了它。所以
+$$\alpha=P\{\text{落入拒绝域}\ |\ H_{0}\ \text{为真}\}=P\{\overline X>\mu_{0}+\frac{1.96}{\sqrt n}\ |\ \mu=\mu_{0}\} .$$
+**关键在于"在 $\mu=\mu_{0}$ 的条件下"计算这个概率**——这决定了用哪个分布。
+
+在 $H_{0}$ 成立时，$X\sim N(\mu_{0},1)$，故
+$$\overline X\sim N(\mu_{0},\ \frac1n) , Z=\frac{\overline X-\mu_{0}}{1/\sqrt n}=\sqrt n (\overline X-\mu_{0})\sim N(0,1) .$$
+把拒绝域的不等式两端同减 $\mu_{0}$、同乘 $\sqrt n$：
+$$\overline X>\mu_{0}+\frac{1.96}{\sqrt n} \iff \sqrt n(\overline X-\mu_{0})>1.96 \iff Z>1.96 ,$$
+于是
+$$\alpha=P\{Z>1.96\}=1-\Phi(1.96) .$$
+
+**注意总体方差已知为 $1$，所以标准差是 $\frac{1}{\sqrt n}$，标准化时除以它恰好把 $\frac{1.96}{\sqrt n}$ 变成 $1.96$**——拒绝域里写成 $\frac{1.96}{\sqrt n}$ 正是为此。选项 A、B 的 $0.04$、$0.05$ 是想让人把显著性水平的数值与分位数混为一谈。
+
+@解答
+第一类错误（弃真）的概率为
+$$\alpha=P\{\overline X\in R_{\alpha}\ |\ H_{0}\ \text{为真}\}=P\{\overline X>\mu_{0}+\frac{1.96}{\sqrt n}\ |\ \mu=\mu_{0}\} .$$
+
+当 $H_{0}:\mu=\mu_{0}$ 成立时，$X\sim N(\mu_{0},1)$，样本均值
+$$\overline X\sim N(\mu_{0},\frac1n) , \text{故} \sqrt n (\overline X-\mu_{0})\sim N(0,1) .$$
+
+将拒绝域的不等式标准化：
+$$\overline X>\mu_{0}+\frac{1.96}{\sqrt n} \iff \sqrt n (\overline X-\mu_{0})>1.96 .$$
+记 $Z=\sqrt n(\overline X-\mu_{0})\sim N(0,1)$，则
+$$\alpha=P\{Z>1.96\}=1-\Phi(1.96) .$$
+
+故选 **C**。
+
+@考点
+第一类错误（弃真）的定义；$\overline X$ 的分布 $N(\mu,\frac{\sigma^{2}}{n})$ 与标准化；正态分布尾概率用 $\Phi$ 表示。
+
+易混：第一类错误是"$H_{0}$ 真却拒绝"，第二类错误是"$H_{0}$ 假却接受"；计算前者时**在 $H_{0}$ 成立的前提下**算概率，计算后者要在备择假设下算。另外 $1.96$ 是 $N(0,1)$ 的上 $0.025$ 分位数，本题是单边检验，故 $\alpha=1-\Phi(1.96)\approx0.025$ 而不是 $0.05$。
+
+@易错
+1. 忘记在 $\mu=\mu_{0}$ 的条件下计算，用了含 $\mu$ 的一般分布。
+2. 标准化时除以 $1$ 而不是 $\frac{1}{\sqrt n}$，得到 $1-\Phi(\frac{1.96}{\sqrt n})$。
+3. 把 $1.96$ 直接当成显著性水平，选 A 或 B。
+4. 把第一类错误与第二类错误的定义弄反。
+
+[58]
+@切入点
+被积向量场是
+$$\mathbf F=\frac{\mathbf r}{|\mathbf r|^{3}} , \mathbf r=(x,y,z) ,$$
+这是**最著名的"点源场"**，它有两条必须记住的性质：
+1. 在原点之外 $\mathrm{div} \mathbf F=0$；
+2. 通过任何**包围原点**的闭曲面（取外侧）的通量都等于 $4\pi$，不包围原点时为 $0$。
+
+所以看到这个被积表达式，第一反应是判断"曲面有没有把原点围在里面"。本题 $S:x^{2}+2y^{2}+3z^{2}=1$ 是椭球面，原点显然在其内部（代入 $(0,0,0)$ 得 $0<1$）。
+
+由于 $\mathbf F$ 在原点不连续（无定义），**不能直接对椭球内部用高斯公式**。标准做法是**挖洞**：在椭球内取一个以原点为心、半径 $\varepsilon$ 充分小的球面 $\Sigma_{\varepsilon}$（取内侧，即朝向原点），则在 $S$ 与 $\Sigma_{\varepsilon}$ 之间的区域 $\Omega$ 上 $\mathbf F$ 光滑且散度为零，高斯公式给出
+$$\oiint_{S}+\oiint_{\Sigma_{\varepsilon},\ \text{内侧}}=0 \Longrightarrow \oiint_{S}=\oiint_{\Sigma_{\varepsilon},\ \text{外侧}} .$$
+即**把复杂的椭球换成了简单的球面**，这正是挖洞法的价值。
+
+在球面 $|\mathbf r|=\varepsilon$ 上，外法向单位向量恰为 $\mathbf n=\frac{\mathbf r}{\varepsilon}$，故
+$$\mathbf F\cdot\mathbf n=\frac{\mathbf r}{\varepsilon^{3}}\cdot\frac{\mathbf r}{\varepsilon}=\frac{\varepsilon^{2}}{\varepsilon^{4}}=\frac{1}{\varepsilon^{2}} ,$$
+是**常数**，于是通量 $=\frac{1}{\varepsilon^{2}}\times4\pi\varepsilon^{2}=4\pi$，与 $\varepsilon$ 无关。
+
+@解答
+记 $\mathbf r=(x,y,z)$，$r=|\mathbf r|=\sqrt{x^{2}+y^{2}+z^{2}}$，被积表达式对应向量场
+$$\mathbf F=(\frac{x}{r^{3}},\ \frac{y}{r^{3}},\ \frac{z}{r^{3}}) .$$
+
+**散度为零。** 当 $r\neq0$ 时
+$$\frac{\partial}{\partial x}(\frac{x}{r^{3}})=\frac{r^{3}-x\cdot3r^{2}\cdot\frac xr}{r^{6}}=\frac{r^{2}-3x^{2}}{r^{5}} ,$$
+同理对 $y,z$，三式相加：
+$$\mathrm{div} \mathbf F=\frac{3r^{2}-3(x^{2}+y^{2}+z^{2})}{r^{5}}=0 (r\neq0) .$$
+
+**挖洞。** 原点在椭球 $S$ 内部（代入原点得 $0<1$）。取 $\varepsilon\in(0,\frac{1}{\sqrt3})$，使球面 $\Sigma_{\varepsilon}:r=\varepsilon$ 整个落在 $S$ 内部（因为 $x^{2}+2y^{2}+3z^{2}\leq3r^{2}$，故 $r\leq\frac{1}{\sqrt3}$ 的点必在椭球内）。记 $\Omega$ 为 $S$ 与 $\Sigma_{\varepsilon}$ 之间的区域，在其上 $\mathbf F$ 有连续偏导且散度为零。$\Omega$ 的边界外侧由 $S$ 的外侧与 $\Sigma_{\varepsilon}$ 的**内侧**组成，由高斯公式
+$$\oiint_{S\ \text{外}}\mathbf F\cdot d\mathbf S+\oiint_{\Sigma_{\varepsilon}\ \text{内}}\mathbf F\cdot d\mathbf S=\iiint_{\Omega}\mathrm{div} \mathbf F dV=0 ,$$
+即
+$$I=\oiint_{S\ \text{外}}\mathbf F\cdot d\mathbf S=\oiint_{\Sigma_{\varepsilon}\ \text{外}}\mathbf F\cdot d\mathbf S .$$
+
+**在球面上计算。** 在 $\Sigma_{\varepsilon}$ 上 $r=\varepsilon$，外法向单位向量 $\mathbf n=\frac{\mathbf r}{\varepsilon}$，故
+$$\mathbf F\cdot\mathbf n=\frac{\mathbf r}{\varepsilon^{3}}\cdot\frac{\mathbf r}{\varepsilon}=\frac{\varepsilon^{2}}{\varepsilon^{4}}=\frac{1}{\varepsilon^{2}} ,$$
+$$\oiint_{\Sigma_{\varepsilon}\ \text{外}}\mathbf F\cdot d\mathbf S=\frac{1}{\varepsilon^{2}}\cdot(\text{球面面积})=\frac{1}{\varepsilon^{2}}\cdot4\pi\varepsilon^{2}=4\pi .$$
+
+故
+$$I=4\pi .$$
+
+@考点
+点源场 $\frac{\mathbf r}{r^{3}}$ 的散度为零（原点除外）；奇点处的挖洞法与高斯公式；球面上外法向为 $\frac{\mathbf r}{r}$；球面面积 $4\pi\varepsilon^{2}$。
+
+易混：这个场的通量只有两个可能值——包围原点为 $4\pi$、不包围为 $0$，**与曲面的形状无关**。但若被积表达式改成 $\frac{\mathbf r}{r^{2}}$ 或别的幂次，散度就不为零，这个结论失效。
+
+@易错
+1. 直接对椭球内部用高斯公式（原点是奇点，$\mathbf F$ 在那里无定义）。
+2. 挖洞时方向搞反：$\Sigma_{\varepsilon}$ 作为 $\Omega$ 的边界应取**内侧**（朝向原点），移项后才变成外侧。
+3. 在球面上计算时忘记 $r=\varepsilon$ 可以代入，去硬做参数化。
+4. 误以为答案与椭球的三个半轴有关。
+
+[59]
+@切入点
+判断 $F(x)=f(x)|\sin x|$ 在 $x=0$ 处的可导性，**必须用导数定义**——因为 $|\sin x|$ 在 $0$ 处不可导，乘积法则用不上；而且题目只说 $f$ 有定义，连续性都没保证。
+
+先注意 $F(0)=f(0)\cdot|\sin0|=0$，于是差商是
+$$\frac{F(x)-F(0)}{x-0}=\frac{f(x)|\sin x|}{x} .$$
+**分左右两侧处理绝对值**：
+- $x\to0^{+}$：$\sin x>0$，$|\sin x|=\sin x$，
+$$\frac{f(x)\sin x}{x}=f(x)\cdot\frac{\sin x}{x} .$$
+因 $\frac{\sin x}{x}\to1\neq0$，该极限存在 $\iff\lim_{x\to0^{+}}f(x)$ 存在，且此时 $F'_{+}(0)=\lim_{x\to0^{+}}f(x)$。
+- $x\to0^{-}$：$\sin x<0$，$|\sin x|=-\sin x$，
+$$\frac{-f(x)\sin x}{x}=-f(x)\cdot\frac{\sin x}{x} ,$$
+故 $F'_{-}(0)=-\lim_{x\to0^{-}}f(x)$。
+
+可导 $\iff$ 左右导数都存在且相等，即
+$$\lim_{x\to0^{+}}f(x)\ \text{与}\ \lim_{x\to0^{-}}f(x)\ \text{都存在，且}\ \lim_{x\to0^{-}}f(x)=-\lim_{x\to0^{+}}f(x) ,$$
+正是选项 D。
+
+**其余选项为什么不对**：A、B 要求两个单侧极限相等（记作 $L$），代入条件得 $L=-L$，即 $L=0$——这是充分不必要的（比如 $f$ 的左右极限为 $1$ 与 $-1$ 时 $F$ 也可导，但 $\lim f$ 不存在）；C（可导）比 B 更强，同样只充分不必要。**"绝对值制造出左右导数差一个符号"是本题的核心机制**，抓住它就能看出为什么条件里必须出现负号。
+
+@解答
+因 $F(0)=f(0)|\sin0|=0$，由导数定义
+$$F'(0)=\lim_{x\to0}\frac{F(x)-F(0)}{x}=\lim_{x\to0}\frac{f(x)|\sin x|}{x} .$$
+
+**右导数。** 当 $x\to0^{+}$ 时 $\sin x>0$，$|\sin x|=\sin x$，
+$$\frac{f(x)|\sin x|}{x}=f(x)\cdot\frac{\sin x}{x} .$$
+由 $\frac{\sin x}{x}\to1$（非零），该极限存在当且仅当 $\lim_{x\to0^{+}}f(x)$ 存在，且
+$$F'_{+}(0)=\lim_{x\to0^{+}}f(x) .$$
+
+**左导数。** 当 $x\to0^{-}$ 时 $\sin x<0$，$|\sin x|=-\sin x$，
+$$\frac{f(x)|\sin x|}{x}=-f(x)\cdot\frac{\sin x}{x} ,$$
+故该极限存在当且仅当 $\lim_{x\to0^{-}}f(x)$ 存在，且
+$$F'_{-}(0)=-\lim_{x\to0^{-}}f(x) .$$
+
+**可导条件。** $F$ 在 $x=0$ 处可导 $\iff F'_{+}(0)=F'_{-}(0)$ 且都存在，即
+$$\lim_{x\to0^{+}}f(x)\ \text{与}\ \lim_{x\to0^{-}}f(x)\ \text{均存在，且}\ \lim_{x\to0^{-}}f(x)=-\lim_{x\to0^{+}}f(x) .$$
+
+这正是选项 **D**。
+
+（A、B、C 都只是充分条件：它们都蕴含两个单侧极限相等，记为 $L$，再由 D 的条件得 $L=-L$ 即 $L=0$，故它们只在 $\lim f=0$ 的特殊情形下与 D 一致；例如取 $f(x)=1 (x\geq0)$、$f(x)=-1 (x<0)$，则 $F=|\sin x|\cdot\mathrm{sgn} x=\sin x$ 在 $0$ 处可导，但 $\lim_{x\to0}f(x)$ 不存在，故 A、B、C 都不是必要条件。）
+
+@考点
+用导数定义判断含绝对值函数的可导性；左右导数的分别计算；$|\sin x|$ 在 $x=0$ 两侧的符号；充要条件的判别（既要充分也要必要）。
+
+易混：$F(x)=f(x)|\sin x|$ 在 $0$ 处可导**并不要求 $f$ 在 $0$ 处连续，甚至不要求 $\lim_{x\to0}f(x)$ 存在**；因子 $|\sin x|$ 在 $0$ 处取零值，把 $f$ 的取值"压平"了，只留下左右极限的一个符号约束。
+
+@易错
+1. 直接用乘积求导法则（$|\sin x|$ 在 $0$ 处不可导，法则不适用）。
+2. 只算一侧导数，看不出负号。
+3. 选 B 或 C：把充分条件当成充要条件。
+4. 左侧去绝对值时忘记变号，得出"两个单侧极限相等"的错误条件。
+
+[60]
+@切入点
+求 $(Y_{1},Y_{2})=(2X_{1},3X_{2})$ 的联合密度，这是**二维随机变量的线性变换**，标准工具是**雅可比公式**：若 $y=g(x)$ 是一一对应的可微变换、逆变换为 $x=h(y)$，则
+$$f_{Y}(y_{1},y_{2})=f_{X}(h_{1}(y),h_{2}(y))\cdot|\frac{\partial(x_{1},x_{2})}{\partial(y_{1},y_{2})}| .$$
+**注意雅可比是"旧变量对新变量"的偏导行列式**（即逆变换的雅可比），这是最容易记反的地方。
+
+本题逆变换极简：
+$$x_{1}=\frac{y_{1}}{2} , x_{2}=\frac{y_{2}}{3} ,$$
+$$\frac{\partial(x_{1},x_{2})}{\partial(y_{1},y_{2})}=\begin{vmatrix}\frac12&0\\ 0&\frac13\end{vmatrix}=\frac16 .$$
+于是
+$$f_{2}(y_{1},y_{2})=\frac16f_{1}(\frac{y_{1}}{2},\frac{y_{2}}{3}) .$$
+
+四个选项的分歧正在这两处：**代入的是 $\frac{y}{k}$ 还是 $ky$**（应是逆变换 $\frac{y}{k}$），以及**有没有乘 $\frac16$**。可以用"密度必须积分为 $1$"来自检：
+$$\iint\frac16f_{1}(\frac{y_{1}}{2},\frac{y_{2}}{3})dy_{1}dy_{2}\ \xrightarrow{y_{1}=2x_{1},y_{2}=3x_{2}}\ \iint\frac16f_{1}(x_{1},x_{2})\cdot6 dx_{1}dx_{2}=1 ,$$
+正确；而 A、B 的积分分别是 $6$ 与 $6$ 倍，C 更不对。**用归一性验算是排除选项最快的办法。**
+
+@解答
+变换为
+$$y_{1}=2x_{1} , y_{2}=3x_{2} ,$$
+它是 $\mathbb R^{2}$ 到 $\mathbb R^{2}$ 的一一线性变换，逆变换为
+$$x_{1}=\frac{y_{1}}{2} , x_{2}=\frac{y_{2}}{3} ,$$
+雅可比行列式
+$$J=\frac{\partial(x_{1},x_{2})}{\partial(y_{1},y_{2})}=\begin{vmatrix}\dfrac12&0\\[2pt] 0&\dfrac13\end{vmatrix}=\frac16 .$$
+
+由二维随机变量的变换公式
+$$f_{2}(y_{1},y_{2})=f_{1}(\frac{y_{1}}{2},\frac{y_{2}}{3})\cdot|J|=\frac16f_{1}(\frac{y_{1}}{2},\frac{y_{2}}{3}) .$$
+
+故选 **D**。
+
+（验算归一性：作代换 $y_{1}=2x_{1}$、$y_{2}=3x_{2}$，$dy_{1}dy_{2}=6 dx_{1}dx_{2}$，
+$$\iint\frac16f_{1}(\frac{y_{1}}{2},\frac{y_{2}}{3})dy_{1}dy_{2}=\iint\frac16f_{1}(x_{1},x_{2})\cdot6 dx_{1}dx_{2}=1 .）$$
+
+@考点
+二维随机变量线性变换的密度公式；雅可比行列式取"旧变量对新变量"；用归一性 $\iint f=1$ 检验密度。
+
+易混：公式里代入 $f_{1}$ 的是**逆变换** $x=h(y)$，即 $(\frac{y_{1}}{2},\frac{y_{2}}{3})$；若代成 $(2y_{1},3y_{2})$ 就把变换方向弄反了。雅可比的绝对值也不能漏。
+
+@易错
+1. 代入正变换 $(2y_{1},3y_{2})$，选 A 或 C。
+2. 漏掉雅可比因子，选 B。
+3. 雅可比取成 $6$（那是 $\frac{\partial(y_{1},y_{2})}{\partial(x_{1},x_{2})}$）。
+4. 不做归一性验算，凭印象选。
+
+[61]
+@切入点
+条件 $f(tx,ty)=t^{2}f(x,y)$ 说明 $f$ 是**二次齐次函数**。齐次函数有一条极好用的恒等式——**欧拉公式**：若 $f$ 是 $k$ 次齐次可微函数，则
+$$x f'_{x}+y f'_{y}=k f .$$
+（推导：把 $f(tx,ty)=t^{k}f(x,y)$ 两端对 $t$ 求导得 $xf'_{1}+yf'_{2}=kt^{k-1}f$，再令 $t=1$。）
+
+本题 $k=2$，在点 $(1,-2)$ 处（注意 $P_{0}(1,-2,2)$ 在曲面上，故 $f(1,-2)=2$）：
+$$1\cdot f'_{x}(1,-2)+(-2)f'_{y}(1,-2)=2f(1,-2)=4 .$$
+代入已知 $f'_{x}(1,-2)=4$：
+$$4-2f'_{y}(1,-2)=4 \Longrightarrow f'_{y}(1,-2)=0 .$$
+**欧拉公式把"未知的 $f'_{y}$"与"已知的 $f'_{x}$ 和 $f$ 的值"联系起来，这是本题唯一的技术点**；没有它就只能猜 $f$ 的具体形式。
+
+有了两个偏导，切平面用标准公式：曲面 $z=f(x,y)$ 在 $(x_{0},y_{0},z_{0})$ 处的切平面为
+$$z-z_{0}=f'_{x}(x_{0},y_{0})(x-x_{0})+f'_{y}(x_{0},y_{0})(y-y_{0}) .$$
+
+@解答
+由 $f(tx,ty)=t^{2}f(x,y)$ 知 $f$ 是二次齐次函数。两端对 $t$ 求导：
+$$x f'_{1}(tx,ty)+y f'_{2}(tx,ty)=2t f(x,y) ,$$
+令 $t=1$ 得欧拉公式
+$$x f'_{x}(x,y)+y f'_{y}(x,y)=2f(x,y) .$$
+
+点 $P_{0}(1,-2,2)$ 在曲面 $z=f(x,y)$ 上，故 $f(1,-2)=2$。在 $(x,y)=(1,-2)$ 处应用欧拉公式：
+$$1\cdot f'_{x}(1,-2)+(-2)\cdot f'_{y}(1,-2)=2\times2=4 .$$
+代入 $f'_{x}(1,-2)=4$：
+$$4-2f'_{y}(1,-2)=4 \Longrightarrow f'_{y}(1,-2)=0 .$$
+
+由曲面 $z=f(x,y)$ 的切平面公式，在 $P_{0}(1,-2,2)$ 处
+$$z-2=f'_{x}(1,-2)(x-1)+f'_{y}(1,-2)(y+2)=4(x-1)+0\cdot(y+2) ,$$
+即
+$$z=4x-2 , \text{或写作} 4x-z-2=0 .$$
+
+@考点
+齐次函数的欧拉公式 $xf'_{x}+yf'_{y}=kf$ 及其推导（对 $t$ 求导后令 $t=1$）；曲面 $z=f(x,y)$ 的切平面方程。
+
+易混：欧拉公式右端是 $k f$，$k$ 是**齐次的次数**（本题为 $2$），不是别的常数；另外 $P_{0}$ 的第三个坐标 $2$ 就是 $f(1,-2)$，这一点必须用上，否则右端算不出数值。
+
+@易错
+1. 不知道欧拉公式，试图猜出 $f$ 的具体表达式（如 $f=4x^{2}$，虽也满足部分条件但不唯一）。
+2. 推导欧拉公式时忘记令 $t=1$，或右端漏掉 $k$。
+3. 忘记 $f(1,-2)=2$ 来自点 $P_{0}$ 在曲面上。
+4. 切平面公式中 $(y-y_{0})$ 写成 $(y-2)$（应为 $y-(-2)=y+2$，本题该项系数为零，不影响结果，但习惯要正确）。
+
+[62]
+@切入点
+$P=(\alpha,A\alpha,A^{2}\alpha)$ 可逆，说明这三个向量构成 $\mathbb R^{3}$ 的一组基。要求 $|A+E|$，直接算是不可能的（$A$ 未给出元素），**唯一的出路是找到一个与 $A$ 相似的具体矩阵**——而 $B=P^{-1}AP$ 正是它。
+
+怎么求 $B$？按定义 $AP=PB$，而
+$$AP=A(\alpha,A\alpha,A^{2}\alpha)=(A\alpha,\ A^{2}\alpha,\ A^{3}\alpha) ,$$
+所以只要**把 $A\alpha,A^{2}\alpha,A^{3}\alpha$ 用基 $(\alpha,A\alpha,A^{2}\alpha)$ 表示，把系数竖排成 $B$ 的列**即可：
+- $A\alpha=0\cdot\alpha+1\cdot A\alpha+0\cdot A^{2}\alpha$，坐标 $(0,1,0)^{\mathrm T}$；
+- $A^{2}\alpha$，坐标 $(0,0,1)^{\mathrm T}$；
+- $A^{3}\alpha$：由题设 $A^{3}\alpha+2A^{2}\alpha=3A\alpha$ 得 $A^{3}\alpha=3A\alpha-2A^{2}\alpha$，坐标 $(0,3,-2)^{\mathrm T}$。
+
+**题设那个关系式的唯一用途就是把 $A^{3}\alpha$ 拉回到基里**——否则第三列写不出来。于是
+$$B=\begin{pmatrix}0&0&0\\ 1&0&3\\ 0&1&-2\end{pmatrix} .$$
+
+最后用相似的不变性：$A\sim B\Rightarrow A+E\sim B+E$（因为 $P^{-1}(A+E)P=B+E$），故
+$$|A+E|=|B+E| ,$$
+算一个三阶行列式即可。
+
+@解答
+由 $P=(\alpha,A\alpha,A^{2}\alpha)$ 可逆知 $\alpha,A\alpha,A^{2}\alpha$ 线性无关，构成一组基。
+
+由 $B=P^{-1}AP$ 得 $AP=PB$，而
+$$AP=A(\alpha,\ A\alpha,\ A^{2}\alpha)=(A\alpha,\ A^{2}\alpha,\ A^{3}\alpha) .$$
+把三个向量在基 $(\alpha,A\alpha,A^{2}\alpha)$ 下的坐标竖排成 $B$ 的各列：
+$$A\alpha=0\cdot\alpha+1\cdot A\alpha+0\cdot A^{2}\alpha \Rightarrow (0,1,0)^{\mathrm T} ,$$
+$$A^{2}\alpha=0\cdot\alpha+0\cdot A\alpha+1\cdot A^{2}\alpha \Rightarrow (0,0,1)^{\mathrm T} ,$$
+由题设 $A^{3}\alpha+2A^{2}\alpha=3A\alpha$，即
+$$A^{3}\alpha=0\cdot\alpha+3\cdot A\alpha-2\cdot A^{2}\alpha \Rightarrow (0,3,-2)^{\mathrm T} .$$
+故
+$$B=\begin{pmatrix}0&0&0\\ 1&0&3\\ 0&1&-2\end{pmatrix} .$$
+
+由 $B=P^{-1}AP$ 得
+$$P^{-1}(A+E)P=P^{-1}AP+E=B+E ,$$
+故 $A+E$ 与 $B+E$ 相似，行列式相等：
+$$|A+E|=|B+E|=\begin{vmatrix}1&0&0\\ 1&1&3\\ 0&1&-1\end{vmatrix} .$$
+按第一行展开：
+$$=1\cdot\begin{vmatrix}1&3\\ 1&-1\end{vmatrix}=1\cdot(-1-3)=-4 .$$
+
+故
+$$|A+E|=-4 .$$
+
+@考点
+把"$A$ 在一组基上的作用"写成 $AP=PB$，$B$ 的列是像向量的坐标；相似矩阵的行列式相等，且 $A\sim B\Rightarrow A+kE\sim B+kE$；三阶行列式的计算。
+
+易混：$B$ 的第 $j$ 列是 $A\cdot(P\ \text{的第}\ j\ \text{列})$ 在基下的坐标，**竖排成列**而不是横排成行；这一点与"过渡矩阵"的约定一致。
+
+@易错
+1. 把坐标横着放，得到 $B$ 的转置，行列式虽相同但若题目问别的量就会错。
+2. 由 $A^{3}\alpha+2A^{2}\alpha=3A\alpha$ 移项时符号出错，写成 $A^{3}\alpha=3A\alpha+2A^{2}\alpha$。
+3. 直接算 $|A|+|E|$（行列式对加法不可拆）。
+4. 忘记 $A+E$ 与 $B+E$ 相似这一步，不敢用 $B$ 代替 $A$。
+
+[63]
+@切入点
+分段函数在分界点 $x=b$ 处**可导**，要同时满足两个条件（顺序上先连续、后导数相等）：
+$$\text{连续}: a\sqrt b=\ln b ; \text{导数相等}: \frac{a}{2\sqrt b}=\frac1b .$$
+**可导必连续，所以两个方程都要列，缺一不可**——只用导数条件会少一个方程，定不出两个未知数。
+
+解方程组时，**先用导数条件解出 $a$ 与 $b$ 的关系**（它形式更简单）：
+$$\frac{a}{2\sqrt b}=\frac1b \Longrightarrow a=\frac{2\sqrt b}{b}=\frac{2}{\sqrt b} .$$
+再代入连续条件：
+$$\frac{2}{\sqrt b}\cdot\sqrt b=2=\ln b \Longrightarrow b=\mathrm e^{2} ,$$
+$$a=\frac{2}{\sqrt{\mathrm e^{2}}}=\frac{2}{\mathrm e} .$$
+
+**这里 $a\sqrt b$ 恰好约掉根号得到常数 $2$，是本题设计得最巧的一步**：代入顺序反过来（先解连续条件）就没这么干净。
+
+顺带检验：四个选项里只有 A 是 $a=\frac2{\mathrm e}$、$b=\mathrm e^{2}$。也可以反过来把选项代进两个方程验证，同样很快。
+
+@解答
+$f$ 在 $(0,+\infty)$ 内可导，特别地在分界点 $x=b$ 处可导，故必须
+（i）在 $x=b$ 处连续；（ii）左右导数相等。
+
+**（i）连续。**
+$$\lim_{x\to b^{-}}f(x)=a\sqrt b , \lim_{x\to b^{+}}f(x)=\ln b , f(b)=a\sqrt b ,$$
+故
+$$a\sqrt b=\ln b .   (1)$$
+
+**（ii）导数相等。** 由 $(a\sqrt x)'=\dfrac{a}{2\sqrt x}$、$(\ln x)'=\dfrac1x$，
+$$\frac{a}{2\sqrt b}=\frac{1}{b} .   (2)$$
+
+由 $(2)$：
+$$a=\frac{2\sqrt b}{b}=\frac{2}{\sqrt b} .$$
+代入 $(1)$：
+$$\frac{2}{\sqrt b}\cdot\sqrt b=\ln b \Longrightarrow 2=\ln b \Longrightarrow b=\mathrm e^{2} ,$$
+从而
+$$a=\frac{2}{\sqrt{\mathrm e^{2}}}=\frac{2}{\mathrm e} .$$
+
+故 $a=\dfrac2{\mathrm e}$，$b=\mathrm e^{2}$，选 **A**。
+
+（验证：$b=\mathrm e^{2}$ 时 $a\sqrt b=\frac2{\mathrm e}\cdot\mathrm e=2=\ln\mathrm e^{2}$ ✓；$\frac{a}{2\sqrt b}=\frac{2/\mathrm e}{2\mathrm e}=\frac{1}{\mathrm e^{2}}=\frac1b$ ✓。）
+
+@考点
+分段函数在分界点可导的充要条件（连续 $+$ 左右导数相等）；$\sqrt x$ 与 $\ln x$ 的导数；二元方程组的求解顺序技巧。
+
+易混：可导 $\Rightarrow$ 连续，所以连续条件不能省；但连续 $\not\Rightarrow$ 可导，两个条件都必须写。若只用导数条件，会得到一族 $(a,b)$ 而无法唯一确定。
+
+@易错
+1. 只列导数相等一个方程。
+2. $(a\sqrt x)'$ 算成 $\frac{a}{\sqrt x}$（漏掉 $\frac12$）。
+3. 解方程时先代连续条件，导致式子含 $\ln b$ 与 $\sqrt b$ 纠缠难解。
+4. 把 $b=\mathrm e^{2}$ 与 $a=\frac2{\mathrm e}$ 对应错，选成 B 或 C。
