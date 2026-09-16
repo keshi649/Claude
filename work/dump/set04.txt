@@ -1,0 +1,378 @@
+[1] (二次型)
+设 $E$ 是 $n$ 阶单位矩阵，则 $n$（$n$ 为偶数）阶实对称矩阵 $A$ 正定的充分必要条件是（　　）.
+A. 存在 $n$ 阶矩阵 $C$，使得 $A=C^{\mathrm T}C$
+B. 二次型 $X^{\mathrm T}AX$ 的负惯性指数为 $0$
+C. 存在可逆矩阵 $P$，使得 $P^{-1}AP=E$
+D. $A$ 的伴随矩阵 $A^{*}$ 与 $E$ 合同
+
+[2] (一元微分)
+设 $y=y(x)$ 由方程 $\sqrt{x^{2}+y^{2}}=e^{\arctan\frac{y}{x}}$ 确定，求 $\dfrac{\mathrm{d}^{2}y}{\mathrm{d}x^{2}}$.
+
+[3] (随机事件)
+设 $P(A)>0$，$P(B)>0$，$P(A\mid B)=P(A)$，则下列选项中不正确的是（　　）.
+A. $A$ 与 $B$ 互不相容
+B. $A$ 与 $B$ 相容
+C. $P(B\mid A)=P(B)$
+D. $P(\overline A\mid\overline B)=P(\overline A)$
+
+[4] (曲线曲面积分)
+设光滑有向曲面 $S$ 的边界曲线为光滑有向闭曲线 $L$，方向符合右手法则，则
+$$I=\oint_L \mathbf{grad}\,\sin(x+y+z)\cdot d\mathbf s=\underline{\qquad}$$
+
+[5] (空间解析几何)
+求直线
+$$L:\frac{x-1}{3}=\frac{y-2}{4}=\frac{z+1}{1}$$
+绕直线
+$$\begin{cases}x=2,\\ y=3\end{cases}$$
+旋转一周所得的曲面方程.
+
+[6] (大数定律)
+设随机变量序列 $X_1,X_2,\cdots,X_n$ 独立，$X_i$ 的分布律为
+| $X_i$ | $-ia$ | $0$ | $ia$ |
+|---|---|---|---|
+| $p$ | $\frac{1}{2i^2}$ | $1-\frac{1}{i^2}$ | $\frac{1}{2i^2}$ |
+其中 $i=1,2,\cdots,n$，利用大数定律证明：
+$$\lim_{n\to\infty}P\Big\{\Big|\frac{1}{n}\sum_{i=1}^{n}X_i\Big|\geqslant\varepsilon\Big\}=0.$$
+
+[7] (微分方程)
+微分方程
+$$y'\sec^2 y + \frac{x}{1 + x^2}\tan y = x$$
+满足 $y(0) = 0$ 的特解为 ＿＿＿＿.
+
+[8] (相似矩阵)
+设 $A, B$ 是 $n$ 阶可逆矩阵，且 $A^{-1} \sim B^{-1}$，则下列结果：
+① $AB \sim BA$；② $A \sim B$；③ $A^{2} \sim B^{2}$；④ $A^{\mathrm{T}} \sim B^{\mathrm{T}}$
+中正确的个数为（　　）.　A. 1　B. 2　C. 3　D. 4
+
+[9] (无穷级数)
+设 $\sum\limits_{n=0}^{\infty} a_n x^n$ 的收敛半径为 $3$，则
+$$\sum_{n=0}^{\infty} n a_n (x + 1)^{n+1}$$
+的收敛区间为 ＿＿＿＿.
+
+[10] (矩阵)
+设 $A, B$ 均为 $n$ 阶矩阵，$E$ 为 $n$ 阶单位矩阵，矩阵
+$$\begin{bmatrix} O & A \\ B & E \end{bmatrix}, \qquad \begin{bmatrix} A & B \\ O & E \end{bmatrix}, \qquad \begin{bmatrix} A & AB \\ E & B \end{bmatrix}$$
+的秩分别为 $r_{1}, r_{2}, r_{3}$，则下列选项中正确的是（　　）.
+A. $r_{2} \geqslant r_{1} \geqslant r_{3}$　B. $r_{3} \geqslant r_{1} \geqslant r_{2}$　C. $r_{1} \geqslant r_{2} \geqslant r_{3}$　D. $r_{3} \geqslant r_{2} \geqslant r_{1}$
+
+[11] (多维随机变量)
+设 $(X,Y)$ 服从区域 $G=\{(x,y)\mid 0\leqslant x\leqslant2,0\leqslant y\leqslant1\}$ 上的均匀分布，求 $Z=XY$ 的分布函数与概率密度.
+
+[12] (曲线曲面积分)
+设 $D=\{(x,y)\mid (x-1)^2+(y-1)^2\leqslant 2\}$，$L$ 为 $D$ 的边界曲线，取顺时针方向，
+$$I_1=\int_L x\,dx+\frac{(x+y)^2}{8}\,dy$$
+$$I_2=\int_L x\,dx+\frac{(x-y)^2}{8}\,dy$$
+$$I_3=\int_L \frac{(x+y)^2}{8}\,dx+y\,dy$$
+则（　）．A. $I_1>I_2>I_3$　B. $I_3>I_2>I_1$　C. $I_2>I_3>I_1$　D. $I_2>I_1>I_3$
+
+[13] (多元微分)
+设 $f(x,y)=\arcsin\sqrt{x^{2}+y^{4}}$，则下列选项中正确的是（　）.
+A. $f'_x(0,0)$ 存在，$f'_y(0,0)$ 存在　　B. $f'_x(0,0)$ 不存在，$f'_y(0,0)$ 存在
+C. $f'_x(0,0)$ 不存在，$f'_y(0,0)$ 不存在　　D. $f'_x(0,0)$ 存在，$f'_y(0,0)$ 不存在
+
+[14] (线性方程组)
+设 $n$ 阶矩阵 $A$ 满足 $|A| = 0$，$A_{ij}$ 为 $|A|$ 的元素 $a_{ij}$ 对应的代数余子式，且 $A_{11} \neq 0$，求方程组 $A^{*}x = 0$ 的基础解系和通解.
+
+[15] (无穷级数)
+$$\lim_{n \to \infty} \frac{1}{n} \sum_{k=1}^{n} \frac{1}{3^k}(1 + \frac{1}{k})^{k^2} = \underline{\qquad\qquad}.$$
+
+[16] (数字特征)
+设随机变量 $X_1,X_2,\cdots,X_n$ 独立同分布，且有相同的概率密度，则概率 $P\{X_n>\min\{X_1,X_2,\cdots,X_{n-1}\}\}=$ ______.
+
+[17] (微分方程)
+设 $L$ 是一条平面曲线，其上任意一点 $P(x, y)\ (x > 0)$ 到原点的距离恒等于该点处的切线在 $y$ 轴上的截距，且 $L$ 过点 $(\frac{1}{2}, 0)$. 求：
+（Ⅰ）曲线 $L$ 的方程；
+（Ⅱ）$L$ 位于第一象限部分的一条切线，使该切线与 $L$ 以及两坐标轴所围的面积最小.
+
+[18] (极限连续)
+函数
+$$f(x)=\frac{2+e^{\frac{1}{x}}}{1+e^{\frac{2}{x}}}+\frac{\sin x}{|x|}$$
+在 $x=0$ 处为（　）.
+A. 可去间断点　　B. 跳跃间断点　　C. 无穷间断点　　D. 振荡间断点
+
+[19] (二次型)
+设二次型 $f(x_1,x_2,x_3)=X^{\mathrm T}AX\ (A^{\mathrm T}=A)$ 经过正交变换 $X=QY$ 化为标准形 $2y_1^2-y_2^2-y_3^2$，又 $A^{*}\alpha=\alpha$，其中 $\alpha=(1,1,-1)^{\mathrm T}$，$A^{*}$ 是 $A$ 的伴随矩阵.
+（Ⅰ）求正交矩阵 $Q$ 及实对称矩阵 $A$；
+（Ⅱ）若正定矩阵 $B$ 满足 $B^2=A+2E$，求 $B$.
+
+[20] (一元积分)
+设 $f(x)$ 是连续函数，$F(x)$ 是 $f(x)$ 的原函数，则（　）.
+A. 当 $f(x)$ 为奇函数时，$F(x)$ 必为偶函数
+B. 当 $f(x)$ 为偶函数时，$F(x)$ 必为奇函数
+C. 当 $f(x)$ 为周期函数时，$F(x)$ 必为周期函数
+D. 当 $f(x)$ 为单调函数时，$F(x)$ 必为单调函数
+
+[21] (向量组)
+设 $\alpha_{1} = (a_{1},a_{2},a_{3})^{\mathrm{T}}$，$\alpha_{2} = (b_{1},b_{2},b_{3})^{\mathrm{T}}$，$\alpha_{3} = (c_{1},c_{2},c_{3})^{\mathrm{T}}$，其中 $a_{i}^{2} + b_{i}^{2} \neq 0\ (i=1,2,3)$，则 3 条直线
+$$a_{i}x + b_{i}y + c_{i} = 0 \qquad (i = 1,2,3)$$
+恰好仅交于一点的充分必要条件是（　　）.
+A. $\mathrm{r}(\alpha_{1},\alpha_{2},\alpha_{3}) = 3$　B. $\mathrm{r}(\alpha_{1},\alpha_{2},\alpha_{3}) = 1$　C. $\mathrm{r}(\alpha_{1},\alpha_{2},\alpha_{3}) = \mathrm{r}(\alpha_{1},\alpha_{2})$　D. $\mathrm{r}(\alpha_{1},\alpha_{2},\alpha_{3}) = \mathrm{r}(\alpha_{1},\alpha_{2}) = 2$
+
+[22] (重积分)
+设 $D:2x\leqslant x^{2}+y^{2}$，$0\leqslant y\leqslant x\leqslant 2$，则
+$$I=\iint_{D}\frac{\mathrm{d}x\mathrm{d}y}{\sqrt{x^{2}+y^{2}}}=\underline{\qquad}$$
+
+[23] (曲线曲面积分)
+设曲面 $S:x^2+y^2+z^2=2x$，其密度为 $\rho=x^2+y^2+z^2$，则曲面 $S$ 的质量 $m=\underline{\qquad}$．
+
+[24] (一维随机变量)
+在伯努利试验中，设事件发生的概率 $p=\dfrac{3}{4}$，$X$ 表示首次发生所需试验次数，$n$ 为正整数，则
+$$\sum_{n=1}^{\infty}P\{X=2n\}=\underline{\hspace{3em}}.$$
+
+[25] (多元微分)
+曲面 $z=x^{2}+y^{2}-1$ 在点 $P(2,1,4)$ 处的切平面方程为________，法线方程为________.
+
+[26] (无穷级数)
+将
+$$f(x) = \begin{cases} 1, & 1 < x < 2, \\ 3 - x, & 2 \leqslant x \leqslant 3 \end{cases}$$
+展开为以 $2$ 为周期的傅里叶级数.
+
+[27] (矩阵)
+设 $\alpha, \beta$ 是 $n$ 维列向量，且 $\alpha^{\mathrm{T}}\beta = 2$，证明：$A = E + \alpha\beta^{\mathrm{T}}$ 可逆，并求 $A^{-1}$.
+
+[28] (一元微分)
+设 $f(x)$ 在 $[0,1]$ 上二阶可导，且
+$$f(0)=f(1)=2\int_{\frac{1}{2}}^{1}f(x)\,\mathrm{d}x$$
+证明：
+$$|f'(0)|+|f'(1)|\leqslant 1$$
+
+[29] (微分方程)
+方程 $y'' + 2y' + y = xe^x$ 满足 $y(0) = 0, y'(0) = 0$ 的特解为 ＿＿＿＿.
+
+[30] (相似矩阵)
+设 $\alpha, \beta$ 为 3 维单位列向量，且 $\alpha^{\mathrm{T}}\beta = 0$，记 $A = \alpha\beta^{\mathrm{T}} + \beta\alpha^{\mathrm{T}}$.
+（Ⅰ）证明：$A$ 相似于对角矩阵；
+（Ⅱ）若存在 3 维列向量 $\gamma \neq 0$，使得 $A\gamma = 0$，记 $P = (\gamma,\ 2(\alpha+\beta),\ \beta-\alpha)$，求 $P^{-1}AP$.
+
+[31] (一元微分)
+设 $f(x)$ 在 $x=0$ 的某邻域内连续，$f(0)=0$，$\displaystyle\lim_{x\to 0}\frac{f(x)}{1-\cos x}=2$，则 $f(x)$ 在 $x=0$ 处（　）.
+A. 不可导　　B. 可导且 $f'(0)\neq 0$　　C. 取得极大值　　D. 取得极小值
+
+[32] (曲线曲面积分)
+一个体积为 $V$、表面积为 $S$（不含底面）的雪堆，融化速度为 $\dfrac{dV}{dt}=-aS$（$a>0$ 为常数），设融化期间雪堆形状保持为
+$$z=h-\frac{x^2+y^2}{h}\quad (z>0)$$
+其中 $h=h(t)$，问一个高度为 $h_0\ (h_0>0)$ 的雪堆全部融化需要多长时间？
+
+[33] (多维随机变量)
+设二维随机变量 $(X,Y)$ 的概率密度为
+$$f(x,y)=\frac{1}{k}(1+xy)\mathrm e^{-\frac{1}{2}(x^2+y^2)}\qquad (k>0,\ (x,y)\in\mathbf R^2).$$
+（Ⅰ）求 $k$ 的值，并判别 $X$ 与 $Y$ 是否相互独立；
+（Ⅱ）若 $Z$ 服从区间 $[-\pi,\pi]$ 上的均匀分布，且 $X$ 与 $Z$ 相互独立，求 $U=X+Z$ 的概率密度（可用 $\Phi(x)$ 表示）.
+
+[34] (极限连续)
+极限
+$$\lim_{x\to 0}\frac{(\cos x-e^{\frac{x^{2}}{2}})\sin x^{2}}{\frac{x^{2}}{2}+1-\sqrt{1+x^{2}}}=\underline{\qquad\qquad}$$
+
+[35] (线性方程组)
+设有方程组
+$$（Ⅰ） \begin{cases} x_{1} + x_{2} = 0, \\ x_{2} - x_{4} = 0, \end{cases} \qquad （Ⅱ） Ax = 0$$
+其中（Ⅱ）的基础解系为 $\alpha_{1} = (-1,2,2,1)^{\mathrm{T}}$，$\alpha_{2} = (0,-1,-1,0)^{\mathrm{T}}$，求方程组（Ⅰ）与（Ⅱ）的非零公共解.
+
+[36] (无穷级数)
+$f(x) = \int_0^x e^{-t^2}\,dt$ 展开为 $x$ 的幂级数为 ＿＿＿＿.
+
+[37] (微分方程)
+设 $f(x)$ 在 $[0, 1]$ 上有连续导数，$f(0) = 1, f'_+(0) = 1$，且
+$$\iint\limits_D f''(x + y)\,dx\,dy = \iint\limits_D [f(x + y) + (x - y)^3]\,dx\,dy,$$
+其中 $D = \{(x, y) \mid 0 \leqslant y \leqslant t - x,\ 0 \leqslant x \leqslant t\}\ (0 < t \leqslant 1)$，求 $f(x)$.
+
+[38] (曲线曲面积分)
+设平面曲线 $L$ 为 $|\ln x|+|\ln y|=1$，取逆时针方向，计算
+$$I=\oint_L \frac{-y\,dx+x\,dy}{|\ln x|+|\ln y|}$$
+
+[39] (数字特征)
+设随机变量 $X$ 的分布函数 $F(x)=0.3\Phi\!\Big(\dfrac{x-4}{2}\Big)+0.7\Phi\!\Big(\dfrac{x+1}{3}\Big)$，其中 $\Phi(x)$ 为标准正态分布的分布函数，则 $EX=$ ______.
+
+[40] (重积分)
+设 $V$ 是由曲面 $z=\sqrt{1-x^{2}-y^{2}}$ 与 $z+1=\sqrt{x^{2}+y^{2}}$ 所围成的区域，计算
+$$I=\iiint_{V}z^{2}\mathrm{d}V.$$
+
+[41] (多元微分)
+曲线
+$$L:\begin{cases}x^{2}+y^{2}=10,\\ x^{2}+z^{2}=10\end{cases}$$
+在点 $P(3,1,1)$ 处的切线方程为________，法平面方程为________.
+
+[42] (一元积分)
+设 $\displaystyle F(x)=\int_{0}^{x}tf(x^{2}-t^{2})\,\mathrm{d}t$，$f(x)$ 在 $x=0$ 某邻域内可导，且 $f(0)=0$，$f'(0)=1$，则
+$$\lim_{x\to 0}\frac{F(x)}{x^{4}}=\underline{\qquad\qquad}$$
+
+[43] (矩阵)
+设 $A, B$ 均为 $n$ 阶可逆矩阵，且 $AB = B^{-1}A^{-1}$，则 $\mathrm{r}(E+BA) + \mathrm{r}(E-BA) = \underline{\hspace{2cm}}$.
+
+[44] (一元微分)
+一动点 $P$ 在曲线 $9y=4x^{2}$ 上运动，已知点 $P$ 横坐标变化速率为 $30\ \mathrm{cm}/\mathrm{s}$，问：当点 $P$ 经过 $(3,4)$ 时，从原点到点 $P$ 的距离 $S$ 的变化速率为多少？（设坐标轴的单位长为 $1\ \mathrm{cm}$）
+
+[45] (多元微分)
+设 $F(x,y)$ 在点 $(x_0,y_0)$ 的某邻域内有二阶连续偏导数，且 $F(x_0,y_0)=0$，$F'_x(x_0,y_0)=0$，$F'_y(x_0,y_0)>0$，$F''_{xx}(x_0,y_0)<0$，则由方程 $F(x,y)=0$ 确定的隐函数 $y=y(x)$ 在 $x=x_0$ 处（　）.
+A. 取得极小值　　B. 取得极大值　　C. 不取得极值　　D. 不能确定是否取得极值
+
+[46] (曲线曲面积分)
+设球面为 $x^2+y^2+z^2=R^2$，柱面为 $x^2+y^2=Rx\ (R>0)$，球面在柱体内的面积为 $S_1$，柱面在球体内的面积为 $S_2$，求 $\dfrac{S_1}{S_2}$．
+
+[47] (二次型)
+设二次型 $f(x_1,x_2,x_3)=x_1^2+x_2^2+x_3^2-4x_1x_2-4x_1x_3-4x_2x_3$，则 $f(x_1,x_2,x_3)=1$ 在空间直角坐标系下表示的二次曲面为（　　）.
+A. 椭球面　B. 柱面　C. 单叶双曲面　D. 双叶双曲面
+
+[48] (数理统计)
+设总体 $X$ 与总体 $Y$ 相互独立，且都服从 $N(\mu,\sigma^2)$，$\overline{X}$ 与 $\overline{Y}$ 分别为来自总体 $X$、$Y$ 的样本均值，样本容量均为 $n$，则当 $n$ 固定时，$P\{|\overline{X} - \overline{Y}| > \sigma\}$ 的值随着 $\sigma$ 的增大（　）。
+A. 单调增加　　B. 单调减少　　C. 保持不变　　D. 增减性不确定
+
+[49] (空间解析几何)
+设平面 $\pi$ 与点 $P(1,2,1)$ 的距离为 $1$，且过直线
+$$L:\begin{cases}3x-2y+2=0,\\ x-2y-z+6=0,\end{cases}$$
+求平面 $\pi$ 的方程.
+
+[50] (一维随机变量)
+设随机变量 $X$ 在 $(0,1)$ 内服从均匀分布，求 $Y=-2\ln X$ 的概率密度.
+
+[51] (极限连续)
+讨论函数
+$$f(x)=\lim_{n\to\infty}\frac{x^{n+2}-x^{-n}}{x^{n}+x^{-n}}$$
+的连续性.
+
+[52] (向量组)
+设向量组
+$$\alpha_{1} = (1,1,1,2)^{\mathrm{T}},\quad \alpha_{2} = (3,a+4,2a+5,a+7)^{\mathrm{T}},\quad \alpha_{3} = (4,6,8,10)^{\mathrm{T}},$$
+$$\alpha_{4} = (2,3,2a+3,5)^{\mathrm{T}},\quad \alpha = (0,1,3,b)^{\mathrm{T}}.$$
+（Ⅰ）求向量组 $\alpha_{1},\alpha_{2},\alpha_{3},\alpha_{4}$ 的秩及其一个极大线性无关组；
+（Ⅱ）若 $\alpha$ 不能由 $\alpha_{1},\alpha_{2},\alpha_{3},\alpha_{4}$ 线性表示，求 $a,b$ 的取值.
+
+[53] (无穷级数)
+将下列函数展开为 $x$ 的幂级数，并确定收敛域：
+（Ⅰ）$f_1(x) = \dfrac{1}{x^2 - 3x + 2}$；
+（Ⅱ）$f_2(x) = \ln(1 - x - 2x^2)$；
+（Ⅲ）$f_3(x) = \ln(x + \sqrt{1 + x^2})$；
+（Ⅳ）$f_4(x) = x \arctan x - \ln\sqrt{1 + x^2}$.
+
+[54] (微分方程)
+微分方程 $(1 + y^2)dx + (2x - 1)y\,dy = 0$ 的通解为 ＿＿＿＿.
+
+[55] (相似矩阵)
+（Ⅰ）设 $A$ 是 $n$ 阶实对称矩阵，且 $A^{2} = A$，$\mathrm{r}(A) = r\ (r < n)$，计算 $|3E - A|$；
+（Ⅱ）设 $A$ 是 $n$ 阶矩阵，且 $A^{2} = A$，$\mathrm{r}(A) = r\ (r < n)$，计算 $|3E - A|$.
+
+[56] (线性方程组)
+求方程组
+$$\begin{cases} 2x_{1} - x_{2} + 4x_{3} - 3x_{4} = -4, \\ x_{1} + x_{3} - x_{4} = -3, \\ 3x_{1} + x_{2} + x_{3} = 1, \\ 7x_{1} + 7x_{3} - 3x_{4} = 3 \end{cases}$$
+的通解.
+
+[57] (多元微分)
+设 $f(x,y)$ 有连续偏导数，在 $P(1,-2)$ 处有 $f'_x(1,-2)=1$，$f'_y(1,-2)=-1$，则 $f(x,y)$ 在 $P(1,-2)$ 处增加最快的方向为________.
+
+[58] (重积分)
+设 $D:x^{2}+y^{2}\leqslant 1$，则
+$$I=\iint_{D}\Big(\frac{x^{2}}{4}+\frac{y^{2}}{9}\Big)\mathrm{d}x\mathrm{d}y=\underline{\qquad}$$
+
+[59] (参数估计)
+设总体服从 $N(\mu,8)$，$X_1,X_2,\cdots,X_{36}$ 是来自总体 $X$ 的简单随机样本，$\overline{X} = \frac{1}{36}\sum_{i=1}^{36}X_i$，若以 $(\overline{X} - 1,\ \overline{X} + 1)$ 作为 $\mu$ 的置信区间，$\Phi(x)$ 为 $N(0,1)$ 的分布函数，则置信度为 $\underline{\qquad\qquad}$。
+
+[60] (曲线曲面积分)
+计算
+$$I=\int_L \frac{x\,dy-y\,dx}{x^2+y^2}$$
+其中 $L$ 是从点 $A(1,1)$ 沿直线到点 $B(-1,0)$，再沿曲线 $y=x^2-1$ 到点 $C(1,0)$．
+
+[61] (大数定律)
+设 $X$ 在区间 $[-1,b]$ 上服从均匀分布，由切比雪夫不等式有 $P\{|X-1|<\varepsilon\}\geqslant\dfrac{2}{3}$，则 $b=$ ______，$\varepsilon=$ ______.
+
+[62] (无穷级数)
+设曲线
+$$y = \int_0^{\frac{x}{n}} n\sqrt{\sin t}\,dt$$
+（$n$ 为正整数）在 $[0, n\pi]$ 上的全长为 $S_n$.
+（Ⅰ）求 $S_n$；
+（Ⅱ）求级数 $\sum\limits_{n=1}^{\infty} \dfrac{x^n}{S_n S_{n+1}}$ 的收敛域及和函数.
+
+[63] (微分方程)
+设 $f(x)$ 是连续函数，且
+$$f(x) = \cos x - \int_0^x (x - t) f(t)\,dt,$$
+求 $f(x)$.
+
+[64] (一元微分)
+设 $\displaystyle\lim_{x\to\infty}\big(\sqrt{ax^{2}-x+3}-2x\big)=b$，其中 $a,b$ 为常数，$a>0$，则曲线 $y=\sqrt{ax^{2}-x+3}$ 在 $(0,+\infty)$ 内的斜渐近线方程为 ______.
+
+[65] (数字特征)
+设随机变量 $X,Y,Z$ 满足 $EX=EY=1$，$EZ=-1$，$DX=DY=DZ=1$，$\rho_{XY}=0$，$\rho_{XZ}=\dfrac{1}{2}$，$\rho_{YZ}=-\dfrac{1}{2}$，求 $E(X+Y-2Z)$，$D(X+Y+Z)$.
+
+[66] (矩阵)
+设
+$$A = \begin{bmatrix} 1 & 0 & 0 \\ 0 & -2 & 0 \\ 0 & 0 & 1 \end{bmatrix}$$
+且 $A^{*}BA = 2BA - 8E$，求 $B$.
+
+[67] (一元积分)
+设 $\displaystyle\int_{-\infty}^{+\infty}f(x)\,\mathrm{d}x=a$（$a$ 为常数），$f(x)$ 为偶函数，$\displaystyle F(x)=\int_{-\infty}^{x}f(t)\,\mathrm{d}t$，则对任意 $x_{0}\in(-\infty,+\infty)$，$F(-x_{0})=$（　）.
+A. $-F(x_{0})$
+B. $F(x_{0})$
+C. $\dfrac{a}{2}-\displaystyle\int_{0}^{x_{0}}f(x)\,\mathrm{d}x$
+D. $a-\displaystyle\int_{0}^{x_{0}}f(x)\,\mathrm{d}x$
+
+[68] (多元微分)
+设可微函数 $f(x,y)$ 在点 $P(x,y)$ 处沿 $\boldsymbol{l}_1=(-1,0)$ 与 $\boldsymbol{l}_2=(0,-1)$ 的方向导数分别为 $x^{2}-y$ 与 $1-x$，且 $f(1,1)=-\dfrac{1}{3}$.
+（Ⅰ）求 $f(x,y)$；
+（Ⅱ）求 $f(x,y)$ 在 $D=\{(x,y)\mid 0\leqslant y\leqslant 7-x,\ 0\leqslant x\leqslant 7\}$ 上的最大值.
+
+[69] (多维随机变量)
+设随机变量 $X$ 与 $Y$ 相互独立，$X$ 服从 $p=0.6$ 的 $0-1$ 分布，$Y$ 的分布函数为
+$$F_Y(y)=\begin{cases}1-\mathrm e^{-y},&y\geqslant0,\\0,&y<0,\end{cases}$$
+记 $Z=X-Y$. 求：
+（Ⅰ）$P\{Z\leqslant-\tfrac{1}{2}\mid X=0\}$；（Ⅱ）$Z$ 的分布函数.
+
+[70] (曲线曲面积分)
+设 $\Sigma$ 为曲面 $z=2-x^2-y^2\ (x\geqslant 0,\ y\geqslant 0)$ 被柱面 $x^2+y^2=1$ 所截出部分的上侧，计算
+$$I=\iint_\Sigma yz\,dxdy+zx\,dydz+xy\,dzdx$$
+
+[71] (二次型)
+设 3 阶实对称矩阵 $A=(\alpha_1,\alpha_2,\alpha_3)$ 有二重特征值 $1$，且 $\alpha_1+2\alpha_2-\alpha_3=0$，$A^{*}$ 是 $A$ 的伴随矩阵.
+（Ⅰ）求正交变换 $X=QY$ 将二次型 $f(x_1,x_2,x_3)=X^{\mathrm T}AX$ 化为标准形；
+（Ⅱ）求方程组 $A^{*}X=0$ 的通解.
+
+[72] (无穷级数)
+将 $f(x) = xe^x$ 在 $x = 2$ 处展开为幂级数，并求 $f^{(n)}(2)$.
+
+[73] (微分方程)
+微分方程
+$$\frac{dy}{dx} = \frac{y - x}{y + x}$$
+满足 $y(1) = 0$ 的特解为 ＿＿＿＿.
+
+[74] (随机事件)
+设事件 $A,B$ 相互独立，$A,C$ 互不相容，且 $P(A)=0.4$，$P(B)=0.3$，$P(C)=0.4$，$P(B\mid C)=0.2$，求下列概率：
+（Ⅰ）$P(A\cup B)$；（Ⅱ）$P(C\mid A\cup B)$；（Ⅲ）$P(AB\mid\overline C)$.
+
+[75] (极限连续)
+设 $\{x_{n}\}$ 为数列，则下列结论中正确的是（　）.
+① 若 $\{\arctan x_{n}\}$ 收敛，则 $\{x_{n}\}$ 收敛；
+② 若 $\{\arctan x_{n}\}$ 单调，则 $\{x_{n}\}$ 收敛；
+③ 若 $x_{n}\in[-1,1]$，且 $\{x_{n}\}$ 收敛，则 $\{\arcsin x_{n}\}$ 收敛；
+④ 若 $x_{n}\in[-1,1]$，且 $\{x_{n}\}$ 单调，则 $\{\arcsin x_{n}\}$ 收敛.
+A. ①②　　B. ③④　　C. ①③　　D. ②④
+
+[76] (线性方程组)
+设矩阵
+$$A = \begin{bmatrix} a & 1 & 1 \\ 0 & a-1 & 0 \\ 1 & 1 & a \end{bmatrix} \text{ 不可逆}, \qquad \beta = \begin{bmatrix} b \\ 1 \\ 1 \end{bmatrix}$$
+已知方程组 $A^{\mathrm{T}}X = 0$ 的解均是 $\beta^{\mathrm{T}}X = 0$ 的解.
+（Ⅰ）求 $a,b$ 的值；（Ⅱ）求可逆矩阵 $P$，使得 $P^{-1}AP = \Lambda$.
+
+[77] (重积分)
+设 $f(x)$ 在 $[0,1]$ 上连续，且 $\displaystyle\int_{0}^{1}f(x)\mathrm{d}x=A$，则
+$$I=\int_{0}^{1}\mathrm{d}x\int_{x}^{1}f(x)f(y)\mathrm{d}y=\underline{\qquad}$$
+
+[78] (多元微分)
+设曲面 $S:(x-y)^{2}-z^{2}=1$，求坐标原点到 $S$ 的最短距离.
+
+[79] (一元微分)
+设 $f'(0)$ 存在，$f(0)=0$，且
+$$\lim_{x\to 0}\Big[1+\frac{1-\cos f(x)}{\sin x}\Big]^{\frac{1}{x}}=e$$
+则 $f'(0)=$ ______.
+
+[80] (相似矩阵)
+设
+$$A = \begin{bmatrix} 1 & 2 & 2 \\ 2 & 1 & 2 \\ 2 & 2 & 1 \end{bmatrix}$$
+求：（Ⅰ）$A$ 的全部特征值和特征向量；（Ⅱ）可逆矩阵 $P$，使得 $P^{-1}AP = \Lambda$；（Ⅲ）正交矩阵 $Q$，使 $Q^{-1}AQ = \Lambda$.
+
+[81] (向量组)
+设矩阵 $A_{5 \times 4}$ 的秩为 2，$\alpha_{1} = (1,1,2,3)^{\mathrm{T}}$，$\alpha_{2} = (-1,1,4,-1)^{\mathrm{T}}$，$\alpha_{3} = (5,-1,-8,9)^{\mathrm{T}}$ 是方程组 $Ax = 0$ 的解向量，求 $Ax = 0$ 的解空间的一组标准正交基.
+
+[82] (曲线曲面积分)
+设 $S$ 为 $z=x^2+y^2$ 介于 $z=0$ 与 $z=1$ 之间部分的下侧，计算
+$$I=\iint_S x^2\,dydz+z\,dxdy$$
+
+[83] (一维随机变量)
+设随机变量 $X$ 服从参数为 $\lambda$ 的指数分布，对 $X$ 进行三次独立重复观察，至少有一次观测值大于 3 的概率为 $\dfrac{26}{27}$，求 $\lambda$ 的值.

@@ -1,0 +1,349 @@
+[1] (矩阵)
+设 $A$ 为 $2n+1$ 阶正交矩阵，且 $|A| = 1$，证明：$A - E$ 不可逆.
+
+[2] (线性方程组)
+设
+$$A = \begin{bmatrix} -1 & 0 & 1 \\ -1 & 1 & a \end{bmatrix}, \qquad B = \begin{bmatrix} -1 & 1 \\ -1 & 1 \\ b & 2 \end{bmatrix}$$
+（Ⅰ）若方程组 $AX = 0$ 的解均是 $B^{\mathrm{T}}X = 0$ 的解，但这两个方程组不同解，求 $a,b$ 的值；
+（Ⅱ）若方程组 $AX = 0$ 与 $B^{\mathrm{T}}X = 0$ 有非零公共解，求 $a,b$ 的值，并求全部非零公共解.
+
+[3] (二次型)
+设二次型 $x^{\mathrm T}Ax=a(x_1^2+x_2^2+x_3^2)+2x_1x_2+2bx_1x_3+2x_2x_3$，在正交变换 $x=Qy$ 下的标准形为 $y_1^2+y_2^2+4y_3^2$，其中 $A^{\mathrm T}=A$.
+（Ⅰ）求 $a,b$ 的值及正交矩阵 $Q$；
+（Ⅱ）若正定矩阵 $B$ 满足 $B^2=A+A^{*}$，其中 $A^{*}$ 是 $A$ 的伴随矩阵，求 $B$.
+
+[4] (无穷级数)
+设 $a_0 = 3,\ a_1 = 5$，且
+$$na_n = \frac{2}{3}a_{n-1} - (n-1)a_{n-1} \quad (n > 1),$$
+证明：当 $|x| < 1$ 时，$\sum\limits_{n=0}^{\infty} a_n x^n$ 收敛，并求其和函数.
+
+[5] (多元微分)
+设 $u(x,y)$ 有二阶连续偏导数，利用变换 $\xi=x+ay$，$\eta=x+by$，将方程
+$$\frac{\partial^{2}u}{\partial x^{2}}+4\frac{\partial^{2}u}{\partial x\partial y}+3\frac{\partial^{2}u}{\partial y^{2}}=0$$
+化为 $\dfrac{\partial^{2}u}{\partial\xi\partial\eta}=0$，求 $a,b$ 的值.
+
+[6] (微分方程)
+设函数 $y(x)$ 满足 $y'' + 2ay' + b^2 y = 0\ (a > b > 0)$，且 $y(0) = 1, y'(0) = 1$，则
+$$\int_0^{+\infty} y(x)\,dx = \underline{\qquad\qquad}.$$
+
+[7] (参数估计)
+设 $X_1,X_2,\cdots,X_n$ 是来自总体 $X$ 的简单随机样本，$X$ 的概率密度为
+$$f(x) = \frac{1}{2\theta}e^{-\frac{|x|}{\theta}}, \quad -\infty < x < +\infty,\ \theta > 0$$
+求参数 $\theta$ 的矩估计量 $\hat{\theta}$ 及 $E(\hat{\theta}^2)$。
+
+[8] (数字特征)
+设 $X$ 与 $Y$ 的概率分布分别为
+| $X$ | 0 | 1 |
+|---|---|---|
+| $p$ | $\frac{1}{3}$ | $\frac{2}{3}$ |
+| $Y$ | $-1$ | 0 | 1 |
+|---|---|---|---|
+| $p$ | $\frac{1}{3}$ | $\frac{1}{3}$ | $\frac{1}{3}$ |
+且 $P\{X^2=Y^2\}=1$. 求：
+（Ⅰ）$(X,Y)$ 的概率分布；（Ⅱ）$\rho_{XY}$.
+
+[9] (重积分)
+计算
+$$I=\iint_{D}\operatorname{sgn}(x^{2}-y^{2}+2)\mathrm{d}x\mathrm{d}y,$$
+其中 $D:x^{2}+y^{2}\leqslant 4$.
+
+[10] (曲线曲面积分)
+设 $S$ 为平面 $x+y+z=4$ 被圆柱面 $x^2+y^2=1$ 截出的有限部分，则
+$$I=\iint_S z\,dS=\underline{\qquad}$$
+
+[11] (向量组)
+设 $\alpha_{1} = (1,1,1)^{\mathrm{T}}$，$\alpha_{2} = (1,0,-1)^{\mathrm{T}}$，$\alpha_{3} = (1,0,1)^{\mathrm{T}}$ 与 $\beta_{1} = (1,2,1)^{\mathrm{T}}$，$\beta_{2} = (3,3,3)^{\mathrm{T}}$，$\beta_{3} = (2,4,3)^{\mathrm{T}}$ 是 $\mathbf{R}^{3}$ 的两组基，则在两组基下有相同坐标的向量为 $\underline{\hspace{2cm}}$.
+
+[12] (大数定律)
+设随机变量 $X_1,X_2,\cdots,X_n$ 相互独立，记 $Y_n=X_1+X_2+\cdots+X_n$，根据列维—林德伯格中心极限定理，$Y_n$ 近似服从正态分布（$n$ 充分大），则只要 $X_1,X_2,\cdots,X_n$（　　）.
+A. 服从同一离散型分布
+B. 服从同一连续型分布
+C. 服从同一指数分布
+D. 具有相同的期望与方差
+
+[13] (无穷级数)
+设
+$$\sum_{n=1}^{\infty} (-1)^{n-1} u_n = 2, \quad \sum_{n=1}^{\infty} u_{2n-1} = 5,$$
+则 $\sum\limits_{n=1}^{\infty} u_n = \underline{\qquad\qquad}$.
+
+[14] (空间解析几何)
+求直线
+$$L:\frac{x+2}{3}=\frac{2-y}{1}=\frac{z+1}{2}$$
+在平面 $\pi:2x+3y+3z-8=0$ 上的投影直线方程.
+
+[15] (线性方程组)
+设 $A, B$ 均为 $n$ 阶矩阵，$\alpha, \beta$ 均为 $n$ 维列向量. 若 $\alpha$ 可由 $A$ 的列向量线性表示，$(\alpha^{\mathrm{T}},\beta^{\mathrm{T}})$ 不能由 $(A^{\mathrm{T}},B^{\mathrm{T}})$ 的行向量线性表示，则下列结论中正确的是（　　）.
+A. $\mathrm{r}(B,\beta) = \mathrm{r}(B)$　B. $\mathrm{r}(B,\beta) = \mathrm{r}(B) + 1$
+$$\text{C. } \mathrm{r}\begin{bmatrix} A^{\mathrm{T}} & B^{\mathrm{T}} \\ \alpha^{\mathrm{T}} & \beta^{\mathrm{T}} \end{bmatrix} = \mathrm{r}(A^{\mathrm{T}},B^{\mathrm{T}}) + 1 \qquad \text{D. } \mathrm{r}[(A,\alpha),B^{\mathrm{T}}] = \mathrm{r}\left[ (A^{\mathrm{T}},B^{\mathrm{T}}) \begin{bmatrix} A \\ B \end{bmatrix} \right]$$
+
+[16] (微分方程)
+设 $y_1(x), y_2(x), y_3(x)$ 是微分方程 $y'' + p(x)y' + q(x)y = f(x)$ 的三个线性无关的解，$f(x) \neq 0$，则该方程的通解为（　　）.
+A. $C_1 y_1(x) + C_2 y_2(x) + y_3(x)$
+B. $C_1 y_1(x) + (1 - 2C_1) y_2(x) + C_1 y_3(x)$
+C. $(C_1 - C_2) y_1(x) + C_2 y_2(x) + y_3(x)$
+D. $C_1 y_1(x) + C_2 y_2(x) + C_3 y_3(x)$　（$C_1 + C_2 + C_3 = 1$）
+
+[17] (多元微分)
+在第一象限内，过曲线 $3x^{2}+2xy+3y^{2}=a$ 上任一点作其切线，若切线与两坐标轴所围成的三角形面积的最小值为 $\dfrac{1}{4}$，求 $a$ 的值.
+
+[18] (数理统计)
+设总体 $X \sim N(0,\sigma^2)\ (\sigma > 0)$，$X_1,X_2,\cdots,X_n\ (n>1)$ 为来自总体 $X$ 的简单随机样本，$\overline{X}$ 为样本均值，$S^2$ 为样本方差，则下列选项中错误的是（　）。
+$$\text{A. } \frac{\sqrt{n}\,\overline{X}}{S} \sim t(n-1) \qquad \text{B. } \frac{n\overline{X}^2}{\sigma^2} + \frac{(n-1)S^2}{\sigma^2} \sim \chi^2(n)$$
+$$\text{C. } \frac{n\overline{X}^2}{S^2} \sim F(1,n-1) \qquad \text{D. } \frac{X_i^2}{\sigma^2} + \frac{(n-1)S^2}{\sigma^2} \sim \chi^2(n)$$
+
+[19] (一元积分)
+设 $f(x)$ 可导，对任意 $x,y$，有
+$$f(x+y)=\int_{x}^{x+y}\frac{t(t^{2}+1)}{f(t)}\,\mathrm{d}t+f(x)$$
+且 $f(1)=\sqrt{2}$，则 $f(x)=$ ______.
+
+[20] (曲线曲面积分)
+设 $L:x^2+y^2=R^2$，取顺时针方向，则
+$$I=\oint_L \frac{e^{x^2}-x^2y}{x^2+y^2}\,dx+\frac{xy^2-e^{y^2}}{x^2+y^2}\,dy=\underline{\qquad}$$
+
+[21] (矩阵)
+设 $n$ 阶非零实矩阵 $A$ 满足 $A^{\mathrm{T}} + A = O$，$B$ 为 $n$ 阶矩阵，矩阵
+$$\begin{bmatrix} A & E \\ -B & B \end{bmatrix}, \qquad \begin{bmatrix} A-E & O \\ A & AB \end{bmatrix}, \qquad \begin{bmatrix} A+E & O \\ B & A-E \end{bmatrix}$$
+的秩依次为 $r_{1}, r_{2}, r_{3}$，则（　　）.
+A. $r_{1} \geqslant r_{2} \geqslant r_{3}$　B. $r_{3} \geqslant r_{2} \geqslant r_{1}$　C. $r_{2} \geqslant r_{1} \geqslant r_{3}$　D. $r_{3} \geqslant r_{1} \geqslant r_{2}$
+
+[22] (极限连续)
+设 $y=y(x)$ 是方程 $y''+2y'+y=e^{3x}$ 的解，且满足 $y(0)=y'(0)=0$，则当 $x\to 0$ 时，与 $y(x)$ 为等价无穷小的是（　）.
+A. $\sin x^{2}$　　B. $\sin x$　　C. $\ln(1+x^{2})$　　D. $\ln\sqrt{1+x^{2}}$
+
+[23] (一元微分)
+设气体以 $100\ \mathrm{cm}^{3}/\mathrm{s}$ 的速率注入球状气球，求当半径为 $10\ \mathrm{cm}$ 时，气球半径增加的速率.
+
+[24] (相似矩阵)
+设 3 阶实对称矩阵 $A$ 的特征值为 $1, 2, -1$，特征值 1 与 2 的特征向量分别为 $\alpha_{1} = (2,3,-1)^{\mathrm{T}}$ 与 $\alpha_{2} = (1,a,2a)^{\mathrm{T}}$，$A^{*}$ 是 $A$ 的伴随矩阵，则方程组 $(A^{*} - 2E)X = 0$ 的通解是 $\underline{\hspace{2cm}}$.
+
+[25] (二次型)
+设实对称矩阵 $A=(a_{ij})_{3\times3}$ 有二重特征值 $1$，且 $\sum\limits_{i=1}^{3}a_{ij}=0\ (j=1,2,3)$.
+（Ⅰ）记 $X=(x_1,x_2,x_3)^{\mathrm T}$，求方程 $X^{\mathrm T}AX=0$ 的全部解；
+（Ⅱ）求可逆矩阵 $P$，使得 $X^{\mathrm T}(2E-A)X=\|PX\|^2$.
+
+[26] (无穷级数)
+设 $\sum\limits_{n=1}^{\infty} u_n\ (u_n > 0)$ 发散，$S_n = u_1 + u_2 + \cdots + u_n$.
+（Ⅰ）求 $\sum\limits_{n=1}^{\infty} (\dfrac{1}{S_n} - \dfrac{1}{S_{n+1}})$ 的和；
+（Ⅱ）证明：$\sum\limits_{n=1}^{\infty} \dfrac{u_n}{S_n^2}$ 收敛.
+
+[27] (曲线曲面积分)
+设 $f(y)$ 有连续导数，$f(0)=0$，曲线 $\overset{\frown}{OA}$ 的极坐标方程为 $r=a(1-\cos\theta)$（$a>0$，$0\leqslant\theta\leqslant\pi$），$O(0,0)$ 与 $A$ 分别对应 $\theta=0$ 与 $\theta=\pi$，计算
+$$I=\int_{\overset{\frown}{OA}}[f(y)e^{x}-\pi y]\,dx+[f'(y)e^{x}-\pi]\,dy$$
+
+[28] (数字特征)
+设随机变量 $X$ 的概率密度为 $f(x)=\dfrac{1}{\sqrt\pi}\mathrm e^{-x^2+2x-1}\ (-\infty<x<+\infty)$，则 $E(X^2)=$ ______.
+
+[29] (微分方程)
+设 $f(x)$ 有二阶连续导数，且
+$$f(x) = \int_0^x f(1 - t)\,dt + 1,$$
+则 $f(x) = \underline{\qquad\qquad}$.
+
+[30] (多维随机变量)
+设随机变量 $X$ 与 $Y$ 相互独立，$X$ 服从二项分布 $B\!\big(4,\tfrac{1}{2}\big)$，$Y$ 服从 $\lambda=1$ 的泊松分布，则概率 $P\{1<\max\{X,Y\}\leqslant3\}=$ ______.
+
+[31] (一维随机变量)
+设 $X\sim N(0,\sigma^2)$，$X$ 在区间 $(a,b)$ 内取值的概率最大，其中 $a>0$，则 $\sigma^2=$ ______.
+
+[32] (重积分)
+设 $D=\{(x,y)\mid 0\leqslant y\leqslant 1-x,\ 0\leqslant x\leqslant 1\}$，则
+$$\iint_{D}\mathrm{e}^{\frac{x}{x+y}}\mathrm{d}x\mathrm{d}y=\underline{\qquad}$$
+
+[33] (多元微分)
+设椭圆
+$$\begin{cases}z=x^{2}+y^{2},\\ x+y+z=4\end{cases}$$
+上的点 $(x,y,z)$ 到原点的距离为 $d$，求其最值以及使得 $d$ 取最大和最小的点.
+
+[34] (矩阵)
+设
+$$A = \begin{bmatrix} 1 & 0 & 1 \\ 0 & 2 & 0 \\ 1 & 0 & 1 \end{bmatrix}$$
+则 $A^{n} = \underline{\hspace{2cm}}$.
+
+[35] (极限连续)
+$$\lim_{x\to 0}\frac{e^{x^{2}}-e^{2-2\cos x}}{e^{x^{4}}-1}=\underline{\qquad\qquad}$$
+
+[36] (曲线曲面积分)
+设在 $D=\{(x,y)\mid y>0\}$ 内 $f(x,y)$ 有一阶连续偏导数，$f(x,y)\neq 0$，且对任意 $t>0$ 有 $f(tx,ty)=t^2f(x,y)$．证明：对 $D$ 内任意分段光滑的有向简单闭曲线 $L$，都有
+$$\oint_L \frac{y}{f(x,y)}\,dx-\frac{x}{f(x,y)}\,dy=0$$
+
+[37] (线性方程组)
+设 $A$ 为 3 阶矩阵，$\alpha_{1} = (1,2,-2)^{\mathrm{T}}$，$\alpha_{2} = (2,1,-1)^{\mathrm{T}}$，$\alpha_{3} = (1,1,a)^{\mathrm{T}}\ (a \neq -1)$ 是非齐次线性方程组 $AX = b$ 的三个解，$A^{*}$ 是 $A$ 的伴随矩阵，则（　　）.
+A. $AX = 0$ 与 $A^{*}X = 0$ 同解
+B. $A^{*}X = 0$ 的解均是 $AX = 0$ 的解，但二者不同解
+C. $AX = 0$ 的解均是 $A^{*}X = 0$ 的解，但二者不同解
+D. $AX = 0$ 与 $A^{*}X = 0$ 没有非零公共解
+
+[38] (一元积分)
+设 $\displaystyle\int_{1}^{+\infty}\frac{\mathrm{d}x}{x(a+x^{3})}=\frac{1}{3}\ln 2$（$a>0$），则 $a=$ ______.
+
+[39] (微分方程)
+微分方程
+$$(1 + e^{x/y})dx + e^{x/y}(1 - \frac{x}{y})dy = 0 \quad (y > 0)$$
+的通解为 ＿＿＿＿.
+
+[40] (多元微分)
+设函数 $f(x,y)=\mathrm{e}^{-x}(ax+b-y^{2})$ 在点 $(-1,y_0)$ 处取得极大值，求 $a,b$ 满足的条件.
+
+[41] (向量组)
+设 $A$ 是 $m \times n$ 矩阵，$\alpha_{1},\alpha_{2},\cdots,\alpha_{t}$ 是 $n$ 维列向量，向量组（Ⅰ）$\alpha_{1},\alpha_{2},\cdots,\alpha_{t}$，（Ⅱ）$A\alpha_{1},A\alpha_{2},\cdots,A\alpha_{t}$，则下列选项中正确的是（　　）.
+A. 若（Ⅰ）线性无关，则（Ⅱ）线性无关　B. 若（Ⅱ）线性相关，则（Ⅰ）线性相关
+C. 若（Ⅱ）线性无关，则（Ⅰ）线性无关　D.（Ⅰ）与（Ⅱ）具有相同的线性相关性
+
+[42] (一元微分)
+设 $f(x)$ 在 $(-1,1)$ 内可导，且 $\displaystyle\lim_{x\to 0}\frac{f(x)}{x^{2}}=1$，则（　）.
+A. $\displaystyle\lim_{x\to 0}\frac{f'(x)}{x}$ 存在
+B. $\displaystyle\lim_{x\to 0}\frac{f'(x)}{x}$ 不存在
+C. $f'(0)=0$，$f''(0)=2$
+D. $f(0)$ 是 $f(x)$ 的极小值
+
+[43] (无穷级数)
+设非零函数 $f(x)$ 有连续导数，且满足 $f'(x) + 2xf^2(x) = 0,\ f(0) = 1$.
+（Ⅰ）求 $f(x)$；
+（Ⅱ）记 $a_n = \int_{-\infty}^{+\infty} [f(x)]^n\,dx\ (n = 1, 2, \cdots)$，求 $\sum\limits_{n=1}^{\infty} \dfrac{a_{n+1}}{a_n} x^n$ 的收敛域与和函数.
+
+[44] (重积分)
+设平面薄片（密度 $\rho=1$）由 $y^{2}=x^{3}$ 与直线 $y=x$ 所围，则 $D$ 对 $x$ 轴和 $y$ 轴的转动惯量分别为 $I_x=$________，$I_y=$________.
+
+[45] (二次型)
+已知 $A=\begin{pmatrix}1-a&a\\a&a\end{pmatrix}$，$X=(x_1,x_2)^{\mathrm T}$，二次型
+$$f(x_1,x_2)=\begin{vmatrix}A&X\\-X^{\mathrm T}&0\end{vmatrix},$$
+则 $A$ 正定是 $f(x_1,x_2)$ 正定的（　　）.
+A. 充分不必要条件　B. 必要不充分条件　C. 充分必要条件　D. 既不充分也不必要条件
+
+[46] (曲线曲面积分)
+设曲线 $L$ 为 $z=4-x^2-y^2$ 与 $z=3$ 的交线，从 $z$ 轴正向看是逆时针方向，计算
+$$I=\oint_L x^2y^3\,dx+z\,dy+y\,dz$$
+
+[47] (无穷级数)
+$$\lim_{n \to \infty} (\frac{1}{a} + \frac{2}{a^2} + \cdots + \frac{n}{a^n}) \quad (a > 1) = \underline{\qquad\qquad}.$$
+
+[48] (相似矩阵)
+设矩阵 $A$ 与 $B$ 相似，则必有（　　）.
+A. 矩阵 $\lambda E - A$ 与 $\lambda E - B$ 相等　B. $A, B$ 同时可逆或不可逆
+C. $A$ 和 $B$ 有相同的特征向量　D. $A$ 和 $B$ 均与同一个对角矩阵相似
+
+[49] (微分方程)
+设 $\overset{\frown}{OA}$ 是连接 $O(0,0)$ 和 $A(1,1)$ 的一段向上凸的曲线弧，$P(x, y)$ 为 $\overset{\frown}{OA}$ 上任一点，曲线弧 $\overset{\frown}{OP}$ 与有向线段 $\overline{OP}$ 所围图形的面积为 $x^2$，求曲线弧 $\overset{\frown}{OA}$ 的方程.
+
+[50] (多元微分)
+设 $f(x,y)=x^{3}+y^{3}-ax^{2}-by^{2}\ (a>0,b>0)$ 有极小值 $-8$，求 $a,b$ 的值，使得椭圆 $\dfrac{x^{2}}{a^{2}}+\dfrac{y^{2}}{b^{2}}=1$ 所围面积最大.
+
+[51] (数字特征)
+设随机变量 $X$ 与 $Y$ 相互独立，且 $X \sim N(0,1)$，$Y \sim B(4, \frac{1}{4})$，则 $XY$ 与 $X - Y$ 的相关系数为 $\underline{\qquad\qquad}$。
+
+[52] (一元微分)
+设 $f(x)$ 二阶可导，$f(0)=0$，$f'(0)=1$，$f''(0)=2$，求
+$$\lim_{x\to 0}\frac{f(x)-x}{x^{2}}$$
+
+[53] (一维随机变量)
+设随机变量 $X\sim N(\mu,\sigma^2)$，$\sigma>0$，$(x_0,y_0)$ 为其分布函数曲线 $y=F(x)$ 的拐点，则 $x_0=$ ______，$y_0=$ ______.
+
+[54] (多维随机变量)
+设 $X$ 与 $Y$ 相互独立且均服从参数为 $\lambda$ 的指数分布，则 $Z=\min\{X,Y\}$ 的分布函数 $F_Z(z)=$ ______.
+
+[55] (线性方程组)
+设 $f(x)$ 二阶可导，$f''(x) \neq 0$，$(a,f(a)), (b,f(b)), (c,f(c))$ 为曲线 $y = f(x)$ 上三个不同的点，
+$$\Pi_{1}: x + ay + f(a)z = f(b), \quad \Pi_{2}: x + by + f(b)z = f(c), \quad \Pi_{3}: x + cy + f(c)z = f(a)$$
+为三个平面，则（　　）.
+A. 三个平面交于一点　B. 三个平面交于一条直线　C. 三个平面相互平行　D. 三个平面两两相交，且交线互相平行
+
+[56] (极限连续)
+设当 $x\to 0$ 时，
+$$\alpha(x)=\tan x-\sin x,\qquad \beta(x)=\sqrt{1+x^{2}}-\sqrt{1-x^{2}},\qquad \gamma(x)=\int_{0}^{1-\cos x}\sin t\,\mathrm{d}t$$
+都是无穷小，将它们关于 $x$ 的阶数从低到高排列，正确的顺序为（　）.
+A. $\alpha(x),\beta(x),\gamma(x)$　　B. $\alpha(x),\gamma(x),\beta(x)$　　C. $\gamma(x),\alpha(x),\beta(x)$　　D. $\beta(x),\alpha(x),\gamma(x)$
+
+[57] (曲线曲面积分)
+设曲面 $S$ 为上半圆锥 $z=\sqrt{x^2+y^2}$ 被圆柱面 $x^2+y^2=2ax\ (a>0)$ 所截出的有限部分，计算
+$$I=\iint_S (x^2y+yz^2+z^2x)\,dS$$
+
+[58] (矩阵)
+设 $A$ 是 $n(n \geqslant 3)$ 阶可逆方阵，则下列结论中正确的是（　　）.
+① $(A^{*})^{-1} = (A^{-1})^{*}$　② $(kA)^{*} = k^{n-1}A^{*}\ (k \neq 0)$　③ $(A^{*})^{\mathrm{T}} = (A^{\mathrm{T}})^{*}$　④ $(A^{*})^{*} = |A|^{\,n-2}A$
+A. ①②　B. ②③　C. ③④　D. ①②③④
+
+[59] (无穷级数)
+判别下列级数的敛散性，若收敛，则判断是条件收敛还是绝对收敛：
+（Ⅰ）设 $\sum\limits_{n=1}^{\infty} (-1)^{n-1} a_n e^n$ 收敛，判别 $\sum\limits_{n=1}^{\infty} a_n$ 的敛散性；
+（Ⅱ）$\sum\limits_{n=1}^{\infty} (-1)^{n-1} \dfrac{1}{\ln(1 + n)}$；
+（Ⅲ）$\sum\limits_{n=1}^{\infty} \dfrac{(-1)^n}{\sqrt{n} - \ln n}$；
+（Ⅳ）$\sum\limits_{n=1}^{\infty} (-1)^{n-1}(\sqrt[n]{3} - 1)$.
+
+[60] (空间解析几何)
+设向量 $a=(2,-3,1)$，$b=(1,-2,3)$，$c=(2,1,2)$，向量 $r$ 满足 $r\perp a$，$r\perp b$，$\operatorname{Prj}_c r=14$，则 $r=$________.
+
+[61] (随机事件)
+设 $0<P(A)<1$，$0<P(B)<1$ 且 $P(A\mid B)+P(\overline A\mid\overline B)=1$，则（　　）.
+A. $A$ 与 $B$ 互不相容
+B. $A$ 与 $B$ 相互独立
+C. $A$ 与 $B$ 对立
+D. $A$ 与 $B$ 不相互独立
+
+[62] (微分方程)
+设 $f(x), g(x)$ 满足
+$$f'(x) = g(x), \quad g(x) = \int_0^x [1 - f(t)]\,dt + 1,$$
+且 $f(0) = 1$，求
+$$I = \int_0^{\frac{\pi}{2}} e^{-x}[g(x) - f(x)]\,dx.$$
+
+[63] (重积分)
+设 $V$ 是由 $x^{2}+y^{2}+z^{2}=R^{2}$ 与 $x^{2}+y^{2}+(z-R)^{2}=R^{2}$ 所围成的区域，计算
+$$I=\iiint_{V}z^{2}\mathrm{d}V.$$
+
+[64] (向量组)
+设 $A, B$ 均是 $m \times n$ 矩阵，则 $Ax = 0$ 与 $Bx = 0$ 同解的充分必要条件是（　　）.
+A. $A, B$ 的列向量组等价　B. $A, B$ 的行向量组等价　C. $A, B$ 是等价矩阵　D. $A^{\mathrm{T}}x = 0$ 与 $B^{\mathrm{T}}x = 0$ 同解
+
+[65] (一元微分)
+设 $f(x)$ 在 $(-\infty,+\infty)$ 内有定义，且对任意的 $x,y$，有
+$$f(x+y)-f(x)=[f(x)-1]y+a(y)$$
+其中 $\displaystyle\lim_{y\to 0}\frac{a(y)}{y}=0$，且 $f(0)=2$，则 $f(x)=$ ______.
+
+[66] (大数定律)
+设随机变量 $X_1,X_2,\cdots,X_n$ 相互独立，且均服从 $B\!\big(1,\tfrac{1}{2}\big)$. 若存在常数 $k$，使得
+$$\lim_{n\to\infty}P\Big\{\frac{k\sum\limits_{i=1}^{n}(X_{2i}-X_{2i-1})}{\sqrt n}\leqslant x\Big\}=\Phi(x),$$
+其中 $\Phi(x)$ 为 $N(0,1)$ 的分布函数，则 $k=$ ______.
+
+[67] (曲线曲面积分)
+在球面 $z=\sqrt{1-x^2-y^2}$（$x\geqslant 0$，$y\geqslant 0$）上，取以 $M_1(1,0,0)$、$M_2(0,1,0)$、$M_3(\tfrac{\sqrt2}{2},0,\tfrac{\sqrt2}{2})$ 为顶点的球面三角形 $\Sigma$，$\Sigma$ 的法向量的方向余弦 $\cos\gamma>0$，计算
+$$I=\iint_\Sigma \frac{x\,dydz+z\,dxdy}{x^2+y^2+z^2}$$
+
+[68] (多元微分)
+设
+$$f(x,y)=\begin{cases}\dfrac{2x|y|}{\sqrt{x^{2}+y^{2}}}, & x^{2}+y^{2}\neq 0,\\ 0, & x^{2}+y^{2}=0.\end{cases}$$
+若 $z=f(\tan t,\ \ln(1+t))$，则 $\dfrac{\mathrm{d}z}{\mathrm{d}t}\Big|_{t=0}=$（　）.
+A. $0$　　B. $1$　　C. $2$　　D. $\sqrt{2}$
+
+[69] (二次型)
+设二次型 $f(x_1,x_2,x_3)=2(x_1^2+x_2^2+x_3^2)+2a(x_1x_2+x_1x_3+x_2x_3)$，$a$ 为正整数.
+（Ⅰ）求正交变换 $X=QY$，将 $f(x_1,x_2,x_3)$ 化为标准形；
+（Ⅱ）若存在可逆矩阵 $P$，对任意 $X=(x_1,x_2,x_3)^{\mathrm T}$，有 $f(x_1,x_2,x_3)=\|PX\|^2$，求 $a$ 的值及 $P$.
+
+[70] (无穷级数)
+设 $f(x)$ 满足 $e^{f(x)}[f'(x) - 1] = x - 1\ (x \geqslant 0),\ f(0) = 0$，数列 $\{a_n\}$ 满足 $a_1 = 1,\ a_{n+1} = f(a_n)\ (n = 1, 2, \cdots)$.
+（Ⅰ）证明：$\lim\limits_{n \to \infty} a_n$ 存在，并求其值；
+（Ⅱ）求 $\sum\limits_{n=1}^{\infty} a_n x^n$ 的收敛域及 $\sum\limits_{n=1}^{\infty} a_n$ 的和.
+
+[71] (一元积分)
+极限
+$$\lim_{x\to 0}\frac{\displaystyle\int_{0}^{x}\Big[\int_{0}^{u^{2}}\arctan(1+t)\,\mathrm{d}t\Big]\mathrm{d}u}{x(1-\cos x)}=\underline{\qquad\qquad}$$
+
+[72] (相似矩阵)
+设
+$$A = \begin{bmatrix} a & 0 & 1 \\ 0 & -a & 0 \\ 1 & 0 & a \end{bmatrix} \quad \text{与} \quad B = \begin{bmatrix} -1 & 1 & 0 \\ 1 & -1 & 0 \\ 0 & 0 & a^{2} \end{bmatrix} \quad (a \neq 0)$$
+相似.
+（Ⅰ）求 $a$ 的值；（Ⅱ）求正交矩阵 $Q$，使得 $Q^{-1}AQ = B$；（Ⅲ）求一个 3 阶矩阵 $P$，使得 $AB = P^{2}$.
+
+[73] (微分方程)
+设 $f(x)$ 满足 $f'(x) + f(x) = e^{-x}, f(0) = 0$.
+（Ⅰ）求 $y = f(x)$ 的极值与拐点；
+（Ⅱ）当 $0 < x_1 < 1 < x_2$ 时，有 $f(x_1) = f(x_2)$，证明：$x_1 + x_2 > 2$.
+
+[74] (数字特征)
+设 $X$ 的概率密度为 $f(x)=\dfrac{1}{2}\mathrm e^{-|x|}$，$-\infty<x<+\infty$.
+（Ⅰ）求 $EX$ 和 $DX$；
+（Ⅱ）求 $\mathrm{Cov}(X,|X|)$，并判别 $X$ 与 $|X|$ 是否不相关；
+（Ⅲ）问 $X$ 与 $|X|$ 是否相互独立？
+
+[75] (多元微分)
+在空间直角坐标系的原点处有一单位负电荷，有一单位正电荷在曲线
+$$\begin{cases}z=x^{2}+y^{2},\\ x+y+z=1\end{cases}$$
+上移动，求两电荷引力的最大值与最小值.

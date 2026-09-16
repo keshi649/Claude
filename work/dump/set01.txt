@@ -1,0 +1,359 @@
+[1] (极限连续)
+下列结论中错误的是（　）.
+A. 若 $\displaystyle\lim_{n\to\infty}a_{n}=a>1$，则存在 $M>1$，当 $n$ 充分大时，有 $a_{n}>M$
+B. 设 $\displaystyle a=\lim_{n\to\infty}a_{n}<\lim_{n\to\infty}b_{n}=b$，则当 $n$ 充分大时，有 $a_{n}<b_{n}$
+C. 设 $M\leqslant a_{n}\leqslant N$（$n=1,2,\cdots$），若 $\displaystyle\lim_{n\to\infty}a_{n}=a$，则 $M\leqslant a\leqslant N$
+D. 若 $\displaystyle\lim_{n\to\infty}a_{n}=a\neq 0$，则当 $n$ 充分大时，$a_{n}>a-\frac{1}{n}$
+
+[2] (线性方程组)
+已知 $4 \times 3$ 矩阵 $A = (\alpha_{1},\alpha_{2},\alpha_{3})$，非齐次线性方程组 $Ax = \beta$ 的通解为 $(1,2,-1)^{\mathrm{T}} + k(1,-2,3)^{\mathrm{T}}$，$k$ 为任意常数，令 $B = (\alpha_{1},\alpha_{2},\alpha_{3},\beta+\alpha_{3})$，求方程组 $By = \alpha_{1} - \alpha_{2}$ 的通解.
+
+[3] (曲线曲面积分)
+计算积分 $I=\displaystyle\oint_L \frac{x\,dy-y\,dx}{x^2+y^2}$，其中
+（Ⅰ）$L$ 为 $(x+2)^2+(y-2)^2=1$，取逆时针方向；
+（Ⅲ）$L$ 为 $\dfrac{x^2}{a^2}+\dfrac{y^2}{b^2}=1$，取逆时针方向．
+
+[4] (矩阵)
+若 $A^{n} = O$，$n$ 为正整数，则 $(E-A)^{-1} = \underline{\hspace{2cm}}$.
+
+[5] (重积分)
+计算 $I=\displaystyle\iint_{D}xy\,\mathrm{d}x\mathrm{d}y$，其中 $D$ 由下列双纽线所围.
+（Ⅰ）$(x^{2}+y^{2})^{2}=2(x^{2}-y^{2})$；
+（Ⅱ）$(x^{2}+y^{2})^{2}=2xy$.
+
+[6] (无穷级数)
+设函数 $f(x)$ 满足
+$$f(x) = \frac{1}{(1 + x)^2} - 2\int_0^{\frac{1}{2}} f(x)\,dx,$$
+将 $f(x)$ 展开成 $x$ 的幂级数.
+
+[7] (一维随机变量)
+设随机变量 $X$ 的概率密度为 $f(x)=\dfrac{1}{\pi(1+x^2)}$，$-\infty<x<+\infty$，求 $Y=1-\sqrt[3]{X}$ 的分布函数和概率密度.
+
+[8] (微分方程)
+设 $f(t)$ 在 $(0, +\infty)$ 内有二阶连续导数，记 $g(x, y) = f(\frac{y}{x})$. 若 $g(x, y)$ 满足
+$$x^3 \frac{\partial^2 g}{\partial x^2} + x^2 y \frac{\partial^2 g}{\partial x \partial y} + xy^2 \frac{\partial^2 g}{\partial y^2} = y, \quad g(y, y) = 1, \quad \frac{\partial g}{\partial y}\Big|_{(y,y)} = \frac{2}{y},$$
+求 $f(t)$.
+
+[9] (数理统计)
+设 $X_1,X_2,\cdots,X_n\ (n>1)$ 为来自总体 $X$ 的简单随机样本，$X$ 服从 $\lambda = 1$ 的泊松分布，
+$$Y_i = X_i - \overline{X}\ (i = 1,2,\cdots,n), \quad T = \sum_{i=1}^{n}(X_i - \overline{X})^2$$
+$\overline{X}$ 为样本均值，则（　）。
+$$\text{A. } DY_i = 1 - \frac{1}{n},\ ET = n \qquad \text{B. } DY_i = 1 - \frac{1}{n},\ ET = n-1$$
+$$\text{C. } DY_i = \frac{1}{n},\ ET = n-1 \qquad \text{D. } DY_i = \frac{1}{n},\ ET = n$$
+
+[10] (一元微分)
+下列结论中正确的是（　）.
+① 若 $f(x)$ 在 $x=a$ 处连续，且 $\displaystyle\lim_{x\to 0}\frac{f(a+x^{3})-f(a)}{x^{2}}$ 存在，则 $f'(a)$ 存在；
+② 若 $\displaystyle\lim_{n\to\infty}n\Big[f\Big(a+\frac{1}{n}\Big)-f(a)\Big]$（$n$ 为正整数）存在，则 $f'(a)$ 存在；
+③ 若 $f(x)=(x-a)\varphi(x)$，其中 $\varphi(x)$ 在 $x=a$ 处连续，则 $f'(a)$ 存在.
+（选项待核对）
+
+[11] (多元微分)
+求函数 $f(x,y)=(1+y)^{2}+(1+x)^{2}$ 在条件 $x^{2}+y^{2}+xy=3$ 下的最大值.
+
+[12] (参数估计)
+设总体 $X$ 的概率密度为
+$$f(x;\theta) = \begin{cases} \frac{1}{\theta}, & 0 \leqslant x \leqslant \theta \\ 0, & \text{其他} \end{cases}$$
+其中 $\theta > 0$ 为未知参数，$(X_1,X_2,\cdots,X_n)$ 为 $X$ 的简单随机样本。求：
+（Ⅰ）$\theta$ 的最大似然估计量 $\hat{\theta}$；
+（Ⅱ）$E\hat{\theta}$ 和 $D\hat{\theta}$。
+
+[13] (曲线曲面积分)
+设曲线 $L$ 为锥面 $z=\sqrt{x^2+y^2}$ 与圆柱面 $x^2+y^2=2x$ 的交线，从 $z$ 轴正向往负向看去 $L$ 为逆时针方向，计算
+$$I=\int_L (y^2+z^2)\,dx+(z^2-x^2)\,dy+(x^2+y^2)\,dz$$
+
+[14] (多维随机变量)
+设二维随机变量 $(X,Y)$ 的概率密度为
+$$f(x,y)=\begin{cases}x\mathrm e^{-y},&0<x<y<+\infty,\\0,&\text{其他}.\end{cases}$$
+求：（Ⅰ）$X$ 与 $Y$ 的边缘概率密度，并判别 $X$ 与 $Y$ 是否相互独立；
+（Ⅱ）$(X,Y)$ 的分布函数 $F(x,y)$；
+（Ⅲ）$Z=X+Y$ 的概率密度 $f_Z(z)$.
+
+[15] (一元积分)
+已知
+$$\int_{1}^{+\infty}\Big(\frac{2x^{2}+ax+b}{2x^{2}+bx}-1\Big)\mathrm{d}x=1\qquad (b>0)$$
+则（　）.
+A. $a=e-1,\ b=e$　　B. $a=b=2(e-1)$　　C. $a=e,\ b=e-1$　　D. $a=b=2e-1$
+
+[16] (二次型)
+设
+$$A=\begin{pmatrix}1&-1&0\\-1&1+a^2&a\\0&a&1\end{pmatrix}\ (a\neq0),\qquad X=(x_1,x_2,x_3)^{\mathrm T}.$$
+（Ⅰ）若对 $\forall X\neq0$，有 $X^{\mathrm T}(A-kE)X\leqslant0$，求 $k$ 的最小值；
+（Ⅱ）求可逆线性变换 $X=CY$，将二次型 $f(x_1,x_2,x_3)=X^{\mathrm T}AX$ 化为
+$$g(y_1,y_2,y_3)=y_1^2+y_2^2+y_3^2-2y_1y_2.$$
+
+[17] (线性方程组)
+设矩阵 $A_{m \times n}, B_{n \times m}$ 满足 $AB = E$，其中 $E$ 是单位矩阵，$\alpha$ 与 $\beta$ 为非零列向量，则下列选项中正确的是（　　）.
+A. 方程组 $AX = \alpha$ 有唯一解，方程组 $BX = \beta$ 有唯一解
+B. 方程组 $AX = \alpha$ 有无穷多解，方程组 $BX = \beta$ 有无穷多解
+C. 方程组 $AX = 0$ 仅有零解，方程组 $BX = \beta$ 有解
+D. 方程组 $AX = \alpha$ 有解，方程组 $BX = 0$ 仅有零解
+
+[18] (极限连续)
+设 $\displaystyle\lim_{x\to\infty}\big(\sqrt[3]{1-x^{6}}-ax^{2}-b\big)=0$，则 $a=$ ______，$b=$ ______.
+
+[19] (数字特征)
+设二维随机变量 $(X,Y) \sim N(1,1;2,4;0)$，则
+$$D(XY) = \underline{\qquad\qquad}$$
+
+[20] (无穷级数)
+求下列幂级数的收敛域及和函数：
+（Ⅰ）$\sum\limits_{n=1}^{\infty} \dfrac{x^{n-1}}{n 2^n}$；
+（Ⅱ）$\sum\limits_{n=0}^{\infty} \dfrac{(n-1)^2}{n+1} x^n$；
+（Ⅲ）$\sum\limits_{n=0}^{\infty} \dfrac{n^2 + 1}{n!} x^n$；
+（Ⅳ）$\sum\limits_{n=0}^{\infty} \dfrac{(-1)^n (n+1)}{(2n+3)!} x^{2n}$.
+
+[21] (微分方程)
+微分方程
+$$y' - 6\frac{y}{x} + xy^2 = 0$$
+（$y$ 不为常函数）的通解为 ＿＿＿＿.
+
+[22] (矩阵)
+设 $A$ 是 $n$ 阶方阵，且 $|A| = 2$，将 $A$ 的第 $i$ 行与第 $j$ 行互换得到 $B$，则行列式 $|B^{-1}B^{*}B^{\mathrm{T}}| = \underline{\hspace{2cm}}$.
+
+[23] (相似矩阵)
+设 $A$ 是 3 阶实对称矩阵，$\alpha = (-1,1,1)^{\mathrm{T}}$ 满足 $(A - 2E)\alpha = 0$，且 $\mathrm{r}(A) = 1$. $k_{1}, k_{2}$ 为任意常数，则方程组 $AX = 0$ 的通解为（　　）.
+A. $k_{1}(1,1,0)^{\mathrm{T}} + k_{2}(1,-1,0)^{\mathrm{T}}$　B. $k_{1}(1,1,0)^{\mathrm{T}} + k_{2}(1,0,1)^{\mathrm{T}}$
+C. $k_{1}(1,1,0)^{\mathrm{T}} + k_{2}(1,1,1)^{\mathrm{T}}$　D. $k_{1}(1,1,0)^{\mathrm{T}} + k_{2}(1,0,-1)^{\mathrm{T}}$
+
+[24] (一元微分)
+设 $f(x)$ 在 $[0,1]$ 上二阶可导，$f(0)=0$，$f(1)=1$，$f(x)$ 在 $(0,1)$ 内取得最小值，证明：
+（Ⅰ）至少存在一点 $\xi\in(0,1)$，使得 $f''(\xi)=0$；
+（Ⅱ）对 $\forall\lambda\in\mathbf{R}$，至少存在一点 $\eta\in(0,1)$，使得 $f''(\eta)-\lambda f'(\eta)=0$.
+
+[25] (多元微分)
+设 $z=z(x,y)$ 由方程
+$$z+\ln z-\int_{y}^{x}\mathrm{e}^{-t^{2}}\mathrm{d}t=0$$
+确定，则 $\dfrac{\partial^{2}z}{\partial x\partial y}=$________.
+
+[26] (一维随机变量)
+设随机变量 $X$ 的概率密度为
+$$f(x)=\begin{cases}3x^2,&0<x<1,\\0,&\text{其他},\end{cases}$$
+求 $Y=\dfrac{1}{X}$ 的分布函数和概率密度.
+
+[27] (重积分)
+设 $D:x^{2}+y^{2}\leqslant\sqrt{2}\,x$，$0\leqslant y\leqslant x$，计算
+$$I=\iint_{D}\big|\sqrt{x^{2}+y^{2}}-1\big|\mathrm{d}x\mathrm{d}y.$$
+
+[28] (向量组)
+设 $\alpha_{1}, \alpha_{2}, \alpha_{3}$ 均为 3 维向量，则对任意常数 $k$ 和 $\mu$，向量组 $\alpha_{1}+k\alpha_{3},\ \alpha_{2}+\mu\alpha_{3}$ 线性无关是向量组 $\alpha_{1},\alpha_{2},\alpha_{3}$ 线性无关的（　　）.
+A. 充分必要条件　B. 充分非必要条件　C. 必要非充分条件　D. 既非充分又非必要条件
+
+[29] (空间解析几何)
+直线
+$$L:\begin{cases}x+2y-3z=2,\\ 2x-y+z=3\end{cases}$$
+在平面 $z=0$ 上的投影为________，在平面 $z=1$ 上的投影为________.
+
+[30] (微分方程)
+设 $y_1, y_2$ 是一阶线性非齐次微分方程 $y' + P(x)y = Q(x)$ 的两个解，若常数 $\lambda, \mu$ 使得 $\lambda y_1 + \mu y_2$ 仍是该方程的解，$\lambda y_1 - \mu y_2$ 是对应的齐次微分方程的解，则（　　）.
+A. $\lambda = -\dfrac{1}{2},\ \mu = -\dfrac{1}{2}$　　B. $\lambda = \dfrac{1}{2},\ \mu = \dfrac{1}{2}$
+C. $\lambda = \dfrac{1}{3},\ \mu = \dfrac{2}{3}$　　D. $\lambda = \dfrac{2}{3},\ \mu = \dfrac{2}{3}$
+
+[31] (矩阵)
+设 $A$ 是 3 阶非零矩阵，$A^{*}$ 为 $A$ 的伴随矩阵，若 $A^{*} + 2A = O$，则 $\mathrm{tr}[(A^{2})^{-1}] = \underline{\hspace{2cm}}$.
+
+[32] (多元微分)
+设 $x\geqslant 0$，$y\geqslant 0$ 时，有 $|x^{2}-y^{2}|\mathrm{e}^{-x^{2}-y^{2}}\leqslant k$ 成立，求 $k$ 的最小值.
+
+[33] (曲线曲面积分)
+设平面力场为
+$$\mathbf F=(2xy^3-y^2\cos x)\,\mathbf i+(1-2y\sin x+3x^2y^2)\,\mathbf j$$
+求质点在 $\mathbf F$ 作用下沿 $L:2x=\pi y^2$ 从点 $O(0,0)$ 到点 $A(\tfrac{\pi}{2},1)$ 所做的功 $W$．
+
+[34] (数字特征)
+设 $(X,Y)\sim N(\mu_1,\mu_2,\sigma^2,\sigma^2;\rho)$，若 $\dfrac{3X+Y}{2}$ 与 $\dfrac{X-2Y}{3}$ 不相关，则相关系数 $\rho=$ ______.
+
+[35] (一元微分)
+设 $f(x)=\ln\big(\sqrt{1+x^{2}}-x\big)$，则 $f^{(5)}(0)=$ ______.
+
+[36] (二次型)
+已知二次型 $f(x_1,x_2,x_3)=x_1^2+2x_2^2+ax_3^2+2x_1x_3$ 经过可逆线性变换 $X=PY$ 化为 $y_1^2+y_2^2$.
+（Ⅰ）求 $a$ 的值及可逆矩阵 $P$；
+（Ⅱ）设 $X=(x_1,x_2,x_3)^{\mathrm T}$，当 $X^{\mathrm T}X=1$ 时，求 $f(x_1,x_2,x_3)$ 的最大值，并求满足 $x_1=x_2>0$ 的最大值点.
+
+[37] (曲线曲面积分)
+设 $L$ 为点 $(1,-1,2)$ 到点 $(2,1,3)$ 的直线段，则
+$$I=\int_L (x^2+y^2+z^2)\,ds=\underline{\qquad}$$
+
+[38] (重积分)
+球体 $x^{2}+y^{2}+z^{2}=R^{2}\ (R>0)$ 被圆柱面 $x^{2}+y^{2}=Rx$ 所截得含在圆柱面内的立体的体积为________.
+
+[39] (大数定律)
+设一条生产线的合格率为 0.8，要使一批产品的合格率在 76% 与 84% 之间的概率不小于 90%，问这批产品至少要生产多少件？
+
+[40] (极限连续)
+求下列极限：
+（Ⅰ）$\displaystyle\lim_{x\to\infty}\frac{x^{2}-x\sin x}{x^{2}+x\sin\frac{1}{x}}$；
+（Ⅱ）$\displaystyle\lim_{x\to+\infty}\Big(\frac{a^{\frac{1}{x}}+b^{\frac{1}{x}}+c^{\frac{1}{x}}}{3}\Big)^{x}$（$a,b,c$ 为正数）；
+（Ⅲ）$\displaystyle\lim_{x\to 0}\frac{\ln(\sin^{2}x+e^{x})-x}{\ln(e^{2x}-x^{2})-2x}$；
+（Ⅳ）$\displaystyle\lim_{x\to 0}\frac{(1+x)^{\frac{3}{x}}-e^{3}}{x}$；
+（Ⅴ）$\displaystyle\lim_{x\to 0}\frac{e^{\tan x}-e^{x}}{x^{3}}$；
+（Ⅵ）$\displaystyle\lim_{x\to 0}\cot x\Big(\frac{1}{\sin x}-\frac{1}{x}\Big)$；
+（Ⅶ）$\displaystyle\lim_{x\to 0}(1-x^{2})^{\frac{1}{1-\sqrt{1-x^{2}}}}$；
+（Ⅷ）$\displaystyle\lim_{x\to 0^{+}}x^{\sin x}$.
+
+[41] (线性方程组)
+设 $A$ 是 $m \times s$ 矩阵，$B$ 是 $s \times n$ 矩阵，则方程组 $ABX = 0$ 与 $BX = 0$ 同解的充分必要条件是（　　）.
+A. $\mathrm{r}(A) = s$　B. $\mathrm{r}(AB) = \mathrm{r}(B)$　C. $\mathrm{r}(A) = \mathrm{r}(B)$　D. $\mathrm{r}(A) = m$
+
+[42] (无穷级数)
+求级数 $\sum\limits_{n=0}^{\infty} xe^{-nx}$ 的收敛域及和函数.
+
+[43] (一元积分)
+设 $f(x)$ 是连续函数，且 $f(x)\neq 0$，若 $\displaystyle\int xf(x)\,\mathrm{d}x=\arcsin x+C$，则 $\displaystyle\int\frac{\mathrm{d}x}{f(x)}=$（　）.
+A. $\frac{1}{3}(1-x^{2})^{\frac{3}{2}}+C$
+B. $\frac{2}{3}(1-x^{2})^{\frac{3}{2}}+C$
+C. $-\frac{1}{3}(1-x^{2})^{\frac{3}{2}}+C$
+D. $-\frac{2}{3}(1-x^{2})^{\frac{3}{2}}+C$
+
+[44] (多维随机变量)
+设随机变量 $X$ 与 $Y$ 相互独立，其概率密度分别为
+$$f_X(x)=\begin{cases}\lambda_1\mathrm e^{-\lambda_1x},&x>0,\\0,&x\leqslant0,\end{cases}\qquad f_Y(y)=\begin{cases}\lambda_2\mathrm e^{-\lambda_2y},&y>0,\\0,&y\leqslant0,\end{cases}$$
+其中 $\lambda_1>0,\lambda_2>0$ 为常数. 令
+$$Z=\begin{cases}1,&X\leqslant Y,\\0,&X>Y,\end{cases}$$
+求 $Z$ 的分布律和分布函数.
+
+[45] (无穷级数)
+设 $\sum\limits_{n=0}^{\infty} a_n x^n$ 的收敛半径为 $R = 1$，则
+$$\sum_{n=0}^{\infty} \frac{a_n}{n!} x^n$$
+的收敛域为 ＿＿＿＿.
+
+[46] (多元微分)
+设 $u(x,y,z)=xy^{2}z^{3}$ 在点 $P(1,2,-1)$ 处沿曲面 $x^{2}+y^{2}=5$ 的外法线方向的方向导数为________.
+
+[47] (曲线曲面积分)
+设曲面 $S$ 为由圆柱面 $x^2+y^2=R^2$、平面 $z=0$ 和 $z-x=R\ (R>0)$ 所围立体的表面，计算
+$$I=\oiint_S z\,dS$$
+
+[48] (相似矩阵)
+设两个不相等的 3 阶矩阵 $A, B$ 满足 $(A-B)^{2} = O$，则下列选项中正确的是（　　）.
+A. $A - B$ 是对角矩阵　B. $A - B$ 只有一个线性无关的特征向量
+C. $A - B$ 有两个线性无关的特征向量　D. $A - B$ 有三个线性无关的特征向量
+
+[49] (微分方程)
+设微分方程 $y'' + ay' + y = 0$ 的每一个解 $y(x)$ 在 $[0, +\infty)$ 上都有界，则实数 $a$ 的取值范围为 ＿＿＿＿.
+
+[50] (假设检验)
+设在一批圆木中随机抽取 100 根，测其小头直径，得到样本均值为 $\overline{x} = 11.2$ cm，已知标准差 $\sigma = 2.6$ cm，问在显著性检验水平 $\alpha = 0.05$ 下，该批圆木小头平均直径能否认为是在 12 cm 以上？（已知 $\Phi(1.645) = 0.95$）
+
+[51] (曲线曲面积分)
+设曲面 $\Sigma:z=x^2+y^2\ (z\leqslant 1)$ 与平面 $z=1$ 所围均匀立体为 $V$，$M$ 为 $\Sigma$ 上一动点，当 $\Sigma$ 在 $M$ 处的切平面与 $V$ 的质心距离最近时，点 $M$ 的轨迹方程记为 $L$．
+（Ⅰ）求 $V$ 的质心坐标；
+（Ⅱ）求曲线 $L$，并计算 $I=\displaystyle\int_L x\,dy-y\,dx+z\,dz$，从 $Oz$ 轴正向往负向看去 $L$ 取逆时针方向．
+
+[52] (微分方程)
+一架质量为 $4.5\ \mathrm{t}$ 的歼击机以 $600\ \mathrm{km/h}$ 的航速开始着陆，在减速伞的作用下滑跑 $500\ \mathrm{m}$ 后速度减为 $100\ \mathrm{km/h}$，设减速伞的阻力与飞机的速度成正比，忽略飞机所受的其他外力，求减速伞的阻力系数. 若保障飞机安全着陆，跑道长度至少应为多少？
+
+[53] (二次型)
+设 $A$ 是 3 阶实对称矩阵，且 $|A|=2$，$A^{*}=A-E$，其中 $A^{*}$ 是 $A$ 的伴随矩阵，则二次型 $x^{\mathrm T}Ax$ 的规范形为（　　）.
+A. $y_1^2+y_2^2+y_3^2$
+B. $-y_1^2-y_2^2-y_3^2$
+C. $y_1^2+y_2^2-y_3^2$
+D. $-y_1^2-y_2^2+y_3^2$
+
+[54] (多元微分)
+设 $x,y\in\mathbf{R}$，且 $4x^{2}+4y^{2}-2xy-\dfrac{5}{8}=0$，则 $2x+y$ 的取值范围为________.
+
+[55] (向量组)
+设 $A = (\alpha_{1},\alpha_{2},\alpha_{3})$ 为 3 阶矩阵，交换 $A$ 的第 1,2 行，再交换 $A$ 的第 2,3 列得
+$$B = \begin{bmatrix} 0 & -1 & 1 \\ 1 & 1 & 1 \\ 1 & 1 & -1 \end{bmatrix}$$
+（Ⅰ）求 $A$；
+（Ⅱ）记 $\beta_{1} = \alpha_{1}$，$\beta_{2} = \alpha_{2} - k\beta_{1}$，$\beta_{3} = \alpha_{3} - l_{1}\beta_{1} - l_{2}\beta_{2}$，若 $\beta_{1},\beta_{2},\beta_{3}$ 两两正交，求 $k, l_{1}, l_{2}$；
+（Ⅲ）求正交矩阵 $Q$ 及上三角矩阵 $T$，使得 $A = QT$.
+
+[56] (无穷级数)
+设幂级数 $\sum\limits_{n=0}^{\infty} a_n x^n$ 在 $x \in (-\infty, +\infty)$ 上满足：
+$$a_0 = 1, \quad \sum_{n=0}^{\infty} 2a_n x^{n+1} + \sum_{n=0}^{\infty} (n+1)a_{n+1}x^n = 0,$$
+求级数 $\sum\limits_{n=0}^{\infty} a_n$ 的和.
+
+[57] (重积分)
+设
+$$D=\Big\{(x,y)\ \Big|\ \frac{x}{4}\leqslant x^{2}+y^{2}\leqslant\frac{x}{2},\ \frac{y}{4}\leqslant x^{2}+y^{2}\leqslant\frac{y}{2}\Big\},$$
+则 $I=\displaystyle\iint_{D}\frac{1}{xy}\mathrm{d}x\mathrm{d}y=$________.
+
+[58] (线性方程组)
+设有方程组
+$$① \begin{cases} x_{1} - x_{4} = -2, \\ x_{2} - x_{4} = -4, \\ -4x_{2} - x_{3} + 6x_{4} = 21, \end{cases} \qquad ② \begin{cases} x_{1} + ax_{2} - x_{3} - x_{4} = -5, \\ bx_{2} - x_{3} - 2x_{4} = -11, \\ x_{3} - 2x_{4} = -c+1. \end{cases}$$
+（Ⅰ）求方程组 ① 的通解；（Ⅱ）当 $a,b,c$ 为何值时，方程组 ① 与 ② 同解.
+
+[59] (一元积分)
+下列反常积分中收敛的是（　）.
+A. $\displaystyle\int_{1}^{+\infty}\frac{\mathrm{d}x}{x^{2}\sqrt{1+x}}$
+B. $\displaystyle\int_{0}^{1}\frac{\mathrm{d}x}{\ln(1+x)}$
+C. $\displaystyle\int_{-1}^{1}\frac{\mathrm{d}x}{\sin x}$
+D. $\displaystyle\int_{-\infty}^{+\infty}\frac{x}{\sqrt{1+x^{2}}}\,\mathrm{d}x$
+
+[60] (一元微分)
+设 $f(x)$ 在 $[a,b]$ 上连续，在 $(a,b)$ 内可导，$0<a<b$，且 $f(a)=f(b)=0$，证明：
+（Ⅰ）至少存在一点 $\xi\in(a,b)$，使得 $2f(\xi)+\xi f'(\xi)=0$；
+（Ⅱ）至少存在一点 $\eta\in(a,b)$，使得 $2\eta f(\eta)-f'(\eta)=0$.
+
+[61] (曲线曲面积分)
+设 $\Sigma$ 是直线 $\begin{cases}x=0\\ y=0\end{cases}$ 绕直线 $L:x=y=z$ 旋转一周所得的曲面，$L_1$ 为 $\Sigma$ 与平面 $x+y+z=1$ 的交线，$L_1$ 的正向与 $\mathbf n=(1,1,1)$ 满足右手法则．
+（Ⅰ）求曲面 $\Sigma$ 的方程；
+（Ⅱ）计算 $I=\displaystyle\oint_{L_1} z\,dx+x\,dy+y\,dz$．
+
+[62] (矩阵)
+设
+$$A = \begin{bmatrix} 1 & 0 & 0 \\ 2 & 3 & 0 \\ 0 & 4 & 5 \end{bmatrix}, \qquad B = (E+A)^{-1}(E-A)$$
+求 $[(E+B)^{2}]^{-1}$.
+
+[63] (极限连续)
+设 $f(x)$ 在 $[0,1]$ 上连续，且 $f(0)=f(1)$，证明：
+（Ⅰ）至少存在一点 $\xi\in(0,1)$，使得 $f(\xi)=f\big(\xi+\frac{1}{2}\big)$；
+（Ⅱ）至少存在一点 $\xi\in(0,1)$，使得 $f(\xi)=f\big(\xi+\frac{1}{n}\big)$（$n\geqslant 2$ 为自然数）.
+
+[64] (一维随机变量)
+下列函数中，可作为某一随机变量的分布函数的是（　　）.
+A. $F(x)=\dfrac{1}{1+x^2}$
+B. $F(x)=\dfrac{1}{\pi}\arctan x+\dfrac{1}{2}$
+C. $F(x)=\begin{cases}\dfrac{1}{2}(1-\mathrm e^{-x}),&x>0,\\0,&x\leqslant0\end{cases}$
+D. $F(x)=\displaystyle\int_{-\infty}^{x}f(t)\mathrm dt$，且 $\displaystyle\int_{-\infty}^{+\infty}f(t)\mathrm dt=1$
+
+[65] (多元微分)
+设 $z=\dfrac{2x}{x^{2}-y^{2}}$，则 $\dfrac{\partial^{n}z}{\partial y^{n}}\Big|_{(2,1)}=$________.
+
+[66] (无穷级数)
+设 $\sum\limits_{n=1}^{\infty} u_n\ (u_n > 0)$ 收敛，则下列结论中正确的是（　　）.
+A. $\sum\limits_{n=1}^{\infty} u_n^2$ 收敛　　B. $\sum\limits_{n=1}^{\infty} \sqrt{u_n}$ 收敛
+C. $\lim\limits_{n \to \infty} \dfrac{u_{n+1}}{u_n} < 1$　　D. $\lim\limits_{n \to \infty} \sqrt[n]{u_n} < 1$
+
+[67] (微分方程)
+微分方程 $y'' + y = x + \cos x$ 的通解为 ＿＿＿＿.
+
+[68] (随机事件)
+设 $A,B$ 是两个随机事件，$0<P(B)<1$，$AB=\overline A\,\overline B$，则 $P(\overline A\mid B)+P(A\mid\overline B)=$ ______.
+
+[69] (数字特征)
+设随机变量 $X$ 在 $\big[0,\tfrac{\pi}{2}\big]$ 上服从均匀分布，$U=\sin X$，$V=\cos X$，则 $U$ 与 $V$ 的相关系数 $\rho_{UV}$ 为（　　）.
+A. $\rho_{UV}=0$　B. $|\rho_{UV}|=1$　C. $0<\rho_{UV}<1$　D. $-1\leqslant\rho_{UV}<0$
+
+[70] (一元微分)
+曲线
+$$y=\frac{1}{|x|-1}+\ln(1+e^{x})$$
+的渐近线的条数为（　）.
+A. 1　　B. 2　　C. 3　　D. 4
+
+[71] (曲线曲面积分)
+设 $f(x)$ 在 $(-\infty,+\infty)$ 内有连续导数，$L$ 为从点 $A(3,\tfrac{2}{3})$ 到点 $B(1,2)$ 的直线段，计算
+$$I=\int_L \frac{1+y^2f(xy)}{y}\,dx+\frac{x}{y^2}[y^2f(xy)-1]\,dy$$
+
+[72] (数理统计)
+设 $X_1,X_2,\cdots,X_n$ 为来自总体 $N(0,1)$ 的简单随机样本，$\overline{X}$ 为样本均值，$S^2$ 为样本方差，$T^2 = n(\overline{X} - S)^2$，则
+$$E(T^2) = \underline{\qquad\qquad}$$
+
+[73] (相似矩阵)
+设矩阵
+$$A = \begin{bmatrix} 2 & -1 & 2 \\ 5 & a & 3 \\ -1 & b & -2 \end{bmatrix}$$
+有特征向量 $\alpha = (1,1,-1)^{\mathrm{T}}$.
+（Ⅰ）试确定参数 $a,b$ 及 $\alpha$ 对应的特征值 $\lambda$；
+（Ⅱ）问 $A$ 能否相似于对角矩阵，说明理由.
+
+[74] (多维随机变量)
+设 $(X,Y)\sim N\!\big(0,0;\tfrac{1}{2},\tfrac{1}{2};0\big)$，$\Phi(x)$ 为标准正态分布函数，则 $P\{X-Y>E(|X-Y|)\}=$（　　）.
+A. $1-\Phi\!\big(\tfrac{1}{2}\big)$　B. $1-\Phi(\sqrt2)$　C. $1-\Phi\!\big(\sqrt{\tfrac{2}{\pi}}\big)$　D. $1-\Phi\!\big(\tfrac{\sqrt2}{\pi}\big)$
+
+[75] (重积分)
+设
+$$f(t)=\int_{0}^{t}\mathrm{d}x\int_{x}^{t}\mathrm{e}^{-(x-y)^{2}}\mathrm{d}y\quad(t\geqslant 0),$$
+则 $f''(1)=$________.
