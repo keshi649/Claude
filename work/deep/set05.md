@@ -444,8 +444,6 @@ $$\mathrm{Cov}(X,Y)=0+1=1\neq0 .$$
 3. 误以为 $EX^{3}=3$（那是 $EX^{4}=3$）。
 4. 认为"$Y$ 由 $X$ 唯一决定，所以完全相关、也就独立"——这是把"相关"与"独立"两个概念混成一个。
 
-@图略
-
 [11]
 @题目
 求与直线 $L_1:x+2=3-y=z+1$ 和
@@ -737,3 +735,1597 @@ $$f(x)=\frac13(\sum_{n=0}^{\infty}\frac{(2x)^{n}}{n!}-\sum_{n=0}^{\infty}\frac{(
 2. 定 $C_{1},C_{2}$ 时把 $f'$ 求错（$\mathrm e^{-x}$ 的导数带负号）。
 3. 把 $a_{n}$ 写成 $\frac{f^{(n)}(0)}{n!}$，多除了一个 $n!$。
 4. $(-1)^{n}$ 的符号弄反，写成 $\frac{2^{n}+(-1)^{n}}{3}$（可用 $a_{1}=1$ 快速自检）。
+
+[17]
+@题目
+设 $A$ 是 3 阶矩阵，$\alpha_{1},\alpha_{2},\alpha_{3}$ 是线性无关的 3 维列向量，且
+$$A\alpha_{1} = \alpha_{1}+\alpha_{2}+\alpha_{3}, \qquad A\alpha_{2} = 2\alpha_{2}+\alpha_{3}, \qquad A\alpha_{3} = 2\alpha_{2}+3\alpha_{3}$$
+求：（Ⅰ）$A$ 的全部特征值；（Ⅱ）可逆矩阵 $P$ 及 $\Lambda$，使得 $P^{-1}AP = \Lambda$，并计算 $|A - 2E|$.
+
+@切入点
+题目没有给出 $A$ 的元素，只给出 $A$ 作用在一组基 $\alpha_{1},\alpha_{2},\alpha_{3}$ 上的结果。这种题型的标准处理是把三个等式**合并成一个矩阵等式**：记 $P_{0}=(\alpha_{1},\alpha_{2},\alpha_{3})$，把每个 $A\alpha_{i}$ 在基下的坐标竖着排成 $B$ 的第 $i$ 列，就有
+$$AP_{0}=P_{0}B .$$
+由 $\alpha_{i}$ 线性无关知 $P_{0}$ 可逆，于是
+$$P_{0}^{-1}AP_{0}=B ,$$
+即 $A\sim B$。**相似矩阵有相同的特征值**，所以求 $A$ 的特征值就是求 $B$ 的特征值——而 $B$ 是具体的数字矩阵，可以直接算。
+
+这里最容易出错的是 $B$ 的摆放方向：$A\alpha_{1}=\alpha_{1}+\alpha_{2}+\alpha_{3}$ 给出的 $(1,1,1)^{\mathrm T}$ 是 $B$ 的第一**列**（不是第一行）。判断依据是矩阵乘法 $P_{0}B$ 的第 $i$ 列 $=P_{0}\cdot(B$ 的第 $i$ 列$)$。
+
+第（Ⅱ）问要 $A$ 的相似变换矩阵 $P$，不能直接用 $B$ 的特征向量矩阵 $Q$——那是把 $B$ 对角化的。由 $B=P_{0}^{-1}AP_{0}$ 与 $Q^{-1}BQ=\Lambda$ 得
+$$(P_{0}Q)^{-1}A(P_{0}Q)=\Lambda ,$$
+所以 $P=P_{0}Q$，也就是把 $Q$ 的每一列当作 $\alpha_{i}$ 的组合系数，写出 $\alpha$ 的线性组合。
+
+最后 $|A-2E|$ 不必求出 $A$：特征值已知为 $1,1,4$，则 $A-2E$ 的特征值为 $-1,-1,2$，行列式等于它们的乘积。
+
+@解答
+**（Ⅰ）** 记 $P_{0}=(\alpha_{1},\alpha_{2},\alpha_{3})$，由题设
+$$A(\alpha_{1},\alpha_{2},\alpha_{3})=(\alpha_{1}+\alpha_{2}+\alpha_{3},\ 2\alpha_{2}+\alpha_{3},\ 2\alpha_{2}+3\alpha_{3})=(\alpha_{1},\alpha_{2},\alpha_{3})B ,$$
+其中
+$$B=\begin{pmatrix}1&0&0\\1&2&2\\1&1&3\end{pmatrix} .$$
+$\alpha_{1},\alpha_{2},\alpha_{3}$ 线性无关，故 $P_{0}$ 可逆，$P_{0}^{-1}AP_{0}=B$，即 $A\sim B$，二者特征值相同。
+
+$$|\lambda E-B|=\begin{vmatrix}\lambda-1&0&0\\-1&\lambda-2&-2\\-1&-1&\lambda-3\end{vmatrix}=(\lambda-1)[(\lambda-2)(\lambda-3)-2]=(\lambda-1)(\lambda^{2}-5\lambda+4)=(\lambda-1)^{2}(\lambda-4) .$$
+故 $A$ 的全部特征值为
+$$\lambda_{1}=4 , \lambda_{2}=\lambda_{3}=1 .$$
+
+**（Ⅱ）** 先求 $B$ 的特征向量。
+
+$\lambda=4$：
+$$B-4E=\begin{pmatrix}-3&0&0\\1&-2&2\\1&1&-1\end{pmatrix} ,$$
+由第一行得 $x_{1}=0$，再由 $-2x_{2}+2x_{3}=0$ 得 $x_{2}=x_{3}$，取 $q_{1}=(0,1,1)^{\mathrm T}$。
+
+$\lambda=1$：
+$$B-E=\begin{pmatrix}0&0&0\\1&1&2\\1&1&2\end{pmatrix} ,$$
+$\mathrm r(B-E)=1$，特征子空间二维（与重数相等，故可对角化）。由 $x_{1}+x_{2}+2x_{3}=0$ 取
+$$q_{2}=(-1,1,0)^{\mathrm T} , q_{3}=(-2,0,1)^{\mathrm T} .$$
+
+记 $Q=(q_{1},q_{2},q_{3})$，则 $Q^{-1}BQ=\Lambda=\mathrm{diag}(4,1,1)$。又 $B=P_{0}^{-1}AP_{0}$，故
+$$\Lambda=Q^{-1}P_{0}^{-1}AP_{0}Q=(P_{0}Q)^{-1}A(P_{0}Q) ,$$
+取
+$$P=P_{0}Q=(\alpha_{1},\alpha_{2},\alpha_{3})\begin{pmatrix}0&-1&-2\\1&1&0\\1&0&1\end{pmatrix}=(\alpha_{2}+\alpha_{3},\ -\alpha_{1}+\alpha_{2},\ -2\alpha_{1}+\alpha_{3}) ,$$
+则 $P$ 可逆（$P_{0}$ 与 $Q$ 都可逆）且
+$$P^{-1}AP=\Lambda=\begin{pmatrix}4&&\\&1&\\&&1\end{pmatrix} .$$
+
+最后，$A$ 的特征值为 $4,1,1$，故 $A-2E$ 的特征值为 $2,-1,-1$，
+$$|A-2E|=2\times(-1)\times(-1)=2 .$$
+
+@考点
+把"$A$ 在一组基上的作用"写成 $AP_{0}=P_{0}B$；相似矩阵特征值相同；相似变换的复合 $P=P_{0}Q$；$|A-kE|=\prod(\lambda_{i}-k)$。
+
+易混：$B$ 的列是 $A\alpha_{i}$ 的坐标，$A$ 与 $B$ 相似而不相等；$B$ 的特征向量是**坐标**，要左乘 $P_{0}$ 才变回 $A$ 的特征向量（即写成 $\alpha_{i}$ 的线性组合）。
+
+@易错
+1. 把 $B$ 写成转置（把坐标横着放成行）。
+2. 直接取 $P=Q$，忘了左乘 $P_{0}$，得到的 $P$ 与 $A$ 无关。
+3. $\lambda=1$ 处不验证 $\mathrm r(B-E)=1$ 就断言可对角化。
+4. 为算 $|A-2E|$ 而去求 $A$ 的具体形式——$\alpha_{i}$ 未给出数值，根本求不出，只能用特征值。
+
+[18]
+@题目
+设立体 $\Omega$ 为 $x^2+y^2+z^2\leqslant 2z$，其密度 $\rho(x,y,z)=x^2$，则 $\Omega$ 的质量为 $\underline{\qquad}$．
+
+@切入点
+先把区域看清楚：$x^{2}+y^{2}+z^{2}\leq2z$ 配方成
+$$x^{2}+y^{2}+(z-1)^{2}\leq1 ,$$
+是球心 $(0,0,1)$、半径 $1$ 的**实心球**。质量 $m=\iiint_{\Omega}x^{2}dV$。
+
+直接用球坐标也能做（$\Omega$ 的球坐标方程是 $r\leq2\cos\varphi$），但上限带 $\varphi$，积分会麻烦。更聪明的是**先平移**：令 $w=z-1$，区域变成以原点为心的标准单位球，而被积函数 $x^{2}$ 不含 $z$，平移后完全不变——这是本题能省力的根本原因。
+
+平移之后再用**轮换对称性**：在单位球 $x^{2}+y^{2}+w^{2}\leq1$ 上，三个变量地位完全平等，故
+$$\iiint x^{2}dV=\iiint y^{2}dV=\iiint w^{2}dV=\frac13\iiint(x^{2}+y^{2}+w^{2})dV .$$
+这样被积函数变成只与到原点距离有关的 $r^{2}$，可以用**球壳分层**（把球分成半径 $r$、厚度 $dr$ 的薄球壳，体积 $4\pi r^{2}dr$）一维积掉，连球坐标的三重积分都不用写。
+
+如果不用轮换对称而直接上球坐标，也只是多算一个 $\int\sin^{3}\varphi d\varphi$ 和 $\int\cos^{2}\theta d\theta$，可作为验算。
+
+@解答
+配方得
+$$\Omega: x^{2}+y^{2}+(z-1)^{2}\leq1 ,$$
+即球心 $(0,0,1)$、半径 $1$ 的球体。所求质量
+$$m=\iiint_{\Omega}x^{2}dV .$$
+作平移 $w=z-1$（体积元不变，被积函数 $x^{2}$ 与 $z$ 无关），得
+$$m=\iiint_{\Omega'}x^{2}dV , \Omega': x^{2}+y^{2}+w^{2}\leq1 .$$
+$\Omega'$ 关于三个变量轮换对称，故
+$$\iiint_{\Omega'}x^{2}dV=\iiint_{\Omega'}y^{2}dV=\iiint_{\Omega'}w^{2}dV=\frac13\iiint_{\Omega'}(x^{2}+y^{2}+w^{2})dV .$$
+被积函数只与到原点的距离 $r$ 有关，用球壳分层（半径 $r$、厚 $dr$ 的球壳体积为 $4\pi r^{2}dr$）：
+$$\iiint_{\Omega'}(x^{2}+y^{2}+w^{2})dV=\int_{0}^{1}r^{2}\cdot4\pi r^{2}dr=4\pi\cdot\frac{r^{5}}{5}|_{0}^{1}=\frac{4\pi}{5} .$$
+所以
+$$m=\frac13\cdot\frac{4\pi}{5}=\frac{4\pi}{15} .$$
+
+（用球坐标验算：$x=r\sin\varphi\cos\theta$，体积元 $r^{2}\sin\varphi drd\varphi d\theta$，
+$$m=\int_{0}^{2\pi}\cos^{2}\theta d\theta\int_{0}^{\pi}\sin^{3}\varphi d\varphi\int_{0}^{1}r^{4}dr=\pi\cdot\frac43\cdot\frac15=\frac{4\pi}{15} .）$$
+
+@考点
+球面方程的配方识别；平移不改变体积元；轮换对称性把 $x^{2}$ 换成 $\frac13(x^{2}+y^{2}+w^{2})$；球壳分层法与球坐标体积元 $r^{2}\sin\varphi drd\varphi d\theta$。
+
+易混：轮换对称性要求**区域**对三个变量对称。原来的 $\Omega$（球心在 $z=1$）对 $z$ 并不对称，所以必须先平移到原点才能用；直接在 $\Omega$ 上说"$\iiint x^{2}=\iiint z^{2}$"是错的。
+
+@易错
+1. 不配方，把 $x^{2}+y^{2}+z^{2}\leq2z$ 当成以原点为心的球。
+2. 不平移就用轮换对称（见上）。
+3. 球坐标体积元漏掉 $\sin\varphi$ 或写成 $r\sin\varphi$。
+4. 用球坐标时把 $x^{2}$ 写成 $r^{2}\cos^{2}\theta$，漏掉 $\sin^{2}\varphi$。
+
+[19]
+@题目
+设 $f(x)$ 是连续函数，且 $\displaystyle\lim_{x\to\infty}f(x)=\frac{1}{e}$，若正数 $a$ 满足
+$$\lim_{x\to\infty}\Big(\cos\frac{a}{x}\Big)^{x^{2}}=\lim_{x\to\infty}\int_{x}^{x+1}f(t)\,\mathrm{d}t$$
+则 $a=$ ______.
+
+@切入点
+等式两端是两个完全不同类型的极限，各算各的，最后让它们相等解出 $a$。
+
+左端 $(\cos\frac ax)^{x^{2}}$：底数 $\to1$、指数 $\to\infty$，是 $1^{\infty}$ 型，标准做法是取对数
+$$\lim x^{2}\ln\cos\frac ax .$$
+令 $u=\frac ax\to0$，用 $\ln\cos u=\ln(1+(\cos u-1))\sim\cos u-1\sim-\frac{u^{2}}{2}$，于是 $x^{2}\cdot(-\frac{a^{2}}{2x^{2}})=-\frac{a^{2}}{2}$。注意这里连用了两个等价无穷小，前提都是 $u\to0$，成立。
+
+右端 $\lim_{x\to\infty}\int_{x}^{x+1}f(t)dt$：积分区间长度固定为 $1$ 但整体跑向无穷。用**积分中值定理**最省事：存在 $\xi\in[x,x+1]$ 使积分 $=f(\xi)\cdot1$；当 $x\to\infty$ 时 $\xi\to\infty$，故极限 $=\lim_{t\to\infty}f(t)=\frac{1}{\mathrm e}$。使用中值定理的前提"$f$ 连续"题目已经给了，这正是题干特意声明连续的原因。
+
+（也可以用夹逼：区间上 $f$ 的最值都趋于 $\frac1{\mathrm e}$。）
+
+两端相等：$\mathrm e^{-\frac{a^{2}}{2}}=\mathrm e^{-1}$，得 $a^{2}=2$，再由 $a>0$ 取正根。
+
+@解答
+**左端。** 这是 $1^{\infty}$ 型极限。当 $x\to\infty$ 时 $\frac ax\to0$，
+$$\ln\cos\frac ax=\ln(1+(\cos\frac ax-1))\sim\cos\frac ax-1\sim-\frac{1}{2}\cdot\frac{a^{2}}{x^{2}} ,$$
+故
+$$\lim_{x\to\infty}x^{2}\ln\cos\frac ax=\lim_{x\to\infty}x^{2}\cdot(-\frac{a^{2}}{2x^{2}})=-\frac{a^{2}}{2} ,$$
+$$\lim_{x\to\infty}(\cos\frac ax)^{x^{2}}=\mathrm e^{-\frac{a^{2}}{2}} .$$
+
+**右端。** $f$ 连续，由积分中值定理，存在 $\xi_{x}\in[x,x+1]$ 使
+$$\int_{x}^{x+1}f(t)dt=f(\xi_{x})\cdot[(x+1)-x]=f(\xi_{x}) .$$
+当 $x\to\infty$ 时 $\xi_{x}\geq x\to\infty$，故
+$$\lim_{x\to\infty}\int_{x}^{x+1}f(t)dt=\lim_{x\to\infty}f(\xi_{x})=\frac{1}{\mathrm e} .$$
+
+**联立。**
+$$\mathrm e^{-\frac{a^{2}}{2}}=\frac{1}{\mathrm e}=\mathrm e^{-1} \Longrightarrow \frac{a^{2}}{2}=1 \Longrightarrow a^{2}=2 ,$$
+又 $a>0$，故
+$$a=\sqrt2 .$$
+
+@考点
+$1^{\infty}$ 型极限的取对数处理；等价无穷小 $1-\cos u\sim\frac{u^{2}}{2}$、$\ln(1+v)\sim v$；积分中值定理与"区间长度固定、位置趋于无穷"的积分极限。
+
+易混：积分中值定理给出的 $\xi$ 依赖于 $x$，要说明 $\xi\to\infty$ 才能用 $\lim f=\frac1{\mathrm e}$；不能直接把极限号搬进积分号里说"$\int_{x}^{x+1}\frac1{\mathrm e}dt$"（虽然结果相同，但那是不严格的）。
+
+@易错
+1. 把 $(\cos\frac ax)^{x^{2}}$ 的极限直接说成 $1$（$1^{\infty}$ 是未定式）。
+2. 用等价无穷小时漏掉 $a^{2}$，写成 $-\frac{1}{2x^{2}}$。
+3. 右端误算成 $0$（以为"区间固定、$f\to$ 常数"就趋于 $0$）或误算成 $+\infty$。
+4. 解出 $a=\pm\sqrt2$ 后不用条件"$a$ 为正数"筛掉负根。
+
+[20]
+@题目
+设 $z=z(x,y)$ 由方程 $\mathrm{e}^{2yz}+x+y^{2}+z=\dfrac{7}{4}$ 确定，则 $\mathrm{d}z\big|_{(\frac{1}{2},\frac{1}{2})}=$________.
+
+@切入点
+隐函数求全微分，第一件事是**把点上的 $z$ 值求出来**——没有 $z_{0}$，后面所有偏导都无法代数。把 $x=y=\frac12$ 代入方程：
+$$\mathrm e^{2\cdot\frac12\cdot z}+\frac12+\frac14+z=\frac74 \Longrightarrow \mathrm e^{z}+z=1 .$$
+这个超越方程一般解不出，但可以**观察**：$z=0$ 满足；又 $\mathrm e^{z}+z$ 严格单调增，所以解唯一，$z=0$。凡是题目给出的常数（这里的 $\frac74$）凑得如此整齐，一定是为了让 $z$ 取到简单值，直接试 $z=0,1,-1$ 即可。
+
+$z_{0}=0$ 求出来后，好处立刻显现：$\mathrm e^{2yz}$ 在该点等于 $\mathrm e^{0}=1$，所有含它的项都化成常数，求导后代数非常干净。
+
+接下来对方程两边分别关于 $x$、$y$ 求偏导（把 $z$ 看作 $x,y$ 的函数）。对 $y$ 求导时要注意 $\mathrm e^{2yz}$ 的指数 $2yz$ 是 $y$ 与 $z(y)$ 的乘积，要用乘积法则：$(2yz)'_{y}=2z+2yz'_{y}$——这是本题最容易漏的一步。
+
+也可以整体求全微分：对方程两端同时取 $\mathrm d$，把 $\mathrm dz$ 解出来，一次完成两个偏导，思路更统一。
+
+@解答
+**第一步：定点上的 $z$。** 把 $x=\frac12$，$y=\frac12$ 代入方程：
+$$\mathrm e^{2\cdot\frac12\cdot z}+\frac12+(\frac12)^{2}+z=\frac74 \Longrightarrow \mathrm e^{z}+z=\frac74-\frac12-\frac14=1 .$$
+显然 $z=0$ 是解；又 $\mathrm e^{z}+z$ 关于 $z$ 严格单调增，解唯一，故该点处 $z=0$。记该点为 $M(\frac12,\frac12)$，$z|_{M}=0$，此时 $\mathrm e^{2yz}|_{M}=1$。
+
+**第二步：求 $z'_{x}$。** 方程两端对 $x$ 求偏导（$z=z(x,y)$）：
+$$\mathrm e^{2yz}\cdot2y z'_{x}+1+z'_{x}=0 .$$
+代入 $M$（$\mathrm e^{2yz}=1$，$2y=1$）：
+$$z'_{x}+1+z'_{x}=0 \Longrightarrow z'_{x}|_{M}=-\frac12 .$$
+
+**第三步：求 $z'_{y}$。** 方程两端对 $y$ 求偏导，注意 $\frac{\partial}{\partial y}(2yz)=2z+2y z'_{y}$：
+$$\mathrm e^{2yz}(2z+2y z'_{y})+2y+z'_{y}=0 .$$
+代入 $M$（$\mathrm e^{2yz}=1$，$z=0$，$2y=1$）：
+$$(0+z'_{y})+1+z'_{y}=0 \Longrightarrow z'_{y}|_{M}=-\frac12 .$$
+
+**第四步：写全微分。**
+$$\mathrm dz|_{(\frac12,\frac12)}=z'_{x}\mathrm dx+z'_{y}\mathrm dy=-\frac12\mathrm dx-\frac12\mathrm dy .$$
+
+@考点
+隐函数的偏导数；先定点上的函数值再代入求导；复合求导中乘积项 $2yz$ 对 $y$ 的导数；全微分 $\mathrm dz=z'_{x}\mathrm dx+z'_{y}\mathrm dy$。
+
+易混：对 $x$ 求导时 $2yz$ 中的 $y$ 是常数，只有 $z$ 变；对 $y$ 求导时 $y$ 与 $z$ 都在变，必须用乘积法则。这两处的不对称是本题的主要考点。
+
+@易错
+1. 不先求 $z=0$ 就把偏导公式写成一般形式，代不进数。
+2. 对 $y$ 求导时把 $\frac{\partial}{\partial y}(2yz)$ 写成 $2yz'_{y}$，漏掉 $2z$（本题因 $z=0$ 该项恰为零，结论仍对，但方法错；换个点就会出错）。
+3. 忘记 $y^{2}$ 对 $y$ 求导得 $2y=1$ 这一项。
+4. 只求出偏导就作答，没写成全微分的形式。
+
+[21]
+@题目
+设
+$$A = \begin{bmatrix} 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 0 \end{bmatrix}$$
+则 $(E+A)^{-1} = \underline{\hspace{2cm}}$.
+
+@切入点
+$A$ 是把单位矩阵整体上移一格的"移位矩阵"，它的幂有规律：$A^{2}$ 把 $1$ 移到第二条次对角线，$A^{3}$ 只剩右上角一个 $1$，而
+$$A^{4}=O .$$
+即 $A$ 是**幂零**矩阵。看到幂零就应该想到代数恒等式
+$$(E+A)(E-A+A^{2}-A^{3})=E+A^{4}=E ,$$
+这正是等比数列求和 $\frac{1}{1+t}=1-t+t^{2}-t^{3}+\cdots$ 在 $t^{4}=0$ 时的截断版本。于是逆矩阵不用做初等行变换就能直接写出。
+
+判断该用这条路的依据是：矩阵**只有严格上三角的 $1$**，一眼可见幂零，且阶数不高（$4$ 阶，最多算到 $A^{3}$）。如果用初等行变换求 $(E+A)^{-1}$，那是 $4\times8$ 的增广矩阵消元，虽然 $E+A$ 是上三角、并不算难，但比套公式慢，而且容易抄错。
+
+一般结论值得记住：若 $A^{k}=O$，则
+$$(E-A)^{-1}=E+A+\cdots+A^{k-1} , (E+A)^{-1}=E-A+A^{2}-\cdots+(-1)^{k-1}A^{k-1} .$$
+
+@解答
+直接计算 $A$ 的幂：
+$$A^{2}=\begin{pmatrix}0&0&1&0\\0&0&0&1\\0&0&0&0\\0&0&0&0\end{pmatrix} , A^{3}=\begin{pmatrix}0&0&0&1\\0&0&0&0\\0&0&0&0\\0&0&0&0\end{pmatrix} , A^{4}=O .$$
+由于 $A^{4}=O$，
+$$(E+A)(E-A+A^{2}-A^{3})=E-A+A^{2}-A^{3}+A-A^{2}+A^{3}-A^{4}=E-A^{4}=E ,$$
+故 $E+A$ 可逆且
+$$(E+A)^{-1}=E-A+A^{2}-A^{3}=\begin{pmatrix}1&-1&1&-1\\0&1&-1&1\\0&0&1&-1\\0&0&0&1\end{pmatrix} .$$
+
+@考点
+幂零矩阵 $A^{k}=O$ 时 $(E\pm A)^{-1}$ 的有限展开；矩阵多项式的因式分解（$E-A^{4}=(E+A)(E-A+A^{2}-A^{3})$，因为 $A$ 与自身可交换）。
+
+易混：这种"几何级数"展开只有在 $A$ 幂零（或级数收敛）时才成立，不能对一般矩阵用；而且推导用到了 $A$ 与 $E$ 可交换，这对任何 $A$ 都成立，所以因式分解本身是合法的。
+
+@易错
+1. 符号交错写错，写成 $E+A+A^{2}+A^{3}$（那是 $(E-A)^{-1}$）。
+2. 把 $A^{2}$、$A^{3}$ 的非零位置算错（$A^{2}$ 的 $1$ 在 $(1,3),(2,4)$，$A^{3}$ 的 $1$ 在 $(1,4)$）。
+3. 误以为 $A$ 不可逆就断言 $E+A$ 也不可逆。
+4. 只写出公式不写出具体矩阵，题目要求填出结果。
+
+[22]
+@题目
+设 $y' + P(x)y = 0$ 的一个特解为 $y = \cos 2x$，则该方程满足 $y(0) = 2$ 的特解为（　　）.
+A. $2\cos x$　　B. $2\cos 2x$　　C. $\cos 2x$　　D. $\cos 2x + 1$
+
+@切入点
+关键是认清方程的类型：$y'+P(x)y=0$ 是**一阶齐次线性**方程，它的解集是一维的——所有解都是任一非零解的常数倍。既然 $y=\cos2x$ 是一个解，那么全体解就是
+$$y=C\cos2x .$$
+（严格说，一阶线性方程的解形如 $C\mathrm e^{-\int P}$，而 $\cos 2x$ 是其中某个非零常数对应的解，故 $\mathrm e^{-\int P}$ 与 $\cos2x$ 相差一个非零常数因子，两者张成同一个一维解集。）
+
+有了这一步，题目就退化成"用初值定常数"：$y(0)=C\cos0=C=2$，故 $y=2\cos2x$。
+
+四个选项的设计正好对应四种典型错误：A 把 $2x$ 改成 $x$（乱改频率，不再是原方程的解）；C 忘了乘常数；D 加了一个常数（这是**非齐次**方程通解的形状，用错了结构）。所以本题真正考的是"齐次线性方程的解要**乘**常数，不是**加**常数"。
+
+@解答
+$y'+P(x)y=0$ 是一阶齐次线性微分方程，其解集是一维的：若 $y_{0}(x)$ 是它的一个非零解，则全体解为 $y=Cy_{0}(x)$（$C$ 为任意常数）。
+
+已知 $y=\cos2x$ 是一个解，故该方程的通解为
+$$y=C\cos2x .$$
+代入初值 $y(0)=2$：
+$$C\cos0=C=2 ,$$
+故所求特解为
+$$y=2\cos2x .$$
+选 **B**。
+
+@考点
+一阶齐次线性微分方程解的结构（解空间一维，任一非零解的常数倍给出全部解）；由初值确定常数。
+
+易混：齐次方程通解是"特解乘任意常数"；非齐次方程通解才是"齐次通解加一个特解"。选项 D 的 $\cos2x+1$ 用的是后一种结构，属于张冠李戴。
+
+@易错
+1. 选 D：把齐次与非齐次的解结构搞混。
+2. 选 C：只看到 $\cos2x$ 是解，忘了要满足 $y(0)=2$。
+3. 选 A：随意改动三角函数的频率，$2\cos x$ 一般不是原方程的解。
+4. 想先把 $P(x)$ 反解出来（$P=-\frac{y'}{y}=2\tan2x$）再解方程——绕远路，而且 $\tan 2x$ 有间断点，反而添麻烦。
+
+[23]
+@题目
+$r\leqslant 1$ 与 $r\leqslant 1+\cos\theta$ 所围平面区域的形心坐标为________.
+
+@切入点
+先看区域：$r\leq1$ 与 $r\leq1+\cos\theta$ 的**公共部分**，即
+$$r\leq\min\{1,\ 1+\cos\theta\} .$$
+比较两者的大小：$1+\cos\theta\geq1\iff\cos\theta\geq0\iff\theta\in[-\frac\pi2,\frac\pi2]$。所以
+- 右半（$|\theta|\leq\frac\pi2$）：外边界是**圆** $r=1$；
+- 左半（$\frac\pi2\leq|\theta|\leq\pi$）：外边界是**心形线** $r=1+\cos\theta$。
+
+这是本题的第一关：分段确定 $r$ 的上限。
+
+第二关是对称性：两条曲线都关于 $x$ 轴对称（只含 $\cos\theta$），故 $\bar y=0$，只需算 $\bar x$，且所有积分只算上半 $\theta\in[0,\pi]$ 再乘 $2$。
+
+第三关是极坐标下的两个积分公式：
+$$S=\iint 1\cdot r drd\theta=\int\frac{R^{2}(\theta)}{2}d\theta , \iint x dxdy=\iint r\cos\theta\cdot r drd\theta=\int\frac{R^{3}(\theta)}{3}\cos\theta d\theta .$$
+把 $r$ 先积掉，问题就化成两个关于 $\theta$ 的一元积分，分段算即可。剩下的是三角函数幂的积分，用倍角公式或点火公式处理。
+
+最后形心 $\bar x=\dfrac{\iint x dxdy}{S}$。
+
+@解答
+**区域与对称性。** 由 $1+\cos\theta\geq1\iff\cos\theta\geq0$，公共区域 $D$ 的外边界为
+$$R(\theta)=\begin{cases}1,& |\theta|\leq\frac\pi2,\\ 1+\cos\theta,& \frac\pi2\leq|\theta|\leq\pi.\end{cases}$$
+$D$ 关于 $x$ 轴对称，故 $\bar y=0$，且下面各积分只需在 $\theta\in[0,\pi]$ 上算后乘 $2$。
+
+**面积。**
+$$S=2\int_{0}^{\pi}\frac{R^{2}(\theta)}{2}d\theta=\int_{0}^{\frac\pi2}1 d\theta+\int_{\frac\pi2}^{\pi}(1+\cos\theta)^{2}d\theta .$$
+其中
+$$\int_{\frac\pi2}^{\pi}(1+2\cos\theta+\cos^{2}\theta)d\theta=\frac\pi2+2(\sin\theta)|_{\frac\pi2}^{\pi}+(\frac\theta2+\frac{\sin2\theta}{4})|_{\frac\pi2}^{\pi}=\frac\pi2-2+\frac\pi4=\frac{3\pi}{4}-2 ,$$
+故
+$$S=\frac\pi2+\frac{3\pi}{4}-2=\frac{5\pi}{4}-2 .$$
+
+**对 $x$ 的静矩。**
+$$\iint_{D}x dxdy=2\int_{0}^{\pi}\cos\theta\int_{0}^{R(\theta)}r^{2}dr d\theta=\frac23\int_{0}^{\pi}R^{3}(\theta)\cos\theta d\theta=\frac23[\int_{0}^{\frac\pi2}\cos\theta d\theta+\int_{\frac\pi2}^{\pi}(1+\cos\theta)^{3}\cos\theta d\theta] .$$
+第一块 $=\sin\theta|_{0}^{\frac\pi2}=1$。第二块展开 $(1+\cos\theta)^{3}\cos\theta=\cos\theta+3\cos^{2}\theta+3\cos^{3}\theta+\cos^{4}\theta$，在 $[\frac\pi2,\pi]$ 上逐项积分：
+$$\int_{\frac\pi2}^{\pi}\cos\theta d\theta=-1 , \int_{\frac\pi2}^{\pi}\cos^{2}\theta d\theta=\frac\pi4 , \int_{\frac\pi2}^{\pi}\cos^{3}\theta d\theta=-\frac23 , \int_{\frac\pi2}^{\pi}\cos^{4}\theta d\theta=\frac{3\pi}{16} ,$$
+（后两个由 $\theta=\pi-u$ 化到 $[0,\frac\pi2]$ 后用点火公式，奇次幂变号）故
+$$\int_{\frac\pi2}^{\pi}(1+\cos\theta)^{3}\cos\theta d\theta=-1+3\cdot\frac\pi4+3\cdot(-\frac23)+\frac{3\pi}{16}=-3+\frac{15\pi}{16} .$$
+于是
+$$\iint_{D}x dxdy=\frac23(1-3+\frac{15\pi}{16})=\frac23(\frac{15\pi}{16}-2)=\frac{5\pi}{8}-\frac43 .$$
+
+**形心。**
+$$\bar x=\frac{\iint_{D}x dxdy}{S}=\frac{\dfrac{5\pi}{8}-\dfrac43}{\dfrac{5\pi}{4}-2}=\frac{\dfrac{15\pi-32}{24}}{\dfrac{5\pi-8}{4}}=\frac{15\pi-32}{6(5\pi-8)} ,$$
+故形心坐标为
+$$(\frac{15\pi-32}{6(5\pi-8)},\ 0)\approx(0.327,\ 0) .$$
+
+@考点
+极坐标下两曲线公共区域的分段描述；极坐标面积公式与静矩 $\iint x dxdy=\int\frac{R^{3}}{3}\cos\theta d\theta$；形心公式 $\bar x=\frac{1}{S}\iint x dxdy$；$\cos^{n}\theta$ 在 $[\frac\pi2,\pi]$ 上的积分。
+
+易混：求"两曲线所围公共区域"取的是 $r\leq\min$，若题目问"所围（并）区域"则取 $\max$，分界角相同但分段的取法相反，结论完全不同。
+
+@易错
+1. 不分段，整圈都用 $r=1$ 或都用 $r=1+\cos\theta$。
+2. 分界角找错：应由 $1=1+\cos\theta$ 即 $\cos\theta=0$ 定出 $\theta=\pm\frac\pi2$。
+3. 静矩积分漏掉极坐标里的 $r$：$x dxdy=r\cos\theta\cdot r drd\theta$，$r$ 是二次的，积出来是 $\frac{R^{3}}{3}$ 而不是 $\frac{R^{2}}{2}$。
+4. $\int_{\frac\pi2}^{\pi}\cos^{3}\theta d\theta$ 的符号取正（它在该区间上 $\cos\theta<0$，结果应为负）。
+5. 忘了 $\bar y=0$ 需要以对称性说明，或误算 $\bar y$。
+
+[24]
+@题目
+将
+$$f(x) = \frac{xe^x - e^x + 1}{x^2}$$
+展开为 $x$ 的幂级数，并求 $\sum\limits_{n=1}^{\infty} \dfrac{n}{(n+1)!}$ 的和.
+
+@切入点
+两问其实是一件事的两面。
+
+**展开**：分子 $x\mathrm e^{x}-\mathrm e^{x}+1$ 的三块都能用 $\mathrm e^{x}=\sum\frac{x^{n}}{n!}$ 写出来，关键是把常数项、一次项对消干净——因为要除以 $x^{2}$，分子必须从 $x^{2}$ 次开始，否则商不是幂级数。合并后系数是 $\frac{1}{(n-1)!}-\frac{1}{n!}=\frac{n-1}{n!}$，$n=1$ 时恰为零，$n=0$ 项也对消，所以分子确实从 $x^{2}$ 起，除以 $x^{2}$ 后指标整体前移两位。**"分子低次项自动对消"是这类"分式展开"题的共同特征，可以用来自查有没有算错。**
+
+**求和**：$\sum_{n=1}^{\infty}\frac{n}{(n+1)!}$ 有两条路。
+
+路线一（裂项）：把分子的 $n$ 写成 $(n+1)-1$，得
+$$\frac{n}{(n+1)!}=\frac{n+1}{(n+1)!}-\frac{1}{(n+1)!}=\frac{1}{n!}-\frac{1}{(n+1)!} ,$$
+完美裂项，部分和望远镜式相消，得 $1$。这条路最快，触发点是"阶乘分母 $+$ 分子是一次式"。
+
+路线二（代入级数）：注意第一问展开式的系数 $\frac{n+1}{(n+2)!}$ 与所求通项 $\frac{n}{(n+1)!}$ 只差一个指标平移，令 $x=1$ 就有
+$$\sum_{n=0}^{\infty}\frac{n+1}{(n+2)!}=f(1)=\frac{1\cdot\mathrm e-\mathrm e+1}{1}=1 ,$$
+而把指标换成 $m=n+1$ 后它正是所求的和。这条路解释了为什么两问放在一起——出题人就是要你用第一问的结果。
+
+下面两条都写出来。
+
+@解答
+**（Ⅰ）展开为幂级数。** 由 $\mathrm e^{x}=\sum_{n=0}^{\infty}\frac{x^{n}}{n!} (-\infty<x<+\infty)$，
+$$x\mathrm e^{x}=\sum_{n=0}^{\infty}\frac{x^{n+1}}{n!}=\sum_{n=1}^{\infty}\frac{x^{n}}{(n-1)!} , \mathrm e^{x}-1=\sum_{n=1}^{\infty}\frac{x^{n}}{n!} ,$$
+故
+$$x\mathrm e^{x}-\mathrm e^{x}+1=\sum_{n=1}^{\infty}[\frac{1}{(n-1)!}-\frac{1}{n!}]x^{n}=\sum_{n=1}^{\infty}\frac{n-1}{n!}x^{n}=\sum_{n=2}^{\infty}\frac{n-1}{n!}x^{n}$$
+（$n=1$ 的系数为零）。两端除以 $x^{2}$，再令 $m=n-2$：
+$$f(x)=\sum_{n=2}^{\infty}\frac{n-1}{n!}x^{n-2}=\sum_{m=0}^{\infty}\frac{m+1}{(m+2)!}x^{m} , x\in(-\infty,+\infty) .$$
+（在 $x=0$ 处右端取值 $\frac{1}{2!}=\frac12$，与 $\lim_{x\to0}f(x)=\frac12$ 一致，故该展开在 $x=0$ 也成立。）
+
+**（Ⅱ）求和。** 把分子的 $n$ 写成 $(n+1)-1$：
+$$\frac{n}{(n+1)!}=\frac{(n+1)-1}{(n+1)!}=\frac{1}{n!}-\frac{1}{(n+1)!} ,$$
+部分和
+$$S_{N}=\sum_{n=1}^{N}[\frac{1}{n!}-\frac{1}{(n+1)!}]=\frac{1}{1!}-\frac{1}{(N+1)!} ,$$
+令 $N\to\infty$ 得
+$$\sum_{n=1}^{\infty}\frac{n}{(n+1)!}=1 .$$
+
+（用第一问验证：在展开式中令 $x=1$，
+$$\sum_{m=0}^{\infty}\frac{m+1}{(m+2)!}=f(1)=\frac{1\cdot\mathrm e-\mathrm e+1}{1^{2}}=1 ,$$
+令 $n=m+1$ 即得同一结论。）
+
+@考点
+$\mathrm e^{x}$ 的幂级数展开与指标平移；分式函数展开时"分子低次项对消"的验证；阶乘型级数的裂项求和；用函数值反求级数和。
+
+易混：$x\mathrm e^{x}=\sum\frac{x^{n+1}}{n!}$ 改写成 $\sum_{n=1}^{\infty}\frac{x^{n}}{(n-1)!}$ 时下标要从 $1$ 起；$\mathrm e^{x}=\sum_{n=0}^{\infty}\frac{x^{n}}{n!}$ 减去 $1$ 后才从 $1$ 起。两处的起点若对不齐，会凭空多出或少掉常数项。
+
+@易错
+1. 把 $\mathrm e^{x}$ 与 $x\mathrm e^{x}$ 的指标混为一谈，合并系数写成 $\frac{1}{n!}-\frac{1}{(n-1)!}$（符号反了）。
+2. 除以 $x^{2}$ 后忘记平移指标，仍写成 $\sum\frac{n-1}{n!}x^{n}$。
+3. 不写收敛域，或误写成 $|x|<1$（$\mathrm e^{x}$ 的展开对全体实数成立）。
+4. 裂项时把 $\frac{n}{(n+1)!}$ 拆成 $\frac{1}{(n+1)!}\cdot n$ 后不知如何处理，或裂成 $\frac1{n!}-\frac1{(n+1)!}$ 时把首项写成 $\frac{1}{0!}=1$ 之外的值。
+
+[25]
+@题目
+设随机变量 $X$ 服从参数为 $\lambda\ (\lambda>0)$ 的指数分布，则 $P\{X>16\mid X>8\}=$ ______.
+
+@切入点
+条件概率 $P\{X>16\mid X>8\}$ 里，两个事件是包含关系：$\{X>16\}\subset\{X>8\}$。所以按定义
+$$P\{X>16\mid X>8\}=\frac{P\{X>16,X>8\}}{P\{X>8\}}=\frac{P\{X>16\}}{P\{X>8\}} ,$$
+分子分母都是指数分布的尾概率 $P\{X>a\}=\mathrm e^{-\lambda a}$，相除时指数相减，$\mathrm e^{-16\lambda}/\mathrm e^{-8\lambda}=\mathrm e^{-8\lambda}$。
+
+这个结果 $=P\{X>8\}$ 并非巧合，它就是指数分布的**无记忆性**：
+$$P\{X>s+t\mid X>s\}=P\{X>t\} .$$
+直观含义是"已经等了 $s$ 这么久，再多等 $t$ 的概率与从头开始等 $t$ 完全一样"。记住这条性质，本题可以一步写出答案；不记得也没关系，按条件概率定义算两行即可——本题的设计就是让你二选一。
+
+需要留意的是 $16=8+8$，所以答案是 $P\{X>8\}=\mathrm e^{-8\lambda}$，而不是 $\mathrm e^{-16\lambda}$。
+
+@解答
+$X$ 服从参数 $\lambda$ 的指数分布，其尾概率为
+$$P\{X>a\}=\int_{a}^{+\infty}\lambda\mathrm e^{-\lambda x}dx=\mathrm e^{-\lambda a} , a>0 .$$
+由 $\{X>16\}\subset\{X>8\}$ 知 $\{X>16\}\cap\{X>8\}=\{X>16\}$，故
+$$P\{X>16\mid X>8\}=\frac{P\{X>16\}}{P\{X>8\}}=\frac{\mathrm e^{-16\lambda}}{\mathrm e^{-8\lambda}}=\mathrm e^{-8\lambda} .$$
+（这正是指数分布的无记忆性 $P\{X>s+t\mid X>s\}=P\{X>t\}$ 在 $s=t=8$ 时的表现。）
+
+@考点
+指数分布的尾概率公式；条件概率定义；指数分布的无记忆性。
+
+易混：$P\{X>a\}=\mathrm e^{-\lambda a}$，而分布函数 $F(a)=P\{X\leq a\}=1-\mathrm e^{-\lambda a}$，两者不要写反。另外，无记忆性是**指数分布（连续）与几何分布（离散）特有**的性质，别的分布不能这样用。
+
+@易错
+1. 答 $\mathrm e^{-16\lambda}$（把条件概率当成了无条件概率）。
+2. 把交事件写成 $P\{X>16\}P\{X>8\}$（这两个事件并不独立，况且是包含关系）。
+3. 尾概率与分布函数弄反，答成 $1-\mathrm e^{-8\lambda}$。
+4. 无记忆性用成 $P\{X>16\mid X>8\}=P\{X>16\}$（应减去已等待的时间）。
+
+[26]
+@题目
+设 $\Sigma:x^2+y^2+z^2=2y$，计算
+$$I=\oiint_\Sigma (x^2+2y^2+3z^2)\,dS$$
+
+@切入点
+第一类曲面积分，曲面是 $x^{2}+y^{2}+z^{2}=2y$，即
+$$x^{2}+(y-1)^{2}+z^{2}=1 ,$$
+球心 $(0,1,0)$、半径 $1$ 的球面。
+
+本题最关键的一步是**利用曲面方程化简被积函数**：积分只在 $\Sigma$ 上进行，曲面上处处有 $x^{2}+y^{2}+z^{2}=2y$，所以可以把这一整块替换掉：
+$$x^{2}+2y^{2}+3z^{2}=(x^{2}+y^{2}+z^{2})+y^{2}+2z^{2}=2y+y^{2}+2z^{2} .$$
+换句话说，用曲面方程把三个平方项中"最难算"的部分（这里是 $x^{2}$）消掉了。**第一类曲面（曲线）积分总可以把曲面方程代进被积函数**，这是它区别于二重积分的一大便利。
+
+接下来三块分别用不同的对称性工具：
+- $\oiint 2y dS$：$y$ 的一次项，用球面**形心**——球面形心就是球心 $(0,1,0)$，故 $\oiint y dS=\bar y\cdot S=1\cdot4\pi$。
+- $\oiint y^{2}dS$：先平移 $v=y-1$，化成中心在原点的球面，展开 $y^{2}=v^{2}+2v+1$，其中 $\oiint v dS=0$（奇对称），$\oiint v^{2}dS$ 用轮换对称。
+- $\oiint z^{2}dS$：平移后直接轮换对称。
+
+平移后球面对 $x,v,z$ 轮换对称，故
+$$\oiint v^{2}dS=\frac13\oiint(x^{2}+v^{2}+z^{2})dS=\frac13\cdot1^{2}\cdot4\pi=\frac{4\pi}{3} ,$$
+这里用到"球面上 $x^{2}+v^{2}+z^{2}\equiv R^{2}$ 是常数"，又一次是曲面方程代入。
+
+@解答
+$\Sigma:x^{2}+(y-1)^{2}+z^{2}=1$ 是球心 $(0,1,0)$、半径 $R=1$ 的球面，面积 $S=4\pi R^{2}=4\pi$。
+
+**化简被积函数**（在 $\Sigma$ 上 $x^{2}+y^{2}+z^{2}=2y$）：
+$$x^{2}+2y^{2}+3z^{2}=(x^{2}+y^{2}+z^{2})+y^{2}+2z^{2}=2y+y^{2}+2z^{2} ,$$
+故
+$$I=\oiint_{\Sigma}2y dS+\oiint_{\Sigma}y^{2}dS+2\oiint_{\Sigma}z^{2}dS .$$
+
+**第一块。** 球面的形心即球心 $(0,1,0)$，故 $\oiint_{\Sigma}y dS=\bar y\cdot S=1\cdot4\pi=4\pi$，
+$$\oiint_{\Sigma}2y dS=8\pi .$$
+
+**平移。** 令 $v=y-1$，$\Sigma$ 变为球心在原点的单位球面 $\Sigma':x^{2}+v^{2}+z^{2}=1$（面积仍为 $4\pi$）。在 $\Sigma'$ 上由轮换对称性及 $x^{2}+v^{2}+z^{2}\equiv1$：
+$$\oiint_{\Sigma'}v^{2}dS=\oiint_{\Sigma'}z^{2}dS=\frac13\oiint_{\Sigma'}(x^{2}+v^{2}+z^{2})dS=\frac13\cdot4\pi=\frac{4\pi}{3} ,$$
+又由奇对称性 $\oiint_{\Sigma'}v dS=0$。
+
+**第二块。** $y^{2}=(v+1)^{2}=v^{2}+2v+1$，
+$$\oiint_{\Sigma}y^{2}dS=\frac{4\pi}{3}+0+4\pi=\frac{16\pi}{3} .$$
+
+**第三块。**
+$$2\oiint_{\Sigma}z^{2}dS=2\cdot\frac{4\pi}{3}=\frac{8\pi}{3} .$$
+
+**合并。**
+$$I=8\pi+\frac{16\pi}{3}+\frac{8\pi}{3}=8\pi+8\pi=16\pi .$$
+
+@考点
+第一类曲面积分可把曲面方程代入被积函数；球面形心 $=$ 球心，$\oiint y dS=\bar yS$；平移后用轮换对称性；球面面积 $4\pi R^{2}$。
+
+易混：轮换对称性要求**曲面**关于三个变量对称。原球面球心在 $(0,1,0)$，对 $y$ 不对称，必须先平移；直接在 $\Sigma$ 上写 $\oiint x^{2}dS=\oiint y^{2}dS$ 是错的（事实上 $\oiint x^{2}dS=\frac{4\pi}{3}$ 而 $\oiint y^{2}dS=\frac{16\pi}{3}$）。
+
+@易错
+1. 不用曲面方程化简，硬去参数化球面算三个平方项。
+2. 在未平移的球面上直接用轮换对称。
+3. $\oiint y dS$ 误算成 $0$（那是球心在原点时的结论）。
+4. 把球面面积写成 $\frac43\pi R^{3}$（那是体积）。
+
+[27]
+@题目
+设 $f(x,y)$ 有一阶连续的偏导数，在 $(1,1)$ 的某邻域内，$f(x,y)=\mathrm{e}^{x^{2}+y^{2}-2}+o(\rho)$，其中 $\rho=\sqrt{(x-1)^{2}+(y-1)^{2}}$. 又 $g(x,y)=f(\mathrm{e}^{x-y},xy)$.
+（Ⅰ）求 $\mathrm{d}g(x,y)\big|_{(1,1)}$；
+（Ⅱ）计算
+$$\lim_{t\to 0}\frac{g(1+\sin t,1)-g(1,1-\tan t)}{t}.$$
+
+@切入点
+题设 $f(x,y)=\mathrm e^{x^{2}+y^{2}-2}+o(\rho)$ 的含义要读准：$\rho$ 是到点 $(1,1)$ 的距离，"差是 $o(\rho)$"说明 $f$ 与 $\mathrm e^{x^{2}+y^{2}-2}$ 在 $(1,1)$ 处有**相同的一阶泰勒展开**，也就是
+$$f(1,1)=\mathrm e^{0}=1 , f'_{1}(1,1)=\frac{\partial}{\partial x}\mathrm e^{x^{2}+y^{2}-2}|_{(1,1)}=2 , f'_{2}(1,1)=2 .$$
+这是本题的第一个关口：题目不给 $f$ 的表达式，只给一阶信息，而这恰好够用——因为后面要求的都是**一阶**的量（全微分、导数型极限）。
+
+（Ⅰ）是标准的复合函数求偏导：$g(x,y)=f(u,v)$，$u=\mathrm e^{x-y}$，$v=xy$。在 $(1,1)$ 处 $u=1$、$v=1$，中间变量恰好落回 $(1,1)$，所以能用上面算好的 $f'_{1},f'_{2}$。链式法则
+$$g'_{x}=f'_{1}u'_{x}+f'_{2}v'_{x} , g'_{y}=f'_{1}u'_{y}+f'_{2}v'_{y} ,$$
+注意 $u'_{y}=-\mathrm e^{x-y}$ 带负号，这是 $g'_{y}$ 恰好为 $0$ 的原因。
+
+（Ⅱ）的分子是两个函数值之差，但**不是**同一个方向上的差分，不能直接当成某个方向导数。正确做法是**插项**：同时减去、加上 $g(1,1)$，拆成两个各自沿一个坐标轴的差商
+$$\frac{g(1+\sin t,1)-g(1,1)}{t}-\frac{g(1,1-\tan t)-g(1,1)}{t} ,$$
+第一项 $\to g'_{x}(1,1)\cdot\lim\frac{\sin t}{t}=g'_{x}$，第二项里增量是 $-\tan t$，故 $\to g'_{y}(1,1)\cdot\lim\frac{-\tan t}{t}=-g'_{y}$。所以极限 $=g'_{x}+g'_{y}\cdot$ ... 注意符号：整体是"第一项减第二项"，结果为 $g'_{x}-(-g'_{y})=g'_{x}+g'_{y}$。代入数值得 $4+0=4$。
+
+**插项是处理"两个非基准点函数值之差"的通用手段**，插入的中间量取两者共同的极限位置 $(1,1)$。
+
+@解答
+**预备：$f$ 在 $(1,1)$ 处的一阶信息。** 由
+$$f(x,y)-\mathrm e^{x^{2}+y^{2}-2}=o(\rho) , \rho=\sqrt{(x-1)^{2}+(y-1)^{2}} ,$$
+知 $f$ 与 $\mathrm e^{x^{2}+y^{2}-2}$ 在 $(1,1)$ 处有相同的函数值和一阶偏导数：
+$$f(1,1)=\mathrm e^{1+1-2}=1 ,$$
+$$f'_{1}(1,1)=2x\mathrm e^{x^{2}+y^{2}-2}|_{(1,1)}=2 , f'_{2}(1,1)=2y\mathrm e^{x^{2}+y^{2}-2}|_{(1,1)}=2 .$$
+
+**（Ⅰ）** 记 $u=\mathrm e^{x-y}$，$v=xy$，则 $g(x,y)=f(u,v)$，且 $(x,y)=(1,1)$ 时 $u=1,v=1$。
+$$u'_{x}=\mathrm e^{x-y} , u'_{y}=-\mathrm e^{x-y} , v'_{x}=y , v'_{y}=x .$$
+由链式法则，在 $(1,1)$ 处（此时 $\mathrm e^{x-y}=1$）：
+$$g'_{x}(1,1)=f'_{1}\cdot1+f'_{2}\cdot1=2+2=4 ,$$
+$$g'_{y}(1,1)=f'_{1}\cdot(-1)+f'_{2}\cdot1=-2+2=0 .$$
+故
+$$\mathrm dg(x,y)|_{(1,1)}=4 \mathrm dx+0\cdot\mathrm dy=4 \mathrm dx .$$
+
+**（Ⅱ）** 插入 $g(1,1)$ 并拆项：
+$$\frac{g(1+\sin t,1)-g(1,1-\tan t)}{t}=\frac{g(1+\sin t,1)-g(1,1)}{t}-\frac{g(1,1-\tan t)-g(1,1)}{t} .$$
+第一项：
+$$\lim_{t\to0}\frac{g(1+\sin t,1)-g(1,1)}{\sin t}\cdot\frac{\sin t}{t}=g'_{x}(1,1)\cdot1=4 .$$
+第二项：增量为 $-\tan t$，
+$$\lim_{t\to0}\frac{g(1,1-\tan t)-g(1,1)}{-\tan t}\cdot\frac{-\tan t}{t}=g'_{y}(1,1)\cdot(-1)=0 .$$
+故
+$$\lim_{t\to0}\frac{g(1+\sin t,1)-g(1,1-\tan t)}{t}=4-0=4 .$$
+
+@考点
+$f-h=o(\rho)$ 表示两函数在该点一阶泰勒展开相同，从而函数值与一阶偏导相同；多元复合函数求偏导的链式法则；全微分；用偏导数定义计算差商极限，以及插项技巧。
+
+易混：$o(\rho)$（$\rho$ 是距离的一次方）只保证一阶信息相同，**不保证二阶导数相同**。所以本题只能求一阶量；若问二阶偏导，条件不够。
+
+@易错
+1. 误以为 $f(x,y)=\mathrm e^{x^{2}+y^{2}-2}$，把 $o(\rho)$ 当成可以随便丢掉的项去求二阶导。
+2. 求 $g'_{y}$ 时漏掉 $\mathrm e^{x-y}$ 对 $y$ 求导的负号，得到 $g'_{y}=4$。
+3. （Ⅱ）中不插项，直接把分子当成某个方向导数的差商。
+4. （Ⅱ）中第二项的符号处理错：增量是 $-\tan t$，$\frac{-\tan t}{t}\to-1$，整体再带一个减号，容易多算或少算一次负号。
+
+[28]
+@题目
+求心形线 $r=1-\cos\theta$ 在对应于 $\theta=\dfrac{\pi}{2}$ 处的切线方程.
+
+@切入点
+心形线是**极坐标**给出的曲线，而"切线方程"要在直角坐标下写。最稳妥的路线是把它化成**参数方程**（以 $\theta$ 为参数）：
+$$x=r(\theta)\cos\theta=(1-\cos\theta)\cos\theta , y=r(\theta)\sin\theta=(1-\cos\theta)\sin\theta ,$$
+然后用参数方程求导公式
+$$\frac{dy}{dx}=\frac{dy/d\theta}{dx/d\theta} .$$
+这条路的好处是不必记任何极坐标下的切线公式，只用最基本的参数求导，且切点坐标顺手就得到了。
+
+具体到 $\theta=\frac\pi2$：$r=1-\cos\frac\pi2=1$，切点 $(x,y)=(1\cdot0,\ 1\cdot1)=(0,1)$。求导时可以先把 $x,y$ 化成
+$$x=\cos\theta-\cos^{2}\theta , y=\sin\theta-\sin\theta\cos\theta=\sin\theta-\frac12\sin2\theta ,$$
+再求导会更快。
+
+一个常见误区：以为"$\theta=\frac\pi2$ 对应的切线斜率就是极角 $\frac\pi2$ 的方向"或"切线垂直于半径"——都不对。极坐标曲线在某点的切线方向由 $r$ 和 $r'$ **共同**决定，必须老实求导。本题算出 $\frac{dx}{d\theta}=-1$、$\frac{dy}{d\theta}=1$，斜率 $-1$，与"竖直"或"水平"都不同，正好说明这一点。
+
+@解答
+心形线 $r=1-\cos\theta$ 的参数方程为
+$$x=(1-\cos\theta)\cos\theta=\cos\theta-\cos^{2}\theta , y=(1-\cos\theta)\sin\theta=\sin\theta-\sin\theta\cos\theta .$$
+
+**切点。** $\theta=\frac\pi2$ 时 $r=1-\cos\frac\pi2=1$，
+$$x=1\cdot\cos\frac\pi2=0 , y=1\cdot\sin\frac\pi2=1 ,$$
+即切点为 $(0,1)$。
+
+**斜率。**
+$$\frac{dx}{d\theta}=-\sin\theta+2\cos\theta\sin\theta=\sin\theta(2\cos\theta-1) , \frac{dx}{d\theta}|_{\theta=\frac\pi2}=1\cdot(0-1)=-1 ;$$
+$$\frac{dy}{d\theta}=\cos\theta-(\cos^{2}\theta-\sin^{2}\theta)=\cos\theta-\cos2\theta , \frac{dy}{d\theta}|_{\theta=\frac\pi2}=0-(-1)=1 .$$
+故
+$$k=\frac{dy}{dx}|_{\theta=\frac\pi2}=\frac{1}{-1}=-1 .$$
+
+**切线方程。**
+$$y-1=-1\cdot(x-0) \Longrightarrow x+y=1 .$$
+
+@考点
+极坐标曲线化参数方程 $x=r(\theta)\cos\theta$、$y=r(\theta)\sin\theta$；参数方程求导 $\frac{dy}{dx}=\frac{y'(\theta)}{x'(\theta)}$；点斜式写切线。
+
+易混：$\frac{dy}{dx}$ 是**两个对 $\theta$ 的导数之比**，不是 $\frac{dr}{d\theta}$，也不是 $\tan\theta$。$\tan\theta$ 只是切点与原点连线的斜率，与切线斜率无关。
+
+@易错
+1. 把 $\frac{dr}{d\theta}=\sin\theta$ 当成切线斜率。
+2. 求 $\frac{dy}{d\theta}$ 时把 $\sin\theta\cos\theta$ 的导数写成 $\cos^{2}\theta$（漏掉 $-\sin^{2}\theta$），可先化成 $\frac12\sin2\theta$ 再求导以避免出错。
+3. 切点算错：忘了 $x=r\cos\theta$ 里还要乘 $r$。
+4. 认为曲线在该点的切线与向径垂直（这只在圆上才成立）。
+
+[29]
+@题目
+设
+$$A = \begin{bmatrix} 2 & 0 & 0 & 2 \\ 1 & 1 & 0 & 3 \\ 0 & 1 & 3 & 5 \end{bmatrix}, \quad B = \begin{bmatrix} 1 & 0 & 1 & 2 \\ 0 & 2 & 0 & 4 \\ 0 & -1 & a-1 & a-3 \end{bmatrix}, \quad \alpha = \begin{bmatrix} 2 \\ 2 \\ 1 \end{bmatrix}, \quad \beta = \begin{bmatrix} 1 \\ 2 \\ -1 \end{bmatrix}$$
+（Ⅰ）证明：方程组 $AX = \alpha$ 的解均是方程组 $BX = \beta$ 的解；
+（Ⅱ）若方程组 $AX = \alpha$ 与方程组 $BX = \beta$ 不同解，求 $a$ 的值.
+
+@切入点
+（Ⅰ）要证"$AX=\alpha$ 的解都是 $BX=\beta$ 的解"。最直接的办法就是**把 $AX=\alpha$ 的通解解出来，代进 $BX=\beta$ 验证**——本题 $A$ 只有三行四列且结构简单，通解很快能求出，代入后发现结果与参数 $t$ 和参数 $a$ 都无关，恒等于 $\beta$，证毕。这比抽象地讨论行向量的线性表示更省事，因为 $B$ 里还含参数 $a$。
+
+（Ⅱ）"不同解"的判断要建立在（Ⅰ）的包含关系上：既然
+$$\text{解集}(AX=\alpha)\subseteq\text{解集}(BX=\beta) ,$$
+两者相等当且仅当**维数相同**（都是仿射子空间，且已知包含）。
+- $\mathrm r(A)=3$（$A$ 是 $3\times4$ 且三行线性无关），故 $AX=\alpha$ 的解集是 $1$ 维的（一个特解 $+$ 一维方向）。
+- $BX=\beta$ 的解集维数 $=4-\mathrm r(B)$。
+
+于是"同解 $\iff\mathrm r(B)=3$"，"不同解 $\iff\mathrm r(B)<3$"。对 $B$ 作行变换发现末行可化为 $(0,0,a-1,a-1)$，故 $\mathrm r(B)=3\iff a\neq1$。所以 $a=1$。
+
+**关键的思路是：有了包含关系，比较解集就只剩比较维数（即比较秩）这一件事**，不需要再解 $BX=\beta$。
+
+@解答
+**（Ⅰ）** 先解 $AX=\alpha$，其中 $X=(x_{1},x_{2},x_{3},x_{4})^{\mathrm T}$：
+$$\begin{cases}2x_{1}+2x_{4}=2,\\ x_{1}+x_{2}+3x_{4}=2,\\ x_{2}+3x_{3}+5x_{4}=1.\end{cases}$$
+由第一式 $x_{1}=1-x_{4}$；代入第二式得 $x_{2}=2-(1-x_{4})-3x_{4}=1-2x_{4}$；代入第三式得
+$$3x_{3}=1-(1-2x_{4})-5x_{4}=-3x_{4} \Longrightarrow x_{3}=-x_{4} .$$
+令 $x_{4}=t$，通解为
+$$X=(1,1,0,0)^{\mathrm T}+t(-1,-2,-1,1)^{\mathrm T} , t\ \text{任意} .$$
+把它代入 $BX$ 的三行：
+$$\text{第 1 行}: 1\cdot(1-t)+0+1\cdot(-t)+2\cdot t=1 ;$$
+$$\text{第 2 行}: 0+2(1-2t)+0+4t=2 ;$$
+$$\text{第 3 行}: 0-(1-2t)+(a-1)(-t)+(a-3)t=-1+[2-(a-1)+(a-3)]t=-1+0\cdot t=-1 .$$
+即 $BX=(1,2,-1)^{\mathrm T}=\beta$ 对一切 $t$（及一切 $a$）成立。故 $AX=\alpha$ 的解均是 $BX=\beta$ 的解。
+
+**（Ⅱ）** $A$ 的三行线性无关（例如三阶子式 $\begin{vmatrix}2&0&0\\1&1&0\\0&1&3\end{vmatrix}=6\neq0$），故 $\mathrm r(A)=3$，$AX=\alpha$ 的解集是 $4-3=1$ 维的仿射集。
+
+由（Ⅰ）知解集$(AX=\alpha)\subseteq$ 解集$(BX=\beta)$，而后者是 $4-\mathrm r(B)$ 维的仿射集，故
+$$\text{两方程组同解}\iff4-\mathrm r(B)=1\iff\mathrm r(B)=3 .$$
+
+对 $B$ 作行变换：
+$$B=\begin{pmatrix}1&0&1&2\\0&2&0&4\\0&-1&a-1&a-3\end{pmatrix}\xrightarrow{r_{3}+\frac12r_{2}}\begin{pmatrix}1&0&1&2\\0&2&0&4\\0&0&a-1&a-1\end{pmatrix} .$$
+故 $a\neq1$ 时 $\mathrm r(B)=3$，两方程组同解；$a=1$ 时 $\mathrm r(B)=2$，$BX=\beta$ 的解集为 $2$ 维，真包含 $AX=\alpha$ 的解集，两者不同解。
+
+所以
+$$a=1 .$$
+
+@考点
+非齐次方程组的通解结构与求解；解集之间的包含关系；解集维数 $=n-\mathrm r$；由"包含 $+$ 维数相等"判定同解。
+
+易混：两个方程组"同解"要求解集完全相同。本题已证一边包含，因此只需比较维数；若没有包含关系，仅"维数相同"并不能推出同解。
+
+@易错
+1. （Ⅰ）中只验证了特解 $(1,1,0,0)^{\mathrm T}$，没验证带参数 $t$ 的那一族。
+2. （Ⅱ）中去解 $BX=\beta$ 并与 $AX=\alpha$ 的通解逐项比较，计算量大且含参数难以讨论。
+3. 把维数公式写成 $3-\mathrm r(B)$（未知数是 $4$ 个，不是方程个数 $3$）。
+4. 求 $\mathrm r(B)$ 时忘记 $a-1=0$ 这一临界情形，或误认为 $a=3$ 时秩也会降。
+
+[30]
+@题目
+设
+$$A=\begin{pmatrix}1&&\\&2&\\&&3\end{pmatrix},\qquad B=\begin{pmatrix}2&&\\&3&\\&&1\end{pmatrix}$$
+合同，则合同变换矩阵 $P=$（　　）.
+A. $\begin{pmatrix}1&0&0\\0&0&1\\1&0&0\end{pmatrix}$
+B. $\begin{pmatrix}0&0&1\\1&0&0\\0&1&0\end{pmatrix}$
+C. $\begin{pmatrix}0&1&0\\1&0&0\\0&0&1\end{pmatrix}$
+D. $\begin{pmatrix}0&0&1\\1&0&0\\0&0&1\end{pmatrix}$
+
+@切入点
+$A$ 与 $B$ 都是对角阵，且对角元只是**换了顺序**（$1,2,3$ 与 $2,3,1$）。要找 $P$ 使 $P^{\mathrm T}AP=B$，最自然的想法就是取**置换矩阵**：置换矩阵满足 $P^{\mathrm T}=P^{-1}$，所以对它来说"合同"与"相似"是一回事，$P^{\mathrm T}AP=P^{-1}AP$ 恰好把对角元重新排列。
+
+具体怎么排？若 $P$ 的第 $j$ 列取 $e_{\sigma(j)}$（第 $\sigma(j)$ 个单位坐标向量），则
+$$(P^{\mathrm T}AP)_{jj}=e_{\sigma(j)}^{\mathrm T}Ae_{\sigma(j)}=a_{\sigma(j)\sigma(j)} .$$
+要得到 $B=\mathrm{diag}(2,3,1)$，就要 $a_{\sigma(1)\sigma(1)}=2$、$a_{\sigma(2)\sigma(2)}=3$、$a_{\sigma(3)\sigma(3)}=1$，即 $\sigma(1)=2,\sigma(2)=3,\sigma(3)=1$：
+$$P=(e_{2},e_{3},e_{1}) .$$
+把它写成矩阵就是第一列 $(0,1,0)^{\mathrm T}$、第二列 $(0,0,1)^{\mathrm T}$、第三列 $(1,0,0)^{\mathrm T}$。
+
+做选择题还有更快的筛法：**合同变换矩阵必须可逆**。选项 A 的第一行与第三行相同、选项 D 的第一列与第三列…… 逐个看，A、D 都是奇异矩阵（有两行相同），直接排除；剩下 B、C 各验算一次即可，C 对应的是交换前两个对角元，得 $\mathrm{diag}(2,1,3)\neq B$，故选 B。**先用"可逆"这一必要条件筛掉一半选项**，是做这类题的省时习惯。
+
+@解答
+合同变换矩阵必须可逆。观察选项：
+$$\text{A}=\begin{pmatrix}1&0&0\\0&0&1\\1&0&0\end{pmatrix} \text{第 1、3 行相同，不可逆} ; \text{D}=\begin{pmatrix}0&0&1\\1&0&0\\0&0&1\end{pmatrix} \text{第 1、3 行相同，不可逆} ,$$
+故 A、D 排除。
+
+对置换矩阵 $P=(e_{\sigma(1)},e_{\sigma(2)},e_{\sigma(3)})$ 有 $P^{\mathrm T}P=E$，且
+$$(P^{\mathrm T}AP)_{ij}=e_{\sigma(i)}^{\mathrm T}Ae_{\sigma(j)} ,$$
+当 $A=\mathrm{diag}(a_{1},a_{2},a_{3})$ 时 $P^{\mathrm T}AP=\mathrm{diag}(a_{\sigma(1)},a_{\sigma(2)},a_{\sigma(3)})$。
+
+选项 C 为 $P=(e_{2},e_{1},e_{3})$，得
+$$P^{\mathrm T}AP=\mathrm{diag}(a_{2},a_{1},a_{3})=\mathrm{diag}(2,1,3)\neq B .$$
+
+选项 B 为
+$$P=\begin{pmatrix}0&0&1\\1&0&0\\0&1&0\end{pmatrix}=(e_{2},e_{3},e_{1}) ,$$
+得
+$$P^{\mathrm T}AP=\mathrm{diag}(a_{2},a_{3},a_{1})=\mathrm{diag}(2,3,1)=B .$$
+
+故选 **B**。
+
+@考点
+合同的定义 $B=P^{\mathrm T}AP$（$P$ 可逆）；置换矩阵的正交性 $P^{\mathrm T}=P^{-1}$ 及其对对角元的重排作用。
+
+易混：合同要求 $P^{\mathrm T}AP$，相似要求 $P^{-1}AP$。对**正交矩阵**（置换矩阵是其中一种）两者恰好一致，所以本题两种理解都给出同一答案；但一般情形下不能混用。另外，$A$ 与 $B$ 的对角元同为三个正数，正负惯性指数相同，本来就必定合同——题目问的是"哪一个 $P$"，不是"是否合同"。
+
+@易错
+1. 用相似的思路去检验（本题恰好也对，但遇到非正交的 $P$ 会出错）。
+2. 置换的方向搞反，取成 $(e_{3},e_{1},e_{2})$，得到 $\mathrm{diag}(3,1,2)$。
+3. 不检查选项是否可逆，在 A、D 上白费工夫。
+4. 把 $P$ 的列与行看混，抄错矩阵。
+
+[31]
+@题目
+设 $n$ 维向量组（Ⅰ）$\alpha_{1},\alpha_{2},\cdots,\alpha_{k}\ (k<n)$ 线性无关，则 $n$ 维向量组（Ⅱ）$\beta_{1},\beta_{2},\cdots,\beta_{k}$ 也线性无关的充分必要条件是（　　）.
+A. $\beta_{1},\beta_{2},\cdots,\beta_{k}$ 可由 $\alpha_{1},\alpha_{2},\cdots,\alpha_{k}$ 线性表示
+B. $\alpha_{1},\alpha_{2},\cdots,\alpha_{k}$ 可由 $\beta_{1},\beta_{2},\cdots,\beta_{k}$ 线性表示
+C. 向量组（Ⅰ）与向量组（Ⅱ）等价
+D. 矩阵 $(\alpha_{1},\alpha_{2},\cdots,\alpha_{k})$ 与 $(\beta_{1},\beta_{2},\cdots,\beta_{k})$ 等价
+
+@切入点
+四个选项里有三个是"表示关系"，一个是"矩阵等价"，要逐一判断**充分性**与**必要性**。先把要判断的目标写清楚：（Ⅱ）线性无关 $\iff\mathrm r(\beta_{1},\cdots,\beta_{k})=k$。所以问题变成：哪个条件与"$\mathrm r(B)=k$"**等价**（$B=(\beta_{1},\cdots,\beta_{k})$）。
+
+- A：（Ⅱ）可由（Ⅰ）表示。这只给出 $\mathrm r(B)\leq\mathrm r(A)=k$，是个上界，毫无用处（取 $\beta_{i}$ 全为零向量即可反例）。既不充分也不必要。
+- B：（Ⅰ）可由（Ⅱ）表示。这给出 $k=\mathrm r(A)\leq\mathrm r(B)\leq k$，于是 $\mathrm r(B)=k$，**充分**。但不必要：两组各自线性无关的 $k$ 个向量（$k<n$）可以张成完全不同的子空间，彼此表示不了（例如 $n=3,k=1$，$\alpha_{1}=e_{1}$，$\beta_{1}=e_{2}$）。
+- C：两组等价（互相可表示）。同理**充分不必要**（反例同上）。
+- D：矩阵 $A=(\alpha_{1},\cdots,\alpha_{k})$ 与 $B=(\beta_{1},\cdots,\beta_{k})$ **等价**。注意这是"矩阵等价"，定义是存在可逆 $P,Q$ 使 $B=PAQ$，其充要条件是**同型且同秩**。两矩阵都是 $n\times k$ 型，故
+$$A\ \text{与}\ B\ \text{等价}\iff\mathrm r(B)=\mathrm r(A)=k\iff(\text{Ⅱ})\ \text{线性无关} ,$$
+正是充要条件。
+
+本题的核心是分清两个"等价"：**向量组等价**（互相线性表示，是强条件）与**矩阵等价**（同型同秩，是弱条件）。选项 C 与 D 表面相似，实则一个充分不必要、一个充要，出题人考的就是这个区分。
+
+@解答
+记 $A=(\alpha_{1},\cdots,\alpha_{k})$，$B=(\beta_{1},\cdots,\beta_{k})$，均为 $n\times k$ 矩阵。由（Ⅰ）线性无关知 $\mathrm r(A)=k$；而
+$$(\text{Ⅱ})\ \text{线性无关}\iff\mathrm r(B)=k .$$
+
+**A 不对。** 若（Ⅱ）可由（Ⅰ）线性表示，只能得 $\mathrm r(B)\leq\mathrm r(A)=k$。取 $\beta_{1}=\cdots=\beta_{k}=0$，它们可由（Ⅰ）表示，但线性相关。故 A 既不充分也不必要。
+
+**B 充分但不必要。** 若（Ⅰ）可由（Ⅱ）表示，则 $k=\mathrm r(A)\leq\mathrm r(B)\leq k$，得 $\mathrm r(B)=k$，充分。但不必要：取 $n=3$，$k=1$，$\alpha_{1}=(1,0,0)^{\mathrm T}$，$\beta_{1}=(0,1,0)^{\mathrm T}$，此时（Ⅱ）线性无关，而 $\alpha_{1}$ 不能由 $\beta_{1}$ 表示。
+
+**C 充分但不必要。** 等价蕴含互相表示，由 B 的论证知充分；上面同一个反例说明不必要。
+
+**D 充要。** 两矩阵同为 $n\times k$ 型，而"矩阵等价"（存在可逆 $P,Q$ 使 $B=PAQ$）的充要条件是同型且秩相等。因此
+$$A\ \text{与}\ B\ \text{等价}\iff\mathrm r(B)=\mathrm r(A)=k\iff(\text{Ⅱ})\ \text{线性无关} .$$
+
+故选 **D**。
+
+@考点
+向量组线性无关 $\iff$ 由它们构成的矩阵满秩（秩等于向量个数）；矩阵等价的充要条件（同型同秩）；向量组等价与矩阵等价的区别；线性表示与秩的不等式 $\mathrm r(\text{被表示组})\leq\mathrm r(\text{表示组})$。
+
+易混：**向量组等价**要求两组互相线性表示（能推出同秩，反之不成立）；**矩阵等价**只要求同型同秩。前者强、后者弱，本题正是利用"弱条件反而恰好充要"设的考点。
+
+@易错
+1. 把选项 D 读成"向量组等价"，于是觉得它与 C 重复而排除。
+2. 只验证充分性就选 B 或 C，没检验必要性。
+3. 误以为 A 中"可由（Ⅰ）表示"能保证无关（表示关系只给秩的上界）。
+4. 忘记题设 $k<n$，从而想不出 B、C 的反例（若 $k=n$，$k$ 个无关向量必张成全空间，B、C 也会成为充要条件）。
+
+[32]
+@题目
+设 $(X_1,X_2,\cdots,X_n)$ 为总体 $X \sim N(0,\sigma^2)$ 的简单随机样本，
+$$S_1^2 = \sum_{i=1}^{n}(X_i - \overline{X})^2, \quad \overline{X} = \frac{1}{n}\sum_{i=1}^{n}X_i$$
+则下列选项服从 $t(n-1)$ 分布的统计量为（　）。
+$$\text{A. } \frac{\sqrt{n}\,\overline{X}}{\sqrt{n-1}\,S_1} \qquad \text{B. } \frac{\sqrt{n-1}\,\overline{X}}{\sqrt{n}\,S_1}$$
+$$\text{C. } \frac{\sqrt{n(n-1)}\,\overline{X}}{S_1} \qquad \text{D. } \frac{\overline{X}}{\sqrt{n(n-1)}\,S_1}$$
+
+@切入点
+构造 $t$ 分布，必须凑出它的定义式
+$$t=\frac{U}{\sqrt{V/m}}\sim t(m) , U\sim N(0,1) , V\sim\chi^{2}(m) , U\ \text{与}\ V\ \text{独立} .$$
+所以做法是"找 $U$、找 $V$、代公式"，剩下的只是把 $\sigma$ 约掉。
+
+**找 $U$**：总体 $X\sim N(0,\sigma^{2})$，故 $\overline X\sim N(0,\frac{\sigma^{2}}{n})$，标准化得
+$$U=\frac{\overline X-0}{\sigma/\sqrt n}=\frac{\sqrt n \overline X}{\sigma}\sim N(0,1) .$$
+
+**找 $V$**：题中 $S_{1}^{2}=\sum(X_{i}-\overline X)^{2}$ 是**平方和**，不是样本方差（样本方差还要除以 $n-1$）。由抽样分布定理
+$$\frac{\sum(X_{i}-\overline X)^{2}}{\sigma^{2}}=\frac{S_{1}^{2}}{\sigma^{2}}\sim\chi^{2}(n-1) ,$$
+且它与 $\overline X$ 独立。自由度是 $n-1$，正好与所求分布匹配。
+
+**代公式**：
+$$t=\frac{\sqrt n \overline X/\sigma}{\sqrt{\dfrac{S_{1}^{2}/\sigma^{2}}{n-1}}}=\frac{\sqrt n \overline X}{\sigma}\cdot\frac{\sigma\sqrt{n-1}}{S_{1}}=\frac{\sqrt{n(n-1)} \overline X}{S_{1}} .$$
+$\sigma$ 自动消去——这也是检验答案对不对的快速方法：**正确答案必须不含未知参数 $\sigma$**，且量纲上 $\overline X$ 与 $S_{1}$ 同量纲、比值无量纲。四个选项都不含 $\sigma$，所以真正要算的是 $\sqrt{n}$ 与 $\sqrt{n-1}$ 的位置。
+
+注意本题记号的陷阱：题目用的是 $S_{1}^{2}=\sum(X_{i}-\overline X)^{2}$ 而不是常见的 $S^{2}=\frac{1}{n-1}\sum(X_{i}-\overline X)^{2}$。若照搬记熟的公式 $\frac{\sqrt n(\overline X-\mu)}{S}$，就会把 $n-1$ 漏掉，选到 A 或 B。
+
+@解答
+总体 $X\sim N(0,\sigma^{2})$，样本容量为 $n$。
+
+**正态部分。** $\overline X\sim N(0,\frac{\sigma^{2}}{n})$，故
+$$U=\frac{\sqrt n \overline X}{\sigma}\sim N(0,1) .$$
+
+**卡方部分。** 由抽样分布定理，
+$$V=\frac{S_{1}^{2}}{\sigma^{2}}=\frac{\sum_{i=1}^{n}(X_{i}-\overline X)^{2}}{\sigma^{2}}\sim\chi^{2}(n-1) ,$$
+且 $\overline X$ 与 $\sum(X_{i}-\overline X)^{2}$ 相互独立，故 $U$ 与 $V$ 独立。
+
+**构造 $t$。** 由 $t$ 分布的定义
+$$\frac{U}{\sqrt{V/(n-1)}}\sim t(n-1) ,$$
+即
+$$\frac{\dfrac{\sqrt n \overline X}{\sigma}}{\sqrt{\dfrac{S_{1}^{2}}{(n-1)\sigma^{2}}}}=\frac{\sqrt n \overline X}{\sigma}\cdot\frac{\sigma\sqrt{n-1}}{S_{1}}=\frac{\sqrt{n(n-1)} \overline X}{S_{1}}\sim t(n-1) .$$
+
+故选 **C**。
+
+@考点
+$\overline X$ 的分布与标准化；抽样分布定理 $\frac{(n-1)S^{2}}{\sigma^{2}}=\frac{\sum(X_{i}-\overline X)^{2}}{\sigma^{2}}\sim\chi^{2}(n-1)$ 及 $\overline X$ 与它的独立性；$t$ 分布的定义 $\frac{U}{\sqrt{V/m}}$。
+
+易混：题中 $S_{1}^{2}$ 是**离差平方和**（没除以 $n-1$），而教材常用的 $S^{2}$ 是样本方差（除以了 $n-1$）。二者关系是 $S_{1}^{2}=(n-1)S^{2}$，代入常用式 $\frac{\sqrt n \overline X}{S}$ 即得 $\frac{\sqrt{n(n-1)} \overline X}{S_{1}}$，与上面结果一致。
+
+@易错
+1. 把 $S_{1}^{2}$ 当成样本方差，答成 $\frac{\sqrt n \overline X}{S_{1}}$（不在选项中），进而在 A、B 之间乱选。
+2. 自由度写成 $n$（总体均值 $0$ 已知，但统计量用的是 $\overline X$ 而非 $\mu=0$，所以自由度仍是 $n-1$）。
+3. 忘记验证 $U$ 与 $V$ 的独立性就套定义。
+4. 把 $\sqrt{n}$ 与 $\sqrt{n-1}$ 的位置对调，选成 A 或 B。
+
+[33]
+@题目
+当 $x\to 0$ 时，$(1+x)^{\frac{2}{x}}-e^{2}[1-\ln(1+x)]$ 是关于 $x$ 的（　）.
+A. 等价无穷小　　B. 同阶但非等价无穷小　　C. 高阶无穷小　　D. 低阶无穷小
+
+@切入点
+比较无穷小的阶，就是看差式的最低次项是几次。两项都含 $\mathrm e^{2}$ 这个因子，而且第二项 $\mathrm e^{2}[1-\ln(1+x)]$ 的前两项显然是 $\mathrm e^{2}(1-x+\cdots)$，这提示第一项 $(1+x)^{\frac2x}$ 展开后也应是 $\mathrm e^{2}(1-x+\cdots)$——常数项和一次项会对消，所以**必须展到二次项**才能分出胜负。这是本题的关键判断：先估计要展几阶，再动手。
+
+$(1+x)^{\frac2x}$ 的处理办法是**先取对数化成指数形式**：
+$$(1+x)^{\frac2x}=\mathrm e^{\frac2x\ln(1+x)} ,$$
+指数上 $\frac2x\ln(1+x)=\frac2x(x-\frac{x^{2}}{2}+\frac{x^{3}}{3}-\cdots)=2-x+\frac23x^{2}+o(x^{2})$。注意这里 $\ln(1+x)$ 要展到 $x^{3}$，因为要除以 $x$ 后还保留到 $x^{2}$——**展开阶数要倒着数**，这是最容易出错的地方。
+
+然后把 $\mathrm e^{2-x+\frac23x^{2}}=\mathrm e^{2}\cdot\mathrm e^{-x+\frac23x^{2}}$，再对 $\mathrm e^{u}=1+u+\frac{u^{2}}{2}+o(u^{2})$ 展开，其中 $u=-x+\frac23x^{2}$，注意 $u^{2}$ 只保留 $x^{2}$ 项即 $x^{2}$。得到 $\mathrm e^{2}(1-x+\frac76x^{2}+\cdots)$。
+
+两式相减，$1$ 与 $-x$ 全部对消，剩下 $\mathrm e^{2}(\frac76-\frac12)x^{2}=\frac23\mathrm e^{2}x^{2}$，是 $x$ 的二阶无穷小，即关于 $x$ 的**高阶**无穷小。
+
+@解答
+**展开第一项。**
+$$\frac{2}{x}\ln(1+x)=\frac{2}{x}(x-\frac{x^{2}}{2}+\frac{x^{3}}{3}+o(x^{3}))=2-x+\frac23x^{2}+o(x^{2}) ,$$
+故
+$$(1+x)^{\frac2x}=\mathrm e^{2-x+\frac23x^{2}+o(x^{2})}=\mathrm e^{2}\cdot\mathrm e^{u} , u=-x+\frac23x^{2}+o(x^{2}) .$$
+由 $\mathrm e^{u}=1+u+\frac{u^{2}}{2}+o(u^{2})$ 及 $u^{2}=x^{2}+o(x^{2})$：
+$$\mathrm e^{u}=1+(-x+\frac23x^{2})+\frac{x^{2}}{2}+o(x^{2})=1-x+\frac76x^{2}+o(x^{2}) ,$$
+$$(1+x)^{\frac2x}=\mathrm e^{2}(1-x+\frac76x^{2}+o(x^{2})) .$$
+
+**展开第二项。** 由 $\ln(1+x)=x-\frac{x^{2}}{2}+o(x^{2})$，
+$$\mathrm e^{2}[1-\ln(1+x)]=\mathrm e^{2}(1-x+\frac{x^{2}}{2}+o(x^{2})) .$$
+
+**作差。**
+$$(1+x)^{\frac2x}-\mathrm e^{2}[1-\ln(1+x)]=\mathrm e^{2}(\frac76-\frac12)x^{2}+o(x^{2})=\frac23\mathrm e^{2}x^{2}+o(x^{2}) .$$
+它是 $x$ 的二阶无穷小，故
+$$\lim_{x\to0}\frac{(1+x)^{\frac2x}-\mathrm e^{2}[1-\ln(1+x)]}{x}=0 ,$$
+即所给表达式是关于 $x$ 的高阶无穷小。选 **C**。
+
+@考点
+幂指函数 $\mathrm e^{f\ln g}$ 的泰勒展开；$\ln(1+x)$、$\mathrm e^{u}$ 的麦克劳林展开；无穷小阶的比较（同阶、等价、高阶、低阶的定义）。
+
+易混：$(1+x)^{\frac2x}\to\mathrm e^{2}$，但**不能**用 $(1+x)^{\frac2x}\approx\mathrm e^{2}$ 去做差（那样两项之差直接变成 $\mathrm e^{2}\ln(1+x)$，阶数就错了）。必须保留到足够高的阶。
+
+@易错
+1. 展开阶数不够：$\ln(1+x)$ 只展到 $x^{2}$，除以 $x$ 后指数上只到一次项，$x^{2}$ 的系数全错。
+2. 展 $\mathrm e^{u}$ 时漏掉 $\frac{u^{2}}{2}$ 这一项（它恰好贡献 $\frac12x^{2}$）。
+3. 记错 $\ln(1+x)$ 的符号，写成 $x+\frac{x^{2}}{2}+\cdots$。
+4. 判断结论时把"二阶无穷小"说成"低阶无穷小"——相对于 $x$ 而言，$x^{2}$ 趋于零更快，是**高阶**。
+
+[34]
+@题目
+设函数 $z=z(x,y)$ 由方程 $x^{2}-6xy+10y^{2}-2yz-z^{2}+18=0$ 确定，求 $z=z(x,y)$ 的极值.
+
+@切入点
+求隐函数 $z=z(x,y)$ 的极值，路线固定为三步：**求一阶偏导 $\to$ 定驻点 $\to$ 二阶判别**。难点在于 $z$ 没有显式表达式，每一步都要靠隐函数求导。
+
+第一步：对方程两端分别关于 $x$、$y$ 求偏导（记住 $z$ 是 $x,y$ 的函数），解出
+$$z'_{x}=\frac{x-3y}{y+z} , z'_{y}=\frac{-3x+10y-z}{y+z} .$$
+
+第二步：驻点要求两个偏导同时为零，即**分子同时为零**：
+$$x-3y=0 , -3x+10y-z=0 .$$
+第一式给 $x=3y$，代入第二式得 $z=y$。但这只是两个条件，还有第三个方程——**原方程本身**！把 $x=3y$、$z=y$ 代回去，得到 $-2y^{2}+18=0$，解出 $y=\pm3$。这一步最容易漏：驻点必须同时落在曲面上。
+
+第三步：二阶判别。这里有个大幅省力的技巧：**在驻点处 $z'_{x}=z'_{y}=0$**，所以对 $z'_{x}=\frac{x-3y}{y+z}$ 再求导时，凡是带 $z'_{x}$ 或 $z'_{y}$ 的项全部消失，且分子 $x-3y$ 在驻点为零，于是
+$$A=z''_{xx}=\frac{1}{y+z} , B=z''_{xy}=\frac{-3}{y+z} , C=z''_{yy}=\frac{10}{y+z} ,$$
+$$AC-B^{2}=\frac{10-9}{(y+z)^{2}}=\frac{1}{(y+z)^{2}}>0 ,$$
+两个驻点都是极值点，再看 $A$ 的符号定极大极小。**先代驻点、再求二阶导**（而不是先求出一般的二阶导表达式再代），能省掉大量项。
+
+@解答
+**一阶偏导。** 方程 $x^{2}-6xy+10y^{2}-2yz-z^{2}+18=0$ 两端对 $x$ 求偏导：
+$$2x-6y-2y z'_{x}-2z z'_{x}=0 \Longrightarrow z'_{x}=\frac{x-3y}{y+z} .$$
+对 $y$ 求偏导：
+$$-6x+20y-2z-2y z'_{y}-2z z'_{y}=0 \Longrightarrow z'_{y}=\frac{-3x+10y-z}{y+z} .$$
+（以下设 $y+z\neq0$。）
+
+**驻点。** 令 $z'_{x}=z'_{y}=0$：
+$$x-3y=0 , -3x+10y-z=0 \Longrightarrow x=3y , z=-3(3y)+10y=y .$$
+代回原方程：
+$$(3y)^{2}-6(3y)y+10y^{2}-2y\cdot y-y^{2}+18=(9-18+10-2-1)y^{2}+18=-2y^{2}+18=0 ,$$
+得 $y=\pm3$。于是两个驻点：
+$$(x,y)=(9,3) \text{（此时 }z=3,\ y+z=6\text{）} ; (x,y)=(-9,-3) \text{（此时 }z=-3,\ y+z=-6\text{）} .$$
+
+**二阶判别。** 在驻点处 $z'_{x}=z'_{y}=0$ 且 $x-3y=0$、$-3x+10y-z=0$，对 $z'_{x},z'_{y}$ 再求偏导时相应项为零：
+$$A=z''_{xx}=\frac{1\cdot(y+z)-(x-3y)z'_{x}}{(y+z)^{2}}|_{\text{驻点}}=\frac{1}{y+z} ,$$
+$$B=z''_{xy}=\frac{-3(y+z)-(x-3y)(1+z'_{y})}{(y+z)^{2}}|_{\text{驻点}}=\frac{-3}{y+z} ,$$
+$$C=z''_{yy}=\frac{(10-z'_{y})(y+z)-(-3x+10y-z)(1+z'_{y})}{(y+z)^{2}}|_{\text{驻点}}=\frac{10}{y+z} .$$
+故
+$$AC-B^{2}=\frac{10}{(y+z)^{2}}-\frac{9}{(y+z)^{2}}=\frac{1}{(y+z)^{2}}>0 ,$$
+两个驻点都是极值点。
+
+在 $(9,3)$ 处 $y+z=6$，$A=\frac16>0$，故 $z$ 取**极小值** $z=3$。
+
+在 $(-9,-3)$ 处 $y+z=-6$，$A=-\frac16<0$，故 $z$ 取**极大值** $z=-3$。
+
+@考点
+隐函数的一阶、二阶偏导；驻点需同时满足两个偏导为零**与原方程**；二元函数极值的 $AC-B^{2}$ 判别法。
+
+易混：求驻点时只令 $z'_{x}=z'_{y}=0$ 会得到 $x=3y,z=y$ 这一条直线，还必须用原方程把 $y$ 定下来。原方程是第三个约束，不能丢。
+
+@易错
+1. 忘记把 $x=3y$、$z=y$ 代回原方程，得不到具体驻点。
+2. 求二阶导时先算一般表达式（含 $z'_{x},z'_{y}$）再代驻点，项多易错；应先用驻点条件化简。
+3. 把极值写成"$(9,3)$ 是极小值点"却不给出极小值 $z=3$。
+4. 只算出一个驻点（漏掉 $y=-3$），漏掉极大值。
+
+[35]
+@题目
+设
+$$A = \begin{bmatrix} 2 & -1 & 3 \\ a & 1 & b \\ 4 & c & 6 \end{bmatrix}$$
+且 $BA = O$，$B$ 是 3 阶方阵，$\mathrm{r}(B) > 1$，求 $A^{n}$.
+
+@切入点
+$A$ 里有三个未知数 $a,b,c$，而条件只有一句"$BA=O$，$\mathrm r(B)>1$"。要把三个数定出来，必须把这句话榨出秩的信息：
+
+$BA=O$ 给出 $\mathrm r(A)+\mathrm r(B)\leq3$。又 $\mathrm r(B)>1$ 即 $\mathrm r(B)\geq2$（秩是整数），于是
+$$\mathrm r(A)\leq3-2=1 .$$
+而 $A$ 的第一行 $(2,-1,3)$ 非零，故 $\mathrm r(A)=1$。
+
+$\mathrm r(A)=1$ 意味着 $A$ 的三行**两两成比例**，以第一行为基准比对即可：由第二行的第二个分量 $1=-(-1)$ 得比例系数 $-1$，故 $(a,1,b)=-(2,-1,3)$，$a=-2,b=-3$；由第三行第一个分量 $4=2\times2$ 得系数 $2$，故 $c=-2$（且第三个分量 $6=2\times3$ 自动相符，可作验算）。
+
+定出 $A$ 后求 $A^{n}$：秩 $1$ 矩阵一定能写成"列向量乘行向量"
+$$A=\xi\eta^{\mathrm T} , \xi=(1,-1,2)^{\mathrm T} , \eta^{\mathrm T}=(2,-1,3) ,$$
+于是
+$$A^{2}=\xi(\eta^{\mathrm T}\xi)\eta^{\mathrm T}=(\eta^{\mathrm T}\xi)A ,$$
+其中 $\eta^{\mathrm T}\xi$ 是一个**数**（恰等于 $A$ 的迹）。所以 $A^{n}=(\eta^{\mathrm T}\xi)^{n-1}A$。**看到秩 $1$ 就写成 $\xi\eta^{\mathrm T}$，求幂立刻变成数的幂**——这是秩 $1$ 矩阵最重要的用法。
+
+@解答
+**第一步：定 $\mathrm r(A)$。** 由 $BA=O$ 得
+$$\mathrm r(A)+\mathrm r(B)\leq3 ,$$
+又 $\mathrm r(B)>1$ 且秩为整数，故 $\mathrm r(B)\geq2$，从而 $\mathrm r(A)\leq1$。$A$ 的第一行 $(2,-1,3)\neq0$，故
+$$\mathrm r(A)=1 .$$
+
+**第二步：定 $a,b,c$。** $\mathrm r(A)=1$ 说明 $A$ 的各行都与 $(2,-1,3)$ 成比例。
+$$(a,1,b)=k(2,-1,3) : \text{由第二分量}\ 1=-k\ \text{得}\ k=-1 , a=-2 , b=-3 ;$$
+$$(4,c,6)=m(2,-1,3) : \text{由第一分量}\ 4=2m\ \text{得}\ m=2 , c=-2 , \text{且}\ 6=2\times3\ \text{相符} .$$
+故
+$$A=\begin{pmatrix}2&-1&3\\-2&1&-3\\4&-2&6\end{pmatrix} .$$
+
+**第三步：求 $A^{n}$。** 把 $A$ 写成秩 $1$ 分解
+$$A=\xi\eta^{\mathrm T} , \xi=\begin{pmatrix}1\\-1\\2\end{pmatrix} , \eta^{\mathrm T}=(2,-1,3) .$$
+计算数 $\eta^{\mathrm T}\xi=2\cdot1+(-1)(-1)+3\cdot2=2+1+6=9$。于是
+$$A^{2}=\xi\eta^{\mathrm T}\xi\eta^{\mathrm T}=\xi(\eta^{\mathrm T}\xi)\eta^{\mathrm T}=9\xi\eta^{\mathrm T}=9A ,$$
+归纳得
+$$A^{n}=9^{ n-1}A=9^{ n-1}\begin{pmatrix}2&-1&3\\-2&1&-3\\4&-2&6\end{pmatrix} , n=1,2,\cdots$$
+
+@考点
+$BA=O\Rightarrow\mathrm r(A)+\mathrm r(B)\leq n$；秩 $1$ 矩阵的行成比例；秩 $1$ 分解 $A=\xi\eta^{\mathrm T}$ 与幂公式 $A^{n}=(\eta^{\mathrm T}\xi)^{n-1}A$（注意 $\eta^{\mathrm T}\xi=\mathrm{tr}A$）。
+
+易混：$\eta^{\mathrm T}\xi$ 是数（$1\times1$），$\xi\eta^{\mathrm T}$ 是矩阵（$3\times3$），两者位置绝不能颠倒；本题中 $\eta^{\mathrm T}\xi=9=\mathrm{tr}A=2+1+6$，可用迹快速验算。
+
+@易错
+1. 把 $\mathrm r(B)>1$ 读成 $\mathrm r(B)\geq1$，得不到 $\mathrm r(A)\leq1$。
+2. 求比例系数时只用一个分量而不验算其余分量（本题第三行 $6=2\times3$ 是天然的自检）。
+3. 秩 $1$ 分解写反成 $A=\eta^{\mathrm T}\xi$。
+4. $A^{n}$ 写成 $9^{n}A$（指数应为 $n-1$，可用 $n=1$ 检验：$A^{1}=9^{0}A=A$）。
+
+[36]
+@题目
+设二阶常系数线性微分方程 $y'' + ay' + by = ce^x$ 有特解 $y^* = e^{-x}(1 + xe^{2x})$，则该方程的通解为 ＿＿＿＿.
+
+@切入点
+题目给的"特解"$y^{*}=\mathrm e^{-x}(1+x\mathrm e^{2x})$ 先展开成
+$$y^{*}=\mathrm e^{-x}+x\mathrm e^{x} ,$$
+这一步是必须的，否则看不出结构。
+
+接着要读懂两块各自的身份。方程是
+$$y''+ay'+by=c\mathrm e^{x} ,$$
+其通解 $=$ 齐次通解 $+$ 一个特解。$y^{*}$ 是某个特解，它可以"夹带"任意的齐次解。观察两块：
+- $x\mathrm e^{x}$：右端是 $c\mathrm e^{x}$，而特解里出现 $x\mathrm e^{x}$（多一个 $x$ 因子），这正是**共振**（$\lambda=1$ 是特征根）的标志，且只多一个 $x$ 说明是**单根**。于是 $\lambda_{1}=1$。
+- $\mathrm e^{-x}$：它是 $y^{*}$ 里"多出来"的部分。把 $y^{*}$ 减去 $x\mathrm e^{x}$ 仍是特解之差，所以 $\mathrm e^{-x}$ 必是**齐次方程的解**，于是 $\lambda_{2}=-1$。
+
+两个特征根 $1,-1$ 定下齐次通解 $C_{1}\mathrm e^{x}+C_{2}\mathrm e^{-x}$，再加上特解 $x\mathrm e^{x}$（$\mathrm e^{-x}$ 那一块已被 $C_{2}\mathrm e^{-x}$ 吸收），就是答案。
+
+**这类题的解题眼光是："特解里凡是形如右端函数的项，反映的是特解本身；凡是与右端无关的项，必是齐次解；带 $x$ 因子的程度告诉你重根的重数。"** 顺带可以反算 $a=0$、$b=-1$、$c=2$（把 $y=x\mathrm e^{x}$ 代入 $y''-y$ 得 $2\mathrm e^{x}$），不过题目只要通解。
+
+@解答
+先把特解化简：
+$$y^{*}=\mathrm e^{-x}(1+x\mathrm e^{2x})=\mathrm e^{-x}+x\mathrm e^{x} .$$
+
+方程右端为 $c\mathrm e^{x}$。由于特解中出现 $x\mathrm e^{x}$（比右端多一个因子 $x$），说明 $\lambda=1$ 是特征方程的**单根**。
+
+又 $y^{*}$ 与 $x\mathrm e^{x}$ 都是原方程的解（前者已知，后者由上段的共振结构给出），两者之差
+$$y^{*}-x\mathrm e^{x}=\mathrm e^{-x}$$
+必是对应齐次方程 $y''+ay'+by=0$ 的解，故 $\lambda=-1$ 也是特征根。
+
+二阶方程的特征根恰为两个，故
+$$\lambda_{1}=1 , \lambda_{2}=-1 ,$$
+齐次通解为 $C_{1}\mathrm e^{x}+C_{2}\mathrm e^{-x}$。于是原方程的通解为
+$$y=C_{1}\mathrm e^{x}+C_{2}\mathrm e^{-x}+x\mathrm e^{x} , C_{1},C_{2}\ \text{为任意常数} .$$
+
+（可验证：特征方程 $\lambda^{2}-1=0$ 对应 $a=0,b=-1$，即 $y''-y=c\mathrm e^{x}$；把 $y=x\mathrm e^{x}$ 代入，$y'=(1+x)\mathrm e^{x}$，$y''=(2+x)\mathrm e^{x}$，$y''-y=2\mathrm e^{x}$，故 $c=2$，与题设形式相符。）
+
+@考点
+二阶常系数非齐次线性方程解的结构（通解 $=$ 齐次通解 $+$ 特解）；共振时特解形如 $x^{k}\mathrm e^{\lambda x}$，$k$ 为该特征根的重数；由已知特解反推特征根。
+
+易混：题目给的 $y^{*}$ 是"某个"特解，不是"标准形式"的特解，它可以含有齐次解成分。判断时要把它按"与右端同型"和"与右端无关"两类拆开。
+
+@易错
+1. 不把 $\mathrm e^{-x}(1+x\mathrm e^{2x})$ 展开，看不出 $x\mathrm e^{x}$ 与 $\mathrm e^{-x}$ 两块。
+2. 认为 $\mathrm e^{-x}$ 是特解的一部分而不是齐次解，从而漏掉特征根 $-1$。
+3. 由 $x\mathrm e^{x}$ 断定 $\lambda=1$ 是**二重根**（二重根的特解应形如 $x^{2}\mathrm e^{x}$）。
+4. 通解中漏写 $x\mathrm e^{x}$，只给齐次通解。
+
+[37]
+@题目
+设 $y = x \sin x$ 在 $[0, n\pi]$ 上与 $x$ 轴所围图形的面积为 $a_n\ (n = 1, 2, \cdots)$，则
+$$\sum_{k=1}^{\infty} \frac{1}{\sqrt{a_k a_{k+1}}} = (\quad).$$
+A. $\dfrac{1}{\sqrt{\pi}}$　　B. $\dfrac{1}{\pi}$　　C. $\pi$　　D. $\sqrt{\pi}$
+
+@切入点
+两个环节：先求 $a_{n}$，再求级数和。
+
+**求 $a_{n}$。** "$y=x\sin x$ 与 $x$ 轴围成的面积"要用**绝对值**积分：
+$$a_{n}=\int_{0}^{n\pi}|x\sin x|dx .$$
+直接积绝对值不好办，但 $|\sin x|$ 以 $\pi$ 为周期，所以按 $[(k-1)\pi,k\pi]$ 分段，每段作平移 $x=(k-1)\pi+t$，$t\in[0,\pi]$，此时 $|\sin x|=\sin t$，于是
+$$\int_{(k-1)\pi}^{k\pi}|x\sin x|dx=\int_{0}^{\pi}[(k-1)\pi+t]\sin t dt=(k-1)\pi\cdot2+\pi=(2k-1)\pi ,$$
+用到 $\int_{0}^{\pi}\sin t dt=2$ 与 $\int_{0}^{\pi}t\sin t dt=\pi$。求和 $\sum_{k=1}^{n}(2k-1)=n^{2}$，得
+$$a_{n}=\pi n^{2} .$$
+这个结果非常漂亮（等于奇数列求和），**"分段平移 $+$ 利用 $|\sin x|$ 的周期性"是处理 $\int|x\sin x|$ 这类积分的固定手法**。
+
+**求级数和。** 有了 $a_{n}=\pi n^{2}$，
+$$\frac{1}{\sqrt{a_{k}a_{k+1}}}=\frac{1}{\sqrt{\pi k^{2}\cdot\pi(k+1)^{2}}}=\frac{1}{\pi k(k+1)} ,$$
+根号刚好开尽——这说明 $a_{n}$ 一定是"常数乘完全平方"，可以用来自检。剩下的 $\sum\frac{1}{k(k+1)}$ 是标准的裂项级数，和为 $1$。
+
+@解答
+**求 $a_{n}$。** 面积为
+$$a_{n}=\int_{0}^{n\pi}|x\sin x|dx=\sum_{k=1}^{n}\int_{(k-1)\pi}^{k\pi}|x\sin x|dx .$$
+在第 $k$ 段上令 $x=(k-1)\pi+t$，$t\in[0,\pi]$，则 $|\sin x|=|\sin((k-1)\pi+t)|=\sin t$，
+$$\int_{(k-1)\pi}^{k\pi}|x\sin x|dx=\int_{0}^{\pi}[(k-1)\pi+t]\sin t dt=(k-1)\pi\int_{0}^{\pi}\sin t dt+\int_{0}^{\pi}t\sin t dt .$$
+其中
+$$\int_{0}^{\pi}\sin t dt=2 , \int_{0}^{\pi}t\sin t dt=[-t\cos t]_{0}^{\pi}+\int_{0}^{\pi}\cos t dt=\pi+0=\pi ,$$
+故该段积分 $=2(k-1)\pi+\pi=(2k-1)\pi$。于是
+$$a_{n}=\sum_{k=1}^{n}(2k-1)\pi=\pi\cdot n^{2} .$$
+
+**求级数和。**
+$$\frac{1}{\sqrt{a_{k}a_{k+1}}}=\frac{1}{\sqrt{\pi k^{2}}\cdot\sqrt{\pi(k+1)^{2}}}=\frac{1}{\pi k(k+1)}=\frac{1}{\pi}(\frac1k-\frac{1}{k+1}) ,$$
+部分和
+$$\sum_{k=1}^{N}\frac{1}{\sqrt{a_{k}a_{k+1}}}=\frac1\pi(1-\frac{1}{N+1})\xrightarrow{N\to\infty}\frac1\pi .$$
+
+故选 **B**。
+
+@考点
+"曲线与 $x$ 轴围成的面积"要取被积函数的绝对值；$|\sin x|$ 的周期性与分段平移；$\int_{0}^{\pi}t\sin t dt$ 的分部积分；裂项级数 $\sum\frac{1}{k(k+1)}=1$。
+
+易混：$\int_{0}^{n\pi}x\sin x dx$（不带绝对值）与面积 $a_{n}$ 完全不同，前者会因正负相消而振荡，算出的 $a_{n}$ 就不会是 $\pi n^{2}$ 这样的单调量。
+
+@易错
+1. 忘记加绝对值，直接积 $x\sin x$。
+2. 分段平移时把 $|\sin((k-1)\pi+t)|$ 写成 $\pm\sin t$ 而保留符号。
+3. $\int_{0}^{\pi}t\sin t dt$ 分部时符号出错（应得 $\pi$）。
+4. 裂项后忘记提出因子 $\frac1\pi$，答成 $1$ 或 $\pi$。
+
+[38]
+@题目
+设 $X_1,X_2,\cdots,X_n$ 是总体 $X$ 的简单随机样本，且 $E(X^k)=a_k$，$k=1,2,3,4$，根据中心极限定理，当 $n$ 充分大时，$Y_n=\dfrac{1}{n}\sum\limits_{i=1}^{n}X_i^2$ 近似服从（　　）.
+A. $N\!\Big(a_2,\dfrac{a_4-a_2^2}{n}\Big)$
+B. $N(a_2,a_4-a_2^2)$
+C. $N\!\Big(a_1,\dfrac{a_4-a_2^2}{n}\Big)$
+D. $N(a_2,a_2^2)$
+
+@切入点
+题目问的是 $Y_{n}=\frac1n\sum_{i=1}^{n}X_{i}^{2}$ 的近似分布。中心极限定理的适用对象是**独立同分布随机变量之和（或其平均）**，所以第一步是把观察对象换成
+$$Z_{i}=X_{i}^{2} ,$$
+它们仍然独立同分布，于是 $Y_{n}=\overline Z$ 就是 $Z$ 的样本均值，直接套中心极限定理：
+$$\overline Z\ \text{近似服从}\ N(EZ,\ \frac{DZ}{n}) .$$
+**关键就是把"$X_{i}^{2}$"整体看成一个新随机变量**，不要纠结 $X$ 本身的分布。
+
+剩下就是算 $EZ$ 与 $DZ$：
+$$EZ=E(X^{2})=a_{2} , DZ=D(X^{2})=E(X^{4})-[E(X^{2})]^{2}=a_{4}-a_{2}^{2} .$$
+题目给出四阶矩 $a_{1},\cdots,a_{4}$，正是为了这里能算出 $D(X^{2})$——给到四阶矩就是提示你要对 $X^{2}$ 用中心极限定理。
+
+最后看选项的区别在两处：期望是 $a_{1}$ 还是 $a_{2}$（应是 $a_{2}$，排除 C），方差要不要除以 $n$（样本**均值**的方差要除以 $n$，排除 B、D）。答案 A。
+
+@解答
+令 $Z_{i}=X_{i}^{2} (i=1,2,\cdots,n)$，则 $Z_{1},\cdots,Z_{n}$ 独立同分布，且
+$$EZ_{i}=E(X^{2})=a_{2} ,$$
+$$DZ_{i}=D(X^{2})=E(X^{4})-[E(X^{2})]^{2}=a_{4}-a_{2}^{2} .$$
+（$a_{4}-a_{2}^{2}\geq0$，由方差非负保证。）
+
+$Y_{n}=\frac1n\sum_{i=1}^{n}Z_{i}=\overline Z$ 是 $Z$ 的样本均值，
+$$EY_{n}=a_{2} , DY_{n}=\frac{DZ_{i}}{n}=\frac{a_{4}-a_{2}^{2}}{n} .$$
+由独立同分布中心极限定理，当 $n$ 充分大时
+$$Y_{n}\ \text{近似服从}\ N(a_{2},\ \frac{a_{4}-a_{2}^{2}}{n}) .$$
+
+故选 **A**。
+
+@考点
+独立同分布中心极限定理（样本均值近似正态，方差要除以 $n$）；把 $X_{i}^{2}$ 整体视为新的同分布随机变量；$D(X^{2})=E(X^{4})-[E(X^{2})]^{2}$。
+
+易混：$\sum_{i=1}^{n}Z_{i}$ 近似服从 $N(na_{2},n(a_{4}-a_{2}^{2}))$，而**均值** $\frac1n\sum Z_{i}$ 近似服从 $N(a_{2},\frac{a_{4}-a_{2}^{2}}{n})$。看清题目问的是和还是平均。
+
+@易错
+1. 期望写成 $a_{1}$（那是 $EX$，不是 $EX^{2}$），选 C。
+2. 方差忘记除以 $n$，选 B。
+3. 把 $D(X^{2})$ 误算成 $[D(X)]^{2}$ 或 $a_{2}^{2}$，选 D。
+4. 认为必须知道 $X$ 的具体分布才能用中心极限定理（只需同分布、方差有限）。
+
+[39]
+@题目
+设曲线 $L$ 为上半圆周 $y=\sqrt{1-x^2}$，则
+$$\int_L (x-y)^2 e^{x^2+y^2}\,ds=\underline{\qquad}$$
+
+@切入点
+第一类曲线积分，$L$ 是上半单位圆周。有两个特征要抓：
+
+**特征一：曲线方程可以代入被积函数。** 在 $L$ 上处处有 $x^{2}+y^{2}=1$，于是
+$$\mathrm e^{x^{2}+y^{2}}=\mathrm e^{1}=\mathrm e$$
+是常数，直接提到积分号外；而 $(x-y)^{2}=x^{2}+y^{2}-2xy=1-2xy$ 也被大幅化简。这是第一类曲线积分最好用的性质。
+
+**特征二：对称性。** 上半圆周关于 $y$ 轴对称，而 $xy$ 关于 $x$ 是奇函数，故
+$$\int_{L}xy ds=0 .$$
+于是只剩 $\int_{L}1\cdot ds=$ 弧长 $=\pi$（半径 $1$ 的半圆）。
+
+两步下来完全不用参数化。若不用这两点，就得写 $x=\cos t,y=\sin t$，$ds=dt$，再算 $\int_{0}^{\pi}(\cos t-\sin t)^{2}\mathrm e dt$，虽然也能做（$=\mathrm e\int_{0}^{\pi}(1-\sin2t)dt=\mathrm e\pi$），但慢一些。参数化可以作为验算。
+
+@解答
+$L$ 为上半单位圆周 $x^{2}+y^{2}=1 (y\geq0)$，弧长为 $\pi$。
+
+在 $L$ 上 $x^{2}+y^{2}=1$，故
+$$\mathrm e^{x^{2}+y^{2}}=\mathrm e , (x-y)^{2}=x^{2}+y^{2}-2xy=1-2xy ,$$
+于是
+$$\int_{L}(x-y)^{2}\mathrm e^{x^{2}+y^{2}}ds=\mathrm e\int_{L}(1-2xy)ds=\mathrm e(\int_{L}ds-2\int_{L}xy ds) .$$
+$L$ 关于 $y$ 轴对称，而 $xy$ 关于 $x$ 为奇函数，故 $\int_{L}xy ds=0$。又 $\int_{L}ds=\pi$，所以
+$$\int_{L}(x-y)^{2}\mathrm e^{x^{2}+y^{2}}ds=\mathrm e\cdot\pi=\pi\mathrm e .$$
+
+（参数化验算：$x=\cos t$，$y=\sin t$，$t\in[0,\pi]$，$ds=dt$，
+$$\int_{0}^{\pi}(\cos t-\sin t)^{2}\mathrm e dt=\mathrm e\int_{0}^{\pi}(1-\sin2t)dt=\mathrm e[\pi+\frac{\cos2t}{2}|_{0}^{\pi}]=\mathrm e\pi .）$$
+
+@考点
+第一类曲线积分中曲线方程可代入被积函数；奇偶对称性 $\int_{L}xy ds=0$；$\int_{L}ds=$ 弧长。
+
+易混：第一类曲线积分与方向无关，$ds>0$；若是第二类（$\int_{L}P dx+Q dy$），就必须指明从哪端到哪端，且不能简单地用"奇函数积分为零"。
+
+@易错
+1. 不代入 $x^{2}+y^{2}=1$，硬去算 $\mathrm e^{x^{2}+y^{2}}$ 的积分。
+2. 把半圆弧长写成 $2\pi$ 或 $\frac\pi2$。
+3. 展开 $(x-y)^{2}$ 时漏掉交叉项或把 $-2xy$ 写成 $+2xy$（虽然该项积分为零，但会误导）。
+4. 误以为整个上半圆周关于原点对称而把 $\int_{L}x^{2}ds$ 也判为零。
+
+[40]
+@题目
+设
+$$I_{1}=\int_{0}^{\pi}\frac{x\sin^{2}x}{1+e^{\cos^{2}x}}\,\mathrm{d}x,\qquad I_{2}=\int_{0}^{\pi}\frac{\sin^{2}x}{1+e^{\cos^{2}x}}\,\mathrm{d}x,\qquad I_{3}=\int_{0}^{\frac{\pi}{2}}\frac{\cos^{2}x}{1+e^{\sin^{2}x}}\,\mathrm{d}x$$
+则（　）.
+A. $I_{1}>I_{2}>I_{3}$　　B. $I_{3}>I_{2}>I_{1}$　　C. $I_{2}>I_{1}>I_{3}$　　D. $I_{3}>I_{1}>I_{2}$
+
+@切入点
+三个积分都算不出初等原函数，所以必须靠**变量代换建立它们之间的关系**，而不是各自求值。找代换的依据是被积函数的对称性。
+
+记
+$$f(x)=\frac{\sin^{2}x}{1+\mathrm e^{\cos^{2}x}} ,$$
+则 $I_{2}=\int_{0}^{\pi}f(x)dx$，$I_{1}=\int_{0}^{\pi}xf(x)dx$。
+
+**关系一（$I_{1}$ 与 $I_{2}$）：** 注意 $f(\pi-x)=f(x)$（$\sin^{2}$、$\cos^{2}$ 在 $x\to\pi-x$ 下都不变），即 $f$ 关于 $x=\frac\pi2$ 对称。于是对 $I_{1}$ 用 $x\to\pi-x$：
+$$I_{1}=\int_{0}^{\pi}(\pi-x)f(x)dx=\pi I_{2}-I_{1} \Longrightarrow I_{1}=\frac{\pi}{2}I_{2} .$$
+这就是著名的 $\int_{0}^{\pi}xf(\sin x)dx=\frac\pi2\int_{0}^{\pi}f(\sin x)dx$ 的推广形式。因为 $\frac\pi2>1$ 且 $I_{2}>0$，故 $I_{1}>I_{2}$。
+
+**关系二（$I_{2}$ 与 $I_{3}$）：** 由 $f$ 关于 $\frac\pi2$ 对称得 $I_{2}=2\int_{0}^{\frac\pi2}f(x)dx$；再在 $[0,\frac\pi2]$ 上作 $x=\frac\pi2-t$，$\sin x\to\cos t$、$\cos x\to\sin t$，被积函数正好变成 $I_{3}$ 的被积函数：
+$$\int_{0}^{\frac\pi2}\frac{\sin^{2}x}{1+\mathrm e^{\cos^{2}x}}dx=\int_{0}^{\frac\pi2}\frac{\cos^{2}t}{1+\mathrm e^{\sin^{2}t}}dt=I_{3} ,$$
+故 $I_{2}=2I_{3}>I_{3}$。
+
+两条关系串起来就是 $I_{1}>I_{2}>I_{3}$。**看到 $\int_{0}^{\pi}$ 里带一个孤立的 $x$ 因子就用 $x\to\pi-x$；看到 $\sin$ 与 $\cos$ 互换的一对积分就用 $x\to\frac\pi2-x$**——这是两个最常用的定积分对称代换。
+
+@解答
+记
+$$f(x)=\frac{\sin^{2}x}{1+\mathrm e^{\cos^{2}x}}>0 ,$$
+则 $I_{1}=\int_{0}^{\pi}xf(x)dx$，$I_{2}=\int_{0}^{\pi}f(x)dx$。
+
+**第一步：$I_{1}=\frac\pi2I_{2}$。** 由 $\sin^{2}(\pi-x)=\sin^{2}x$、$\cos^{2}(\pi-x)=\cos^{2}x$ 知 $f(\pi-x)=f(x)$。在 $I_{1}$ 中令 $x=\pi-t$：
+$$I_{1}=\int_{0}^{\pi}(\pi-t)f(\pi-t)dt=\int_{0}^{\pi}(\pi-t)f(t)dt=\pi\int_{0}^{\pi}f(t)dt-I_{1}=\pi I_{2}-I_{1} ,$$
+故
+$$I_{1}=\frac{\pi}{2}I_{2} .$$
+因 $I_{2}>0$ 且 $\frac\pi2>1$，得 $I_{1}>I_{2}$。
+
+**第二步：$I_{2}=2I_{3}$。** 由 $f(\pi-x)=f(x)$（关于 $x=\frac\pi2$ 对称），
+$$I_{2}=2\int_{0}^{\frac\pi2}f(x)dx .$$
+在其中令 $x=\frac\pi2-t$，则 $\sin x=\cos t$，$\cos x=\sin t$，
+$$\int_{0}^{\frac\pi2}\frac{\sin^{2}x}{1+\mathrm e^{\cos^{2}x}}dx=\int_{0}^{\frac\pi2}\frac{\cos^{2}t}{1+\mathrm e^{\sin^{2}t}}dt=I_{3} ,$$
+故 $I_{2}=2I_{3}>I_{3}$（$I_{3}>0$）。
+
+综上
+$$I_{1}>I_{2}>I_{3} ,$$
+选 **A**。
+
+@考点
+定积分代换 $x\to\pi-x$ 消去被积函数中孤立的 $x$（得 $\int_{0}^{\pi}xg(x)dx=\frac\pi2\int_{0}^{\pi}g(x)dx$，其中 $g(\pi-x)=g(x)$）；代换 $x\to\frac\pi2-x$ 互换 $\sin$ 与 $\cos$；被积函数关于区间中点对称时 $\int_{0}^{\pi}=2\int_{0}^{\frac\pi2}$。
+
+易混：公式 $\int_{0}^{\pi}xg(\sin x)dx=\frac\pi2\int_{0}^{\pi}g(\sin x)dx$ 成立的前提是 $g(\pi-x)=g(x)$。本题被积函数里既有 $\sin^{2}x$ 又有 $\cos^{2}x$，好在两者在 $x\to\pi-x$ 下都不变，所以仍可用；若出现 $\cos x$ 的奇次幂就不行了。
+
+@易错
+1. 试图求出三个积分的具体值（都不是初等可积的）。
+2. 用 $x\to\pi-x$ 时忘记验证 $f(\pi-x)=f(x)$，或错误地认为 $\cos^{2}(\pi-x)=-\cos^{2}x$。
+3. 第二步漏掉因子 $2$，得出 $I_{2}=I_{3}$。
+4. 只比较 $I_{1}$ 与 $I_{2}$ 就在 A、C 间猜，没处理 $I_{3}$。
+
+[41]
+@题目
+设 $n\ (n > 2)$ 阶矩阵
+$$A = \begin{bmatrix} a & 1 & 1 & \cdots & 1 \\ 1 & a & 1 & \cdots & 1 \\ 1 & 1 & a & \cdots & 1 \\ \vdots & \vdots & \vdots & & \vdots \\ 1 & 1 & 1 & \cdots & a \end{bmatrix}$$
+求：（Ⅰ）可逆矩阵 $P$ 及对角矩阵 $\Lambda$，使得 $P^{-1}AP = \Lambda$；（Ⅱ）$\mathrm{r}(A^{*})$.
+
+@切入点
+这是"主对角线是 $a$、其余全是 $1$"的标准矩阵。不要去硬算 $n$ 阶行列式，正确的着眼点是把它**拆成单位阵与全 $1$ 矩阵的组合**：
+$$A=(a-1)E+J , J=\begin{pmatrix}1&\cdots&1\\ \vdots&&\vdots\\ 1&\cdots&1\end{pmatrix} .$$
+这样拆的好处是 $J$ 的谱结构一目了然：$J$ 的秩为 $1$，每行之和为 $n$，故
+$$Jx=nx\ \text{当}\ x=(1,1,\cdots,1)^{\mathrm T} ; Jx=0\ \text{当}\ x\ \text{的各分量之和为}\ 0 ,$$
+即 $J$ 的特征值是 $n$（单）与 $0$（$n-1$ 重），而且特征向量可以显式写出。由 $A=(a-1)E+J$，$A$ 与 $J$ 有**完全相同的特征向量**，特征值各加 $a-1$：
+$$\lambda_{1}=a-1+n \text{（单）} , \lambda_{2}=\cdots=\lambda_{n}=a-1 \text{（$n-1$ 重）} .$$
+
+$\lambda=a-1$ 的特征子空间就是超平面 $x_{1}+\cdots+x_{n}=0$，维数 $n-1$，与重数相等，所以 $A$ 必可对角化——这也解释了为什么题目敢直接要求 $P$。
+
+（Ⅱ）求 $\mathrm r(A^{*})$ 用的是标准结论
+$$\mathrm r(A^{*})=\begin{cases}n,&\mathrm r(A)=n,\\ 1,&\mathrm r(A)=n-1,\\ 0,&\mathrm r(A)\leq n-2,\end{cases}$$
+所以只需按 $a$ 分类讨论 $\mathrm r(A)$。由特征值即可读出：$|A|=(a+n-1)(a-1)^{n-1}$，退化只可能发生在 $a=1-n$（一个特征值为零）或 $a=1$（$n-1$ 个特征值为零，此时 $A=J$ 秩为 $1$）。注意题设 $n>2$ 保证 $a=1$ 时 $1\leq n-2$，落入第三种情形。
+
+@解答
+**（Ⅰ）** 记 $J$ 为元素全为 $1$ 的 $n$ 阶矩阵，则
+$$A=(a-1)E+J .$$
+$J$ 的秩为 $1$：由 $J\xi_{1}=n\xi_{1}$（$\xi_{1}=(1,1,\cdots,1)^{\mathrm T}$）及 $Jx=0\iff x_{1}+x_{2}+\cdots+x_{n}=0$ 知 $J$ 的特征值为 $n$（单）与 $0$（$n-1$ 重）。故 $A$ 的特征值为
+$$\lambda_{1}=a+n-1 \text{（单）} , \lambda_{2}=\cdots=\lambda_{n}=a-1 \text{（$n-1$ 重）} ,$$
+且特征向量与 $J$ 的相同。
+
+$\lambda_{1}=a+n-1$ 对应 $\xi_{1}=(1,1,\cdots,1)^{\mathrm T}$。
+
+$\lambda=a-1$ 对应齐次方程 $x_{1}+x_{2}+\cdots+x_{n}=0$，取基础解系
+$$\xi_{2}=(1,-1,0,\cdots,0)^{\mathrm T} , \xi_{3}=(1,0,-1,0,\cdots,0)^{\mathrm T} , \cdots , \xi_{n}=(1,0,\cdots,0,-1)^{\mathrm T} ,$$
+共 $n-1$ 个，与重数相等，故 $A$ 可对角化。取
+$$P=(\xi_{1},\xi_{2},\cdots,\xi_{n})=\begin{pmatrix}1&1&1&\cdots&1\\ 1&-1&0&\cdots&0\\ 1&0&-1&\cdots&0\\ \vdots&\vdots&\vdots&&\vdots\\ 1&0&0&\cdots&-1\end{pmatrix} ,$$
+则
+$$P^{-1}AP=\Lambda=\mathrm{diag}(a+n-1,\ a-1,\ \cdots,\ a-1) .$$
+
+**（Ⅱ）** 由特征值得
+$$|A|=(a+n-1)(a-1)^{n-1} .$$
+分三种情形（$n>2$）：
+
+$a\neq1$ 且 $a\neq1-n$：$|A|\neq0$，$\mathrm r(A)=n$，故
+$$\mathrm r(A^{*})=n .$$
+
+$a=1-n$：此时 $\lambda_{1}=0$ 为单特征值，其余 $n-1$ 个特征值 $a-1=-n\neq0$，故 $\mathrm r(A)=n-1$，
+$$\mathrm r(A^{*})=1 .$$
+
+$a=1$：此时 $A=J$，$\mathrm r(A)=1$。由 $n>2$ 知 $1\leq n-2$，故
+$$\mathrm r(A^{*})=0 .$$
+
+@考点
+把"对角 $a$、其余 $1$"的矩阵拆成 $(a-1)E+J$；秩 $1$ 矩阵 $J$ 的特征值与特征向量；$A$ 与 $A+kE$ 特征向量相同、特征值相差 $k$；伴随矩阵秩的三分公式。
+
+易混：伴随矩阵秩的公式只有三种取值 $n,1,0$，分界点是 $\mathrm r(A)=n$、$n-1$、$\leq n-2$；不要写成"$\mathrm r(A^{*})=n-\mathrm r(A)$"之类。
+
+@易错
+1. 硬算 $n$ 阶行列式 $|A-\lambda E|$，过程冗长易错。
+2. $\lambda=a-1$ 的特征向量只取一个，误以为 $A$ 不可对角化。
+3. 分类时漏掉 $a=1-n$ 或 $a=1$ 中的一种。
+4. $a=1$ 时误判 $\mathrm r(A)=n-1$（实际 $A=J$ 秩为 $1$），把 $\mathrm r(A^{*})$ 答成 $1$。
+
+[42]
+@题目
+设 $f(x)$ 在 $[0,1]$ 上连续，在 $(0,1)$ 内可导，且 $f(0)=0$，$f(1)=1$，证明：
+（Ⅰ）存在 $x_{0}\in(0,1)$，使得 $f(x_{0})=2(1-x_{0})$；
+（Ⅱ）存在 $\xi$ 与 $\eta\in(0,1)$，且 $\xi\neq\eta$，使得 $f'(\xi)[1+f'(\eta)]=2$.
+
+@切入点
+（Ⅰ）要证"存在 $x_{0}$ 使 $f(x_{0})=2(1-x_{0})$"，这是**方程有根**的问题，条件里只给了连续性（可导性留给第二问用），所以用**零点定理／介值定理**：把等式移项构造
+$$g(x)=f(x)-2(1-x) ,$$
+算两端符号 $g(0)=f(0)-2=-2<0$、$g(1)=f(1)-0=1>0$，异号即得根。注意 $g$ 只需连续，用的正是题设的"$[0,1]$ 上连续"。
+
+（Ⅱ）结论形如 $f'(\xi)\cdot[1+f'(\eta)]=2$，出现**两个不同中值点**，这是典型的"**在两个子区间上分别用拉格朗日中值定理**"的信号。分界点用哪个？自然就是第一问找到的 $x_{0}$——这也是两问放在一起的用意：第一问是给第二问造分点的。
+
+在 $[0,x_{0}]$ 与 $[x_{0},1]$ 上分别用拉格朗日：
+$$f'(\xi)=\frac{f(x_{0})-f(0)}{x_{0}-0}=\frac{2(1-x_{0})}{x_{0}} , f'(\eta)=\frac{f(1)-f(x_{0})}{1-x_{0}}=\frac{1-2(1-x_{0})}{1-x_{0}}=\frac{2x_{0}-1}{1-x_{0}} .$$
+然后关键的一步是**观察结论里为什么是 $1+f'(\eta)$**：
+$$1+f'(\eta)=\frac{(1-x_{0})+(2x_{0}-1)}{1-x_{0}}=\frac{x_{0}}{1-x_{0}} ,$$
+它与 $f'(\xi)=\frac{2(1-x_{0})}{x_{0}}$ 正好互为倒数的 $2$ 倍，相乘时 $x_{0}$ 与 $1-x_{0}$ 全部约掉，得 $2$。所以"$1+$"这个多出来的 $1$ 就是为了配出 $\frac{x_{0}}{1-x_{0}}$——**倒推着看结论的结构，就能确定该在哪两段用中值定理**。
+
+最后别忘了说明 $\xi\neq\eta$：它们分别落在 $(0,x_{0})$ 与 $(x_{0},1)$ 两个不相交的开区间内。
+
+@解答
+**（Ⅰ）** 令
+$$g(x)=f(x)-2(1-x) , x\in[0,1] ,$$
+则 $g$ 在 $[0,1]$ 上连续，且
+$$g(0)=f(0)-2=0-2=-2<0 , g(1)=f(1)-0=1>0 .$$
+由零点定理，存在 $x_{0}\in(0,1)$ 使 $g(x_{0})=0$，即
+$$f(x_{0})=2(1-x_{0}) .$$
+
+**（Ⅱ）** 由（Ⅰ）取定的 $x_{0}\in(0,1)$，$f$ 在 $[0,x_{0}]$ 与 $[x_{0},1]$ 上都连续、在相应开区间内可导。
+
+在 $[0,x_{0}]$ 上用拉格朗日中值定理：存在 $\xi\in(0,x_{0})$，
+$$f'(\xi)=\frac{f(x_{0})-f(0)}{x_{0}-0}=\frac{2(1-x_{0})}{x_{0}} .$$
+
+在 $[x_{0},1]$ 上用拉格朗日中值定理：存在 $\eta\in(x_{0},1)$，
+$$f'(\eta)=\frac{f(1)-f(x_{0})}{1-x_{0}}=\frac{1-2(1-x_{0})}{1-x_{0}}=\frac{2x_{0}-1}{1-x_{0}} .$$
+
+于是
+$$1+f'(\eta)=\frac{(1-x_{0})+(2x_{0}-1)}{1-x_{0}}=\frac{x_{0}}{1-x_{0}} ,$$
+$$f'(\xi)[1+f'(\eta)]=\frac{2(1-x_{0})}{x_{0}}\cdot\frac{x_{0}}{1-x_{0}}=2 .$$
+
+又 $\xi\in(0,x_{0})$、$\eta\in(x_{0},1)$，两区间不相交，故 $\xi\neq\eta$。证毕。
+
+@考点
+零点定理（介值定理）证明方程有根；拉格朗日中值定理；"两个中值点"型结论的分区间技巧；用第一问的结论为第二问提供分点。
+
+易混：若结论中两个中值点允许相同，可以在同一区间上做文章；本题明确要求 $\xi\neq\eta$，因此必须分成两个**不相交**的子区间，这也正是需要一个内点 $x_{0}$ 的原因。
+
+@易错
+1. （Ⅰ）中构造函数时把式子移项移错，例如令 $g=f(x)+2(1-x)$，两端同号。
+2. （Ⅰ）中只说"由介值定理"却不验证两端异号。
+3. （Ⅱ）中在同一个区间 $[0,1]$ 上用两次中值定理，得不到 $\xi\neq\eta$。
+4. 化简 $1+f'(\eta)$ 时通分出错，看不出与 $f'(\xi)$ 约分的结构。
+5. 忘记指出 $x_{0}\in(0,1)$ 是开区间内点（否则某个子区间会退化成一点）。
+
+[43]
+@题目
+设 $f(x,y)$ 在点 $(x_0,y_0)$ 处不可微，则下列命题中一定不成立的是（　）.
+A. $f(x,y)$ 在点 $(x_0,y_0)$ 处不连续
+B. $f(x,y)$ 在点 $(x_0,y_0)$ 处两个偏导数均存在且偏导数连续
+C. $f(x,y)$ 在点 $(x_0,y_0)$ 处两个偏导数均存在且至少有一个不连续
+D. $f(x,y)$ 在点 $(x_0,y_0)$ 处沿任何方向的方向导数均不存在
+
+@切入点
+问"一定不成立"，也就是要找出与"在 $(x_{0},y_{0})$ 处不可微"**逻辑上矛盾**的那一项。所以要检索的是多元微分学里的各种蕴含关系，看哪个选项能**推出可微**。
+
+核心定理只有一条：
+$$\text{偏导数在该点的某邻域内存在且在该点连续}\Longrightarrow\text{在该点可微} .$$
+选项 B 正是这个定理的前提，它一旦成立就必然可微，与题设"不可微"矛盾，故 B 一定不成立。
+
+其余三项都只是"可微"的**必要条件的否定**或与可微无蕴含关系，都可以与不可微共存：
+- A：不连续 $\Rightarrow$ 不可微，所以 A 与不可微完全相容（例如在原点取 $f=1$、别处取 $0$）。
+- C：偏导存在但不连续，正是不可微的典型情形（如 $f=\frac{xy}{x^{2}+y^{2}}$，$f(0,0)=0$）。
+- D：方向导数全不存在，那自然不可微，相容（例如取 $f$ 为定义在有理点与无理点上取不同值的函数）。
+
+判断的窍门是：**可微的"充分条件"只有"偏导连续"这一条**，所以选项里凡是复述这个充分条件的，就是"一定不成立"的那个。
+
+@解答
+在多元函数微分学中有定理：**若 $f$ 的两个偏导数在点 $(x_{0},y_{0})$ 的某邻域内存在，且在 $(x_{0},y_{0})$ 处连续，则 $f$ 在 $(x_{0},y_{0})$ 处可微。**
+
+选项 B 断言"两个偏导数均存在且偏导数连续"，由上述定理立即得到 $f$ 在该点可微，与题设"$f$ 在 $(x_{0},y_{0})$ 处不可微"矛盾。故 B 一定不成立。
+
+其余选项均可与"不可微"同时成立：
+
+A：可微必连续，故不连续必不可微。例如
+$$f(x,y)=\begin{cases}1,&(x,y)=(0,0),\\ 0,&\text{其他},\end{cases}$$
+在原点不连续，当然不可微。A 可以成立。
+
+C：偏导数存在但不连续是"不可微"的典型情形。例如
+$$f(x,y)=\begin{cases}\dfrac{xy}{x^{2}+y^{2}},&(x,y)\neq(0,0),\\ 0,&(x,y)=(0,0),\end{cases}$$
+在原点两个偏导数都存在（均为 $0$）但偏导数不连续，且 $f$ 在原点不可微。C 可以成立。
+
+D：若各方向的方向导数都不存在，则偏导数（即沿坐标轴方向的方向导数）也不存在，自然不可微。D 可以成立。
+
+故选 **B**。
+
+@考点
+可微的充分条件（偏导数在该点连续）；可微的必要条件（连续、偏导数存在、各方向导数存在）；这些条件之间"充分不必要 / 必要不充分"的关系。
+
+易混：偏导数存在**不能**推出可微，也不能推出连续；只有"偏导数存在且连续"才推出可微。反过来，可微 $\Rightarrow$ 偏导存在、$\Rightarrow$ 连续、$\Rightarrow$ 各方向导数存在，但这三条都推不回可微。
+
+@易错
+1. 选 A：以为"不可微一定不连续"（其实不可微的函数完全可以连续，例如 $\sqrt{x^{2}+y^{2}}$ 在原点）。
+2. 选 C：误以为"偏导存在"就一定可微，从而认为 C 矛盾。
+3. 选 D：找不到"所有方向导数都不存在"的例子就断言它不可能。
+4. 把"偏导数连续"与"函数连续"混为一谈。
+
+[44]
+@题目
+设 $D=\{(x,y)\mid 0\leqslant x\leqslant 1,\ 0\leqslant y\leqslant 1\}$，计算
+$$I=\iint_{D}\max\{2x-x^{2},\ (1-y)^{2}\}\mathrm{d}x\mathrm{d}y.$$
+
+@切入点
+被积函数是 $\max$，处理 $\max$（或 $\min$、绝对值）的唯一办法是**按两式的大小关系把区域分块**。所以先要解不等式
+$$2x-x^{2}\geq(1-y)^{2} .$$
+左边 $2x-x^{2}=1-(1-x)^{2}$，这个配方是本题的钥匙：它提示作换元
+$$u=1-x , v=1-y ,$$
+（这是关于正方形中心的一个反射，雅可比的绝对值为 $1$，区域仍是 $[0,1]^{2}$），于是不等式变成
+$$1-u^{2}\geq v^{2} \iff u^{2}+v^{2}\leq1 ,$$
+分界线成了**单位圆**，区域被分成四分之一圆盘 $Q$ 和它在正方形内的补集。**换元把一条隐晦的分界曲线变成圆，后面才能用极坐标。**
+
+分块后：
+$$I=\iint_{Q}(1-u^{2})dudv+\iint_{[0,1]^{2}\setminus Q}v^{2}dudv .$$
+第二块不必直接算，用"整块减 $Q$"更快：
+$$\iint_{[0,1]^{2}\setminus Q}v^{2}=\iint_{[0,1]^{2}}v^{2}-\iint_{Q}v^{2}=\frac13-\iint_{Q}v^{2} .$$
+而 $Q$ 上由 $u,v$ 的对称性
+$$\iint_{Q}u^{2}=\iint_{Q}v^{2}=\frac12\iint_{Q}(u^{2}+v^{2})=\frac12\int_{0}^{\frac\pi2}d\theta\int_{0}^{1}r^{2}\cdot r dr=\frac{\pi}{16} ,$$
+一次极坐标积分同时解决两处。
+
+@解答
+**换元。** 令 $u=1-x$，$v=1-y$，则 $|\frac{\partial(x,y)}{\partial(u,v)}|=1$，$D$ 仍变为 $[0,1]^{2}$，且
+$$2x-x^{2}=1-(1-x)^{2}=1-u^{2} , (1-y)^{2}=v^{2} ,$$
+故
+$$I=\iint_{[0,1]^{2}}\max\{1-u^{2},\ v^{2}\}dudv .$$
+
+**分块。** $1-u^{2}\geq v^{2}\iff u^{2}+v^{2}\leq1$。记
+$$Q=\{(u,v): u^{2}+v^{2}\leq1,\ u\geq0,\ v\geq0\} \text{（四分之一圆盘）} ,$$
+则
+$$I=\iint_{Q}(1-u^{2})dudv+\iint_{[0,1]^{2}\setminus Q}v^{2}dudv .$$
+
+**计算 $Q$ 上的两个积分。** $Q$ 的面积为 $\frac\pi4$。由 $Q$ 关于直线 $v=u$ 对称，
+$$\iint_{Q}u^{2}dudv=\iint_{Q}v^{2}dudv=\frac12\iint_{Q}(u^{2}+v^{2})dudv=\frac12\int_{0}^{\frac\pi2}d\theta\int_{0}^{1}r^{2}\cdot r dr=\frac12\cdot\frac\pi2\cdot\frac14=\frac{\pi}{16} .$$
+于是
+$$\iint_{Q}(1-u^{2})dudv=\frac\pi4-\frac{\pi}{16} .$$
+
+**计算补集上的积分。**
+$$\iint_{[0,1]^{2}}v^{2}dudv=\int_{0}^{1}du\int_{0}^{1}v^{2}dv=\frac13 ,$$
+$$\iint_{[0,1]^{2}\setminus Q}v^{2}dudv=\frac13-\frac{\pi}{16} .$$
+
+**合并。**
+$$I=(\frac\pi4-\frac{\pi}{16})+(\frac13-\frac{\pi}{16})=\frac\pi4-\frac\pi8+\frac13=\frac{\pi}{8}+\frac13 .$$
+
+@考点
+含 $\max$ 的二重积分按大小关系分区域；配方 $2x-x^{2}=1-(1-x)^{2}$ 与平移（反射）换元；四分之一圆盘上用极坐标；对称性 $\iint_{Q}u^{2}=\iint_{Q}v^{2}$；"补集 $=$ 整体 $-$ 部分"。
+
+易混：$\max\{f,g\}$ 的积分**不等于** $\max\{\iint f,\iint g\}$，必须分区域；同理 $\iint\max\neq\frac12\iint(f+g+|f-g|)$ 之外的任何简化。
+
+@易错
+1. 不分区域，直接对某一个函数积分。
+2. 分界不等式解错方向：应是 $u^{2}+v^{2}\leq1$ 时取 $1-u^{2}$（即 $2x-x^{2}$），反了就整体错。
+3. 极坐标漏掉面积元中的 $r$。
+4. 算补集上的积分时重新设限硬积，费时且容易漏掉圆弧段。
+
+[45]
+@题目
+设 $A$ 是 3 阶方阵，$A = (a_{ij})_{3\times3}$，且 $a_{ij} = A_{ij}$，$i,j = 1,2,3$，其中 $A_{ij}$ 为 $a_{ij}$ 的代数余子式，$a_{33} \neq 0$，$b = (a_{13},a_{23},a_{33})^{\mathrm{T}}$，求非齐次线性方程组 $Ax = b$ 的解.
+
+@切入点
+条件 $a_{ij}=A_{ij}$（元素等于自己的代数余子式）要先翻译成矩阵语言。伴随矩阵的定义是
+$$A^{*}=\begin{pmatrix}A_{11}&A_{21}&A_{31}\\ A_{12}&A_{22}&A_{32}\\ A_{13}&A_{23}&A_{33}\end{pmatrix} ,$$
+即 $A^{*}$ 的 $(i,j)$ 元是 $A_{ji}$。于是 $a_{ij}=A_{ij}$ 就是
+$$A^{*}=A^{\mathrm T} .$$
+这一步是整题的枢纽，**注意伴随矩阵天然带一个转置**，写错就全错。
+
+代入基本恒等式 $AA^{*}=|A|E$ 得
+$$AA^{\mathrm T}=|A|E .$$
+两端取行列式：$|A|\cdot|A^{\mathrm T}|=|A|^{2}$，而右端 $=|A|^{3}$（三阶），故 $|A|^{2}=|A|^{3}$，即 $|A|=0$ 或 $1$。
+
+排除 $|A|=0$：此时 $AA^{\mathrm T}=O$，其主对角元给出 $\sum_{j}a_{ij}^{2}=0$，于是 $A=O$，与 $a_{33}\neq0$ 矛盾。**"$AA^{\mathrm T}=O\Rightarrow A=O$"是实矩阵特有的结论（由平方和为零推出），值得记住。**
+
+所以 $|A|=1$ 且 $AA^{\mathrm T}=E$，$A$ 是正交矩阵，方程组有唯一解。最后一步是"看出" $b$ 的身份：$b=(a_{13},a_{23},a_{33})^{\mathrm T}$ 恰是 $A$ 的**第三列**，而第三列 $=A(0,0,1)^{\mathrm T}$，所以解就是 $(0,0,1)^{\mathrm T}$——根本不用求 $A^{-1}$。
+
+@解答
+**第一步：翻译条件。** 由伴随矩阵的定义，$A^{*}$ 的 $(i,j)$ 元为 $A_{ji}$。题设 $a_{ij}=A_{ij}$，故
+$$(A^{*})_{ij}=A_{ji}=a_{ji}=(A^{\mathrm T})_{ij} ,$$
+即
+$$A^{*}=A^{\mathrm T} .$$
+
+**第二步：定 $|A|$。** 由 $AA^{*}=|A|E$ 得
+$$AA^{\mathrm T}=|A|E .$$
+两端取行列式（三阶）：
+$$|A|\cdot|A^{\mathrm T}|=|A|^{2} , ||A|E|=|A|^{3} \Longrightarrow |A|^{2}=|A|^{3} ,$$
+故 $|A|=0$ 或 $|A|=1$。
+
+若 $|A|=0$，则 $AA^{\mathrm T}=O$，比较主对角元得
+$$a_{i1}^{2}+a_{i2}^{2}+a_{i3}^{2}=0 , i=1,2,3 ,$$
+由实数平方和为零知 $a_{ij}=0$ 对一切 $i,j$ 成立，即 $A=O$，与 $a_{33}\neq0$ 矛盾。故
+$$|A|=1 , AA^{\mathrm T}=E ,$$
+即 $A$ 为正交矩阵，$A$ 可逆，方程组 $Ax=b$ 有唯一解。
+
+**第三步：求解。** 注意
+$$b=(a_{13},a_{23},a_{33})^{\mathrm T}$$
+恰为 $A$ 的第三列，即
+$$b=A\begin{pmatrix}0\\0\\1\end{pmatrix} .$$
+由 $A$ 可逆得唯一解
+$$x=(0,0,1)^{\mathrm T} .$$
+
+@考点
+伴随矩阵的定义（带转置）与 $AA^{*}=|A|E$；实矩阵 $AA^{\mathrm T}=O\Rightarrow A=O$；正交矩阵；"右端向量恰是系数矩阵的某一列"时解为相应的单位坐标向量。
+
+易混：$A^{*}$ 的 $(i,j)$ 元是 $A_{ji}$ 而不是 $A_{ij}$。若误写成 $A^{*}=A$，会得到 $A^{2}=|A|E$，推不出正交性，后面全错。
+
+@易错
+1. 伴随矩阵漏掉转置。
+2. 取行列式时把 $||A|E|$ 写成 $|A|$（应为 $|A|^{n}=|A|^{3}$）。
+3. 不排除 $|A|=0$ 的情形，或排除时说不出理由（要用平方和为零）。
+4. 去求 $A^{-1}$ 再乘 $b$——$A$ 的元素并未给出，根本求不出；必须"看出" $b$ 是第三列。
+
+[46]
+@题目
+设积分 $I=\displaystyle\int_L F(x,y)(y\,dx+x\,dy)$ 与路径无关，且 $F(x,y)=0$ 确定的隐函数的图形过点 $(1,2)$ 且与坐标轴无交点，其中 $F(x,y)$ 可微，则 $F(x,y)=0$ 确定的隐函数为 $\underline{\qquad}$．
+
+@切入点
+"曲线积分与路径无关"在单连通区域上的充要条件是
+$$\frac{\partial P}{\partial y}=\frac{\partial Q}{\partial x} ,$$
+本题 $P=F(x,y) y$，$Q=F(x,y) x$，代入并用乘积法则：
+$$\frac{\partial}{\partial y}(Fy)=F'_{y} y+F , \frac{\partial}{\partial x}(Fx)=F'_{x} x+F .$$
+两端的 $F$ 恰好抵消，条件化为
+$$y F'_{y}=x F'_{x} .$$
+**注意常数项 $F$ 的对消是本题设计的精妙处**：正因为 $P,Q$ 中的 $y,x$ 是"交叉"配的，求导后多出来的那一项才相同。
+
+接下来要解这个一阶偏微分方程。它说的是"$F$ 沿某族曲线保持不变"。观察：若令 $t=xy$，则
+$$F=\varphi(xy) \Longrightarrow F'_{x}=y\varphi'(xy) , F'_{y}=x\varphi'(xy) ,$$
+代入得 $y\cdot x\varphi'=x\cdot y\varphi'$，恒成立。所以 $F=\varphi(xy)$ 是通解形式——**$F$ 只通过组合 $xy$ 依赖于 $(x,y)$**。
+
+于是 $F(x,y)=0$ 即 $\varphi(xy)=0$，它把 $xy$ 限制为 $\varphi$ 的某个零点，也就是
+$$xy=C .$$
+再用两个条件定 $C$ 并检验：过点 $(1,2)$ 给出 $C=2$；而 $xy=2$ 即 $y=\frac2x$ 是双曲线，与两坐标轴都无交点，符合题设。（若 $C=0$，曲线就是两条坐标轴本身，与"无交点"矛盾，正好被排除。）
+
+@解答
+设 $P=F(x,y)y$，$Q=F(x,y)x$。曲线积分与路径无关的充要条件为
+$$\frac{\partial P}{\partial y}=\frac{\partial Q}{\partial x} .$$
+计算：
+$$\frac{\partial P}{\partial y}=\frac{\partial}{\partial y}(F(x,y)y)=y F'_{y}+F , \frac{\partial Q}{\partial x}=\frac{\partial}{\partial x}(F(x,y)x)=x F'_{x}+F .$$
+两式相等并消去 $F$：
+$$y F'_{y}=x F'_{x} , \text{即} x F'_{x}-y F'_{y}=0 .$$
+
+这说明 $F$ 沿着 $xy=$ 常数的曲线取值不变，即存在一元函数 $\varphi$ 使
+$$F(x,y)=\varphi(xy) .$$
+（验证：$F'_{x}=y\varphi'(xy)$，$F'_{y}=x\varphi'(xy)$，则 $xF'_{x}=xy\varphi'=yF'_{y}$，条件成立。）
+
+于是 $F(x,y)=0$ 即 $\varphi(xy)=0$，它确定的曲线为
+$$xy=C .$$
+由曲线过点 $(1,2)$ 得 $C=1\times2=2$。此时
+$$xy=2 , \text{即} y=\frac{2}{x} ,$$
+是双曲线，与两坐标轴均无交点，符合题设。
+
+故所求隐函数为
+$$xy=2 (y=\frac2x) .$$
+
+@考点
+平面曲线积分与路径无关的充要条件 $\frac{\partial P}{\partial y}=\frac{\partial Q}{\partial x}$；一阶线性偏微分方程 $xF'_{x}-yF'_{y}=0$ 的通解 $F=\varphi(xy)$；由附加条件确定具体曲线。
+
+易混：这里求的是"$F(x,y)=0$ 确定的隐函数"，而不是 $F$ 本身——$F$ 只能确定到形如 $\varphi(xy)$ 的任意函数，但它的零点集必是 $xy=$ 常数这一族中的某一条。
+
+@易错
+1. 求 $\frac{\partial}{\partial y}(Fy)$ 时忘记乘积法则，只写 $yF'_{y}$ 或只写 $F$。
+2. 把条件写成 $\frac{\partial P}{\partial x}=\frac{\partial Q}{\partial y}$（下标错位）。
+3. 解出 $xF'_{x}=yF'_{y}$ 后猜成 $F=\varphi(x+y)$ 或 $F=\varphi(x/y)$；可以代回验证来排除。
+4. 定常数时得到 $C=2$ 却写成 $y=2x$。
+
+[47]
+@题目
+设随机变量 $X$ 与 $Y$ 均服从 $N(0,\sigma^2)$，且 $P\{X\leqslant1,Y\leqslant-1\}=\dfrac{1}{4}$，则 $P\{X>1,Y>-1\}=$ ______.
+
+@切入点
+要求的是 $P\{X>1,Y>-1\}$，已知的是 $P\{X\leq1,Y\leq-1\}$。两个事件是"同时取反"的关系，这类转换的标准工具是**容斥（对偶）公式**：
+$$P\{X>1,Y>-1\}=P(\overline{\{X\leq1\}\cup\{Y\leq-1\}})=1-P\{X\leq1\}-P\{Y\leq-1\}+P\{X\leq1,Y\leq-1\} .$$
+（用了 $\{X>1\}\cap\{Y>-1\}$ 是 $\{X\leq1\}\cup\{Y\leq-1\}$ 的对立事件。）
+
+写到这里，未知的只剩两个边缘概率。注意题目**没有**给出 $X,Y$ 独立，也没给 $\sigma$，所以不能指望分别求出它们——但可以求它们的**和**：$X,Y$ 都服从 $N(0,\sigma^{2})$，密度关于 $0$ 对称，于是
+$$P\{X\leq1\}=\Phi(\frac1\sigma) , P\{Y\leq-1\}=\Phi(-\frac1\sigma)=1-\Phi(\frac1\sigma) ,$$
+两者之和恒等于 $1$，与 $\sigma$ 无关！代入上式，$1-1=0$，答案就等于已知的那个联合概率 $\frac14$。
+
+**设计要点：题目特意把两个分界点取成 $+1$ 与 $-1$（关于均值 $0$ 对称），就是为了让两个边缘概率之和为 $1$、$\sigma$ 自动消掉，从而不需要独立性、也不需要查表。**
+
+@解答
+注意
+$$\{X>1,Y>-1\}=\overline{\{X\leq1\}\cup\{Y\leq-1\}} ,$$
+由概率的加法公式（容斥）
+$$P\{X>1,Y>-1\}=1-P(\{X\leq1\}\cup\{Y\leq-1\})=1-P\{X\leq1\}-P\{Y\leq-1\}+P\{X\leq1,Y\leq-1\} .$$
+
+因 $X\sim N(0,\sigma^{2})$，$Y\sim N(0,\sigma^{2})$，记 $\Phi$ 为标准正态分布函数，则
+$$P\{X\leq1\}=\Phi(\frac{1}{\sigma}) , P\{Y\leq-1\}=\Phi(\frac{-1}{\sigma})=1-\Phi(\frac{1}{\sigma}) ,$$
+故
+$$P\{X\leq1\}+P\{Y\leq-1\}=1 .$$
+
+代入得
+$$P\{X>1,Y>-1\}=1-1+P\{X\leq1,Y\leq-1\}=\frac14 .$$
+
+@考点
+事件的对偶（德摩根律）与容斥公式；正态分布关于均值的对称性 $\Phi(-t)=1-\Phi(t)$；在不知道联合分布、也不假设独立的情况下用边缘概率之和消去未知参数。
+
+易混：本题**没有**假设 $X$ 与 $Y$ 独立，所以绝不能写 $P\{X\leq1,Y\leq-1\}=P\{X\leq1\}P\{Y\leq-1\}$；恰恰因为不独立也能算，才体现容斥公式的价值。
+
+@易错
+1. 擅自假设独立，由 $\frac14=\Phi(\frac1\sigma)[1-\Phi(\frac1\sigma)]$ 去解 $\sigma$（既不必要也解不出唯一值）。
+2. 对偶时漏项，写成 $1-P\{X\leq1\}-P\{Y\leq-1\}$。
+3. 把 $P\{Y\leq-1\}$ 写成 $\Phi(\frac1\sigma)$（漏掉负号）。
+4. 以为缺少 $\sigma$ 就无法作答。
+
+[48]
+@题目
+已知编号为 1,2,3 的 3 个袋子中各有 3 个白球、2 个黑球，从 1,2 号袋子中各取出一个球放入 3 号袋子中，则 3 号袋子中白球个数 $X$ 的期望与方差分别为（　　）.
+A. $EX=\dfrac{6}{5},DX=\dfrac{12}{25}$
+B. $EX=\dfrac{21}{5},DX=\dfrac{12}{25}$
+C. $EX=\dfrac{21}{5},DX=\dfrac{6}{5}$
+D. $EX=\dfrac{12}{5},DX=\dfrac{6}{5}$
+
+@切入点
+$X$ 是 $3$ 号袋中的白球数。$3$ 号袋原有 $3$ 个白球，之后又放进来两个球（分别来自 $1$ 号、$2$ 号袋）。所以
+$$X=3+W , W=\text{放进来的两球中白球的个数} .$$
+**先把随机的部分与确定的部分分离**，这是本题最省事的一步：原有的 $3$ 个白球是常数，不带来任何随机性。
+
+再看 $W$：从 $1$ 号袋取一球为白的概率是 $\frac35$，从 $2$ 号袋取一球为白的概率也是 $\frac35$，两次取球互相独立（不同袋子），所以
+$$W\sim B(2,\frac35) .$$
+于是
+$$EW=2\times\frac35=\frac65 , DW=2\times\frac35\times\frac25=\frac{12}{25} .$$
+
+最后用期望与方差对"加常数"的不同反应：
+$$EX=E(3+W)=3+EW=3+\frac65=\frac{21}{5} , DX=D(3+W)=DW=\frac{12}{25} .$$
+**期望会被常数平移，方差不会**——这正是四个选项设置的分歧点：$EX$ 是 $\frac65$（忘了加 $3$）还是 $\frac{21}{5}$，$DX$ 是 $\frac{12}{25}$（正确）还是 $\frac65$（把 $EW$ 当成了方差）。
+
+@解答
+记 $W$ 为从 $1$、$2$ 号袋各取一球中白球的个数。每袋都有 $3$ 白 $2$ 黑共 $5$ 球，取到白球的概率为 $\frac35$；两次取球相互独立，故
+$$W\sim B(2,\ \frac35) ,$$
+$$EW=2\times\frac35=\frac65 , DW=2\times\frac35\times(1-\frac35)=2\times\frac35\times\frac25=\frac{12}{25} .$$
+
+$3$ 号袋原有 $3$ 个白球，放入两球后白球数为
+$$X=3+W ,$$
+故
+$$EX=3+EW=3+\frac65=\frac{15+6}{5}=\frac{21}{5} ,$$
+$$DX=D(3+W)=DW=\frac{12}{25} .$$
+
+故选 **B**。
+
+@考点
+二项分布 $B(n,p)$ 的期望 $np$ 与方差 $np(1-p)$；随机变量加常数时 $E(X+c)=EX+c$、$D(X+c)=DX$；把复合的随机现象拆成"确定部分 $+$ 随机部分"。
+
+易混：$D(X+c)=DX$（平移不改变方差），而 $D(cX)=c^{2}DX$（伸缩要平方）。本题只涉及平移。
+
+@易错
+1. 忘记加上原有的 $3$ 个白球，答 $EX=\frac65$（选 A）。
+2. 计算方差时也加上 $3$，或把 $DX$ 写成 $\frac{12}{25}+3$。
+3. 把 $DW$ 算成 $2\times\frac35=\frac65$（漏掉 $1-p$），选 C 或 D。
+4. 误以为两次取球不独立（不同袋子互不影响，取球结果相互独立）。
