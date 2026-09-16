@@ -843,3 +843,895 @@ $$B\not\sim C .$$
 2. 计算 $\mathrm r(A-2E)$ 时把第二、三行当成两个无关行（它们成比例，秩为 $1$）。
 3. 用迹和行列式相同来判断相似（这只是必要条件）。
 4. 忘记 $C$ 的对角元顺序与 $A,B$ 不同并不影响相似性。
+
+[17]
+@题目
+设 $X_1,X_2,\cdots,X_n$ 是独立同分布的随机变量序列，且 $E(X_i^2)<+\infty$，则对任意 $\varepsilon$ 有（　　）.
+A. $\lim\limits_{n\to\infty}P\Big\{\Big|\dfrac{1}{n}\sum\limits_{i=1}^{n}X_i^2\Big|<\varepsilon\Big\}=0$
+B. $\lim\limits_{n\to\infty}P\Big\{\Big|\dfrac{1}{n}\sum\limits_{i=1}^{n}X_i^2-E(X_i^2)\Big|<\varepsilon\Big\}=0$
+C. $\lim\limits_{n\to\infty}P\Big\{\Big|\dfrac{1}{n}\sum\limits_{i=1}^{n}X_i^2-E(X_i^2)\Big|<\varepsilon\Big\}=1$
+D. $\lim\limits_{n\to\infty}P\Big\{\Big|\dfrac{1}{n}\sum\limits_{i=1}^{n}X_i^2\Big|\geqslant\varepsilon\Big\}=0$
+
+@切入点
+条件是"独立同分布 $+$ $E(X_{i}^{2})<+\infty$"，问的是 $\frac1n\sum X_{i}^{2}$ 的极限行为——这**不是**中心极限定理（那问的是分布的形状），而是**大数定律**（问的是依概率收敛到哪个常数）。
+
+用大数定律的第一步是**换观察对象**：令 $Y_{i}=X_{i}^{2}$，则 $\{Y_{i}\}$ 仍然独立同分布，且 $EY_{i}=E(X^{2})$ 存在（题设给了）。辛钦大数定律说：独立同分布、期望存在时，样本均值依概率收敛到期望：
+$$\frac1n\sum_{i=1}^{n}X_{i}^{2}\xrightarrow{P}E(X^{2}) ,$$
+即
+$$\lim_{n\to\infty}P\{|\frac1n\sum_{i=1}^{n}X_{i}^{2}-E(X^{2})|<\varepsilon\}=1 .$$
+这正是选项 C。
+
+其余选项的毛病：
+- B 与 C 是同一个事件，但概率写成 $0$，方向反了（**依概率收敛是"落在 $\varepsilon$ 邻域内的概率趋于 $1$"**）。
+- A、D 里减的不是 $E(X^{2})$ 而是什么也没减，相当于断言 $\frac1n\sum X_{i}^{2}\xrightarrow{P}0$；这只有在 $E(X^{2})=0$（即 $X\equiv0$）时才对，一般不成立。
+
+**做这类题只需盯住两点：减去的是不是正确的极限常数、概率趋于 $1$ 还是 $0$。**
+
+@解答
+令 $Y_{i}=X_{i}^{2} (i=1,2,\cdots)$。因 $X_{1},X_{2},\cdots$ 独立同分布，故 $Y_{1},Y_{2},\cdots$ 也独立同分布；又题设 $E(X_{i}^{2})<+\infty$，即 $EY_{i}=E(X^{2})$ 存在。
+
+由辛钦大数定律，
+$$\frac1n\sum_{i=1}^{n}Y_{i}=\frac1n\sum_{i=1}^{n}X_{i}^{2}\xrightarrow{\ P\ }E(X^{2}) ,$$
+即对任意 $\varepsilon>0$，
+$$\lim_{n\to\infty}P\{|\frac1n\sum_{i=1}^{n}X_{i}^{2}-E(X_{i}^{2})|<\varepsilon\}=1 .$$
+
+故 C 正确。
+
+B 与 C 描述同一事件，但极限值写成 $0$，与依概率收敛的定义相反，故 B 错。
+
+A、D 断言的是 $\frac1n\sum X_{i}^{2}\xrightarrow{P}0$；由大数定律其极限应为 $E(X^{2})$，一般不为 $0$（例如 $X\sim N(0,1)$ 时 $E(X^{2})=1$），故 A、D 错。
+
+选 **C**。
+
+@考点
+辛钦大数定律（独立同分布 $+$ 期望存在 $\Rightarrow$ 样本均值依概率收敛到期望）；把 $X_{i}^{2}$ 整体视为新的独立同分布序列；依概率收敛的 $\varepsilon$-语言表述。
+
+易混：依概率收敛写作 $\lim_{n}P\{|Z_{n}-a|<\varepsilon\}=1$，等价于 $\lim_{n}P\{|Z_{n}-a|\geq\varepsilon\}=0$。两种写法里概率的极限一个是 $1$、一个是 $0$，对应的事件互为对立，不能张冠李戴。
+
+@易错
+1. 选 B：把"$<\varepsilon$ 的概率"与"$\geq\varepsilon$ 的概率"的极限值弄反。
+2. 选 A 或 D：忘记要减去极限常数 $E(X^{2})$。
+3. 误以为需要 $X_{i}$ 的方差存在才能用大数定律（辛钦大数定律只要求期望存在；这里对 $Y_{i}=X_{i}^{2}$ 而言就是 $E(X^{2})<\infty$）。
+4. 把大数定律与中心极限定理混用，去讨论近似正态分布。
+
+[18]
+@题目
+设 $y'' + (4x + e^{2y})y'^3 = 0$.
+（Ⅰ）若视 $x$ 为因变量，$y$ 为自变量，试化简该方程；
+（Ⅱ）求该方程的通解.
+
+@切入点
+方程 $y''+(4x+\mathrm e^{2y})y'^{3}=0$ 直接看几乎无从下手：既不是可降阶的标准型，也不是线性方程。但题目第（Ⅰ）问已经给出提示——**把 $x$ 看作因变量、$y$ 看作自变量**。为什么这样做会成功？观察系数 $4x+\mathrm e^{2y}$：它关于 $x$ 是**一次**的，关于 $y$ 是已知函数；若能把方程变成关于 $x(y)$ 的方程，就有望化成**线性**方程。
+
+反函数求导的两个公式必须背熟：
+$$\frac{dy}{dx}=\frac{1}{x'(y)} , \frac{d^{2}y}{dx^{2}}=-\frac{x''(y)}{(x'(y))^{3}} .$$
+（第二个式子的推导：$\frac{d}{dx}(\frac{1}{x'})=\frac{d}{dy}(\frac1{x'})\cdot\frac{dy}{dx}=-\frac{x''}{(x')^{2}}\cdot\frac{1}{x'}$。）
+
+注意 $y'^{3}=\frac{1}{(x')^{3}}$，代入后**整个方程的每一项都带公因子 $\frac{1}{(x')^{3}}$**，乘掉它就得到
+$$-x''+4x+\mathrm e^{2y}=0 , \text{即} x''-4x=\mathrm e^{2y} .$$
+这正是二阶常系数非齐次线性方程——**原方程里那个碍事的 $y'^{3}$ 就是为了配合 $\frac{d^{2}y}{dx^{2}}$ 公式里的 $(x')^{3}$ 而设的**，这是本题设计的核心。
+
+（Ⅱ）就是常规求解：特征根 $\pm2$，右端 $\mathrm e^{2y}$ 中 $\lambda=2$ 是单特征根，**共振**，故特解设为 $Ay\mathrm e^{2y}$。
+
+@解答
+**（Ⅰ）** 视 $x$ 为 $y$ 的函数 $x=x(y)$，记 $x'=\frac{dx}{dy}$、$x''=\frac{d^{2}x}{dy^{2}}$（设 $x'\neq0$）。由反函数求导法则
+$$y'=\frac{dy}{dx}=\frac{1}{x'} , y''=\frac{d}{dx}(\frac{1}{x'})=\frac{d}{dy}(\frac{1}{x'})\cdot\frac{dy}{dx}=(-\frac{x''}{(x')^{2}})\cdot\frac{1}{x'}=-\frac{x''}{(x')^{3}} .$$
+代入原方程：
+$$-\frac{x''}{(x')^{3}}+(4x+\mathrm e^{2y})\cdot\frac{1}{(x')^{3}}=0 ,$$
+两端乘以 $(x')^{3}\neq0$：
+$$-x''+4x+\mathrm e^{2y}=0 , \text{即}$$
+$$x''-4x=\mathrm e^{2y} .$$
+
+**（Ⅱ）** 这是关于 $x(y)$ 的二阶常系数非齐次线性方程。
+
+齐次方程 $x''-4x=0$ 的特征方程 $\lambda^{2}-4=0$，根为 $\lambda=\pm2$，齐次通解
+$$x_{h}=C_{1}\mathrm e^{2y}+C_{2}\mathrm e^{-2y} .$$
+
+右端 $\mathrm e^{2y}$ 中 $\lambda=2$ 是单特征根（共振），设特解 $x^{*}=Ay\mathrm e^{2y}$：
+$$x^{*\prime}=A\mathrm e^{2y}+2Ay\mathrm e^{2y} , x^{*\prime\prime}=4A\mathrm e^{2y}+4Ay\mathrm e^{2y} ,$$
+$$x^{*\prime\prime}-4x^{*}=4A\mathrm e^{2y}+4Ay\mathrm e^{2y}-4Ay\mathrm e^{2y}=4A\mathrm e^{2y}=\mathrm e^{2y} \Longrightarrow A=\frac14 .$$
+
+故通解为
+$$x=C_{1}\mathrm e^{2y}+C_{2}\mathrm e^{-2y}+\frac{y}{4}\mathrm e^{2y} , C_{1},C_{2}\ \text{为任意常数} .$$
+
+@考点
+互换自变量与因变量的技巧；反函数的一阶、二阶导数公式 $\frac{dy}{dx}=\frac{1}{x'}$、$\frac{d^{2}y}{dx^{2}}=-\frac{x''}{(x')^{3}}$；二阶常系数非齐次线性方程；共振时特解形式 $Ay\mathrm e^{\lambda y}$。
+
+易混：$\frac{d^{2}y}{dx^{2}}\neq\frac{1}{x''}$！正确公式分母是 $(x')^{3}$ 且带负号。这是互换变量法最常错的一步，本题若写成 $\frac{1}{x''}$ 则完全化不开。
+
+@易错
+1. 二阶反函数导数公式记错（漏负号或分母写成 $(x')^{2}$）。
+2. 代入后忘记乘 $(x')^{3}$ 约分，方程留有分式。
+3. 特解设成 $A\mathrm e^{2y}$（未注意 $\lambda=2$ 是特征根），代入后得 $0=\mathrm e^{2y}$ 的矛盾。
+4. 通解写成 $y$ 关于 $x$ 的显式（本题只能给出 $x=x(y)$ 的形式，不必也无法显化）。
+
+[19]
+@题目
+判别下列级数的敛散性：
+（Ⅰ）$\sum\limits_{n=1}^{\infty} \dfrac{n^{n + \frac{1}{n}}}{(n + \frac{1}{n})^n}$；
+（Ⅱ）$\sum\limits_{n=1}^{\infty} \dfrac{a^n}{n^p}\ (a > 0, p > 0)$；
+（Ⅲ）$\sum\limits_{n=1}^{\infty} \dfrac{1}{\int_0^n \sqrt{1 + x^3}\,dx}$；
+（Ⅳ）$\sum\limits_{n=1}^{\infty} (a^{\frac{1}{n}} - a^{\frac{1}{n+1}})\ (a > 0)$；
+（Ⅴ）$\sum\limits_{n=1}^{\infty} [\dfrac{1}{n} - \ln(1 + \dfrac{1}{n})]$；
+（Ⅵ）$\sum\limits_{n=1}^{\infty} (\sqrt[n]{a} - \sqrt{1 + \dfrac{1}{n}})\ (a > 0)$.
+
+@切入点
+六个小题各考一种判别手段，关键是**看通项的形状选工具**：
+
+（Ⅰ）指数上带 $n$ 的幂式 —— 先化简通项。把 $n^{n+\frac1n}$ 拆成 $n^{n}\cdot n^{\frac1n}$，把 $(n+\frac1n)^{n}$ 拆成 $n^{n}(1+\frac{1}{n^{2}})^{n}$，$n^{n}$ 直接约掉，剩下 $\frac{n^{1/n}}{(1+n^{-2})^{n}}\to1$。**通项不趋于零 $\Rightarrow$ 发散**，这是最省力的判据，遇到"底数带 $n$ 次方"的先算极限。
+
+（Ⅱ）含 $a^{n}$ —— 比值判别法（达朗贝尔），极限为 $a$；$a=1$ 是分界点，此时退化为 $p$-级数，要单独讨论。
+
+（Ⅲ）通项含变限积分 —— 先估计积分的**阶**：$\sqrt{1+x^{3}}\sim x^{3/2}$，故 $\int_{0}^{n}\sim\frac25n^{5/2}$，通项 $\sim\frac52n^{-5/2}$，与 $p$-级数比较。
+
+（Ⅳ）形如 $u_{n}-u_{n+1}$ —— **裂项（望远镜）求和**，部分和一眼可得。
+
+（Ⅴ）$\frac1n-\ln(1+\frac1n)$ —— 这是"函数减去它的一阶近似"，主部必是二阶：$\ln(1+t)=t-\frac{t^{2}}{2}+\cdots$，故通项 $\sim\frac{1}{2n^{2}}$。
+
+（Ⅵ）两个趋于 $1$ 的量相减 —— 各自展开到 $\frac1n$ 项比较系数。**一次项系数是否相消决定敛散**，所以会出现一个临界的 $a$ 值。
+
+@解答
+**（Ⅰ）** 通项
+$$u_{n}=\frac{n^{n+\frac1n}}{(n+\frac1n)^{n}}=\frac{n^{n}\cdot n^{\frac1n}}{n^{n}(1+\frac{1}{n^{2}})^{n}}=\frac{n^{\frac1n}}{(1+\frac{1}{n^{2}})^{n}} .$$
+而 $n^{\frac1n}\to1$，$(1+\frac{1}{n^{2}})^{n}=\mathrm e^{n\ln(1+\frac{1}{n^{2}})}\to\mathrm e^{0}=1$，故 $u_{n}\to1\neq0$。由级数收敛的必要条件知级数**发散**。
+
+**（Ⅱ）** $u_{n}=\frac{a^{n}}{n^{p}}>0$，
+$$\frac{u_{n+1}}{u_{n}}=a(\frac{n}{n+1})^{p}\longrightarrow a .$$
+由比值判别法：$0<a<1$ 时**收敛**；$a>1$ 时**发散**。
+$a=1$ 时级数为 $\sum\frac{1}{n^{p}}$：$p>1$ **收敛**，$0<p\leq1$ **发散**。
+
+**（Ⅲ）** 由洛必达法则
+$$\lim_{n\to\infty}\frac{\int_{0}^{n}\sqrt{1+x^{3}}dx}{\frac25n^{\frac52}}=\lim_{n\to\infty}\frac{\sqrt{1+n^{3}}}{n^{\frac32}}=1 ,$$
+故通项
+$$\frac{1}{\int_{0}^{n}\sqrt{1+x^{3}}dx}\sim\frac{5}{2}\cdot\frac{1}{n^{\frac52}} .$$
+$\sum n^{-\frac52}$ 收敛（$p=\frac52>1$），由比较判别法的极限形式知原级数**收敛**。
+
+**（Ⅳ）** 部分和望远镜式相消：
+$$S_{N}=\sum_{n=1}^{N}(a^{\frac1n}-a^{\frac{1}{n+1}})=a^{\frac11}-a^{\frac{1}{N+1}}=a-a^{\frac{1}{N+1}} .$$
+当 $N\to\infty$ 时 $\frac{1}{N+1}\to0$，$a^{\frac{1}{N+1}}\to a^{0}=1$，故 $S_{N}\to a-1$，级数**收敛**，和为 $a-1$。
+
+**（Ⅴ）** 由 $\ln(1+t)=t-\frac{t^{2}}{2}+o(t^{2})$，取 $t=\frac1n$：
+$$\frac1n-\ln(1+\frac1n)=\frac{1}{2n^{2}}+o(\frac{1}{n^{2}})\sim\frac{1}{2n^{2}} ,$$
+且为正项。$\sum\frac{1}{n^{2}}$ 收敛，故原级数**收敛**。
+
+**（Ⅵ）** 展开两项：
+$$\sqrt[n]{a}=\mathrm e^{\frac{\ln a}{n}}=1+\frac{\ln a}{n}+O(\frac{1}{n^{2}}) , \sqrt{1+\frac1n}=1+\frac{1}{2n}-\frac{1}{8n^{2}}+O(\frac{1}{n^{3}}) ,$$
+故
+$$u_{n}=\sqrt[n]{a}-\sqrt{1+\frac1n}=\frac{\ln a-\frac12}{n}+O(\frac{1}{n^{2}}) .$$
+- 若 $\ln a\neq\frac12$（即 $a\neq\sqrt{\mathrm e}$），则 $u_{n}\sim\frac{\ln a-\frac12}{n}$，与调和级数同阶，级数**发散**。
+- 若 $a=\sqrt{\mathrm e}$，则一次项相消：
+$$\mathrm e^{\frac{1}{2n}}=1+\frac{1}{2n}+\frac{1}{8n^{2}}+O(\frac{1}{n^{3}}) , u_{n}=(\frac18+\frac18)\frac{1}{n^{2}}+O(\frac{1}{n^{3}})=\frac{1}{4n^{2}}+O(\frac{1}{n^{3}}) ,$$
+级数**收敛**。
+
+@考点
+级数收敛的必要条件（通项趋于零）；比值判别法与 $p$-级数；变限积分的阶估计（洛必达）；裂项求和；$\ln(1+t)$、$\mathrm e^{t}$、$(1+t)^{\frac12}$ 的泰勒展开与主部比较。
+
+易混：（Ⅱ）中 $a=1$ 时比值极限为 $1$，比值判别法**失效**，必须单独讨论；（Ⅵ）中一次项相消后必须展到二次项才能定阶，且要注意 $\mathrm e^{t}$ 的二次项系数是 $+\frac12$、$(1+t)^{\frac12}$ 的是 $-\frac18$，符号相反导致相加而非相减。
+
+@易错
+1. （Ⅰ）不化简通项，误用比值或根值判别法（极限都是 $1$，失效）。
+2. （Ⅱ）漏掉 $a=1$ 的分界情形。
+3. （Ⅲ）把 $\int_{0}^{n}\sqrt{1+x^{3}}dx$ 的阶估成 $n^{3/2}$（漏掉积分带来的升幂）。
+4. （Ⅳ）只说"裂项"却把部分和写成 $a^{\frac11}-a^{\frac1N}$（末项下标错位）。
+5. （Ⅴ）用 $\ln(1+t)\sim t$，得到通项 $\sim0$ 而无法判断。
+6. （Ⅵ）只展到一次项就下结论，漏掉临界情形 $a=\sqrt{\mathrm e}$。
+
+[20]
+@题目
+设二维随机变量 $(X,Y)$ 的概率密度为
+$$f(x,y)=\begin{cases}x\mathrm e^{-x(1+y)},&x>0,y>0,\\0,&\text{其他},\end{cases}$$
+则 $P\{X>2\mid X\ \square\ EX\}=$ ______.
+> 注：条件事件中的不等号紧贴书脊，照片上看不清是 $>$ 还是 $\geqslant$，原书此处未能辨认，以 $\square$ 占位.
+
+（说明：原题条件事件中的不等号在书页装订处无法辨认，以 $\square$ 占位。由于 $X$ 是连续型随机变量，$P\{X>EX\}=P\{X\geq EX\}$，两种读法给出相同答案，故下面按 $X>EX$ 计算。）
+
+@切入点
+题目问的是一个**条件概率** $P\{X>2\mid X\ \square\ EX\}$，条件和结论都只涉及 $X$，所以联合密度里的 $y$ 只是配角——**第一步必须求出 $X$ 的边缘密度**。
+
+$$f_{X}(x)=\int_{-\infty}^{+\infty}f(x,y)dy=\int_{0}^{+\infty}x\mathrm e^{-x(1+y)}dy (x>0) .$$
+把与 $y$ 无关的部分提出来：$x\mathrm e^{-x}\int_{0}^{+\infty}\mathrm e^{-xy}dy=x\mathrm e^{-x}\cdot\frac1x=\mathrm e^{-x}$。**前面那个因子 $x$ 恰好被积分产生的 $\frac1x$ 约掉**，这正是联合密度里写 $x\mathrm e^{-x(1+y)}$ 而不是别的形状的原因——结果干净地得到
+$$X\sim E(1) ,$$
+于是 $EX=\frac{1}{\lambda}=1$。
+
+第二步：$\{X>2\}\subset\{X>1\}$，条件概率
+$$P\{X>2\mid X>1\}=\frac{P\{X>2\}}{P\{X>1\}}=\frac{\mathrm e^{-2}}{\mathrm e^{-1}}=\mathrm e^{-1} ,$$
+这也正是指数分布**无记忆性**的体现：$P\{X>1+1\mid X>1\}=P\{X>1\}=\mathrm e^{-1}$。
+
+@解答
+**第一步：求边缘密度。** 当 $x>0$ 时
+$$f_{X}(x)=\int_{0}^{+\infty}x\mathrm e^{-x(1+y)}dy=x\mathrm e^{-x}\int_{0}^{+\infty}\mathrm e^{-xy}dy=x\mathrm e^{-x}\cdot\frac{1}{x}=\mathrm e^{-x} ;$$
+当 $x\leq0$ 时 $f_{X}(x)=0$。故
+$$f_{X}(x)=\begin{cases}\mathrm e^{-x},&x>0,\\ 0,&x\leq0,\end{cases}$$
+即 $X$ 服从参数为 $1$ 的指数分布，
+$$EX=1 .$$
+
+**第二步：算条件概率。** $X\sim E(1)$ 的尾概率为 $P\{X>a\}=\mathrm e^{-a} (a>0)$。由 $\{X>2\}\subset\{X>1\}$，
+$$P\{X>2\mid X>EX\}=P\{X>2\mid X>1\}=\frac{P\{X>2,X>1\}}{P\{X>1\}}=\frac{P\{X>2\}}{P\{X>1\}}=\frac{\mathrm e^{-2}}{\mathrm e^{-1}}=\mathrm e^{-1} .$$
+
+（这也正是指数分布无记忆性：$P\{X>1+1\mid X>1\}=P\{X>1\}=\mathrm e^{-1}$。因 $X$ 为连续型随机变量，条件写成 $X\geq EX$ 结果相同。）
+
+@考点
+由联合密度求边缘密度（对另一个变量积分）；指数分布的识别与期望 $EX=\frac1\lambda$；条件概率与指数分布的无记忆性。
+
+易混：这里的联合密度 $x\mathrm e^{-x(1+y)}$ 不能分解成 $g(x)h(y)$ 的形式，故 $X,Y$ **不独立**；但求边缘密度并不需要独立性，只要按定义积分即可。
+
+@易错
+1. 对 $x$ 积分（求出的是 $f_{Y}(y)$）而不是对 $y$ 积分。
+2. 积分时忘记把 $\mathrm e^{-x}$ 提出，或把 $\int_{0}^{+\infty}\mathrm e^{-xy}dy$ 算成 $1$。
+3. 求出 $f_{X}$ 后不认出是指数分布，或把 $EX$ 算成 $\frac12$ 之类。
+4. 条件概率的分子写成 $P\{X>2\}P\{X>1\}$，或忘记 $\{X>2\}\subset\{X>1\}$ 而去算交集。
+
+[21]
+@题目
+设 $D=\{(x,y)\mid x^{2}+y^{2}\leqslant 1,\ x\geqslant 0,\ y\geqslant 0\}$，计算
+$$I=\iint_{D}\max\Big\{y+1,\ \frac{2}{1+x}\Big\}\mathrm{d}x\mathrm{d}y.$$
+
+@切入点
+被积函数是 $\max$，所以必然要**按两式的大小分区域**。先解不等式：
+$$y+1\geq\frac{2}{1+x} \iff (y+1)(1+x)\geq2 \iff x+y+xy\geq1 \iff y\geq\frac{1-x}{1+x} ,$$
+（最后一步由 $y(1+x)\geq1-x$ 得到，$1+x>0$ 可除）。记
+$$g(x)=\frac{1-x}{1+x} , x\in[0,1] ,$$
+它从 $g(0)=1$ 单调降到 $g(1)=0$，且可验证 $g(x)\leq\sqrt{1-x^{2}}$，即**这条分界曲线整个落在四分之一圆盘内**，把 $D$ 切成两块：曲线上方（用 $y+1$）与下方（用 $\frac{2}{1+x}$）。
+
+接下来的关键是**选择怎样组合积分最省事**。下方区域 $D_{2}$ 是"$0\leq x\leq1$，$0\leq y\leq g(x)$"这种标准的 X-型区域，两个函数在它上面都好积；而上方区域形状复杂（带圆弧）。所以用
+$$I=\iint_{D}(y+1)+\iint_{D_{2}}[\frac{2}{1+x}-(y+1)] ,$$
+即**先假装整个 $D$ 都用 $y+1$，再在 $D_{2}$ 上补上差额**。这样圆弧只在"整块 $D$ 上积 $y+1$"时出现一次，而那个积分用极坐标一行就算完。
+
+三块分别是：
+$$\iint_{D}(y+1)=\frac13+\frac\pi4 , \iint_{D_{2}}\frac{2}{1+x}=\int_{0}^{1}\frac{2g(x)}{1+x}dx , \iint_{D_{2}}(y+1)=\int_{0}^{1}[\frac{g^{2}}{2}+g]dx ,$$
+后两个都是有理函数的一元积分，用 $u=1+x$ 换元即可。
+
+@解答
+**分界。** 在 $D$ 上 $1+x>0$，
+$$y+1\geq\frac{2}{1+x} \iff (y+1)(1+x)\geq2 \iff y(1+x)\geq1-x \iff y\geq g(x) , g(x)=\frac{1-x}{1+x} .$$
+$g$ 在 $[0,1]$ 上从 $1$ 单调降到 $0$；又对 $0<x<1$，
+$$\frac{(1-x)^{2}}{(1+x)^{2}}\leq(1-x)(1+x) \iff 1-x\leq(1+x)^{3} ,$$
+显然成立，故 $g(x)\leq\sqrt{1-x^{2}}$，分界曲线完全位于 $D$ 内。记
+$$D_{2}=\{(x,y): 0\leq x\leq1,\ 0\leq y\leq g(x)\} \text{（此处取 }\tfrac{2}{1+x}\text{）} .$$
+
+**拆分。**
+$$I=\iint_{D}(y+1)dxdy+\iint_{D_{2}}[\frac{2}{1+x}-(y+1)]dxdy .$$
+
+**第一块（极坐标）。**
+$$\iint_{D}y dxdy=\int_{0}^{\frac\pi2}d\theta\int_{0}^{1}r\sin\theta\cdot r dr=\frac13\int_{0}^{\frac\pi2}\sin\theta d\theta=\frac13 , \iint_{D}1 dxdy=\frac\pi4 ,$$
+$$\iint_{D}(y+1)dxdy=\frac13+\frac\pi4 .$$
+
+**第二块。** 令 $u=1+x (u:1\to2)$，则 $1-x=2-u$：
+$$\iint_{D_{2}}\frac{2}{1+x}dxdy=\int_{0}^{1}\frac{2}{1+x}g(x)dx=\int_{0}^{1}\frac{2(1-x)}{(1+x)^{2}}dx=2\int_{1}^{2}\frac{2-u}{u^{2}}du=2[-\frac2u-\ln u]_{1}^{2}=2(1-\ln2) .$$
+
+**第三块。**
+$$\iint_{D_{2}}(y+1)dxdy=\int_{0}^{1}[\frac{g^{2}(x)}{2}+g(x)]dx .$$
+其中
+$$\int_{0}^{1}g dx=\int_{1}^{2}\frac{2-u}{u}du=[2\ln u-u]_{1}^{2}=2\ln2-1 ,$$
+$$\int_{0}^{1}g^{2}dx=\int_{1}^{2}\frac{(2-u)^{2}}{u^{2}}du=\int_{1}^{2}(\frac{4}{u^{2}}-\frac4u+1)du=[-\frac4u-4\ln u+u]_{1}^{2}=3-4\ln2 ,$$
+故
+$$\iint_{D_{2}}(y+1)dxdy=\frac{3-4\ln2}{2}+(2\ln2-1)=\frac32-2\ln2+2\ln2-1=\frac12 .$$
+
+**合并。**
+$$I=(\frac13+\frac\pi4)+2(1-\ln2)-\frac12=\frac\pi4+\frac13-\frac12+2-2\ln2=\frac\pi4+\frac{11}{6}-2\ln2 .$$
+
+（数值检验：$\frac\pi4\approx0.785$，$\frac{11}{6}\approx1.833$，$2\ln2\approx1.386$，$I\approx1.23$；而 $D$ 的面积为 $\frac\pi4\approx0.785$，被积函数取值在 $[1,2]$ 内，平均值约 $1.57$，相符。）
+
+@考点
+含 $\max$ 的二重积分分区域；分界曲线的求法与"是否落在区域内"的验证；极坐标算四分之一圆盘上的积分；"整块 $+$ 补差"的拆分技巧；有理函数积分的换元 $u=1+x$。
+
+易混：分界条件 $y\geq\frac{1-x}{1+x}$ 处取 $y+1$（较大者），**不要与不等号方向弄反**；可用特殊点检验：取 $(x,y)=(1,1)$，$y+1=2>\frac{2}{2}=1$，而 $g(1)=0\leq1$，符合。
+
+@易错
+1. 分界不等式解错方向，两块的被积函数对调。
+2. 不验证分界曲线在 $D$ 内，遗漏或多算区域。
+3. 把上方区域直接积分（要同时处理圆弧与分界曲线），计算量剧增。
+4. 有理积分算错：$\int_{0}^{1}\frac{1-x}{(1+x)^{2}}dx$ 换元后是 $\int_{1}^{2}\frac{2-u}{u^{2}}du$，不要漏掉 $2-u$ 中的 $2$。
+
+[22]
+@题目
+设 $(X_1,X_2,\cdots,X_n)$ 为总体 $X$ 的简单随机样本，$\overline{X} = \frac{1}{n}\sum_{i=1}^{n}X_i$，则 $E(X^2)$ 的矩估计量为（　）。
+$$\text{A. } \overline{X}^2 + \frac{1}{n}\sum_{i=1}^{n}(X_i - \overline{X})^2 \qquad \text{B. } \overline{X}^2 + \frac{1}{n-1}\sum_{i=1}^{n}(X_i - \overline{X})^2$$
+$$\text{C. } \frac{1}{n-1}\sum_{i=1}^{n}(X_i - \overline{X})^2 \qquad \text{D. } \frac{1}{n}\sum_{i=1}^{n}(X_i - \overline{X})^2$$
+
+@切入点
+矩估计的原理只有一句话：**用样本矩替换同阶的总体矩**。要估计的是 $E(X^{2})$，这是总体的**二阶原点矩**，所以直接用样本二阶原点矩
+$$\widehat{E(X^{2})}=\frac1n\sum_{i=1}^{n}X_{i}^{2} .$$
+到这一步答案其实已经定了，剩下的只是**看哪个选项与它恒等**。
+
+四个选项都不含 $\sum X_{i}^{2}$ 的显式形式，而是用 $\overline X$ 与离差平方和表示，所以要用那条恒等式：
+$$\sum_{i=1}^{n}(X_{i}-\overline X)^{2}=\sum_{i=1}^{n}X_{i}^{2}-n\overline X^{2} ,$$
+两端除以 $n$ 并移项：
+$$\frac1n\sum_{i=1}^{n}X_{i}^{2}=\overline X^{2}+\frac1n\sum_{i=1}^{n}(X_{i}-\overline X)^{2} ,$$
+正是选项 A。
+
+四个选项的分歧点有两处：**分母是 $n$ 还是 $n-1$**（矩估计天然用 $\frac1n$，$\frac{1}{n-1}$ 是为了无偏性而做的修正，不是矩估计），以及**有没有 $\overline X^{2}$ 这一项**（C、D 估计的是方差 $DX$ 而不是 $E(X^{2})$）。**记住"矩估计一律用 $\frac1n$"就能先排除 B、C。**
+
+@解答
+矩估计法的原则是用样本矩代替相应的总体矩。$E(X^{2})$ 是总体的二阶原点矩，其矩估计量为样本二阶原点矩
+$$\widehat{E(X^{2})}=\frac1n\sum_{i=1}^{n}X_{i}^{2} .$$
+
+再用恒等式
+$$\sum_{i=1}^{n}(X_{i}-\overline X)^{2}=\sum_{i=1}^{n}X_{i}^{2}-2\overline X\sum_{i=1}^{n}X_{i}+n\overline X^{2}=\sum_{i=1}^{n}X_{i}^{2}-n\overline X^{2} ,$$
+两端除以 $n$：
+$$\frac1n\sum_{i=1}^{n}(X_{i}-\overline X)^{2}=\frac1n\sum_{i=1}^{n}X_{i}^{2}-\overline X^{2} ,$$
+即
+$$\frac1n\sum_{i=1}^{n}X_{i}^{2}=\overline X^{2}+\frac1n\sum_{i=1}^{n}(X_{i}-\overline X)^{2} .$$
+
+这正是选项 A。故选 **A**。
+
+（C、D 是 $DX$ 的估计而非 $E(X^{2})$ 的；B 中分母用了 $n-1$，那是样本方差 $S^{2}$ 的定义，属于无偏修正，不是矩估计。）
+
+@考点
+矩估计法（样本矩替换总体矩）；恒等式 $\sum(X_{i}-\overline X)^{2}=\sum X_{i}^{2}-n\overline X^{2}$；$E(X^{2})=DX+(EX)^{2}$ 与样本形式的对应。
+
+易混：矩估计用 $\frac1n\sum(X_{i}-\overline X)^{2}$（二阶中心矩），而样本方差 $S^{2}=\frac{1}{n-1}\sum(X_{i}-\overline X)^{2}$ 是**无偏估计**。两者差一个因子 $\frac{n}{n-1}$，用途不同。
+
+@易错
+1. 选 B：把样本方差 $S^{2}$ 当成矩估计。
+2. 选 C 或 D：把要估计的量看成方差而不是二阶原点矩。
+3. 恒等式记成 $\sum(X_{i}-\overline X)^{2}=\sum X_{i}^{2}-\overline X^{2}$（漏掉因子 $n$）。
+4. 认为矩估计必须先假定总体分布（矩估计不需要知道分布形式）。
+
+[23]
+@题目
+设曲面 $S$ 为球面 $x^2+y^2+z^2=4z$ 与锥面 $z=\dfrac{\sqrt{x^2+y^2}}{\sqrt3}$ 所围、且位于锥面上方部分的立体表面，流速场为
+$$\mathbf A(x,y,z)=\Big(\tfrac13x^3+x^2y+x^2z,\ \tfrac13y^3+y^2z,\ \tfrac13z^3\Big)$$
+求 $\mathbf A(x,y,z)$ 从曲面 $S$ 内部流向外部的流量 $\Phi$．
+
+@切入点
+求"流量"就是求 $\mathbf A$ 通过闭曲面 $S$ 向外的第二类曲面积分 $\oiint_{S}\mathbf A\cdot d\mathbf S$，闭曲面 $+$ 外侧 $\Rightarrow$ **高斯公式**。
+
+先算散度：
+$$\mathrm{div} \mathbf A=(x^{2}+2xy+2xz)+(y^{2}+2yz)+z^{2}=(x^{2}+y^{2}+z^{2})+2(xy+xz+yz) .$$
+**把它整理成"轮换对称的平方和 $+$ 交叉项"是关键**：立体 $\Omega$ 由球面与以 $z$ 轴为轴的锥面围成，关于平面 $x=0$ 和 $y=0$ 都对称，而 $xy,xz,yz$ 对其中至少一个平面是奇函数，故这三项的三重积分全为零。只剩
+$$\Phi=\iiint_{\Omega}(x^{2}+y^{2}+z^{2})dV .$$
+
+被积函数只与到原点的距离有关，而球面 $x^{2}+y^{2}+z^{2}=4z$ 过原点，锥面顶点也在原点 —— **球坐标是量身定做的**：
+- 球面：$r^{2}=4r\cos\varphi\Rightarrow r=4\cos\varphi$；
+- 锥面 $z=\frac{\sqrt{x^{2}+y^{2}}}{\sqrt3}$ 即 $\tan\varphi=\frac{\sqrt{x^{2}+y^{2}}}{z}=\sqrt3$，故 $\varphi=\frac\pi3$；"锥面上方"即 $0\leq\varphi\leq\frac\pi3$。
+
+于是
+$$\Omega: 0\leq\theta\leq2\pi , 0\leq\varphi\leq\frac\pi3 , 0\leq r\leq4\cos\varphi ,$$
+体积元 $r^{2}\sin\varphi drd\varphi d\theta$，被积函数 $r^{2}$，三重积分完全分离，逐层积出即可。
+
+@解答
+**第一步：高斯公式。**
+$$\mathrm{div} \mathbf A=\frac{\partial}{\partial x}(\frac{x^{3}}{3}+x^{2}y+x^{2}z)+\frac{\partial}{\partial y}(\frac{y^{3}}{3}+y^{2}z)+\frac{\partial}{\partial z}(\frac{z^{3}}{3})$$
+$$=(x^{2}+2xy+2xz)+(y^{2}+2yz)+z^{2}=(x^{2}+y^{2}+z^{2})+2(xy+xz+yz) .$$
+记 $\Omega$ 为 $S$ 所围立体，由高斯公式
+$$\Phi=\oiint_{S}\mathbf A\cdot d\mathbf S=\iiint_{\Omega}\mathrm{div} \mathbf A dV .$$
+
+**第二步：用对称性去掉交叉项。** $\Omega$ 由球面 $x^{2}+y^{2}+z^{2}=4z$ 与以 $z$ 轴为对称轴的锥面围成，故 $\Omega$ 关于平面 $x=0$ 与 $y=0$ 都对称。$xy$、$xz$ 关于 $x$ 为奇函数，$yz$ 关于 $y$ 为奇函数，故
+$$\iiint_{\Omega}xy dV=\iiint_{\Omega}xz dV=\iiint_{\Omega}yz dV=0 ,$$
+于是
+$$\Phi=\iiint_{\Omega}(x^{2}+y^{2}+z^{2})dV .$$
+
+**第三步：球坐标。** 球面 $x^{2}+y^{2}+z^{2}=4z$ 化为 $r^{2}=4r\cos\varphi$，即 $r=4\cos\varphi$；锥面 $z=\frac{\sqrt{x^{2}+y^{2}}}{\sqrt3}$ 即 $\tan\varphi=\sqrt3$，即 $\varphi=\frac\pi3$，"位于锥面上方"即 $0\leq\varphi\leq\frac\pi3$。故
+$$\Omega: 0\leq\theta\leq2\pi , 0\leq\varphi\leq\frac{\pi}{3} , 0\leq r\leq4\cos\varphi .$$
+体积元为 $r^{2}\sin\varphi drd\varphi d\theta$，被积函数为 $r^{2}$：
+$$\Phi=\int_{0}^{2\pi}d\theta\int_{0}^{\frac\pi3}\sin\varphi d\varphi\int_{0}^{4\cos\varphi}r^{4}dr=2\pi\int_{0}^{\frac\pi3}\sin\varphi\cdot\frac{(4\cos\varphi)^{5}}{5}d\varphi$$
+$$=\frac{2\pi\cdot1024}{5}\int_{0}^{\frac\pi3}\cos^{5}\varphi\sin\varphi d\varphi=\frac{2048\pi}{5}[-\frac{\cos^{6}\varphi}{6}]_{0}^{\frac\pi3}=\frac{2048\pi}{5}\cdot\frac{1-(\frac12)^{6}}{6} .$$
+而 $1-\frac{1}{64}=\frac{63}{64}$，故
+$$\Phi=\frac{2048\pi}{5}\cdot\frac{63}{384}=\frac{2048\cdot63}{5\cdot384}\pi=\frac{336\pi}{5} .$$
+
+@考点
+高斯公式求流量；散度计算；立体关于坐标平面的对称性消去交叉项；球坐标下球面 $x^{2}+y^{2}+z^{2}=2az$ 化为 $r=2a\cos\varphi$、锥面化为 $\varphi=$ 常数；体积元 $r^{2}\sin\varphi drd\varphi d\theta$。
+
+易混：球坐标中 $\varphi$ 是与 $z$ 轴正向的夹角，锥面 $z=\frac{\sqrt{x^{2}+y^{2}}}{\sqrt3}$ 对应 $\tan\varphi=\sqrt3$ 即 $\varphi=\frac\pi3$（**不是** $\frac\pi6$）；判断方法是 $\tan\varphi=\frac{\text{径向}}{z}$。
+
+@易错
+1. 散度算错，例如把 $\frac{\partial}{\partial x}(x^{2}y)$ 写成 $x^{2}$。
+2. 不用对称性，去积 $xy,xz,yz$ 三项。
+3. 球面方程在球坐标下写成 $r=4$（未化 $x^{2}+y^{2}+z^{2}=4z$）。
+4. 锥面对应的 $\varphi$ 取成 $\frac\pi6$，上下限用反。
+5. 体积元漏掉 $\sin\varphi$ 或写成 $r\sin\varphi$。
+
+[24]
+@题目
+设 $A=\begin{pmatrix}-1&1\\1&1\end{pmatrix}$，非零实列向量 $\alpha=(a,b)^{\mathrm T}$，则二次型
+$$f(x_1,x_2,x_3)=X^{\mathrm T}\begin{pmatrix}A+\alpha\alpha^{\mathrm T}&\alpha\\\alpha^{\mathrm T}&1\end{pmatrix}X$$
+的规范形为（　　）.
+A. $y_1^2+y_2^2+y_3^2$
+B. $-y_1^2-y_2^2-y_3^2$
+C. $y_1^2+y_2^2-y_3^2$
+D. $y_1^2-y_2^2-y_3^2$
+
+@切入点
+直接把 $3$ 阶矩阵的元素写出来再配方，会被 $a,b$ 搅得很乱。正确的做法是**把二次型按分块结构展开**，看能不能直接凑成平方。
+
+记 $X=\binom{u}{x_{3}}$，其中 $u=(x_{1},x_{2})^{\mathrm T}$。按分块乘法
+$$f=u^{\mathrm T}(A+\alpha\alpha^{\mathrm T})u+u^{\mathrm T}\alpha x_{3}+x_{3} \alpha^{\mathrm T}u+x_{3}^{2} .$$
+注意 $\alpha^{\mathrm T}u$ 是一个**数**，记 $s=\alpha^{\mathrm T}u=ax_{1}+bx_{2}$，则 $u^{\mathrm T}\alpha\alpha^{\mathrm T}u=s^{2}$、$u^{\mathrm T}\alpha x_{3}=x_{3}\alpha^{\mathrm T}u=sx_{3}$，于是
+$$f=u^{\mathrm T}Au+s^{2}+2sx_{3}+x_{3}^{2}=u^{\mathrm T}Au+(s+x_{3})^{2} .$$
+**后三项恰好配成完全平方**——这正是矩阵里出现 $\alpha\alpha^{\mathrm T}$、$\alpha$、$1$ 这种"舒尔补"结构的用意。
+
+作可逆替换
+$$y_{3}=s+x_{3}=ax_{1}+bx_{2}+x_{3} , y_{1},y_{2}\ \text{由把}\ u^{\mathrm T}Au\ \text{化标准形给出} ,$$
+（$(x_{1},x_{2},x_{3})\mapsto(x_{1},x_{2},y_{3})$ 是三角形变换，必可逆），则
+$$f=u^{\mathrm T}Au+y_{3}^{2} .$$
+
+最后只需数 $A=\begin{pmatrix}-1&1\\1&1\end{pmatrix}$ 的正负惯性指数：它是实对称矩阵，$\mathrm{tr}A=0$、$|A|=-2<0$，故两个特征值一正一负（$\pm\sqrt2$），正、负惯性指数各为 $1$。加上 $y_{3}^{2}$ 贡献的一个正项，总的正惯性指数为 $2$、负惯性指数为 $1$，规范形是 $y_{1}^{2}+y_{2}^{2}-y_{3}^{2}$。
+
+**注意答案与 $a,b$ 无关**——这也说明分块配方的路子是对的。
+
+@解答
+记 $X=\begin{pmatrix}u\\ x_{3}\end{pmatrix}$，$u=(x_{1},x_{2})^{\mathrm T}$，$\alpha=(a,b)^{\mathrm T}$。按分块乘法展开：
+$$f=u^{\mathrm T}(A+\alpha\alpha^{\mathrm T})u+u^{\mathrm T}\alpha x_{3}+x_{3} \alpha^{\mathrm T}u+x_{3}^{2} .$$
+令 $s=\alpha^{\mathrm T}u=ax_{1}+bx_{2}$（这是一个数），则 $u^{\mathrm T}\alpha=s$，$u^{\mathrm T}\alpha\alpha^{\mathrm T}u=s^{2}$，故
+$$f=u^{\mathrm T}Au+s^{2}+2sx_{3}+x_{3}^{2}=u^{\mathrm T}Au+(s+x_{3})^{2} .$$
+
+作变换
+$$\begin{cases}z_{1}=x_{1},\\ z_{2}=x_{2},\\ z_{3}=ax_{1}+bx_{2}+x_{3},\end{cases}$$
+其系数矩阵为下三角、对角元全为 $1$，故可逆。此时
+$$f=(z_{1},z_{2})A\begin{pmatrix}z_{1}\\ z_{2}\end{pmatrix}+z_{3}^{2} .$$
+
+$A=\begin{pmatrix}-1&1\\1&1\end{pmatrix}$ 是实对称矩阵，
+$$\mathrm{tr}A=0 , |A|=-1-1=-2<0 ,$$
+故其两个特征值之积为负、之和为零，即为 $\sqrt2$ 与 $-\sqrt2$，一正一负。于是 $(z_{1},z_{2})A(z_{1},z_{2})^{\mathrm T}$ 的正惯性指数为 $1$、负惯性指数为 $1$。
+
+加上 $z_{3}^{2}$ 这一正项，$f$ 的正惯性指数 $p=2$、负惯性指数 $q=1$，故规范形为
+$$y_{1}^{2}+y_{2}^{2}-y_{3}^{2} .$$
+
+选 **C**（与 $a,b$ 的具体取值无关）。
+
+@考点
+分块矩阵的二次型展开；$\alpha^{\mathrm T}u$ 是数、$u^{\mathrm T}\alpha\alpha^{\mathrm T}u=(\alpha^{\mathrm T}u)^{2}$；配方法（舒尔补）消去交叉项；二次型的规范形由正负惯性指数决定；由迹与行列式判断二阶实对称矩阵特征值的符号。
+
+易混：规范形只与正负惯性指数有关，**与特征值的具体大小无关**，所以不必真的算出 $\pm\sqrt2$，只需知道一正一负。判断依据：$|A|<0$ 说明两特征值异号。
+
+@易错
+1. 把矩阵元素全部写开后硬配方，被 $a,b$ 绕晕。
+2. 把 $u^{\mathrm T}\alpha\alpha^{\mathrm T}u$ 当成矩阵而非数的平方。
+3. 配方后忘记检验所作变换可逆（本题是单位下三角，显然可逆）。
+4. 只算出 $A$ 的惯性指数 $(1,1)$ 就答 $y_{1}^{2}-y_{2}^{2}$，漏掉 $z_{3}^{2}$ 贡献的第三项。
+
+[25]
+@题目
+设
+$$A = \begin{bmatrix} 0 & 0 & 0 & 1 \\ 0 & 0 & 0 & 2 \\ 0 & 0 & 0 & 3 \\ 3 & 2 & 1 & 0 \end{bmatrix}$$
+求 $A^{n}(n \geqslant 1)$.
+
+@切入点
+$A$ 的非零元素只出现在**最后一行和最后一列**，中间的 $3\times3$ 块全是零。这种"十字形"结构提示做**分块**：
+$$A=\begin{pmatrix}O&u\\ v^{\mathrm T}&0\end{pmatrix} , u=(1,2,3)^{\mathrm T} , v=(3,2,1)^{\mathrm T} ,$$
+其中 $O$ 是 $3$ 阶零矩阵。分块以后求幂就变成了 $u,v$ 的内外积运算，而**内积 $v^{\mathrm T}u$ 是一个数**，这正是幂能闭合的原因：
+$$v^{\mathrm T}u=3+4+3=10 .$$
+
+按分块乘法：
+$$A^{2}=\begin{pmatrix}uv^{\mathrm T}&0\\ 0&v^{\mathrm T}u\end{pmatrix}=\begin{pmatrix}uv^{\mathrm T}&0\\ 0&10\end{pmatrix} ,$$
+再乘一次：
+$$A^{3}=\begin{pmatrix}O&u\\ v^{\mathrm T}&0\end{pmatrix}\begin{pmatrix}uv^{\mathrm T}&0\\ 0&10\end{pmatrix}=\begin{pmatrix}O&10u\\ 10v^{\mathrm T}&0\end{pmatrix}=10A .$$
+**关键结论 $A^{3}=10A$**——一旦得到这个递推，所有的幂都按奇偶两支写出来即可：奇数次回到 $A$ 的倍数，偶数次回到 $A^{2}$ 的倍数。
+
+（不分块也能做：直接乘出 $A^{2}$，再乘一次发现 $A^{3}=10A$，同样可行，只是计算量稍大、也不易看出 $10$ 的来历。）
+
+@解答
+**分块。** 记
+$$u=\begin{pmatrix}1\\2\\3\end{pmatrix} , v=\begin{pmatrix}3\\2\\1\end{pmatrix} , \text{则} A=\begin{pmatrix}O&u\\ v^{\mathrm T}&0\end{pmatrix} ,$$
+其中 $O$ 为 $3$ 阶零矩阵。注意
+$$v^{\mathrm T}u=3\times1+2\times2+1\times3=10 \text{（数）} , uv^{\mathrm T}=\begin{pmatrix}3&2&1\\ 6&4&2\\ 9&6&3\end{pmatrix} \text{（$3$ 阶矩阵）} .$$
+
+**求 $A^{2}$。**
+$$A^{2}=\begin{pmatrix}O&u\\ v^{\mathrm T}&0\end{pmatrix}\begin{pmatrix}O&u\\ v^{\mathrm T}&0\end{pmatrix}=\begin{pmatrix}uv^{\mathrm T}&0\\ 0&v^{\mathrm T}u\end{pmatrix}=\begin{pmatrix}3&2&1&0\\ 6&4&2&0\\ 9&6&3&0\\ 0&0&0&10\end{pmatrix} .$$
+
+**求 $A^{3}$。**
+$$A^{3}=A\cdot A^{2}=\begin{pmatrix}O&u\\ v^{\mathrm T}&0\end{pmatrix}\begin{pmatrix}uv^{\mathrm T}&0\\ 0&10\end{pmatrix}=\begin{pmatrix}O&10u\\ (v^{\mathrm T}u)v^{\mathrm T}&0\end{pmatrix}=\begin{pmatrix}O&10u\\ 10v^{\mathrm T}&0\end{pmatrix}=10A .$$
+
+**归纳。** 由 $A^{3}=10A$ 得 $A^{k+2}=10A^{k} (k\geq1)$，故
+$$A^{n}=\begin{cases}10^{\frac{n-1}{2}}A,& n\ \text{为奇数},\\[4pt] 10^{\frac{n}{2}-1}A^{2},& n\ \text{为偶数},\end{cases}$$
+即
+$$A^{n}=10^{\frac{n-1}{2}}\begin{pmatrix}0&0&0&1\\ 0&0&0&2\\ 0&0&0&3\\ 3&2&1&0\end{pmatrix} (n\ \text{奇}) , A^{n}=10^{\frac{n}{2}-1}\begin{pmatrix}3&2&1&0\\ 6&4&2&0\\ 9&6&3&0\\ 0&0&0&10\end{pmatrix} (n\ \text{偶}) .$$
+
+（检验：$n=1$ 时 $10^{0}A=A$；$n=2$ 时 $10^{0}A^{2}=A^{2}$；$n=3$ 时 $10^{1}A=10A$，均相符。）
+
+@考点
+分块矩阵的乘法；$v^{\mathrm T}u$ 是数、$uv^{\mathrm T}$ 是矩阵；由 $A^{3}=cA$ 这类递推按奇偶分类给出 $A^{n}$。
+
+易混：$uv^{\mathrm T}$ 与 $v^{\mathrm T}u$ 位置不能互换：前者是 $3$ 阶矩阵（秩 $1$），后者是数 $10$。本题 $A^{2}$ 的左上块是前者、右下块是后者。
+
+@易错
+1. 不分块硬乘，$A^{3}$ 算错而看不出 $A^{3}=10A$。
+2. 把 $v^{\mathrm T}u$ 算成 $1\cdot1+2\cdot2+3\cdot3=14$（$u,v$ 的分量次序是反的，内积为 $3+4+3=10$）。
+3. 指数写错：偶数时应是 $10^{\frac n2-1}$，若写成 $10^{\frac n2}$ 则 $n=2$ 时就不对。
+4. 只给递推 $A^{3}=10A$ 而不写出 $A^{n}$ 的显式表达式。
+
+[26]
+@题目
+设方程 $xy-z\ln y+\mathrm{e}^{xz}=1$，存在点 $(0,1,1)$ 的一个邻域，在此邻域内该方程（　）.
+A. 可确定隐函数 $y=y(x,z)$ 和 $z=z(x,y)$
+B. 可确定隐函数 $x=x(y,z)$ 和 $z=z(x,y)$
+C. 可确定隐函数 $x=x(y,z)$ 和 $y=y(x,z)$
+D. 只能确定隐函数 $z=z(x,y)$
+
+@切入点
+判断"能否确定隐函数 $x=x(y,z)$／$y=y(x,z)$／$z=z(x,y)$"，靠的是**隐函数存在定理**：设 $F$ 有连续偏导、$F(P_{0})=0$，则
+$$F'_{x}(P_{0})\neq0\Rightarrow\text{可确定}\ x=x(y,z) ; F'_{y}(P_{0})\neq0\Rightarrow y=y(x,z) ; F'_{z}(P_{0})\neq0\Rightarrow z=z(x,y) .$$
+**注意对应关系：对哪个变量的偏导不为零，就能把哪个变量解出来。** 这一点最容易记反。
+
+所以本题的全部工作就是：把方程写成 $F=0$，在点 $(0,1,1)$ 处算三个偏导，看谁非零。
+$$F(x,y,z)=xy-z\ln y+\mathrm e^{xz}-1 ,$$
+先验证 $F(0,1,1)=0-0+1-1=0$，点确实在曲面上。
+
+$$F'_{x}=y+z\mathrm e^{xz}|_{(0,1,1)}=1+1=2\neq0 ,$$
+$$F'_{y}=x-\frac{z}{y}|_{(0,1,1)}=0-1=-1\neq0 ,$$
+$$F'_{z}=-\ln y+x\mathrm e^{xz}|_{(0,1,1)}=0+0=0 .$$
+
+于是 $x=x(y,z)$、$y=y(x,z)$ 都能确定，而 $F'_{z}=0$ 使定理对 $z=z(x,y)$ 失效，选 C。
+
+**严格地说 $F'_{z}=0$ 只是"定理不适用"，并不能断言一定不存在**；但在选择题的语境下，四个选项里只有 C 与我们得到的信息一致（A、B、D 都断言可确定 $z=z(x,y)$），故选 C。
+
+@解答
+令
+$$F(x,y,z)=xy-z\ln y+\mathrm e^{xz}-1 ,$$
+则 $F$ 在 $(0,1,1)$ 的某邻域内有连续偏导数，且
+$$F(0,1,1)=0\cdot1-1\cdot\ln1+\mathrm e^{0}-1=0+0+1-1=0 ,$$
+点 $(0,1,1)$ 在方程确定的曲面上。
+
+计算三个偏导数并在 $(0,1,1)$ 处取值：
+$$F'_{x}=y+z\mathrm e^{xz} , F'_{x}(0,1,1)=1+1\cdot1=2\neq0 ;$$
+$$F'_{y}=x-\frac{z}{y} , F'_{y}(0,1,1)=0-\frac11=-1\neq0 ;$$
+$$F'_{z}=-\ln y+x\mathrm e^{xz} , F'_{z}(0,1,1)=-\ln1+0=0 .$$
+
+由隐函数存在定理：
+- $F'_{x}(0,1,1)\neq0$，故在该点的某邻域内可确定隐函数 $x=x(y,z)$；
+- $F'_{y}(0,1,1)\neq0$，故可确定隐函数 $y=y(x,z)$；
+- $F'_{z}(0,1,1)=0$，隐函数定理对 $z=z(x,y)$ 不适用。
+
+故选 **C**。
+
+@考点
+三元方程确定二元隐函数的存在定理；"对某变量的偏导不为零 $\Rightarrow$ 可解出该变量"；求偏导时把其余变量视为常数。
+
+易混：$F'_{z}\neq0$ 对应的是能解出 $z$（即 $z=z(x,y)$），不要与"$z$ 作为自变量"混淆。另外 $\frac{\partial}{\partial y}(-z\ln y)=-\frac zy$，$\frac{\partial}{\partial z}(-z\ln y)=-\ln y$，两者形式很像，容易写错。
+
+@易错
+1. 把对应关系记反，由 $F'_{z}=0$ 反而认为可确定 $z=z(x,y)$。
+2. 忘记先验证 $F(0,1,1)=0$（若点不在曲面上，讨论无意义）。
+3. 求 $F'_{x}$ 时把 $\mathrm e^{xz}$ 的导数写成 $\mathrm e^{xz}$（漏掉内层的 $z$）。
+4. 由 $F'_{z}=0$ 断言"一定不能确定 $z=z(x,y)$"——严格说定理只是失效；但本题四个选项中只有 C 与所得结论相容。
+
+[27]
+@题目
+设 $n$ 维实列向量 $\alpha$ 满足 $\alpha^{\mathrm{T}}\alpha = 2$，$A, B$ 均为 $n$ 阶矩阵，$E$ 为 $n$ 阶单位矩阵，且 $A(E - 2\alpha\alpha^{\mathrm{T}}) = B$，则（　　）.
+A. 方程组 $BX = 0$ 与方程组 $(E - 2\alpha\alpha^{\mathrm{T}})X = 0$ 同解
+B. 方程组 $B^{\mathrm{T}}X = 0$ 与方程组 $(E - 2\alpha\alpha^{\mathrm{T}})X = 0$ 同解
+C. 方程组 $BX = 0$ 与方程组 $AX = 0$ 同解
+D. 方程组 $B^{\mathrm{T}}X = 0$ 与方程组 $A^{\mathrm{T}}X = 0$ 同解
+
+@切入点
+记 $H=E-2\alpha\alpha^{\mathrm T}$。要判断四个"同解"命题，核心是先搞清 $H$ 的性质——特别是**它是否可逆**，因为
+$$\text{若}\ H\ \text{可逆，则}\ HX=0\ \text{只有零解，且}\ MHX=0\iff HX\ \text{落在}\ M\ \text{的零空间} .$$
+
+$H$ 的谱一眼可得：
+- $H\alpha=\alpha-2\alpha(\alpha^{\mathrm T}\alpha)=\alpha-4\alpha=-3\alpha$（用了 $\alpha^{\mathrm T}\alpha=2$）；
+- 若 $\xi\perp\alpha$（即 $\alpha^{\mathrm T}\xi=0$），则 $H\xi=\xi$。
+
+故 $H$ 的特征值为 $-3$（$1$ 重）与 $1$（$n-1$ 重），$|H|=-3\neq0$，**$H$ 可逆**；又 $H^{\mathrm T}=H$（$\alpha\alpha^{\mathrm T}$ 对称），**$H$ 还是对称的**。这两条是解题的全部弹药。
+
+由 $B=AH$：
+- **D**：$B^{\mathrm T}=H^{\mathrm T}A^{\mathrm T}=HA^{\mathrm T}$，于是
+$$B^{\mathrm T}X=0\iff H(A^{\mathrm T}X)=0\iff A^{\mathrm T}X=0 ,$$
+最后一步正是因为 $H$ 可逆（$HY=0\Rightarrow Y=0$）。**同解，D 正确。**
+- **C**：$BX=0\iff A(HX)=0$。令 $Y=HX$，解集是 $\{X:HX\in N(A)\}=H^{-1}N(A)$，一般不等于 $N(A)$。错。
+- **A、B**：$HX=0$ 只有零解，而 $BX=0$、$B^{\mathrm T}X=0$ 在 $A$ 奇异时有非零解，一般不同解。错。
+
+**判别的要点是"乘一个可逆矩阵在哪一边"：$B^{\mathrm T}=HA^{\mathrm T}$ 是把可逆矩阵乘在 $A^{\mathrm T}$ 的左边，左乘可逆矩阵不改变解集；而 $B=AH$ 是乘在右边，右乘会把解集"搬动"，一般改变解集。** 这正是 C、D 一错一对的根源。
+
+@解答
+记 $H=E-2\alpha\alpha^{\mathrm T}$，则 $B=AH$。
+
+**$H$ 的性质。** 由 $\alpha^{\mathrm T}\alpha=2$，
+$$H\alpha=\alpha-2\alpha(\alpha^{\mathrm T}\alpha)=\alpha-4\alpha=-3\alpha ;$$
+若 $\alpha^{\mathrm T}\xi=0$，则 $H\xi=\xi-2\alpha(\alpha^{\mathrm T}\xi)=\xi$。$\alpha$ 的正交补是 $n-1$ 维，故 $H$ 的特征值为 $-3$（一重）与 $1$（$n-1$ 重），
+$$|H|=-3\neq0 ,$$
+即 $H$ 可逆；又 $H^{\mathrm T}=E-2(\alpha\alpha^{\mathrm T})^{\mathrm T}=H$，$H$ 对称。
+
+**D 正确。** 由 $B=AH$ 及 $H^{\mathrm T}=H$ 得
+$$B^{\mathrm T}=H^{\mathrm T}A^{\mathrm T}=HA^{\mathrm T} .$$
+于是
+$$B^{\mathrm T}X=0\iff H(A^{\mathrm T}X)=0\iff A^{\mathrm T}X=0 ,$$
+最后一步因 $H$ 可逆。故 $B^{\mathrm T}X=0$ 与 $A^{\mathrm T}X=0$ 同解。
+
+**C 错误。** $BX=0\iff A(HX)=0$，其解集为 $H^{-1}\{Y:AY=0\}$，一般不等于 $\{X:AX=0\}$。例如取 $n=2$，$\alpha=(1,1)^{\mathrm T}$（$\alpha^{\mathrm T}\alpha=2$），$H=\begin{pmatrix}-1&-2\\-2&-1\end{pmatrix}$，再取 $A=\begin{pmatrix}1&0\\0&0\end{pmatrix}$，则 $AX=0$ 的解为 $X=(0,t)^{\mathrm T}$；而 $B=AH=\begin{pmatrix}-1&-2\\0&0\end{pmatrix}$，$BX=0$ 的解为 $X=(-2t,t)^{\mathrm T}$，两者不同。
+
+**A、B 错误。** $H$ 可逆，故 $HX=0$ 只有零解；而当 $A$ 不可逆时 $BX=0$ 与 $B^{\mathrm T}X=0$ 都有非零解，二者与 $HX=0$ 不同解。
+
+故选 **D**。
+
+@考点
+初等变换的本质：**左乘可逆矩阵不改变齐次方程组的解集，右乘可逆矩阵一般改变解集**；豪斯霍尔德型矩阵 $E-2\alpha\alpha^{\mathrm T}$（当 $\alpha^{\mathrm T}\alpha=1$ 时是反射矩阵）的特征值；转置的乘法次序 $(AH)^{\mathrm T}=H^{\mathrm T}A^{\mathrm T}$。
+
+易混：本题 $\alpha^{\mathrm T}\alpha=2$ 而非 $1$，故 $H$ 的特征值是 $-3$ 而不是通常反射矩阵的 $-1$；但无论哪种，$H$ 都可逆，这是解题真正需要的。
+
+@易错
+1. 混淆左乘与右乘对解集的影响，选 C。
+2. 转置时次序不反转，写成 $B^{\mathrm T}=A^{\mathrm T}H$。
+3. 误算 $H\alpha=\alpha-2\alpha=-\alpha$（把 $\alpha^{\mathrm T}\alpha$ 当成 $1$），虽不影响可逆性结论但说明性质没吃透。
+4. 认为 $H$ 不可逆（它的特征值中没有 $0$）。
+
+[28]
+@题目
+设 $f(x)$ 在 $[0,+\infty)$ 上可导，$f(0)=0$，$y=f(x)$ 的反函数为 $g(x)$，若
+$$\int_{x}^{x+f(x)}g(t-x)\,\mathrm{d}t=x^{2}\ln(1+x)$$
+则 $f(1)=$ ______.
+
+@切入点
+条件里的积分 $\int_{x}^{x+f(x)}g(t-x)dt$ 上下限都含 $x$，先**换元把 $x$ 从被积函数里挪走**：令 $u=t-x$，则
+$$\int_{0}^{f(x)}g(u)du=x^{2}\ln(1+x) .$$
+形式立刻清爽了。
+
+接下来是本题的关键：$g$ 是 $f$ 的**反函数**，而反函数的积分有一个几何恒等式（"面积互补"）：
+$$\int_{0}^{b}f^{-1}(u)du+\int_{0}^{a}f(t)dt=ab  (b=f(a),\ f(0)=0) .$$
+取 $a=x$、$b=f(x)$ 得
+$$\int_{0}^{f(x)}g(u)du=xf(x)-\int_{0}^{x}f(t)dt .$$
+**这一步把含 $g$ 的式子彻底转成只含 $f$ 的式子**，是全题的枢纽——否则 $g$ 未知，无法继续。
+
+于是
+$$xf(x)-\int_{0}^{x}f(t)dt=x^{2}\ln(1+x) ,$$
+两端对 $x$ 求导，左端 $f(x)+xf'(x)-f(x)=xf'(x)$，**$f(x)$ 恰好消掉**，得
+$$xf'(x)=2x\ln(1+x)+\frac{x^{2}}{1+x} \Longrightarrow f'(x)=2\ln(1+x)+\frac{x}{1+x} ,$$
+再积分一次、用 $f(0)=0$ 定常数即可。
+
+@解答
+**换元化简条件。** 令 $u=t-x$，则
+$$\int_{x}^{x+f(x)}g(t-x)dt=\int_{0}^{f(x)}g(u)du=x^{2}\ln(1+x) .$$
+
+**用反函数的积分恒等式。** 因 $g=f^{-1}$ 且 $f(0)=0$（故 $g(0)=0$），由面积关系
+$$\int_{0}^{f(x)}g(u)du+\int_{0}^{x}f(t)dt=x\cdot f(x) ,$$
+即
+$$\int_{0}^{f(x)}g(u)du=xf(x)-\int_{0}^{x}f(t)dt .$$
+代入得
+$$xf(x)-\int_{0}^{x}f(t)dt=x^{2}\ln(1+x) .$$
+
+**求导。** 两端对 $x$ 求导：
+$$f(x)+xf'(x)-f(x)=2x\ln(1+x)+\frac{x^{2}}{1+x} ,$$
+即
+$$xf'(x)=2x\ln(1+x)+\frac{x^{2}}{1+x} .$$
+当 $x>0$ 时约去 $x$：
+$$f'(x)=2\ln(1+x)+\frac{x}{1+x} .$$
+
+**积分。**
+$$\int2\ln(1+x)dx=2[(1+x)\ln(1+x)-(1+x)] , \int\frac{x}{1+x}dx=\int(1-\frac{1}{1+x})dx=x-\ln(1+x) ,$$
+故
+$$f(x)=2(1+x)\ln(1+x)-2(1+x)+x-\ln(1+x)+C=(2x+1)\ln(1+x)-x-2+C .$$
+由 $f(0)=0$ 得 $0-0-2+C=0$，$C=2$，故
+$$f(x)=(2x+1)\ln(1+x)-x .$$
+
+**求值。**
+$$f(1)=3\ln2-1 .$$
+
+@考点
+含参变限积分的换元；反函数的积分恒等式 $\int_{0}^{f(a)}f^{-1}(u)du+\int_{0}^{a}f(t)dt=af(a)$（要求 $f(0)=0$）；变限积分求导；$\int\ln(1+x)dx$ 的分部积分。
+
+易混：恒等式 $\int_{0}^{b}f^{-1}+\int_{0}^{a}f=ab$ 的成立条件是 $f$ 单调、$f(0)=0$、$b=f(a)$；若 $f(0)\neq0$ 需把矩形的起点相应平移。
+
+@易错
+1. 不换元，直接对上下限都含 $x$ 的积分求导，漏项。
+2. 想不到反函数恒等式，卡在含未知函数 $g$ 的式子上。
+3. 求导后忘记约去 $x$，或在 $x=0$ 处强行约（需说明 $x>0$ 再由连续性延拓）。
+4. $\int\ln(1+x)dx$ 算成 $\frac{1}{1+x}$ 或漏掉 $-(1+x)$ 一项。
+
+[29]
+@题目
+设 $\boldsymbol{\alpha}$ 与 $\boldsymbol{\beta}$ 均为单位向量，其夹角为 $\dfrac{\pi}{6}$，则以 $\boldsymbol{\alpha}+2\boldsymbol{\beta}$ 与 $3\boldsymbol{\alpha}+\boldsymbol{\beta}$ 为邻边的平行四边形的面积为________.
+
+@切入点
+平行四边形面积 $=$ 两邻边向量**叉积的模**：
+$$S=|(\alpha+2\beta)\times(3\alpha+\beta)| .$$
+叉积按分配律展开，用两条性质化简：$\alpha\times\alpha=\beta\times\beta=0$，$\beta\times\alpha=-\alpha\times\beta$。
+$$(\alpha+2\beta)\times(3\alpha+\beta)=3(\alpha\times\alpha)+\alpha\times\beta+6(\beta\times\alpha)+2(\beta\times\beta)=\alpha\times\beta-6\alpha\times\beta=-5(\alpha\times\beta) .$$
+**注意 $\beta\times\alpha$ 要变号**，这是本题唯一的技术点；若当成 $+6\alpha\times\beta$，系数会变成 $7$。
+
+再用 $|\alpha\times\beta|=|\alpha||\beta|\sin\theta$，代入 $|\alpha|=|\beta|=1$、$\theta=\frac\pi6$：
+$$S=5\cdot1\cdot1\cdot\sin\frac{\pi}{6}=5\cdot\frac12=\frac52 .$$
+
+（也可以用行列式思路：在以 $\alpha,\beta$ 为基的"坐标"下，两个向量的坐标是 $(1,2)$ 与 $(3,1)$，面积 $=|1\cdot1-2\cdot3|\cdot|\alpha\times\beta|=5|\alpha\times\beta|$，结果一致，而且更快。）
+
+@解答
+平行四边形的面积等于两邻边向量叉积的模：
+$$S=|(\boldsymbol\alpha+2\boldsymbol\beta)\times(3\boldsymbol\alpha+\boldsymbol\beta)| .$$
+按分配律展开，并利用 $\boldsymbol\alpha\times\boldsymbol\alpha=\boldsymbol\beta\times\boldsymbol\beta=\mathbf 0$、$\boldsymbol\beta\times\boldsymbol\alpha=-\boldsymbol\alpha\times\boldsymbol\beta$：
+$$(\boldsymbol\alpha+2\boldsymbol\beta)\times(3\boldsymbol\alpha+\boldsymbol\beta)=3(\boldsymbol\alpha\times\boldsymbol\alpha)+\boldsymbol\alpha\times\boldsymbol\beta+6(\boldsymbol\beta\times\boldsymbol\alpha)+2(\boldsymbol\beta\times\boldsymbol\beta)$$
+$$=\boldsymbol\alpha\times\boldsymbol\beta-6(\boldsymbol\alpha\times\boldsymbol\beta)=-5(\boldsymbol\alpha\times\boldsymbol\beta) .$$
+又 $|\boldsymbol\alpha|=|\boldsymbol\beta|=1$，夹角为 $\frac\pi6$，故
+$$|\boldsymbol\alpha\times\boldsymbol\beta|=|\boldsymbol\alpha||\boldsymbol\beta|\sin\frac{\pi}{6}=\frac12 .$$
+所以
+$$S=5\times\frac12=\frac52 .$$
+
+@考点
+平行四边形面积 $=|a\times b|$；叉积的分配律与反交换律 $b\times a=-a\times b$；$|a\times b|=|a||b|\sin\theta$。
+
+易混：$a\times b$ 反交换（变号），而点积 $a\cdot b$ 可交换（不变号）。本题展开时若按点积的习惯不变号，会算成 $7|\alpha\times\beta|=\frac72$。
+
+@易错
+1. 展开叉积时忘记 $\boldsymbol\beta\times\boldsymbol\alpha=-\boldsymbol\alpha\times\boldsymbol\beta$。
+2. 把 $|\boldsymbol\alpha\times\boldsymbol\beta|$ 写成 $\cos\frac\pi6$（那是点积）。
+3. 最后忘记取绝对值，答成 $-\frac52$。
+4. 误以为需要知道 $\boldsymbol\alpha,\boldsymbol\beta$ 的具体坐标。
+
+[30]
+@题目
+求下列级数的收敛域：
+（Ⅰ）$\sum\limits_{n=1}^{\infty} \dfrac{x^{n^2}}{2^n}$；
+（Ⅱ）$\sum\limits_{n=1}^{\infty} \dfrac{x^{2n+1}}{3^n + n^2}$；
+（Ⅲ）$\sum\limits_{n=1}^{\infty} (1 + \dfrac{1}{n})^{-n^2} x^n$；
+（Ⅳ）$\sum\limits_{n=2}^{\infty} (\dfrac{1}{n \ln n} + \dfrac{1}{2^n}) x^n$.
+
+@切入点
+求幂级数的收敛域，一般流程是"**先求收敛半径（比值或根值），再单独检验端点**"。但这四个小题各有各的"不标准"之处，要先识别：
+
+（Ⅰ）指数是 $n^{2}$ 而不是 $n$，这是**缺项级数**，不能直接套 $\frac{a_{n}}{a_{n+1}}$ 的公式，应当**直接对具体的 $x$ 讨论**：$|x|<1$ 时 $|x|^{n^{2}}\leq|x|^{n}$，与等比级数比较；$|x|=1$ 时级数变成 $\sum\frac{\pm1}{2^{n}}$，绝对收敛；$|x|>1$ 时通项 $\frac{|x|^{n^{2}}}{2^{n}}\to+\infty$，发散。
+
+（Ⅱ）只有奇次幂，也是缺项级数，用**比值判别法直接对通项做**：相邻项之比的极限是 $\frac{x^{2}}{3}$，故 $|x|<\sqrt3$ 收敛。端点 $x=\pm\sqrt3$ 处通项 $\frac{(\pm\sqrt3)^{2n+1}}{3^{n}+n^{2}}\to\pm\sqrt3\neq0$，发散。
+
+（Ⅲ）系数是 $(1+\frac1n)^{-n^{2}}$，带 $n$ 次方，**用根值法**最合适：$\sqrt[n]{a_{n}}=(1+\frac1n)^{-n}\to\mathrm e^{-1}$，故 $R=\mathrm e$。端点处要把 $a_{n}\mathrm e^{n}$ 的极限算清楚，用 $\ln$ 展开到 $\frac1n$ 阶，发现极限是 $\sqrt{\mathrm e}\neq0$，故两端都发散。
+
+（Ⅳ）系数是两块之和，**由量级大的那块支配**：$\frac{1}{n\ln n}$ 远大于 $\frac{1}{2^{n}}$，故 $\sqrt[n]{a_{n}}\to1$，$R=1$。端点 $x=1$ 处 $\sum\frac{1}{n\ln n}$ 发散（积分判别法）而 $\sum\frac{1}{2^{n}}$ 收敛，和发散；$x=-1$ 处 $\sum\frac{(-1)^{n}}{n\ln n}$ 由莱布尼茨判别法收敛、$\sum\frac{(-1)^{n}}{2^{n}}$ 绝对收敛，故收敛。
+
+@解答
+**（Ⅰ）$\sum_{n=1}^{\infty}\dfrac{x^{n^{2}}}{2^{n}}$。**
+
+当 $|x|<1$ 时，$|\frac{x^{n^{2}}}{2^{n}}|\leq\frac{1}{2^{n}}$，而 $\sum\frac{1}{2^{n}}$ 收敛，故绝对收敛。
+
+当 $|x|=1$ 时，$|\frac{x^{n^{2}}}{2^{n}}|=\frac{1}{2^{n}}$，级数绝对收敛。
+
+当 $|x|>1$ 时，$\frac{|x|^{n^{2}}}{2^{n}}=\mathrm e^{n^{2}\ln|x|-n\ln2}\to+\infty$，通项不趋于零，发散。
+
+故收敛域为 $[-1,1]$。
+
+**（Ⅱ）$\sum_{n=1}^{\infty}\dfrac{x^{2n+1}}{3^{n}+n^{2}}$。**
+
+设 $x\neq0$，记 $u_{n}=\frac{x^{2n+1}}{3^{n}+n^{2}}$，
+$$|\frac{u_{n+1}}{u_{n}}|=x^{2}\cdot\frac{3^{n}+n^{2}}{3^{n+1}+(n+1)^{2}}\longrightarrow\frac{x^{2}}{3} .$$
+故 $\frac{x^{2}}{3}<1$ 即 $|x|<\sqrt3$ 时绝对收敛，$|x|>\sqrt3$ 时发散。
+
+端点 $x=\pm\sqrt3$：$|u_{n}|=\frac{3^{n}\sqrt3}{3^{n}+n^{2}}\to\sqrt3\neq0$，通项不趋于零，发散。
+
+故收敛域为 $(-\sqrt3,\ \sqrt3)$。
+
+**（Ⅲ）$\sum_{n=1}^{\infty}(1+\frac1n)^{-n^{2}}x^{n}$。**
+
+$a_{n}=(1+\frac1n)^{-n^{2}}$，由根值法
+$$\sqrt[n]{a_{n}}=(1+\frac1n)^{-n}\longrightarrow\mathrm e^{-1} ,$$
+故收敛半径 $R=\mathrm e$。
+
+端点 $|x|=\mathrm e$：考察 $a_{n}\mathrm e^{n}$，
+$$\ln(a_{n}\mathrm e^{n})=-n^{2}\ln(1+\frac1n)+n=-n^{2}(\frac1n-\frac{1}{2n^{2}}+\frac{1}{3n^{3}}+o(\frac{1}{n^{3}}))+n=\frac12-\frac{1}{3n}+o(\frac1n) ,$$
+故 $a_{n}\mathrm e^{n}\to\mathrm e^{\frac12}=\sqrt{\mathrm e}\neq0$，通项不趋于零，$x=\pm\mathrm e$ 处均发散。
+
+故收敛域为 $(-\mathrm e,\ \mathrm e)$。
+
+**（Ⅳ）$\sum_{n=2}^{\infty}(\frac{1}{n\ln n}+\frac{1}{2^{n}})x^{n}$。**
+
+$a_{n}=\frac{1}{n\ln n}+\frac{1}{2^{n}}$。由 $\frac{1}{n\ln n}\leq a_{n}\leq\frac{2}{n\ln n} (n\geq2\ \text{充分大})$ 及 $\sqrt[n]{\frac{1}{n\ln n}}\to1$ 得
+$$\sqrt[n]{a_{n}}\to1 , R=1 .$$
+
+端点 $x=1$：$\sum\frac{1}{2^{n}}$ 收敛，而由积分判别法
+$$\int_{2}^{+\infty}\frac{dt}{t\ln t}=[\ln\ln t]_{2}^{+\infty}=+\infty ,$$
+$\sum\frac{1}{n\ln n}$ 发散，故原级数发散。
+
+端点 $x=-1$：$\sum\frac{(-1)^{n}}{2^{n}}$ 绝对收敛；$\frac{1}{n\ln n}$ 单调减且趋于 $0$，由莱布尼茨判别法 $\sum\frac{(-1)^{n}}{n\ln n}$ 收敛。两者之和收敛。
+
+故收敛域为 $[-1,\ 1)$。
+
+@考点
+缺项幂级数不能直接套系数公式，应对通项用比值／根值法或直接讨论；根值法求收敛半径；端点处用通项极限、莱布尼茨判别法、积分判别法；$\sum\frac{1}{n\ln n}$ 发散。
+
+易混：$(1+\frac1n)^{-n^{2}}\mathrm e^{n}$ 的极限不是 $1$ 而是 $\sqrt{\mathrm e}$——因为 $n^{2}\ln(1+\frac1n)=n-\frac12+O(\frac1n)$，比 $n$ 少了 $\frac12$。展开必须保留到常数项。
+
+@易错
+1. （Ⅰ）（Ⅱ）套用 $R=\lim\frac{a_{n}}{a_{n+1}}$ 的公式（缺项级数的 $a_{n}$ 有无穷多个为零，公式不适用）。
+2. （Ⅱ）端点处误以为通项趋于零而去用莱布尼茨判别法。
+3. （Ⅲ）端点处只说 $a_{n}\mathrm e^{n}\to1$（展开不够），从而误判收敛性。
+4. （Ⅳ）忘记 $\sum\frac{1}{n\ln n}$ 发散（它比 $\sum\frac1n$ 收敛得"更慢"），或在 $x=-1$ 处忘记检验单调性。
+
+[31]
+@题目
+设随机变量 $X$ 与 $Y$ 独立同分布，均服从 $P\{X=k\}=p(1-p)^{k-1}$，$k=1,2,\cdots$，$0<p<1$，则 $P\{X=Y\}=$（　　）.
+A. $\dfrac{p}{1-p}$　B. $\dfrac{1-p}{2-p}$　C. $\dfrac{2p}{1-p}$　D. $\dfrac{p}{2-p}$
+
+@切入点
+$X,Y$ 独立同分布，分布律 $P\{X=k\}=p(1-p)^{k-1} (k\geq1)$ 是**几何分布**。要求 $P\{X=Y\}$，把事件按 $X$ 与 $Y$ 的公共取值分解：
+$$\{X=Y\}=cup_{k=1}^{\infty}\{X=k,\ Y=k\} ,$$
+这些事件互不相容，故
+$$P\{X=Y\}=\sum_{k=1}^{\infty}P\{X=k\}P\{Y=k\} ,$$
+（用了独立性）。代入分布律：
+$$=\sum_{k=1}^{\infty}p^{2}(1-p)^{2(k-1)} .$$
+**这是首项 $p^{2}$、公比 $(1-p)^{2}$ 的等比级数**，公比 $|1-p|^{2}<1$，直接求和：
+$$=\frac{p^{2}}{1-(1-p)^{2}} .$$
+最后化简分母：$1-(1-p)^{2}=1-(1-2p+p^{2})=2p-p^{2}=p(2-p)$，于是
+$$P\{X=Y\}=\frac{p^{2}}{p(2-p)}=\frac{p}{2-p} .$$
+
+**分母的因式分解 $1-(1-p)^{2}=p(2-p)$ 是化简的关键**，约去一个 $p$ 后答案才与选项对上。四个选项的差别正是在这一步：没约干净会得到 $\frac{p^{2}}{p(2-p)}$ 的其他变形。
+
+可用 $p=1$ 自检：此时 $X\equiv Y\equiv1$，$P\{X=Y\}=1$；代公式 $\frac{1}{2-1}=1$ ✓。
+
+@解答
+$X,Y$ 独立同分布，均服从参数为 $p$ 的几何分布
+$$P\{X=k\}=P\{Y=k\}=p(1-p)^{k-1} , k=1,2,\cdots$$
+
+事件 $\{X=Y\}$ 可分解为互不相容事件之并：
+$$\{X=Y\}=cup_{k=1}^{\infty}\{X=k,Y=k\} ,$$
+故由可列可加性与独立性
+$$P\{X=Y\}=\sum_{k=1}^{\infty}P\{X=k\}P\{Y=k\}=\sum_{k=1}^{\infty}[p(1-p)^{k-1}]^{2}=p^{2}\sum_{k=1}^{\infty}[(1-p)^{2}]^{k-1} .$$
+这是公比为 $(1-p)^{2}\in[0,1)$ 的等比级数，
+$$\sum_{k=1}^{\infty}[(1-p)^{2}]^{k-1}=\frac{1}{1-(1-p)^{2}} ,$$
+而
+$$1-(1-p)^{2}=[1-(1-p)][1+(1-p)]=p(2-p) ,$$
+故
+$$P\{X=Y\}=\frac{p^{2}}{p(2-p)}=\frac{p}{2-p} .$$
+
+选 **D**。
+
+@考点
+几何分布；独立性下的联合概率 $P\{X=k,Y=k\}=P\{X=k\}P\{Y=k\}$；事件按取值分解后求和；等比级数求和与平方差因式分解。
+
+易混：几何分布的分布律是 $p(1-p)^{k-1}$（$k$ 从 $1$ 起），平方后公比是 $(1-p)^{2}$ 而不是 $1-p$；若公比取错，分母会变成 $p$，答案成 $p$。
+
+@易错
+1. 求和时公比写成 $1-p$。
+2. 分母 $1-(1-p)^{2}$ 展开出错，得到 $2p+p^{2}$ 之类。
+3. 化简后不约去 $p$，与选项对不上而乱选。
+4. 忘记用独立性，把 $P\{X=k,Y=k\}$ 当成 $P\{X=k\}$。
+
+[32]
+@题目
+设 $y(x)$ 在 $[0, +\infty)$ 上有二阶连续导数，点 $P(x, y)\ (x > 0)$ 为凹曲线 $y = y(x)$ 上的任意一点，沿曲线从点 $(0, 1)$ 到点 $P(x, y)$ 的弧长在数值上等于该曲线在点 $P(x, y)$ 处的切线的斜率，且曲线在点 $(0, 1)$ 处有水平切线.
+（Ⅰ）求 $y = y(x)$ 的表达式；
+（Ⅱ）求曲线 $y = y(x)$ 从点 $(\ln 2, \frac{5}{4})$ 到点 $(\ln 3, \frac{5}{3})$ 的一段弧长.
+
+@切入点
+题设"从 $(0,1)$ 到 $P(x,y)$ 的弧长 $=$ 该点处切线的斜率"，直接翻译成方程：
+$$\int_{0}^{x}\sqrt{1+y'^{2}(t)} dt=y'(x) .$$
+左端是变限积分，**两端对 $x$ 求导**就把积分号去掉：
+$$\sqrt{1+y'^{2}}=y'' .$$
+（这一步同时用上了"曲线是凹的"——$y''>0$，所以等式右端取 $y''$ 而不是 $|y''|$；另外由原式在 $x=0$ 处得 $y'(0)=0$，与"在 $(0,1)$ 处有水平切线"一致，两个条件互相印证。）
+
+方程 $y''=\sqrt{1+y'^{2}}$ **不含 $y$**，是可降阶的第一类：令 $p=y'$，得可分离变量方程
+$$\frac{dp}{\sqrt{1+p^{2}}}=dx .$$
+左端的原函数是 $\ln(p+\sqrt{1+p^{2}})$（即 $\mathrm{arsinh} p$），由 $p(0)=0$ 定常数后解出
+$$p=\frac{\mathrm e^{x}-\mathrm e^{-x}}{2} ,$$
+再积分并用 $y(0)=1$ 得 $y=\frac{\mathrm e^{x}+\mathrm e^{-x}}{2}$——**悬链线**。
+
+（Ⅱ）弧长积分有个漂亮的简化：对这条曲线
+$$\sqrt{1+y'^{2}}=y''=y ,$$
+（因为 $y''=y$），所以弧长被积函数直接就是 $y$ 本身：
+$$s=\int_{\ln2}^{\ln3}y dx=\int_{\ln2}^{\ln3}\frac{\mathrm e^{x}+\mathrm e^{-x}}{2}dx ,$$
+一步积出。**认出"$\sqrt{1+y'^{2}}$ 恰等于 $y$"能免去一次根号运算**，这是悬链线的招牌性质。
+
+@解答
+**（Ⅰ）** 依题意，曲线从 $(0,1)$ 到 $P(x,y)$ 的弧长等于点 $P$ 处的切线斜率：
+$$\int_{0}^{x}\sqrt{1+y'^{2}(t)} dt=y'(x) , x>0 .$$
+令 $x=0$ 得 $y'(0)=0$（与"在 $(0,1)$ 处有水平切线"一致）。两端对 $x$ 求导：
+$$\sqrt{1+y'^{2}}=y'' .$$
+（曲线为凹，$y''>0$，与左端为正相符。）
+
+令 $p=y'$，则 $\frac{dp}{dx}=\sqrt{1+p^{2}}$，分离变量：
+$$\frac{dp}{\sqrt{1+p^{2}}}=dx \Longrightarrow \ln(p+\sqrt{1+p^{2}})=x+C_{1} .$$
+由 $p(0)=0$ 得 $\ln1=C_{1}=0$，故
+$$p+\sqrt{1+p^{2}}=\mathrm e^{x} .$$
+由此 $\sqrt{1+p^{2}}=\mathrm e^{x}-p$，两端平方得 $1+p^{2}=\mathrm e^{2x}-2p\mathrm e^{x}+p^{2}$，解出
+$$p=y'=\frac{\mathrm e^{2x}-1}{2\mathrm e^{x}}=\frac{\mathrm e^{x}-\mathrm e^{-x}}{2} .$$
+再积分：
+$$y=\frac{\mathrm e^{x}+\mathrm e^{-x}}{2}+C_{2} ,$$
+由 $y(0)=1$ 得 $1+C_{2}=1$，$C_{2}=0$。故
+$$y=\frac{\mathrm e^{x}+\mathrm e^{-x}}{2} .$$
+
+**（Ⅱ）** 注意
+$$1+y'^{2}=1+(\frac{\mathrm e^{x}-\mathrm e^{-x}}{2})^{2}=\frac{4+\mathrm e^{2x}-2+\mathrm e^{-2x}}{4}=(\frac{\mathrm e^{x}+\mathrm e^{-x}}{2})^{2}=y^{2} ,$$
+故 $\sqrt{1+y'^{2}}=y$。于是所求弧长
+$$s=\int_{\ln2}^{\ln3}\sqrt{1+y'^{2}} dx=\int_{\ln2}^{\ln3}\frac{\mathrm e^{x}+\mathrm e^{-x}}{2}dx=[\frac{\mathrm e^{x}-\mathrm e^{-x}}{2}]_{\ln2}^{\ln3} .$$
+而
+$$\frac{\mathrm e^{\ln3}-\mathrm e^{-\ln3}}{2}=\frac{3-\frac13}{2}=\frac43 , \frac{\mathrm e^{\ln2}-\mathrm e^{-\ln2}}{2}=\frac{2-\frac12}{2}=\frac34 ,$$
+故
+$$s=\frac43-\frac34=\frac{16-9}{12}=\frac{7}{12} .$$
+
+（检验端点：$y(\ln2)=\frac{2+\frac12}{2}=\frac54$，$y(\ln3)=\frac{3+\frac13}{2}=\frac53$，与题目给的两点相符。）
+
+@考点
+弧长公式 $s=\int\sqrt{1+y'^{2}}dx$；由几何条件列积分方程并求导化为微分方程；可降阶方程 $y''=f(y')$；$\int\frac{dp}{\sqrt{1+p^{2}}}=\ln(p+\sqrt{1+p^{2}})$；悬链线 $y=\frac{\mathrm e^{x}+\mathrm e^{-x}}{2}$ 满足 $\sqrt{1+y'^{2}}=y$。
+
+易混：$y''=\sqrt{1+y'^{2}}$ 右端恒正，所以只对**凹**曲线成立；若曲线是凸的，应写 $-y''=\sqrt{1+y'^{2}}$，得到的是另一支。题目专门声明"凹曲线"正是为了定这个符号。
+
+@易错
+1. 忘记两端求导，试图直接处理含积分的等式。
+2. 去绝对值时符号取反。
+3. $\int\frac{dp}{\sqrt{1+p^{2}}}$ 算成 $\arcsin p$ 或 $\arctan p$。
+4. （Ⅱ）中重新算一遍 $\sqrt{1+y'^{2}}$ 的根号而不利用它等于 $y$，容易出错。
+5. 由 $p+\sqrt{1+p^{2}}=\mathrm e^{x}$ 解 $p$ 时平方后漏掉交叉项。
