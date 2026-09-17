@@ -1987,9 +1987,9 @@ $$a>0 , b=2a ,$$
 关键是看清两组向量之间的**单向传递关系**：矩阵乘法是线性的，所以"零组合"能从（Ⅰ）传到（Ⅱ）：
 $$\sum_{i=1}^{t}c_{i}\alpha_{i}=0 \Longrightarrow \sum_{i=1}^{t}c_{i}A\alpha_{i}=A(\sum_{i=1}^{t}c_{i}\alpha_{i})=A\cdot0=0 ,$$
 且系数 $c_{i}$ 原封不动。于是
-$$（Ⅰ）\text{线性相关}\Longrightarrow（Ⅱ）\text{线性相关} .$$
+$$（I）\text{线性相关}\Longrightarrow（II）\text{线性相关} .$$
 **这是唯一无条件成立的蕴含**，它的逆否命题就是
-$$（Ⅱ）\text{线性无关}\Longrightarrow（Ⅰ）\text{线性无关} ,$$
+$$（II）\text{线性无关}\Longrightarrow（I）\text{线性无关} ,$$
 正是选项 C。
 
 **反方向不成立**，因为 $A$ 可能把非零向量打到零：取 $A=O$，则不论（Ⅰ）多么无关，（Ⅱ）全是零向量，必然相关。这一个反例同时否掉 A（"（Ⅰ）无关 $\Rightarrow$（Ⅱ）无关"）、B（"（Ⅱ）相关 $\Rightarrow$（Ⅰ）相关"）和 D（"相关性相同"）。
@@ -2002,9 +2002,9 @@ $$c_{1}\alpha_{1}+\cdots+c_{t}\alpha_{t}=0 .$$
 两端左乘 $A$：
 $$c_{1}A\alpha_{1}+\cdots+c_{t}A\alpha_{t}=A(c_{1}\alpha_{1}+\cdots+c_{t}\alpha_{t})=0 ,$$
 系数仍不全为零，故（Ⅱ）线性相关。即
-$$（Ⅰ）\text{相关}\Longrightarrow（Ⅱ）\text{相关} .$$
+$$（I）\text{相关}\Longrightarrow（II）\text{相关} .$$
 其逆否命题为
-$$（Ⅱ）\text{无关}\Longrightarrow（Ⅰ）\text{无关} ,$$
+$$（II）\text{无关}\Longrightarrow（I）\text{无关} ,$$
 故 **C 正确**。
 
 **其余选项的反例。** 取 $A=O$（$m\times n$ 零矩阵），$\alpha_{1},\cdots,\alpha_{t}$ 线性无关（例如 $t\leq n$ 时取单位坐标向量），则
@@ -3160,3 +3160,610 @@ D：$A^{\mathrm T}=\binom{1}{0}$、$B^{\mathrm T}=\binom{0}{1}$，方程 $A^{\ma
 2. 选 C：把矩阵等价当成向量组等价。
 3. 只证充分性（行向量组等价 $\Rightarrow$ 同解）而不证必要性。
 4. 找不到反例，凭印象在 B、C 间摇摆。
+
+[65]
+@切入点
+条件
+$$f(x+y)-f(x)=[f(x)-1]y+a(y) , \lim_{y\to0}\frac{a(y)}{y}=0$$
+的形状就是**可微的定义**：函数增量 $=$（与 $y$ 无关的系数）$\times y$ $+$（比 $y$ 高阶的量）。所以两端除以 $y$ 再令 $y\to0$：
+$$\lim_{y\to0}\frac{f(x+y)-f(x)}{y}=f(x)-1+\lim_{y\to0}\frac{a(y)}{y}=f(x)-1 ,$$
+**左端正是 $f'(x)$ 的定义**（把 $y$ 当作自变量的增量），于是得到微分方程
+$$f'(x)=f(x)-1 .$$
+这一步同时说明了 $f$ 在每一点都可导——题目只说"有定义"，可导性是从条件里推出来的，不能预设。
+
+剩下是一阶线性方程 $f'-f=-1$。右端是常数，**特解直接取常数** $f^{*}=1$（代入验证 $0-1=-1$ ✓），齐次通解 $C\mathrm e^{x}$，故
+$$f(x)=C\mathrm e^{x}+1 ,$$
+由 $f(0)=2$ 得 $C=1$。
+
+@解答
+对任意固定的 $x$，由题设
+$$\frac{f(x+y)-f(x)}{y}=f(x)-1+\frac{a(y)}{y} (y\neq0) .$$
+令 $y\to0$，由 $\lim_{y\to0}\frac{a(y)}{y}=0$ 知右端极限存在且等于 $f(x)-1$，故左端极限也存在，即 $f$ 在 $x$ 处可导且
+$$f'(x)=f(x)-1 .$$
+
+这是一阶线性方程
+$$f'-f=-1 .$$
+齐次方程 $f'-f=0$ 的通解为 $C\mathrm e^{x}$；右端为常数，取特解 $f^{*}=1$（代入得 $0-1=-1$ ✓）。故
+$$f(x)=C\mathrm e^{x}+1 .$$
+由 $f(0)=2$：$C+1=2$，$C=1$。所以
+$$f(x)=\mathrm e^{x}+1 .$$
+
+（验证：$f(x+y)-f(x)=\mathrm e^{x}(\mathrm e^{y}-1)$，而 $[f(x)-1]y=\mathrm e^{x}y$，二者之差 $=\mathrm e^{x}(\mathrm e^{y}-1-y)=o(y)$ ✓。）
+
+@考点
+由"增量 $=$ 线性主部 $+$ 高阶无穷小"的形式识别可微并读出导数；一阶线性微分方程（常数右端取常数特解）；由初值定常数。
+
+易混：题中 $a(y)$ 只与 $y$ 有关、与 $x$ 无关，所以极限 $\lim_{y\to0}\frac{a(y)}{y}=0$ 对每个 $x$ 都能用；这正是能逐点推出 $f'(x)=f(x)-1$ 的原因。
+
+@易错
+1. 不除以 $y$ 就令 $y\to0$，只得到 $0=0$。
+2. 把 $[f(x)-1]y$ 中的系数误当成 $f(x)$，得到 $f'=f$。
+3. 求特解时设成 $Ax+B$（右端是常数，取常数即可）。
+4. 忘记用 $f(0)=2$，或把通解写成 $C\mathrm e^{x}-1$。
+
+[66]
+@切入点
+中心极限定理给出的标准形式是
+$$\frac{S_{n}-ES_{n}}{\sqrt{DS_{n}}}\ \text{近似服从}\ N(0,1) .$$
+所以只要把题中的表达式与它对照，就能定出 $k$。**做法是先算出求和项的均值与方差。**
+
+令
+$$Z_{i}=X_{2i}-X_{2i-1} (i=1,\cdots,n) ,$$
+这些 $Z_{i}$ 由互不重叠的 $X$ 组成，故**相互独立同分布**。由 $X_{j}\sim B(1,\frac12)$：
+$$EX_{j}=\frac12 , DX_{j}=\frac14 ,$$
+$$EZ_{i}=\frac12-\frac12=0 , DZ_{i}=DX_{2i}+DX_{2i-1}=\frac14+\frac14=\frac12 .$$
+（方差相加用到独立性；注意是**相加**而不是相减。）
+
+于是 $S_{n}=\sum_{i=1}^{n}Z_{i}$ 满足 $ES_{n}=0$、$DS_{n}=\frac n2$，标准化为
+$$\frac{S_{n}}{\sqrt{n/2}}=\frac{\sqrt2 S_{n}}{\sqrt n}\ \text{近似服从}\ N(0,1) .$$
+与题中的 $\dfrac{k S_{n}}{\sqrt n}$ 比较，立刻得
+$$k=\sqrt2 .$$
+
+**要点：$Z_{i}$ 的方差是两个 $X$ 的方差之和 $\frac12$，而不是 $\frac14$；标准化时分母是 $\sqrt{DS_{n}}=\sqrt{n/2}$，把它写成 $\frac{\sqrt n}{\sqrt2}$ 就看出 $k=\sqrt2$。**
+
+@解答
+令
+$$Z_{i}=X_{2i}-X_{2i-1} , i=1,2,\cdots,n .$$
+由于 $X_{1},\cdots,X_{2n}$ 相互独立，各 $Z_{i}$ 使用互不重叠的 $X$，故 $Z_{1},\cdots,Z_{n}$ 相互独立且同分布。
+
+由 $X_{j}\sim B(1,\frac12)$ 得 $EX_{j}=\frac12$、$DX_{j}=\frac14$，故
+$$EZ_{i}=EX_{2i}-EX_{2i-1}=0 , DZ_{i}=DX_{2i}+DX_{2i-1}=\frac14+\frac14=\frac12 .$$
+
+记 $S_{n}=\sum_{i=1}^{n}Z_{i}$，则
+$$ES_{n}=0 , DS_{n}=n\cdot\frac12=\frac n2 .$$
+由列维—林德伯格中心极限定理，
+$$\frac{S_{n}-ES_{n}}{\sqrt{DS_{n}}}=\frac{S_{n}}{\sqrt{n/2}}=\frac{\sqrt2 S_{n}}{\sqrt n}$$
+的分布函数收敛于 $\Phi(x)$，即
+$$\lim_{n\to\infty}P\{\frac{\sqrt2\sum_{i=1}^{n}(X_{2i}-X_{2i-1})}{\sqrt n}\leq x\}=\Phi(x) .$$
+与题设比较得
+$$k=\sqrt2 .$$
+
+@考点
+独立同分布中心极限定理的标准化形式；独立随机变量之差的方差为方差之和；$B(1,p)$ 的期望与方差。
+
+易混：$D(X-Y)=DX+DY$（独立时），**不是** $DX-DY$。若误算成 $DZ_{i}=0$ 或 $\frac14$，$k$ 会变成别的值。
+
+@易错
+1. 方差相减，得 $DZ_{i}=0$。
+2. 把 $DS_{n}$ 算成 $\frac n4$，得 $k=2$。
+3. 忘记 $EZ_{i}=0$（若均值非零，标准化还要减去 $ES_{n}$）。
+4. 把 $\sqrt{n/2}$ 化成 $\frac{\sqrt n}{2}$。
+
+[67]
+@切入点
+被积式的分母是 $x^{2}+y^{2}+z^{2}$，而 $\Sigma$ 落在**单位球面**上，故分母恒等于 $1$，可以直接约掉——**曲面方程代入是第一步**。
+
+第二步是把第二类曲面积分化成第一类。球面上的单位外法向量恰是径向量
+$$\mathbf n=(x,y,z) ,$$
+（半径为 $1$），故方向余弦 $\cos\alpha=x$、$\cos\gamma=z$；题设 $\cos\gamma>0$ 正好说明取的是外侧（上侧）。于是
+$$dydz=\cos\alpha dS=x dS , dxdy=\cos\gamma dS=z dS ,$$
+$$I=\iint_{\Sigma}(x\cdot x+z\cdot z)dS=\iint_{\Sigma}(x^{2}+z^{2})dS=\iint_{\Sigma}(1-y^{2})dS .$$
+**"球面上 $\mathbf n=\frac{\mathbf r}{R}$"是把第二类化第一类的利器**，比投影分片干净得多。
+
+第三步是描述 $\Sigma$。三条边都是大圆弧，各自所在的平面由两个端点与原点确定：
+- $M_{1}(1,0,0)$ 与 $M_{2}(0,1,0)$：都满足 $z=0$，弧在平面 $z=0$ 上；
+- $M_{1}$ 与 $M_{3}(\frac{\sqrt2}{2},0,\frac{\sqrt2}{2})$：都满足 $y=0$，弧在平面 $y=0$ 上；
+- $M_{2}$ 与 $M_{3}$：法向量 $M_{2}\times M_{3}\parallel(1,0,-1)$，弧在平面 $x=z$ 上。
+
+故
+$$\Sigma=\{\text{单位球面上}:\ y\geq0,\ z\geq0,\ x\geq z\} .$$
+
+第四步选参数。被积函数 $1-y^{2}$ 只与 $y$ 有关，所以**把 $y$ 当作"纬度"方向**最合适：令
+$$x=\cos\beta\cos\psi , y=\sin\beta , z=\cos\beta\sin\psi ,$$
+其中 $\beta\in[-\frac\pi2,\frac\pi2]$ 是与 $xOz$ 平面的夹角、$\psi$ 是在 $xOz$ 平面内从 $x$ 轴量起的方位角，此时 $dS=\cos\beta d\beta d\psi$。三个约束化为：$y\geq0\Rightarrow\beta\in[0,\frac\pi2]$；$z\geq0\Rightarrow\sin\psi\geq0$；$x\geq z\Rightarrow\cos\psi\geq\sin\psi$，两者合起来 $\psi\in[0,\frac\pi4]$。**变量彻底分离，积分一步算完。**
+
+@解答
+**第一步：化简。** $\Sigma$ 在单位球面 $x^{2}+y^{2}+z^{2}=1$ 上，故分母为 $1$：
+$$I=\iint_{\Sigma}x dydz+z dxdy .$$
+单位球面上的单位外法向量为 $\mathbf n=(x,y,z)$，$\cos\gamma=z\geq0$ 与题设相符。由
+$$dydz=\cos\alpha dS=x dS , dxdy=\cos\gamma dS=z dS ,$$
+得
+$$I=\iint_{\Sigma}(x^{2}+z^{2})dS=\iint_{\Sigma}(1-y^{2})dS .$$
+
+**第二步：描述 $\Sigma$。** 球面三角形的边为大圆弧，其所在平面过原点：
+- 过 $M_{1}(1,0,0)$、$M_{2}(0,1,0)$ 的大圆在平面 $z=0$ 上；
+- 过 $M_{1}$、$M_{3}(\frac{\sqrt2}{2},0,\frac{\sqrt2}{2})$ 的大圆在平面 $y=0$ 上；
+- 过 $M_{2}$、$M_{3}$ 的大圆的法向量为 $M_{2}\times M_{3}=(\frac{\sqrt2}{2},0,-\frac{\sqrt2}{2})\parallel(1,0,-1)$，故该大圆在平面 $x=z$ 上。
+
+三条弧围成的球面三角形为
+$$\Sigma=\{x^{2}+y^{2}+z^{2}=1:\ y\geq0,\ z\geq0,\ x\geq z\}$$
+（可用内点检验：$M_{1}+M_{2}+M_{3}$ 单位化后得到的点满足 $y>0,z>0,x>z$）。
+
+**第三步：参数化。** 令
+$$x=\cos\beta\cos\psi , y=\sin\beta , z=\cos\beta\sin\psi , \beta\in[-\frac\pi2,\frac\pi2] ,$$
+则 $dS=\cos\beta d\beta d\psi$。三个约束化为
+$$y\geq0\Rightarrow\beta\in[0,\frac\pi2] ; z\geq0\Rightarrow\sin\psi\geq0 ; x\geq z\Rightarrow\cos\psi\geq\sin\psi ,$$
+后两条合起来给出 $\psi\in[0,\frac\pi4]$。
+
+**第四步：积分。** $1-y^{2}=1-\sin^{2}\beta=\cos^{2}\beta$，故
+$$I=\int_{0}^{\frac\pi4}d\psi\int_{0}^{\frac\pi2}\cos^{2}\beta\cdot\cos\beta d\beta=\frac{\pi}{4}\int_{0}^{\frac\pi2}\cos^{3}\beta d\beta=\frac{\pi}{4}\cdot\frac23=\frac{\pi}{6} .$$
+
+@考点
+球面上曲面方程可代入被积函数；球面外法向 $\mathbf n=\frac{\mathbf r}{R}$ 及 $dydz=\cos\alpha dS$ 等关系（第二类化第一类）；球面三角形的边所在大圆平面的确定（两端点与原点张成）；按被积函数选取"纬度"方向的球面参数化；$\int_{0}^{\frac\pi2}\cos^{3}\beta d\beta=\frac23$。
+
+易混：一般的第二类曲面积分化第一类要用 $\cos\alpha,\cos\beta,\cos\gamma$；**只有在球面（或已知法向的曲面）上才能把它们写得这么简单**。这里正因为是单位球面，$\cos\alpha=x$、$\cos\gamma=z$ 直接成立。
+
+@易错
+1. 不代入 $x^{2}+y^{2}+z^{2}=1$，被分母困住。
+2. 用投影法分片计算 $dydz$ 与 $dxdy$（球面三角形的投影形状复杂，极易出错）。
+3. 第三条边所在的平面判断错（要用 $M_{2}\times M_{3}$ 求法向量）。
+4. 参数化时仍按 $z$ 轴作极轴，导致被积函数与积分限都不分离。
+
+[68]
+@切入点
+$f$ 在原点是分段定义的，而 $t=0$ 时 $(\tan t,\ln(1+t))=(0,0)$ **恰好落在那个特殊点上**。所以不能用链式法则（$f$ 在原点未必可微——事实上它在原点确实不可微），**必须回到导数定义**：
+$$\frac{dz}{dt}|_{t=0}=\lim_{t\to0}\frac{z(t)-z(0)}{t} , z(0)=f(0,0)=0 .$$
+
+代入表达式：
+$$z(t)=\frac{2\tan t |\ln(1+t)|}{\sqrt{\tan^{2}t+\ln^{2}(1+t)}} .$$
+用等价无穷小 $\tan t\sim t$、$\ln(1+t)\sim t$（$t\to0$）：分子 $\sim2t\cdot|t|$，分母 $\sim\sqrt{t^{2}+t^{2}}=\sqrt2 |t|$，故
+$$z(t)\sim\frac{2t|t|}{\sqrt2 |t|}=\sqrt2 t .$$
+**分子分母里的 $|t|$ 恰好约掉，剩下的是 $t$ 的一次式**——这保证了左右极限一致（$t>0$ 与 $t<0$ 都给 $\sqrt2$）。于是
+$$\frac{dz}{dt}|_{t=0}=\lim_{t\to0}\frac{z(t)}{t}=\sqrt2 .$$
+
+**本题的陷阱正是绝对值**：若粗心地把 $|y|$ 当成 $y$，分子会变成 $2t\cdot t$、分母 $\sqrt2|t|$，得到 $\frac{2t^{2}}{\sqrt2|t|}=\sqrt2|t|\to0$，答案就错成 $0$（选项 A）。
+
+@解答
+当 $t=0$ 时 $\tan t=0$、$\ln(1+t)=0$，故
+$$z(0)=f(0,0)=0 .$$
+由于 $f$ 在 $(0,0)$ 处是分段定义的（且不可微），需用导数定义计算：
+$$\frac{dz}{dt}|_{t=0}=\lim_{t\to0}\frac{z(t)-z(0)}{t-0}=\lim_{t\to0}\frac{z(t)}{t} .$$
+
+当 $t\neq0$ 且充分小时 $(\tan t,\ln(1+t))\neq(0,0)$，
+$$z(t)=\frac{2\tan t\cdot|\ln(1+t)|}{\sqrt{\tan^{2}t+\ln^{2}(1+t)}} .$$
+由 $\tan t=t+o(t)$、$\ln(1+t)=t+o(t)$ 得
+$$\tan t\sim t , |\ln(1+t)|\sim|t| , \sqrt{\tan^{2}t+\ln^{2}(1+t)}\sim\sqrt{t^{2}+t^{2}}=\sqrt2 |t| ,$$
+故
+$$\frac{z(t)}{t}\sim\frac{1}{t}\cdot\frac{2t\cdot|t|}{\sqrt2 |t|}=\frac{2}{\sqrt2}=\sqrt2 ,$$
+即
+$$\frac{dz}{dt}|_{t=0}=\sqrt2 .$$
+（左右两侧一致：$|t|$ 在分子分母中约去，结果与 $t$ 的符号无关。）
+
+故选 **D**。
+
+@考点
+分段函数在分段点处的导数必须用定义；等价无穷小 $\tan t\sim t$、$\ln(1+t)\sim t$；含绝对值时分子分母中 $|t|$ 的约去与左右极限的一致性。
+
+易混：$f(x,y)=\frac{2x|y|}{\sqrt{x^{2}+y^{2}}}$ 在原点连续（分子是二阶、分母是一阶，商趋于 $0$）但**不可微**，所以不能用全微分公式 $\frac{dz}{dt}=f'_{x}x'(t)+f'_{y}y'(t)$。
+
+@易错
+1. 套用链式法则（$f$ 在原点不可微，公式失效）。
+2. 忽略绝对值，答成 $0$。
+3. 分母只取 $|t|$ 而漏掉 $\sqrt2$，答成 $2$。
+4. 只算右极限，不确认左右一致。
+
+[69]
+@切入点
+二次型矩阵
+$$A=\begin{pmatrix}2&a&a\\ a&2&a\\ a&a&2\end{pmatrix}=(2-a)E+aJ ,$$
+其中 $J$ 是全 $1$ 矩阵。**这种"对角一值、非对角另一值"的矩阵一律这样拆**：$J$ 的特征值是 $3$（对应 $(1,1,1)^{\mathrm T}$）与 $0$（二重，对应 $x_{1}+x_{2}+x_{3}=0$），故 $A$ 的特征值为
+$$\lambda_{1}=2-a+3a=2+2a \text{（单）} , \lambda_{2}=\lambda_{3}=2-a \text{（二重）} ,$$
+特征向量与 $J$ 相同。（Ⅰ）只需把这三组特征向量正交单位化。
+
+（Ⅱ）条件 $f=\|PX\|^{2}=X^{\mathrm T}P^{\mathrm T}PX$ 且 $P$ 可逆，意味着
+$$A=P^{\mathrm T}P ,$$
+而 $P$ 可逆时 $X^{\mathrm T}P^{\mathrm T}PX=\|PX\|^{2}>0 (X\neq0)$，即 **$A$ 必须正定**：
+$$2+2a>0 \ \text{且}\ 2-a>0 \Longrightarrow -1<a<2 .$$
+题设 $a$ 是**正整数**，故只能 $a=1$。**"正整数"这个限定就是为了把区间里的唯一整数挑出来。**
+
+$a=1$ 时特征值为 $4,1,1$，用正交对角化 $Q^{\mathrm T}AQ=\Lambda=\mathrm{diag}(4,1,1)$，取
+$$P=\Lambda^{\frac12}Q^{\mathrm T} \Longrightarrow P^{\mathrm T}P=Q\Lambda Q^{\mathrm T}=A .$$
+（把 $\Lambda$ 劈成两个 $\Lambda^{1/2}$，一半给 $P^{\mathrm T}$、一半给 $P$。）
+
+@解答
+**（Ⅰ）** 二次型矩阵为
+$$A=\begin{pmatrix}2&a&a\\ a&2&a\\ a&a&2\end{pmatrix}=(2-a)E+aJ , J=\begin{pmatrix}1&1&1\\ 1&1&1\\ 1&1&1\end{pmatrix} .$$
+$J$ 的特征值为 $3$（特征向量 $(1,1,1)^{\mathrm T}$）与 $0$（二重，特征子空间 $x_{1}+x_{2}+x_{3}=0$），故 $A$ 的特征值为
+$$\lambda_{1}=2+2a \text{（对应}\ \xi_{1}=(1,1,1)^{\mathrm T}\text{）} , \lambda_{2}=\lambda_{3}=2-a \text{（对应}\ x_{1}+x_{2}+x_{3}=0\text{）} .$$
+在 $\lambda=2-a$ 的特征子空间内取两个正交向量 $(1,-1,0)^{\mathrm T}$、$(1,1,-2)^{\mathrm T}$，与 $\xi_{1}$ 一起单位化，得正交矩阵
+$$Q=\begin{pmatrix}\frac{1}{\sqrt3}&\frac{1}{\sqrt2}&\frac{1}{\sqrt6}\\[2pt] \frac{1}{\sqrt3}&-\frac{1}{\sqrt2}&\frac{1}{\sqrt6}\\[2pt] \frac{1}{\sqrt3}&0&-\frac{2}{\sqrt6}\end{pmatrix} ,$$
+在正交变换 $X=QY$ 下
+$$f=(2+2a)y_{1}^{2}+(2-a)(y_{2}^{2}+y_{3}^{2}) .$$
+
+**（Ⅱ）** 若存在可逆 $P$ 使 $f=\|PX\|^{2}=X^{\mathrm T}P^{\mathrm T}PX$，则 $A=P^{\mathrm T}P$；对任意 $X\neq0$，$PX\neq0$（$P$ 可逆），故
+$$f=\|PX\|^{2}>0 ,$$
+即 $A$ 正定。由特征值全正：
+$$2+2a>0 , 2-a>0 \Longrightarrow -1<a<2 .$$
+又 $a$ 为正整数，故
+$$a=1 .$$
+
+此时 $A$ 的特征值为 $4,1,1$，$Q^{\mathrm T}AQ=\Lambda=\mathrm{diag}(4,1,1)$，即 $A=Q\Lambda Q^{\mathrm T}$。取 $\Lambda^{\frac12}=\mathrm{diag}(2,1,1)$，令
+$$P=\Lambda^{\frac12}Q^{\mathrm T}=\begin{pmatrix}\frac{2}{\sqrt3}&\frac{2}{\sqrt3}&\frac{2}{\sqrt3}\\[2pt] \frac{1}{\sqrt2}&-\frac{1}{\sqrt2}&0\\[2pt] \frac{1}{\sqrt6}&\frac{1}{\sqrt6}&-\frac{2}{\sqrt6}\end{pmatrix} ,$$
+则 $P$ 可逆（$|P|=|\Lambda^{\frac12}||Q^{\mathrm T}|=\pm2\neq0$），且
+$$P^{\mathrm T}P=Q\Lambda^{\frac12}\Lambda^{\frac12}Q^{\mathrm T}=Q\Lambda Q^{\mathrm T}=A ,$$
+故对一切 $X$ 有 $f(x_{1},x_{2},x_{3})=X^{\mathrm T}AX=\|PX\|^{2}$。
+
+（$P$ 不唯一：任意正交矩阵 $U$ 左乘后 $UP$ 同样满足要求。）
+
+@考点
+矩阵 $(c)E+aJ$ 的谱；正交对角化化二次型为标准形；$f=\|PX\|^{2}$（$P$ 可逆）$\iff A$ 正定且 $A=P^{\mathrm T}P$；正定矩阵的分解 $P=\Lambda^{1/2}Q^{\mathrm T}$。
+
+易混：$P=\Lambda^{\frac12}Q^{\mathrm T}$ 而不是 $Q\Lambda^{\frac12}$——后者给出 $P^{\mathrm T}P=\Lambda^{\frac12}Q^{\mathrm T}Q\Lambda^{\frac12}=\Lambda\neq A$。两者的次序不能颠倒。
+
+@易错
+1. （Ⅰ）$\lambda=2-a$ 的两个特征向量没取成互相正交。
+2. （Ⅱ）忘记 $P$ 可逆蕴含 $A$ 正定，从而定不出 $a$。
+3. 解出 $-1<a<2$ 后不用"正整数"这一条件。
+4. $P$ 与 $Q$ 的乘法次序写反。
+
+[70]
+@切入点
+（Ⅰ）方程 $\mathrm e^{f}[f'-1]=x-1$ 中 $f$ 出现在指数上，**换元 $u=\mathrm e^{f(x)}$** 可以一举把它线性化：
+$$u'=\mathrm e^{f}f' \Longrightarrow \mathrm e^{f}f'-\mathrm e^{f}=u'-u=x-1 .$$
+于是得到一阶线性方程 $u'-u=x-1$，积分因子 $\mathrm e^{-x}$，注意
+$$\int(x-1)\mathrm e^{-x}dx=-x\mathrm e^{-x} $$
+（两项的分部积分恰好只剩一项，这是把右端写成 $x-1$ 的用意），得 $u=\mathrm e^{x}-x$（由 $u(0)=\mathrm e^{f(0)}=1$ 定常数），即
+$$f(x)=\ln(\mathrm e^{x}-x) .$$
+
+（Ⅰ）的极限：要证 $\{a_{n}\}$ 收敛，用**单调有界准则**。对 $t>0$：
+$$\mathrm e^{t}-t<\mathrm e^{t} \Rightarrow f(t)<t ; \mathrm e^{t}-t>1 \Rightarrow f(t)>0 ,$$
+（后者因 $\mathrm e^{t}-t-1$ 在 $t>0$ 时严格增且在 $0$ 处为零）。故由 $a_{1}=1>0$ 归纳得 $0<a_{n+1}<a_{n}$，单调减有下界，极限 $L\geq0$ 存在；对递推取极限得 $L=\ln(\mathrm e^{L}-L)$，即 $\mathrm e^{L}=\mathrm e^{L}-L$，$L=0$。
+
+（Ⅱ）**求和的关键是把递推式改写成可裂项的形式**：由 $\mathrm e^{a_{n+1}}=\mathrm e^{a_{n}}-a_{n}$ 得
+$$a_{n}=\mathrm e^{a_{n}}-\mathrm e^{a_{n+1}} ,$$
+部分和望远镜式相消：$\sum_{n=1}^{N}a_{n}=\mathrm e^{a_{1}}-\mathrm e^{a_{N+1}}\to\mathrm e-1$。
+
+收敛域：由 $\mathrm e^{t}-t=1+\frac{t^{2}}{2}+o(t^{2})$ 得 $a_{n+1}=\ln(1+\frac{a_{n}^{2}}{2}+o(a_{n}^{2}))\sim\frac{a_{n}^{2}}{2}$，故
+$$\frac{a_{n+1}}{a_{n}}\sim\frac{a_{n}}{2}\to0 ,$$
+**相邻项之比趋于零，说明收敛半径是 $+\infty$**。
+
+@解答
+**求 $f$。** 令 $u(x)=\mathrm e^{f(x)}$，则 $u'=\mathrm e^{f}f'$，原方程化为
+$$u'-u=x-1 .$$
+乘积分因子 $\mathrm e^{-x}$：
+$$(u\mathrm e^{-x})'=(x-1)\mathrm e^{-x} .$$
+而 $\int(x-1)\mathrm e^{-x}dx=-x\mathrm e^{-x}+C$（分部积分：$\int x\mathrm e^{-x}dx=-x\mathrm e^{-x}-\mathrm e^{-x}$，$\int-\mathrm e^{-x}dx=\mathrm e^{-x}$），故
+$$u\mathrm e^{-x}=-x\mathrm e^{-x}+C \Longrightarrow u=-x+C\mathrm e^{x} .$$
+由 $f(0)=0$ 得 $u(0)=1$，即 $C=1$，故
+$$\mathrm e^{f(x)}=\mathrm e^{x}-x , f(x)=\ln(\mathrm e^{x}-x) .$$
+（对一切 $x$，$\mathrm e^{x}-x\geq1>0$，故 $f$ 有定义。）
+
+**（Ⅰ）** 先证：当 $t>0$ 时 $0<f(t)<t$。
+由 $\mathrm e^{t}-t<\mathrm e^{t}$ 得 $f(t)=\ln(\mathrm e^{t}-t)<t$；
+令 $h(t)=\mathrm e^{t}-t-1$，$h(0)=0$，$h'(t)=\mathrm e^{t}-1>0 (t>0)$，故 $\mathrm e^{t}-t>1$，即 $f(t)>0$。
+
+由 $a_{1}=1>0$ 及归纳法：若 $a_{n}>0$ 则 $0<a_{n+1}=f(a_{n})<a_{n}$。故 $\{a_{n}\}$ 严格单调减且有下界 $0$，由单调有界准则极限存在，记为 $L\geq0$。
+
+在 $\mathrm e^{a_{n+1}}=\mathrm e^{a_{n}}-a_{n}$ 中令 $n\to\infty$：
+$$\mathrm e^{L}=\mathrm e^{L}-L \Longrightarrow L=0 ,$$
+即
+$$\lim_{n\to\infty}a_{n}=0 .$$
+
+**（Ⅱ）求和。** 由 $\mathrm e^{a_{n+1}}=\mathrm e^{a_{n}}-a_{n}$ 得
+$$a_{n}=\mathrm e^{a_{n}}-\mathrm e^{a_{n+1}} ,$$
+故部分和
+$$\sum_{n=1}^{N}a_{n}=\mathrm e^{a_{1}}-\mathrm e^{a_{N+1}}=\mathrm e-\mathrm e^{a_{N+1}} .$$
+令 $N\to\infty$，由 $a_{N+1}\to0$ 得
+$$\sum_{n=1}^{\infty}a_{n}=\mathrm e-\mathrm e^{0}=\mathrm e-1 .$$
+
+**收敛域。** 由 $\mathrm e^{t}-t=1+\frac{t^{2}}{2}+o(t^{2}) (t\to0)$ 及 $\ln(1+v)\sim v$，
+$$a_{n+1}=\ln(1+\frac{a_{n}^{2}}{2}+o(a_{n}^{2}))\sim\frac{a_{n}^{2}}{2} ,$$
+故
+$$\frac{a_{n+1}}{a_{n}}\sim\frac{a_{n}}{2}\longrightarrow0 .$$
+于是对任意固定的 $x\neq0$，
+$$\lim_{n\to\infty}|\frac{a_{n+1}x^{n+1}}{a_{n}x^{n}}|=|x|\lim_{n\to\infty}\frac{a_{n+1}}{a_{n}}=0<1 ,$$
+由比值判别法级数绝对收敛。故收敛域为
+$$(-\infty,\ +\infty) .$$
+
+@考点
+换元 $u=\mathrm e^{f}$ 把含 $\mathrm e^{f}$ 的方程线性化；一阶线性方程与分部积分；单调有界准则求数列极限；由递推式构造裂项求和；用比值判别法求幂级数收敛半径。
+
+易混：$\sum a_{n}=\mathrm e-1$ 与 $\lim a_{n}=0$ 是两件事；前者靠裂项、后者靠单调有界。另外收敛域是全体实数（$R=+\infty$），因为 $a_{n}$ 以"双指数"速度趋于零。
+
+@易错
+1. 不换元，直接对含 $\mathrm e^{f}$ 的方程分离变量，化不开。
+2. $\int(x-1)\mathrm e^{-x}dx$ 算错（两个分部积分的结果恰好相消成 $-x\mathrm e^{-x}$）。
+3. 证单调时只说 $f(t)<t$ 而不证 $f(t)>0$（缺下界）。
+4. 求和时没把递推式改写成 $a_{n}=\mathrm e^{a_{n}}-\mathrm e^{a_{n+1}}$，找不到裂项结构。
+5. 收敛域答成 $(-1,1)$（未估计 $a_{n}$ 的衰减速度）。
+
+[71]
+@切入点
+这是一个**二重变限积分**除以三阶无穷小的极限。分母
+$$x(1-\cos x)\sim x\cdot\frac{x^{2}}{2}=\frac{x^{3}}{2}$$
+是三阶，所以分子也要精确到三阶。
+
+分子由外到内有两层积分。**从内层做起**：
+$$\varphi(u)=\int_{0}^{u^{2}}\arctan(1+t)dt .$$
+当 $u\to0$ 时积分区间 $[0,u^{2}]$ 收缩到一点，被积函数连续且在 $t=0$ 处的值是 $\arctan1=\frac\pi4$，故
+$$\varphi(u)\sim\frac\pi4\cdot u^{2}$$
+（也可用积分中值定理：$\varphi(u)=\arctan(1+\xi)\cdot u^{2}$，$\xi\in[0,u^{2}]\to0$）。
+
+再做外层：
+$$\int_{0}^{x}\varphi(u)du\sim\int_{0}^{x}\frac\pi4u^{2}du=\frac{\pi}{12}x^{3} .$$
+**这里用的是"等价无穷小在变限积分中可以替换"**（对正的被积函数，或严格写成 $\varphi(u)=\frac\pi4u^{2}+o(u^{2})$ 再逐项积分）。
+
+于是
+$$\text{原式}=\frac{\frac{\pi}{12}x^{3}}{\frac{x^{3}}{2}}=\frac{\pi}{6} .$$
+
+（也可以连用两次洛必达：第一次对外层积分求导得 $\varphi(x)$，第二次对 $\varphi$ 求导得 $\arctan(1+x^{2})\cdot2x$，分母相应求导，同样得 $\frac\pi6$。）
+
+@解答
+**分母。** 由 $1-\cos x\sim\frac{x^{2}}{2}$，
+$$x(1-\cos x)\sim\frac{x^{3}}{2} .$$
+
+**分子。** 记
+$$\varphi(u)=\int_{0}^{u^{2}}\arctan(1+t)dt .$$
+$\arctan(1+t)$ 连续，由积分中值定理，存在 $\xi_{u}\in[0,u^{2}]$ 使
+$$\varphi(u)=\arctan(1+\xi_{u})\cdot u^{2} ,$$
+当 $u\to0$ 时 $\xi_{u}\to0$，故 $\arctan(1+\xi_{u})\to\arctan1=\frac\pi4$，即
+$$\varphi(u)=(\frac\pi4+o(1))u^{2} .$$
+于是
+$$\int_{0}^{x}\varphi(u)du=\int_{0}^{x}(\frac\pi4+o(1))u^{2}du=\frac{\pi}{4}\cdot\frac{x^{3}}{3}+o(x^{3})=\frac{\pi}{12}x^{3}+o(x^{3}) .$$
+
+**合并。**
+$$\lim_{x\to0}\frac{\int_{0}^{x}[\int_{0}^{u^{2}}\arctan(1+t)dt]du}{x(1-\cos x)}=\lim_{x\to0}\frac{\frac{\pi}{12}x^{3}+o(x^{3})}{\frac{x^{3}}{2}+o(x^{3})}=\frac{\pi/12}{1/2}=\frac{\pi}{6} .$$
+
+（洛必达验算：分子求导得 $\int_{0}^{x^{2}}\arctan(1+t)dt$，分母求导得 $1-\cos x+x\sin x\sim\frac{3x^{2}}{2}$；再对分子用一次中值定理得 $\sim\frac\pi4x^{2}$，比值为 $\frac{\pi/4}{3/2}=\frac{\pi}{6}$ ✓。）
+
+@考点
+多层变限积分的阶估计（由内向外逐层处理）；积分中值定理；等价无穷小 $1-\cos x\sim\frac{x^{2}}{2}$；洛必达法则作为验算手段。
+
+易混：内层积分的上限是 $u^{2}$ 而不是 $u$，所以 $\varphi(u)$ 是**二阶**而非一阶；再积一次得三阶，恰与分母匹配。若把上限看成 $u$，会得到 $\frac{\pi}{8}$ 之类的错误结果。
+
+@易错
+1. 内层上限看错，阶数算错。
+2. 把 $\arctan(1+t)$ 在 $t=0$ 处的值取成 $0$ 或 $1$（应为 $\frac\pi4$）。
+3. 分母只取 $x\cdot\frac{x^{2}}{2}$ 却在洛必达时忘记对 $x(1-\cos x)$ 用乘积法则。
+4. 逐层替换时不写余项，论证不严格。
+
+[72]
+@切入点
+（Ⅰ）判断相似先比**不变量**。两个矩阵都是"分块"结构，特征值一眼可读：
+- $A$ 中第 $2$ 行第 $2$ 列孤立，给出特征值 $-a$；剩下的 $\begin{pmatrix}a&1\\ 1&a\end{pmatrix}$ 给出 $a\pm1$。故 $A$ 的特征值为 $a+1,\ a-1,\ -a$。
+- $B$ 中 $\begin{pmatrix}-1&1\\ 1&-1\end{pmatrix}$ 给出 $0,-2$；再加 $a^{2}$。故 $B$ 的特征值为 $0,\ -2,\ a^{2}$。
+
+**先用迹（最省事的不变量）**：$\mathrm{tr}A=a$，$\mathrm{tr}B=a^{2}-2$，得 $a^{2}-a-2=0$，$a=2$ 或 $a=-1$。**再逐个验证特征值集合是否一致**（迹相同只是必要条件）：$a=2$ 时 $A$ 的特征值是 $3,1,-2$、$B$ 的是 $0,-2,4$，不符；$a=-1$ 时两者都是 $\{0,-2,1\}$，符合。故 $a=-1$。
+
+（Ⅱ）$a=-1$ 时
+$$A=\begin{pmatrix}-1&0&1\\ 0&1&0\\ 1&0&-1\end{pmatrix} , B=\begin{pmatrix}-1&1&0\\ 1&-1&0\\ 0&0&1\end{pmatrix} .$$
+**观察：把 $A$ 的第 $2$、$3$ 个坐标互换就得到 $B$**（$A$ 中"耦合"的是第 $1,3$ 坐标，$B$ 中是第 $1,2$ 坐标）。实现坐标互换的矩阵就是**置换矩阵**，它天然正交，于是 $Q$ 可以直接写出，不必去求特征向量再正交化——**这是本题最省力的一步**。
+
+（Ⅲ）要找 $P$ 使 $P^{2}=AB$。先算出 $M=AB$，再找它满足的多项式方程。用凯莱—哈密顿定理：算出 $M$ 的特征多项式为 $\lambda^{3}+\lambda^{2}+\lambda$，故
+$$M^{3}+M^{2}+M=O \Longrightarrow M^{4}=M .$$
+**有了 $M^{4}=M$，取 $P=-M^{2}$ 就有 $P^{2}=M^{4}=M$**（负号不影响平方）。这就给出了一个具体的 $P$。
+
+@解答
+**（Ⅰ）** $A$ 的特征多项式按第 $2$ 行（列）分块：
+$$|A-\lambda E|=(-a-\lambda)\begin{vmatrix}a-\lambda&1\\ 1&a-\lambda\end{vmatrix}=(-a-\lambda)[(a-\lambda)^{2}-1] ,$$
+故 $A$ 的特征值为 $-a,\ a+1,\ a-1$。同理 $B$ 的特征值为 $a^{2}$ 与 $\begin{pmatrix}-1&1\\ 1&-1\end{pmatrix}$ 的特征值 $0,-2$。
+
+相似矩阵的迹相等：
+$$\mathrm{tr}A=a+(-a)+a=a , \mathrm{tr}B=-1-1+a^{2}=a^{2}-2 ,$$
+$$a=a^{2}-2 \Longrightarrow a^{2}-a-2=0 \Longrightarrow a=2\ \text{或}\ a=-1 .$$
+验证特征值：
+$a=2$ 时 $A$ 的特征值为 $3,1,-2$，$B$ 的为 $0,-2,4$，不相同，舍去；
+$a=-1$ 时 $A$ 的特征值为 $0,-2,1$，$B$ 的为 $0,-2,1$，相同。
+
+又 $a=-1$ 时两者的特征值互不相同，均可对角化，故确实相似。所以
+$$a=-1 .$$
+
+**（Ⅱ）** 此时
+$$A=\begin{pmatrix}-1&0&1\\ 0&1&0\\ 1&0&-1\end{pmatrix} , B=\begin{pmatrix}-1&1&0\\ 1&-1&0\\ 0&0&1\end{pmatrix} .$$
+取交换第 $2$、$3$ 个坐标的置换矩阵
+$$Q=\begin{pmatrix}1&0&0\\ 0&0&1\\ 0&1&0\end{pmatrix} ,$$
+它是正交矩阵（$Q^{\mathrm T}Q=E$，且 $Q^{-1}=Q^{\mathrm T}=Q$）。由置换的作用 $(Q^{-1}AQ)_{ij}=a_{\sigma(i)\sigma(j)}$（$\sigma$ 交换 $2,3$），逐项核对：
+$$Q^{-1}AQ=\begin{pmatrix}a_{11}&a_{13}&a_{12}\\ a_{31}&a_{33}&a_{32}\\ a_{21}&a_{23}&a_{22}\end{pmatrix}=\begin{pmatrix}-1&1&0\\ 1&-1&0\\ 0&0&1\end{pmatrix}=B .$$
+故所求正交矩阵为上述 $Q$。
+
+**（Ⅲ）** 计算
+$$M=AB=\begin{pmatrix}-1&0&1\\ 0&1&0\\ 1&0&-1\end{pmatrix}\begin{pmatrix}-1&1&0\\ 1&-1&0\\ 0&0&1\end{pmatrix}=\begin{pmatrix}1&-1&1\\ 1&-1&0\\ -1&1&-1\end{pmatrix} .$$
+求其特征多项式：$\mathrm{tr}M=1-1-1=-1$，二阶主子式之和
+$$\begin{vmatrix}1&-1\\ 1&-1\end{vmatrix}+\begin{vmatrix}1&1\\ -1&-1\end{vmatrix}+\begin{vmatrix}-1&0\\ 1&-1\end{vmatrix}=0+0+1=1 ,$$
+$$|M|=1\cdot[(-1)(-1)-0]+1\cdot[1\cdot(-1)-0]+1\cdot[1-1]=1-1+0=0 ,$$
+故
+$$|\lambda E-M|=\lambda^{3}+\lambda^{2}+\lambda .$$
+由凯莱—哈密顿定理
+$$M^{3}+M^{2}+M=O \Longrightarrow M^{3}=-M^{2}-M \Longrightarrow M^{4}=M\cdot M^{3}=-M^{3}-M^{2}=M .$$
+取
+$$P=-M^{2} ,$$
+则
+$$P^{2}=M^{4}=M=AB .$$
+具体地，
+$$M^{2}=\begin{pmatrix}-1&1&0\\ 0&0&1\\ 1&-1&0\end{pmatrix} , P=-M^{2}=\begin{pmatrix}1&-1&0\\ 0&0&-1\\ -1&1&0\end{pmatrix} .$$
+（验算：$P^{2}=\begin{pmatrix}1&-1&1\\ 1&-1&0\\ -1&1&-1\end{pmatrix}=AB$ ✓。）
+
+@考点
+分块（准对角）矩阵的特征值；相似的必要条件（迹、特征值相同）与充分判定（特征值互异则都可对角化）；置换矩阵是正交矩阵且实现坐标互换；凯莱—哈密顿定理与由 $M^{4}=M$ 构造平方根。
+
+易混：迹相同只是相似的**必要**条件，求出 $a=2,-1$ 后必须回代验证特征值集合是否一致；本题 $a=2$ 就被这一步排除。
+
+@易错
+1. 只用迹定 $a$ 而不验证，保留 $a=2$。
+2. （Ⅱ）去求特征向量并施密特正交化（可行但繁），没看出置换矩阵。
+3. （Ⅲ）算错 $AB$ 或特征多项式（$|M|=0$ 是关键，说明常数项为零）。
+4. 取 $P=M^{2}$（$P^{2}=M^{4}=M$ 同样成立，其实 $\pm M^{2}$ 都可以；但若取 $P=M$ 则 $P^{2}=M^{2}\neq M$）。
+
+[73]
+@切入点
+先解方程。$f'+f=\mathrm e^{-x}$ 的积分因子是 $\mathrm e^{x}$，而且乘上去之后右端变成常数：
+$$(f\mathrm e^{x})'=\mathrm e^{x}(f'+f)=\mathrm e^{x}\mathrm e^{-x}=1 ,$$
+一步积分得 $f\mathrm e^{x}=x+C$，由 $f(0)=0$ 得 $C=0$，故
+$$f(x)=x\mathrm e^{-x} .$$
+**右端 $\mathrm e^{-x}$ 与积分因子 $\mathrm e^{x}$ 恰好抵消**，这是题目把右端设成 $\mathrm e^{-x}$ 的用意（也说明会出现共振型的解 $x\mathrm e^{-x}$）。
+
+（Ⅰ）常规求导：
+$$f'=(1-x)\mathrm e^{-x} , f''=(x-2)\mathrm e^{-x} ,$$
+$f'$ 在 $x=1$ 处由正变负 $\Rightarrow$ 极大值 $f(1)=\frac1{\mathrm e}$（无极小值）；$f''$ 在 $x=2$ 处变号 $\Rightarrow$ 拐点 $(2,\frac{2}{\mathrm e^{2}})$。
+
+（Ⅱ）要证 $x_{1}+x_{2}>2$，即证 $x_{2}>2-x_{1}$。**标准手法是构造辅助函数比较 $f(x)$ 与 $f(2-x)$**（把"关于 $x=1$ 对称"的两点拿来比）：
+$$g(x)=f(x)-f(2-x) , 0<x<1 .$$
+$$g'(x)=f'(x)+f'(2-x)=(1-x)\mathrm e^{-x}+(x-1)\mathrm e^{x-2}=(1-x)[\mathrm e^{-x}-\mathrm e^{x-2}] .$$
+在 $(0,1)$ 上 $1-x>0$；又 $-x>x-2\iff x<1$，故 $\mathrm e^{-x}>\mathrm e^{x-2}$，中括号为正，于是 $g'>0$。而 $g(1)=0$，**由单调增与右端点值为零得 $g(x)<0$ 在 $(0,1)$ 上成立**，即
+$$f(x_{1})<f(2-x_{1}) .$$
+最后用**单调性把函数值的不等式翻译成自变量的不等式**：$f$ 在 $(1,+\infty)$ 上严格减，而 $x_{2}>1$、$2-x_{1}\in(1,2)$ 都落在这个区间里，由
+$$f(x_{2})=f(x_{1})<f(2-x_{1})$$
+得 $x_{2}>2-x_{1}$，即 $x_{1}+x_{2}>2$。
+
+@解答
+**解方程。** 乘积分因子 $\mathrm e^{x}$：
+$$(f(x)\mathrm e^{x})'=\mathrm e^{x}(f'+f)=\mathrm e^{x}\cdot\mathrm e^{-x}=1 ,$$
+积分得 $f(x)\mathrm e^{x}=x+C$；由 $f(0)=0$ 得 $C=0$，故
+$$f(x)=x\mathrm e^{-x} .$$
+
+**（Ⅰ）** 求导：
+$$f'(x)=\mathrm e^{-x}-x\mathrm e^{-x}=(1-x)\mathrm e^{-x} , f''(x)=-\mathrm e^{-x}-(1-x)\mathrm e^{-x}=(x-2)\mathrm e^{-x} .$$
+
+$f'(x)=0\iff x=1$；$x<1$ 时 $f'>0$，$x>1$ 时 $f'<0$，故 $f$ 在 $x=1$ 处取**极大值**
+$$f(1)=\frac1{\mathrm e} ,$$
+无极小值。
+
+$f''(x)=0\iff x=2$；$x<2$ 时 $f''<0$，$x>2$ 时 $f''>0$，故 $f''$ 在 $x=2$ 处变号，**拐点**为
+$$(2,\ \frac{2}{\mathrm e^{2}}) .$$
+
+**（Ⅱ）** 设 $0<x_{1}<1<x_{2}$ 且 $f(x_{1})=f(x_{2})$。令
+$$g(x)=f(x)-f(2-x) , x\in(0,1) .$$
+则
+$$g'(x)=f'(x)+f'(2-x)=(1-x)\mathrm e^{-x}+[1-(2-x)]\mathrm e^{-(2-x)}=(1-x)[\mathrm e^{-x}-\mathrm e^{x-2}] .$$
+当 $0<x<1$ 时 $1-x>0$，且 $-x>x-2$（等价于 $x<1$）故 $\mathrm e^{-x}>\mathrm e^{x-2}$，于是
+$$g'(x)>0 , x\in(0,1) .$$
+又 $g(1)=f(1)-f(1)=0$，由 $g$ 在 $(0,1)$ 上严格增且在右端点趋于 $0$，得
+$$g(x)<0 , x\in(0,1) ,$$
+即
+$$f(x_{1})<f(2-x_{1}) .$$
+
+因 $0<x_{1}<1$，有 $2-x_{1}\in(1,2)$；又 $x_{2}>1$。而 $f$ 在 $(1,+\infty)$ 上 $f'<0$，严格单调减。由
+$$f(x_{2})=f(x_{1})<f(2-x_{1}) ,$$
+且 $x_{2},\ 2-x_{1}$ 都在 $(1,+\infty)$ 内，故
+$$x_{2}>2-x_{1} , \text{即} x_{1}+x_{2}>2 .$$
+证毕。
+
+@考点
+一阶线性方程的积分因子法；极值与拐点的判定（一阶、二阶导数变号）；构造辅助函数 $g(x)=f(x)-f(2-x)$ 比较对称点处的函数值；用严格单调性把函数值不等式转成自变量不等式。
+
+易混：辅助函数取的是关于 $x=1$（极值点）对称的两点 $x$ 与 $2-x$；若取关于别的点对称，$g'$ 不会保号。**对称中心必须取在极值点处**，这是这类题的固定套路。
+
+@易错
+1. 解方程时把积分因子取成 $\mathrm e^{-x}$，右端化不成常数。
+2. 把 $x=2$ 也当成极值点（那里是拐点，$f'\neq0$）。
+3. 求 $g'$ 时忘记 $f'(2-x)$ 的内层导数（$\frac{d}{dx}f(2-x)=-f'(2-x)$，故 $g'=f'(x)+f'(2-x)$）。
+4. 最后一步忘了说明 $x_{2}$ 与 $2-x_{1}$ 都落在 $f$ 单调减的区间上，直接由函数值大小推自变量大小。
+
+[74]
+@切入点
+密度 $f(x)=\frac12\mathrm e^{-|x|}$（拉普拉斯分布）是**偶函数**，三问都围绕这个对称性展开：
+
+（Ⅰ）$EX=\int xf(x)dx$ 的被积函数是**奇函数**（奇 $\times$ 偶），积分为零；$EX^{2}$ 的被积函数是偶函数，取两倍正半轴：
+$$EX^{2}=2\int_{0}^{+\infty}x^{2}\cdot\frac12\mathrm e^{-x}dx=\int_{0}^{+\infty}x^{2}\mathrm e^{-x}dx=2!=2 .$$
+由 $EX=0$ 得 $DX=EX^{2}=2$。
+
+（Ⅱ）$\mathrm{Cov}(X,|X|)=E(X|X|)-EX\cdot E|X|$。**$X|X|$ 仍是奇函数**（$x|x|$ 奇），故 $E(X|X|)=0$；又 $EX=0$，于是协方差为零，**$X$ 与 $|X|$ 不相关**。
+
+（Ⅲ）**不相关不等于独立。** 要否定独立，只需找一对事件使乘法公式失效。最直观的是利用"$|X|$ 小就限制了 $X$ 的范围"：
+$$P\{|X|<1,\ X<-1\}=0 ,$$
+（两个事件不可能同时发生），而
+$$P\{|X|<1\}>0 , P\{X<-1\}>0 ,$$
+乘积为正，不等于 $0$。故不独立。
+
+**本题是"不相关但不独立"的又一个标准例子，而且不独立的理由是纯逻辑的（$|X|$ 由 $X$ 唯一决定）。**
+
+@解答
+**（Ⅰ）** $f(x)=\frac12\mathrm e^{-|x|}$ 是偶函数。
+
+$xf(x)$ 为奇函数且 $\int_{-\infty}^{+\infty}|x|f(x)dx<+\infty$，故
+$$EX=\int_{-\infty}^{+\infty}xf(x)dx=0 .$$
+$x^{2}f(x)$ 为偶函数，
+$$EX^{2}=2\int_{0}^{+\infty}x^{2}\cdot\frac12\mathrm e^{-x}dx=\int_{0}^{+\infty}x^{2}\mathrm e^{-x}dx=2!=2 ,$$
+故
+$$DX=EX^{2}-(EX)^{2}=2 .$$
+
+**（Ⅱ）** $x|x|$ 是奇函数，$x|x|f(x)$ 也是奇函数，故
+$$E(X|X|)=\int_{-\infty}^{+\infty}x|x|f(x)dx=0 .$$
+于是
+$$\mathrm{Cov}(X,|X|)=E(X|X|)-EX\cdot E|X|=0-0\cdot E|X|=0 ,$$
+故 $\rho_{X,|X|}=0$，即 $X$ 与 $|X|$ **不相关**。
+
+**（Ⅲ）** $X$ 与 $|X|$ **不相互独立**。取事件 $A=\{|X|<1\}$、$B=\{X<-1\}$，则 $A\cap B=\varnothing$（$|X|<1$ 蕴含 $X>-1$），故
+$$P\{|X|<1,\ X<-1\}=0 .$$
+而
+$$P\{|X|<1\}=\int_{-1}^{1}\frac12\mathrm e^{-|x|}dx=1-\mathrm e^{-1}>0 , P\{X<-1\}=\int_{-\infty}^{-1}\frac12\mathrm e^{x}dx=\frac{1}{2\mathrm e}>0 ,$$
+故
+$$P\{|X|<1,X<-1\}=0\neq P\{|X|<1\}\cdot P\{X<-1\}>0 ,$$
+独立性的定义不成立。
+
+@考点
+偶密度下 $EX=0$ 与奇函数积分为零；$\int_{0}^{+\infty}x^{n}\mathrm e^{-x}dx=n!$；协方差与相关性的定义；"不相关"与"不独立"可以并存；用一对具体事件否定独立性。
+
+易混：$\mathrm{Cov}=0$ 只说明**没有线性相关**。本题 $|X|$ 完全由 $X$ 决定（是最强的函数依赖），却与 $X$ 不相关，正是因为这种依赖是"偶"的、非线性的。
+
+@易错
+1. 由 $\mathrm{Cov}=0$ 断言独立。
+2. $EX^{2}$ 计算时忘记绝对值带来的"两倍正半轴"，或把 $\int_{0}^{+\infty}x^{2}\mathrm e^{-x}dx$ 算成 $1$。
+3. （Ⅲ）只说"$|X|$ 是 $X$ 的函数所以不独立"而不给具体反例（严格说应给出使乘法公式失效的事件）。
+4. 把 $DX$ 写成 $EX^{2}-EX=2$ 之类。
+
+[75]
+@切入点
+**先把物理量翻译成数学量**：两个单位点电荷之间的引力大小与距离平方成反比，取比例系数为 $1$，则
+$$F=\frac{1}{d^{2}} ,$$
+其中 $d$ 是正电荷到原点的距离。$F$ 关于 $d^{2}$ **单调减**，所以
+$$F_{\max}=\frac{1}{d^{2}_{\min}} , F_{\min}=\frac{1}{d^{2}_{\max}} .$$
+**问题归结为求曲线上点到原点距离平方的最值。**
+
+接下来与求条件极值的常规套路相比，本题有捷径：在曲线上 $x^{2}+y^{2}=z$，故
+$$d^{2}=x^{2}+y^{2}+z^{2}=z+z^{2} ,$$
+**目标函数只依赖 $z$**，且在 $z\geq0$ 上严格递增。于是只需求 $z$ 的取值范围。
+
+由第二个约束 $x+y=1-z$，配合 $x^{2}+y^{2}=z$ 与不等式 $(x+y)^{2}\leq2(x^{2}+y^{2})$：
+$$(1-z)^{2}\leq2z \Longrightarrow z^{2}-4z+1\leq0 \Longrightarrow 2-\sqrt3\leq z\leq2+\sqrt3 ,$$
+（两端取等时 $x=y$，对应的点确实存在）。代入 $d^{2}=z^{2}+z$：
+$$d^{2}_{\min}=(2-\sqrt3)^{2}+(2-\sqrt3)=9-5\sqrt3 , d^{2}_{\max}=(2+\sqrt3)^{2}+(2+\sqrt3)=9+5\sqrt3 .$$
+最后取倒数并**有理化**（分母 $(9)^{2}-(5\sqrt3)^{2}=81-75=6$）。
+
+@解答
+**建模。** 设正电荷位于曲线上的点 $(x,y,z)$，到原点（负电荷处）的距离为 $d$。由库仑定律，两单位电荷间的引力大小
+$$F=\frac{1}{d^{2}} ,$$
+它是 $d^{2}$ 的严格减函数，故
+$$F_{\max}=\frac{1}{d^{2}_{\min}} , F_{\min}=\frac{1}{d^{2}_{\max}} .$$
+
+**求 $d^{2}$ 的范围。** 在曲线上 $x^{2}+y^{2}=z$，故
+$$d^{2}=x^{2}+y^{2}+z^{2}=z+z^{2} ,$$
+且 $z=x^{2}+y^{2}\geq0$，$z+z^{2}$ 在 $[0,+\infty)$ 上严格增。
+
+由第二个约束 $x+y=1-z$ 及 $(x+y)^{2}\leq2(x^{2}+y^{2})$（等号当且仅当 $x=y$）：
+$$(1-z)^{2}\leq2z \Longrightarrow z^{2}-2z+1\leq2z \Longrightarrow z^{2}-4z+1\leq0 ,$$
+解得
+$$2-\sqrt3\leq z\leq2+\sqrt3 .$$
+反之，对区间端点，取 $x=y=\frac{1-z}{2}$ 即可实现等号（此时 $x^{2}+y^{2}=\frac{(1-z)^{2}}{2}=z$ 成立），故两端点都能取到。
+
+于是
+$$d^{2}_{\min}=(2-\sqrt3)+(2-\sqrt3)^{2}=(2-\sqrt3)+(7-4\sqrt3)=9-5\sqrt3 ,$$
+$$d^{2}_{\max}=(2+\sqrt3)+(2+\sqrt3)^{2}=(2+\sqrt3)+(7+4\sqrt3)=9+5\sqrt3 .$$
+（$9-5\sqrt3\approx0.34>0$，合理。）
+
+**求引力的最值。**
+$$F_{\max}=\frac{1}{9-5\sqrt3}=\frac{9+5\sqrt3}{(9)^{2}-(5\sqrt3)^{2}}=\frac{9+5\sqrt3}{81-75}=\frac{9+5\sqrt3}{6} ,$$
+$$F_{\min}=\frac{1}{9+5\sqrt3}=\frac{9-5\sqrt3}{6} .$$
+
+即引力的最大值为 $\dfrac{9+5\sqrt3}{6}$，最小值为 $\dfrac{9-5\sqrt3}{6}$（在 $x=y$ 的两个点处分别取到）。
+
+@考点
+库仑定律 $F\propto\frac{1}{d^{2}}$ 与"$F$ 最大 $\iff d$ 最小"；用约束替换目标函数中的整块表达式降维；不等式 $(x+y)^{2}\leq2(x^{2}+y^{2})$ 定参数范围；分母有理化。
+
+易混：题目问的是**引力**的最值，不是距离的最值；因为 $F=\frac{1}{d^{2}}$ 是减函数，$F$ 的最大值对应 $d$ 的**最小**值，两者要对调，不能直接把 $d_{\max}$ 的位置当成 $F_{\max}$。
+
+@易错
+1. 把 $F_{\max}$ 与 $F_{\min}$ 对应的点弄反。
+2. 忘记用 $x^{2}+y^{2}=z$ 把 $d^{2}$ 化成只含 $z$，陷入三元条件极值。
+3. 解 $z^{2}-4z+1\leq0$ 时根算错（根为 $2\pm\sqrt3$）。
+4. 最后不有理化，或有理化时把 $(5\sqrt3)^{2}$ 算成 $15$。

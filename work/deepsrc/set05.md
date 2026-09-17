@@ -1289,14 +1289,14 @@ $$P^{\mathrm T}AP=\mathrm{diag}(a_{2},a_{3},a_{1})=\mathrm{diag}(2,3,1)=B .$$
 - B：（Ⅰ）可由（Ⅱ）表示。这给出 $k=\mathrm r(A)\leq\mathrm r(B)\leq k$，于是 $\mathrm r(B)=k$，**充分**。但不必要：两组各自线性无关的 $k$ 个向量（$k<n$）可以张成完全不同的子空间，彼此表示不了（例如 $n=3,k=1$，$\alpha_{1}=e_{1}$，$\beta_{1}=e_{2}$）。
 - C：两组等价（互相可表示）。同理**充分不必要**（反例同上）。
 - D：矩阵 $A=(\alpha_{1},\cdots,\alpha_{k})$ 与 $B=(\beta_{1},\cdots,\beta_{k})$ **等价**。注意这是"矩阵等价"，定义是存在可逆 $P,Q$ 使 $B=PAQ$，其充要条件是**同型且同秩**。两矩阵都是 $n\times k$ 型，故
-$$A\ \text{与}\ B\ \text{等价}\iff\mathrm r(B)=\mathrm r(A)=k\iff(\text{Ⅱ})\ \text{线性无关} ,$$
+$$A\ \text{与}\ B\ \text{等价}\iff\mathrm r(B)=\mathrm r(A)=k\iff(\text{II})\ \text{线性无关} ,$$
 正是充要条件。
 
 本题的核心是分清两个"等价"：**向量组等价**（互相线性表示，是强条件）与**矩阵等价**（同型同秩，是弱条件）。选项 C 与 D 表面相似，实则一个充分不必要、一个充要，出题人考的就是这个区分。
 
 @解答
 记 $A=(\alpha_{1},\cdots,\alpha_{k})$，$B=(\beta_{1},\cdots,\beta_{k})$，均为 $n\times k$ 矩阵。由（Ⅰ）线性无关知 $\mathrm r(A)=k$；而
-$$(\text{Ⅱ})\ \text{线性无关}\iff\mathrm r(B)=k .$$
+$$(\text{II})\ \text{线性无关}\iff\mathrm r(B)=k .$$
 
 **A 不对。** 若（Ⅱ）可由（Ⅰ）线性表示，只能得 $\mathrm r(B)\leq\mathrm r(A)=k$。取 $\beta_{1}=\cdots=\beta_{k}=0$，它们可由（Ⅰ）表示，但线性相关。故 A 既不充分也不必要。
 
@@ -1305,7 +1305,7 @@ $$(\text{Ⅱ})\ \text{线性无关}\iff\mathrm r(B)=k .$$
 **C 充分但不必要。** 等价蕴含互相表示，由 B 的论证知充分；上面同一个反例说明不必要。
 
 **D 充要。** 两矩阵同为 $n\times k$ 型，而"矩阵等价"（存在可逆 $P,Q$ 使 $B=PAQ$）的充要条件是同型且秩相等。因此
-$$A\ \text{与}\ B\ \text{等价}\iff\mathrm r(B)=\mathrm r(A)=k\iff(\text{Ⅱ})\ \text{线性无关} .$$
+$$A\ \text{与}\ B\ \text{等价}\iff\mathrm r(B)=\mathrm r(A)=k\iff(\text{II})\ \text{线性无关} .$$
 
 故选 **D**。
 
@@ -2468,8 +2468,8 @@ $$4\int_{0}^{\frac12}f(x)dx\leq\int_{0}^{1}f(x)dx .$$
 （Ⅰ）里有三个向量，但观察发现
 $$\alpha_{1}-2\alpha_{2}+\alpha_{3}=0 ,$$
 （各分量验证：$1-2+1=0$，$3-4+1=0$，$0-2+2=0$，$5-8+3=0$），而 $\alpha_{1},\alpha_{2}$ 显然线性无关，故
-$$\mathrm r(\text{Ⅰ})=2 , \mathrm{span}(\text{Ⅰ})=\mathrm{span}\{\alpha_{1},\alpha_{2}\} .$$
-（Ⅱ）只有两个向量，所以 $\mathrm r(\text{Ⅱ})\leq2$。要等价必须 $\mathrm r(\text{Ⅱ})=2$，即 $\beta_{1},\beta_{2}$ 线性无关。
+$$\mathrm r(\text{I})=2 , \mathrm{span}(\text{I})=\mathrm{span}\{\alpha_{1},\alpha_{2}\} .$$
+（Ⅱ）只有两个向量，所以 $\mathrm r(\text{II})\leq2$。要等价必须 $\mathrm r(\text{II})=2$，即 $\beta_{1},\beta_{2}$ 线性无关。
 
 这样一来，等价就等价于**两个二维子空间相同**，而由于维数已经相等，只需要**单向包含**：$\beta_{1},\beta_{2}\in\mathrm{span}\{\alpha_{1},\alpha_{2}\}$ 就够了（两个同维子空间，一个含于另一个就必相等）。**利用"维数相同 $+$ 单向包含 $\Rightarrow$ 相等"能省掉反向表示的验证**，这是本题的省力点。
 
@@ -2479,11 +2479,11 @@ $$\mathrm r(\text{Ⅰ})=2 , \mathrm{span}(\text{Ⅰ})=\mathrm{span}\{\alpha_{1},
 **第一步：（Ⅰ）的秩。** 直接验证
 $$\alpha_{1}-2\alpha_{2}+\alpha_{3}=(1-2+1,\ 3-4+1,\ 0-2+2,\ 5-8+3)^{\mathrm T}=0 ,$$
 且 $\alpha_{1},\alpha_{2}$ 对应分量不成比例、线性无关，故
-$$\mathrm r(\text{Ⅰ})=2 , \mathrm{span}(\text{Ⅰ})=\mathrm{span}\{\alpha_{1},\alpha_{2}\} .$$
+$$\mathrm r(\text{I})=2 , \mathrm{span}(\text{I})=\mathrm{span}\{\alpha_{1},\alpha_{2}\} .$$
 
-**第二步：等价的条件。** 若（Ⅰ）与（Ⅱ）等价，则 $\mathrm r(\text{Ⅱ})=\mathrm r(\text{Ⅰ})=2$，即 $\beta_{1},\beta_{2}$ 线性无关；又 $\beta_{1},\beta_{2}$ 可由（Ⅰ）线性表示，即
+**第二步：等价的条件。** 若（Ⅰ）与（Ⅱ）等价，则 $\mathrm r(\text{II})=\mathrm r(\text{I})=2$，即 $\beta_{1},\beta_{2}$ 线性无关；又 $\beta_{1},\beta_{2}$ 可由（Ⅰ）线性表示，即
 $$\beta_{1},\beta_{2}\in\mathrm{span}\{\alpha_{1},\alpha_{2}\} .$$
-反之，若这两条成立，则 $\mathrm{span}(\text{Ⅱ})\subseteq\mathrm{span}(\text{Ⅰ})$ 且二者维数都是 $2$，故相等，两组等价。
+反之，若这两条成立，则 $\mathrm{span}(\text{II})\subseteq\mathrm{span}(\text{I})$ 且二者维数都是 $2$，故相等，两组等价。
 
 **第三步：表示 $\beta_{1}$。** 解 $c_{1}\alpha_{1}+c_{2}\alpha_{2}=\beta_{1}$：
 $$\begin{cases}c_{1}+c_{2}=1,\\ 3c_{1}+2c_{2}=-3,\\ c_{2}=6,\\ 5c_{1}+4c_{2}=-1.\end{cases}$$
@@ -2496,7 +2496,7 @@ $$\begin{cases}c_{1}+c_{2}=a,\\ 3c_{1}+2c_{2}=0,\\ c_{2}=b,\\ 5c_{1}+4c_{2}=2.\e
 第二、第四式不含参数，联立：由 $3c_{1}+2c_{2}=0$ 得 $c_{2}=-\frac32c_{1}$，代入 $5c_{1}+4c_{2}=2$ 得 $5c_{1}-6c_{1}=-c_{1}=2$，即 $c_{1}=-2$，$c_{2}=3$。于是
 $$a=c_{1}+c_{2}=-2+3=1 , b=c_{2}=3 .$$
 
-**第五步：验证。** 此时 $\beta_{2}=(1,0,3,2)^{\mathrm T}$，与 $\beta_{1}=(1,-3,6,-1)^{\mathrm T}$ 对应分量不成比例，线性无关，$\mathrm r(\text{Ⅱ})=2$。故（Ⅰ）与（Ⅱ）等价。
+**第五步：验证。** 此时 $\beta_{2}=(1,0,3,2)^{\mathrm T}$，与 $\beta_{1}=(1,-3,6,-1)^{\mathrm T}$ 对应分量不成比例，线性无关，$\mathrm r(\text{II})=2$。故（Ⅰ）与（Ⅱ）等价。
 
 所以
 $$a=1 , b=3 .$$
@@ -2508,7 +2508,7 @@ $$a=1 , b=3 .$$
 
 @易错
 1. 只要求 $\beta_{1},\beta_{2}$ 能由（Ⅰ）表示，却不检验 $\beta_{1},\beta_{2}$ 线性无关（若它们相关，秩只有 $1$，不等价）。
-2. 看不出 $\alpha_{1}-2\alpha_{2}+\alpha_{3}=0$，误以为 $\mathrm r(\text{Ⅰ})=3$，从而认为两组不可能等价。
+2. 看不出 $\alpha_{1}-2\alpha_{2}+\alpha_{3}=0$，误以为 $\mathrm r(\text{I})=3$，从而认为两组不可能等价。
 3. 解 $\beta_{2}$ 的表示时用含参数的第一、第三式去定 $c_{1},c_{2}$，绕圈子。
 4. 求出 $c_{1},c_{2}$ 后把 $a,b$ 对应错（$a$ 对第一个分量、$b$ 对第三个分量）。
 
