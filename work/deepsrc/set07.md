@@ -1594,3 +1594,777 @@ $$\iint_{D}\mathrm e^{\frac{x}{x+y}}dxdy=\iint_{\tilde D}\mathrm e^{v}\cdot u du
 2. 雅可比取成倒数或漏掉绝对值。
 3. 新区域的范围写错（例如把 $v$ 的范围写成 $0\leq v\leq u$）。
 4. 计算 $\int_{0}^{1}u du=\frac12$ 时漏掉，答成 $\mathrm e-1$。
+
+[33]
+@切入点
+求曲线上点到原点的距离的最值，标准做法是拉格朗日乘数法（两个约束、三个变量，要引入两个乘子），但本题有一条**大幅省力的捷径**：
+
+目标 $d^{2}=x^{2}+y^{2}+z^{2}$ 中，$x^{2}+y^{2}$ **正好可以用第一个约束换掉**：
+$$x^{2}+y^{2}=z \Longrightarrow d^{2}=z+z^{2} .$$
+于是**目标函数退化成只含 $z$ 的一元函数**，而且在 $z\geq0$ 上严格递增。所以问题变成：**$z$ 的取值范围是什么？** 端点就给出最值。
+
+$z$ 的范围由两个约束联合决定。由第二个约束 $x+y=4-z$，再配合 $x^{2}+y^{2}=z$，用不等式
+$$(x+y)^{2}\leq2(x^{2}+y^{2})$$
+（即 $(x-y)^{2}\geq0$）得
+$$(4-z)^{2}\leq2z \Longrightarrow z^{2}-10z+16\leq0 \Longrightarrow (z-2)(z-8)\leq0 \Longrightarrow 2\leq z\leq8 .$$
+**而且这个不等式的取等条件恰是 $x=y$**，所以两个端点处的点立刻能写出来：$z=2$ 时 $x+y=2$、$x=y=1$；$z=8$ 时 $x+y=-4$、$x=y=-2$。
+
+（还要顺带确认 $[2,8]$ 内每个 $z$ 都可达：给定 $z$，$x,y$ 是方程 $t^{2}-(4-z)t+\frac{(4-z)^{2}-z}{2}=0$ 的两根，判别式非负正是 $(4-z)^{2}\leq2z$，故可达。）
+
+@解答
+**第一步：化为一元。** 在曲线上 $z=x^{2}+y^{2}$，故
+$$d^{2}=x^{2}+y^{2}+z^{2}=z+z^{2} ,$$
+且 $z=x^{2}+y^{2}\geq0$，函数 $z+z^{2}$ 在 $[0,+\infty)$ 上严格递增。因此 $d$ 的最值由 $z$ 的最值决定。
+
+**第二步：定 $z$ 的范围。** 由第二个约束 $x+y=4-z$，又 $x^{2}+y^{2}=z$，由不等式 $(x+y)^{2}\leq2(x^{2}+y^{2})$（等号当且仅当 $x=y$）：
+$$(4-z)^{2}\leq2z \Longrightarrow z^{2}-8z+16\leq2z \Longrightarrow z^{2}-10z+16\leq0 ,$$
+$$(z-2)(z-8)\leq0 \Longrightarrow 2\leq z\leq8 .$$
+反之，对任意 $z\in[2,8]$，由 $x+y=4-z$ 与 $xy=\frac{(x+y)^{2}-(x^{2}+y^{2})}{2}=\frac{(4-z)^{2}-z}{2}$ 知 $x,y$ 是二次方程
+$$t^{2}-(4-z)t+\frac{(4-z)^{2}-z}{2}=0$$
+的两根，其判别式
+$$(4-z)^{2}-4\cdot\frac{(4-z)^{2}-z}{2}=2z-(4-z)^{2}\geq0$$
+正是上面的不等式，故这些 $z$ 都能取到。
+
+**第三步：取端点。**
+
+$z=2$：等号成立故 $x=y$，由 $x+y=4-2=2$ 得 $x=y=1$，验证 $x^{2}+y^{2}=2=z$ ✓。此时
+$$d^{2}=2+2^{2}=6 , d_{\min}=\sqrt6 ,$$
+对应点 $(1,1,2)$。
+
+$z=8$：同样 $x=y$，由 $x+y=4-8=-4$ 得 $x=y=-2$，验证 $x^{2}+y^{2}=8=z$ ✓。此时
+$$d^{2}=8+8^{2}=72 , d_{\max}=\sqrt{72}=6\sqrt2 ,$$
+对应点 $(-2,-2,8)$。
+
+综上：最小距离 $\sqrt6$，在点 $(1,1,2)$ 处取到；最大距离 $6\sqrt2$，在点 $(-2,-2,8)$ 处取到。
+
+@考点
+用约束条件替换目标函数中的整块表达式（降维）；不等式 $(x+y)^{2}\leq2(x^{2}+y^{2})$ 及取等条件 $x=y$；由参数范围的端点取最值。
+
+易混：本题若用拉格朗日乘数法，需设 $L=x^{2}+y^{2}+z^{2}+\lambda(x^{2}+y^{2}-z)+\mu(x+y+z-4)$ 并解五元方程组，可行但冗长；捷径的关键是发现 $d^{2}$ 只依赖 $z$。
+
+@易错
+1. 忘记用 $x^{2}+y^{2}=z$ 替换，停在三元问题上。
+2. 不等式方向或取等条件弄错（应是 $(x+y)^{2}\leq2(x^{2}+y^{2})$，等号当 $x=y$）。
+3. 只求出 $z$ 的范围而不回代求点的坐标。
+4. $z=8$ 时把 $x+y$ 算成 $4$（应为 $4-z=-4$）。
+
+[34]
+@切入点
+求 $A^{n}$ 的通用思路有三条：对角化、找递推、看结构。本题**先算一次 $A^{2}$ 是最省事的试探**——很多考题里 $A$ 的幂会闭合。
+
+直接算：
+$$A^{2}=\begin{pmatrix}1&0&1\\ 0&2&0\\ 1&0&1\end{pmatrix}^{2}=\begin{pmatrix}2&0&2\\ 0&4&0\\ 2&0&2\end{pmatrix}=2A .$$
+**一旦得到 $A^{2}=2A$，所有高次幂立刻由归纳给出** $A^{n}=2^{n-1}A$，不需要求特征值、特征向量，也不需要判断能否对角化。
+
+为什么会有 $A^{2}=2A$？看结构：$A$ 的第一、三行（列）相同，第二行（列）孤立，故 $\mathrm r(A)=2$；其特征值是 $2$（对应 $(0,1,0)^{\mathrm T}$）、$2$（对应 $(1,0,1)^{\mathrm T}$）与 $0$（对应 $(1,0,-1)^{\mathrm T}$）。**特征值只取 $2$ 与 $0$，且 $A$ 可对角化，故满足 $A(A-2E)=O$**，即 $A^{2}=2A$。理解了这一点，就知道这类"低秩 $+$ 特征值简单"的矩阵通常都有类似的闭合关系。
+
+写结论时注意**指数是 $n-1$ 不是 $n$**，用 $n=1$ 自检：$2^{0}A=A$ ✓。
+
+@解答
+直接计算：
+$$A^{2}=\begin{pmatrix}1&0&1\\ 0&2&0\\ 1&0&1\end{pmatrix}\begin{pmatrix}1&0&1\\ 0&2&0\\ 1&0&1\end{pmatrix}=\begin{pmatrix}2&0&2\\ 0&4&0\\ 2&0&2\end{pmatrix}=2A .$$
+
+由 $A^{2}=2A$ 用数学归纳法：设 $A^{k}=2^{k-1}A$（$k\geq1$ 时 $k=1$ 显然成立），则
+$$A^{k+1}=A^{k}\cdot A=2^{k-1}A\cdot A=2^{k-1}A^{2}=2^{k-1}\cdot2A=2^{k}A ,$$
+故对一切 $n\geq1$
+$$A^{n}=2^{ n-1}A=2^{ n-1}\begin{pmatrix}1&0&1\\ 0&2&0\\ 1&0&1\end{pmatrix}=\begin{pmatrix}2^{ n-1}&0&2^{ n-1}\\ 0&2^{ n}&0\\ 2^{ n-1}&0&2^{ n-1}\end{pmatrix} .$$
+
+（检验：$n=1$ 时为 $A$；$n=2$ 时为 $\begin{pmatrix}2&0&2\\0&4&0\\2&0&2\end{pmatrix}=A^{2}$，相符。）
+
+@考点
+由 $A^{2}=cA$ 归纳求 $A^{n}$；这一关系的来源是 $A$ 的特征值只取 $0$ 与 $c$ 且可对角化（即 $A(A-cE)=O$）。
+
+易混：$A^{n}=2^{n-1}A$ 的指数是 $n-1$；若写成 $2^{n}A$，$n=1$ 时就错了。凡是这类公式都应当用 $n=1$ 或 $n=2$ 代进去验一遍。
+
+@易错
+1. 不先试算 $A^{2}$，直接去求特征值、特征向量、$P$ 与 $P^{-1}$（可行但慢得多）。
+2. 矩阵乘法算错（注意 $A$ 的第二行只与第二列相互作用）。
+3. 指数写成 $n$。
+4. 只写 $A^{n}=2^{n-1}A$ 而不写出具体矩阵（填空题通常要求写出）。
+
+[35]
+@切入点
+分母 $\mathrm e^{x^{4}}-1\sim x^{4}$，所以**分子必须展到 $x^{4}$ 阶**才能定出极限。
+
+分子是两个指数之差，处理办法是**提出公因子**，把差化成"$\mathrm e^{u}-1$"的形式：
+$$\mathrm e^{x^{2}}-\mathrm e^{2-2\cos x}=\mathrm e^{2-2\cos x}[\mathrm e^{x^{2}-(2-2\cos x)}-1] .$$
+当 $x\to0$ 时 $2-2\cos x\to0$，故前一个因子 $\to1$；后一个用 $\mathrm e^{u}-1\sim u$，于是分子的主部就是
+$$u=x^{2}-2+2\cos x .$$
+**"两个指数相减时提公因子"是这类极限的固定动作**——直接把两个指数各自展开再相减也行，但提公因子后只需展开一次。
+
+关键在于**这个 $u$ 的主部是几阶**。用 $\cos x$ 的展开：
+$$\cos x=1-\frac{x^{2}}{2}+\frac{x^{4}}{24}+o(x^{4}) \Longrightarrow 2\cos x=2-x^{2}+\frac{x^{4}}{12}+o(x^{4}) ,$$
+$$u=x^{2}-2+(2-x^{2}+\frac{x^{4}}{12})+o(x^{4})=\frac{x^{4}}{12}+o(x^{4}) .$$
+**$x^{2}$ 与常数项全部对消，剩下四次项**——这正是题目把两个指数配成 $x^{2}$ 与 $2-2\cos x$ 的用意（它们前两阶相同）。所以 $\cos x$ 必须展到 $x^{4}$，展到 $x^{2}$ 就只会得到 $0$。
+
+最后极限 $=\dfrac{x^{4}/12}{x^{4}}=\dfrac{1}{12}$。
+
+@解答
+**分母。** 由 $\mathrm e^{t}-1\sim t (t\to0)$，
+$$\mathrm e^{x^{4}}-1\sim x^{4} .$$
+
+**分子。** 提公因子：
+$$\mathrm e^{x^{2}}-\mathrm e^{2-2\cos x}=\mathrm e^{2-2\cos x}[\mathrm e^{ x^{2}-2+2\cos x}-1] .$$
+当 $x\to0$ 时 $2-2\cos x\to0$，故 $\mathrm e^{2-2\cos x}\to1$。记
+$$u=x^{2}-2+2\cos x .$$
+由麦克劳林展开
+$$\cos x=1-\frac{x^{2}}{2}+\frac{x^{4}}{24}+o(x^{4}) \Longrightarrow 2\cos x=2-x^{2}+\frac{x^{4}}{12}+o(x^{4}) ,$$
+故
+$$u=x^{2}-2+2-x^{2}+\frac{x^{4}}{12}+o(x^{4})=\frac{x^{4}}{12}+o(x^{4})\longrightarrow0 ,$$
+于是 $\mathrm e^{u}-1\sim u\sim\dfrac{x^{4}}{12}$，分子
+$$\mathrm e^{x^{2}}-\mathrm e^{2-2\cos x}\sim\frac{x^{4}}{12} .$$
+
+**合并。**
+$$\lim_{x\to0}\frac{\mathrm e^{x^{2}}-\mathrm e^{2-2\cos x}}{\mathrm e^{x^{4}}-1}=\lim_{x\to0}\frac{x^{4}/12}{x^{4}}=\frac{1}{12} .$$
+
+@考点
+$\mathrm e^{t}-1\sim t$；两个指数相减时提公因子化为 $\mathrm e^{u}-1$；$\cos x$ 展开到 $x^{4}$；按分母的阶决定分子需要展开的阶数。
+
+易混：$\cos x$ 的四次项系数是 $\frac{1}{24}$，故 $2\cos x$ 的四次项是 $\frac{1}{12}$。只展到 $x^{2}$ 会得到 $u=o(x^{2})$ 这种无用信息，必须展到 $x^{4}$。
+
+@易错
+1. 分子直接用 $\mathrm e^{x^{2}}-1\sim x^{2}$、$\mathrm e^{2-2\cos x}-1\sim2-2\cos x\sim x^{2}$ 相减得 $0$（等价无穷小**不能在加减中替换**）。
+2. $\cos x$ 只展到二阶。
+3. 忘记提出的公因子 $\mathrm e^{2-2\cos x}$ 趋于 $1$ 这一说明。
+4. 四次项系数算错（$\frac{1}{24}$ 与 $\frac{1}{12}$ 混）。
+
+
+[36]
+@切入点
+要证"对任意闭曲线积分为零"，在**单连通区域**上的充要条件是
+$$\frac{\partial Q}{\partial x}=\frac{\partial P}{\partial y} .$$
+本题 $D=\{y>0\}$ 是上半平面，**单连通**（这一点必须点明，否则"$\frac{\partial Q}{\partial x}=\frac{\partial P}{\partial y}$"推不出闭路积分为零——想想 $\frac{-y dx+x dy}{x^{2}+y^{2}}$ 在挖去原点的平面上的反例）。
+
+所以任务就是验证这个等式。记
+$$P=\frac{y}{f(x,y)} , Q=-\frac{x}{f(x,y)} ,$$
+用商的求导法则：
+$$\frac{\partial P}{\partial y}=\frac{f-yf'_{y}}{f^{2}} , \frac{\partial Q}{\partial x}=-\frac{f-xf'_{x}}{f^{2}} ,$$
+于是
+$$\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}=-\frac{(f-xf'_{x})+(f-yf'_{y})}{f^{2}}=-\frac{2f-(xf'_{x}+yf'_{y})}{f^{2}} .$$
+**分子恰好出现 $xf'_{x}+yf'_{y}$，这正是欧拉公式的左端**——所以题设"$f(tx,ty)=t^{2}f(x,y)$"（二次齐次）就是为它准备的：
+$$xf'_{x}+yf'_{y}=2f \Longrightarrow \frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}=0 .$$
+
+欧拉公式的推导也要会：把 $f(tx,ty)=t^{2}f(x,y)$ 两端对 $t$ 求导得 $xf'_{1}+yf'_{2}=2tf$，令 $t=1$ 即得。
+
+@解答
+记
+$$P(x,y)=\frac{y}{f(x,y)} , Q(x,y)=-\frac{x}{f(x,y)} .$$
+由题设 $f$ 在 $D$ 内有一阶连续偏导数且 $f\neq0$，故 $P,Q$ 在 $D$ 内有一阶连续偏导数。
+
+**第一步：欧拉公式。** 由 $f(tx,ty)=t^{2}f(x,y)$ 对一切 $t>0$ 成立，两端对 $t$ 求导：
+$$x f'_{1}(tx,ty)+y f'_{2}(tx,ty)=2t f(x,y) ,$$
+令 $t=1$ 得
+$$x f'_{x}(x,y)+y f'_{y}(x,y)=2f(x,y) .  (\ast)$$
+
+**第二步：验证相容条件。**
+$$\frac{\partial P}{\partial y}=\frac{\partial}{\partial y}(\frac{y}{f})=\frac{1\cdot f-y f'_{y}}{f^{2}}=\frac{f-yf'_{y}}{f^{2}} ,$$
+$$\frac{\partial Q}{\partial x}=\frac{\partial}{\partial x}(-\frac{x}{f})=-\frac{1\cdot f-x f'_{x}}{f^{2}}=-\frac{f-xf'_{x}}{f^{2}} .$$
+于是
+$$\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}=-\frac{f-xf'_{x}}{f^{2}}-\frac{f-yf'_{y}}{f^{2}}=-\frac{2f-(xf'_{x}+yf'_{y})}{f^{2}} .$$
+由 $(\ast)$ 知分子为零，故在 $D$ 内
+$$\frac{\partial Q}{\partial x}=\frac{\partial P}{\partial y} .$$
+
+**第三步：结论。** $D=\{(x,y):y>0\}$ 是**单连通**区域，$P,Q$ 在其中有连续偏导数且满足 $\frac{\partial Q}{\partial x}=\frac{\partial P}{\partial y}$，故曲线积分与路径无关，从而对 $D$ 内任意分段光滑的有向简单闭曲线 $L$，
+$$\oint_{L}\frac{y}{f(x,y)}dx-\frac{x}{f(x,y)}dy=0 .$$
+证毕。
+
+@考点
+齐次函数的欧拉公式 $xf'_{x}+yf'_{y}=kf$ 及其推导；曲线积分与路径无关的充要条件 $\frac{\partial Q}{\partial x}=\frac{\partial P}{\partial y}$ 及**单连通**这一前提；商的偏导数。
+
+易混：$\frac{\partial Q}{\partial x}=\frac{\partial P}{\partial y}$ 只在单连通区域上才能推出闭路积分为零。经典反例 $P=\frac{-y}{x^{2}+y^{2}}$、$Q=\frac{x}{x^{2}+y^{2}}$ 在挖去原点的平面上满足该等式，但绕原点一周的积分是 $2\pi$。本题必须指出 $\{y>0\}$ 单连通。
+
+@易错
+1. 不提单连通性，论证不完整。
+2. 求 $\frac{\partial Q}{\partial x}$ 时漏掉外面的负号。
+3. 欧拉公式记成 $xf'_{x}+yf'_{y}=f$（漏掉次数 $2$）。
+4. 忘记 $f\neq0$ 是 $P,Q$ 有定义且可导的前提。
+
+[37]
+@切入点
+题目给了**三个非齐次解**，第一反应是"**两两作差得到齐次解**"：
+$$\alpha_{1}-\alpha_{2}=(-1,1,-1)^{\mathrm T} , \alpha_{1}-\alpha_{3}=(0,1,-2-a)^{\mathrm T} ,$$
+它们都满足 $AX=0$，且线性无关（第一个分量一个为 $-1$、一个为 $0$，而第二个分量都为 $1$，容易验证）。于是
+$$\dim N(A)\geq2 \Longrightarrow \mathrm r(A)\leq1 .$$
+
+接下来是**伴随矩阵秩的三分公式**：
+$$\mathrm r(A^{*})=\begin{cases}3,&\mathrm r(A)=3,\\ 1,&\mathrm r(A)=2,\\ 0,&\mathrm r(A)\leq1 .\end{cases}$$
+本题 $\mathrm r(A)\leq1$，故 $\mathrm r(A^{*})=0$，即 **$A^{*}=O$**！于是 $A^{*}X=0$ 的解是**整个 $\mathbb R^{3}$**。
+
+最后判断两个解集的关系：$N(A)\subseteq\mathbb R^{3}=N(A^{*})$，恒成立；是否相等？只有当 $A=O$（即 $N(A)=\mathbb R^{3}$）时才相等。而题目说的是**非齐次**方程组，即 $b\neq0$，故 $A\alpha_{1}=b\neq0$ 说明 $A\neq O$，$\mathrm r(A)=1$，$\dim N(A)=2<3$。**"非齐次"这三个字是排除 $A=O$ 的关键**，缺了它就分不清 A 与 C。
+
+所以：$AX=0$ 的解都是 $A^{*}X=0$ 的解，但二者不同解——选 C。
+
+（题设 $a\neq-1$ 使 $\alpha_{1},\alpha_{2},\alpha_{3}$ 线性无关：$|(\alpha_{1},\alpha_{2},\alpha_{3})|=-3(a+1)\neq0$。）
+
+@解答
+**第一步：估计 $\mathrm r(A)$。** $\alpha_{1},\alpha_{2},\alpha_{3}$ 都是 $AX=b$ 的解，故它们的两两之差是齐次方程组 $AX=0$ 的解：
+$$\eta_{1}=\alpha_{1}-\alpha_{2}=(-1,\ 1,\ -1)^{\mathrm T} , \eta_{2}=\alpha_{1}-\alpha_{3}=(0,\ 1,\ -2-a)^{\mathrm T} .$$
+设 $c_{1}\eta_{1}+c_{2}\eta_{2}=0$，比较第一个分量得 $-c_{1}=0$，即 $c_{1}=0$；再比较第二个分量得 $c_{2}=0$。故 $\eta_{1},\eta_{2}$ 线性无关，
+$$\dim N(A)\geq2 \Longrightarrow \mathrm r(A)=3-\dim N(A)\leq1 .$$
+
+**第二步：$A^{*}=O$。** 由伴随矩阵秩的公式（$n=3$）：$\mathrm r(A)\leq1=n-2$ 时 $\mathrm r(A^{*})=0$，故
+$$A^{*}=O ,$$
+从而 $A^{*}X=0$ 的解集是全空间 $\mathbb R^{3}$。
+
+**第三步：比较两个解集。** 方程组 $AX=b$ 是**非齐次**的，即 $b\neq0$；由 $A\alpha_{1}=b\neq0$ 知 $A\neq O$，故
+$$\mathrm r(A)=1 , \dim N(A)=3-1=2<3 .$$
+于是
+$$N(A)\subsetneq\mathbb R^{3}=N(A^{*}) ,$$
+即 $AX=0$ 的解均是 $A^{*}X=0$ 的解，但二者不同解。
+
+故选 **C**。
+
+（附：$a\neq-1$ 保证 $\alpha_{1},\alpha_{2},\alpha_{3}$ 线性无关，因为
+$$|(\alpha_{1},\alpha_{2},\alpha_{3})|=\begin{vmatrix}1&2&1\\ 2&1&1\\ -2&-1&a\end{vmatrix}=-3(a+1) .）$$
+
+@考点
+非齐次方程组两解之差是齐次解；解空间维数与秩的关系；伴随矩阵秩的三分公式 $\mathrm r(A^{*})=n,1,0$；"非齐次"蕴含 $b\neq0$ 从而 $A\neq O$。
+
+易混：$\mathrm r(A^{*})=0$（即 $A^{*}=O$）时 $A^{*}X=0$ 的解是全空间，这**包含**任何其他方程组的解，所以"包含关系"必然成立；要区分 A 与 C，关键是判断 $N(A)$ 是否也是全空间，这靠 $A\neq O$。
+
+@易错
+1. 只得到 $\mathrm r(A)\leq1$ 就直接选 A（忽略 $A\neq O$ 的判定）。
+2. 伴随矩阵秩的公式记错，误以为 $\mathrm r(A)=1$ 时 $\mathrm r(A^{*})=1$。
+3. 把包含方向搞反，选 B。
+4. 选 D：$A^{*}=O$ 时两者显然有大量公共解。
+
+[38]
+@切入点
+先把反常积分算出来，再解关于 $a$ 的方程。
+
+被积函数 $\dfrac{1}{x(a+x^{3})}$ 的分母是 $x$ 与三次式之积，**拆项的技巧是"分子凑出分母之差"**：
+$$\frac{1}{x(a+x^{3})}=\frac{1}{a}\cdot\frac{(a+x^{3})-x^{3}}{x(a+x^{3})}=\frac{1}{a}(\frac1x-\frac{x^{2}}{a+x^{3}}) .$$
+**这样拆的好处是第二块恰好是对数型**（分子 $x^{2}$ 是分母 $a+x^{3}$ 导数的 $\frac13$ 倍），两块的原函数都是对数，可以合并：
+$$\int(\frac1x-\frac{x^{2}}{a+x^{3}})dx=\ln|x|-\frac13\ln(a+x^{3})=\frac13\ln\frac{x^{3}}{a+x^{3}} .$$
+**合并成一个对数是必需的**——否则在 $x\to+\infty$ 时两块各自发散，无法取极限；合并后括号内趋于 $1$，对数趋于 $0$。
+
+于是
+$$\int_{1}^{+\infty}=\frac{1}{3a}[\ln\frac{x^{3}}{a+x^{3}}]_{1}^{+\infty}=\frac{1}{3a}(0-\ln\frac{1}{a+1})=\frac{\ln(a+1)}{3a} .$$
+
+令它等于 $\frac13\ln2$：
+$$\frac{\ln(a+1)}{3a}=\frac{\ln2}{3} \Longrightarrow \ln(a+1)=a\ln2=\ln2^{a} \Longrightarrow a+1=2^{a} .$$
+这个超越方程**用观察 $+$ 单调性讨论**求解：$a=1$ 显然满足；令 $g(a)=2^{a}-a-1$，$g(0)=g(1)=0$，$g'(a)=2^{a}\ln2-1$ 在 $(0,1)$ 内由负变正，故 $g$ 先减后增，在 $(0,+\infty)$ 上只有 $a=1$ 一个零点。结合 $a>0$，唯一解 $a=1$。
+
+@解答
+**第一步：拆项。** 对 $a>0$，
+$$\frac{1}{x(a+x^{3})}=\frac{1}{a}\cdot\frac{(a+x^{3})-x^{3}}{x(a+x^{3})}=\frac{1}{a}(\frac{1}{x}-\frac{x^{2}}{a+x^{3}}) .$$
+
+**第二步：求原函数并合并。** 当 $x\geq1$ 时
+$$\int(\frac1x-\frac{x^{2}}{a+x^{3}})dx=\ln x-\frac13\ln(a+x^{3})=\frac13\ln\frac{x^{3}}{a+x^{3}} ,$$
+故
+$$\int_{1}^{+\infty}\frac{dx}{x(a+x^{3})}=\frac{1}{3a}[\ln\frac{x^{3}}{a+x^{3}}]_{1}^{+\infty} .$$
+当 $x\to+\infty$ 时 $\frac{x^{3}}{a+x^{3}}\to1$，故上限处为 $\ln1=0$；下限处为 $\ln\frac{1}{a+1}=-\ln(a+1)$。于是
+$$\int_{1}^{+\infty}\frac{dx}{x(a+x^{3})}=\frac{1}{3a}(0+\ln(a+1))=\frac{\ln(a+1)}{3a} .$$
+
+**第三步：解方程。** 由题设
+$$\frac{\ln(a+1)}{3a}=\frac{1}{3}\ln2 \Longrightarrow \ln(a+1)=a\ln2=\ln2^{a} \Longrightarrow a+1=2^{a} .$$
+令 $g(a)=2^{a}-a-1 (a>0)$，则 $g(1)=2-1-1=0$，即 $a=1$ 是解。又
+$$g'(a)=2^{a}\ln2-1 ,$$
+$g'$ 严格递增，且 $g'(0)=\ln2-1<0$、$g'(1)=2\ln2-1>0$，故 $g$ 在 $(0,+\infty)$ 上先减后增；结合 $g(0)=0$ 与 $g(1)=0$ 知 $g$ 在 $(0,1)$ 内恒负、在 $(1,+\infty)$ 内恒正，故 $a=1$ 是 $a>0$ 时的唯一解。
+
+$$a=1 .$$
+
+@考点
+有理函数的拆项技巧（分子凑成分母之差）；$\int\frac{x^{2}}{a+x^{3}}dx=\frac13\ln(a+x^{3})$；反常积分中把两个发散的对数合并成一个收敛的对数；超越方程 $a+1=2^{a}$ 用单调性讨论定唯一解。
+
+易混：拆成 $\frac1a(\frac1x-\frac{x^{2}}{a+x^{3}})$ 之后，**两块各自的反常积分都发散**（都是对数型），必须先合并成 $\frac13\ln\frac{x^{3}}{a+x^{3}}$ 再取极限；分开取极限会得到 $\infty-\infty$。
+
+@易错
+1. 拆项系数错（应是 $\frac1a$，来自分子凑 $a$）。
+2. $\int\frac{x^{2}}{a+x^{3}}dx$ 漏掉 $\frac13$。
+3. 不合并对数就代上限。
+4. 解 $a+1=2^{a}$ 时只写出 $a=1$ 而不说明唯一性（$a=0$ 也满足但被 $a>0$ 排除）。
+
+[39]
+@切入点
+方程的形式是 $P dx+Q dy=0$，且 $P,Q$ 都含 $\mathrm e^{x/y}$——这种"$x,y$ 纠缠在一起"的方程，**先验一验是不是全微分方程**最划算：
+$$P=1+\mathrm e^{\frac xy} , Q=\mathrm e^{\frac xy}(1-\frac xy) .$$
+$$\frac{\partial P}{\partial y}=\mathrm e^{\frac xy}\cdot(-\frac{x}{y^{2}})=-\frac{x}{y^{2}}\mathrm e^{\frac xy} ,$$
+$$\frac{\partial Q}{\partial x}=\mathrm e^{\frac xy}\cdot\frac1y\cdot(1-\frac xy)+\mathrm e^{\frac xy}\cdot(-\frac1y)=\frac{\mathrm e^{\frac xy}}{y}(1-\frac xy-1)=-\frac{x}{y^{2}}\mathrm e^{\frac xy} .$$
+相等，**确是全微分方程**，于是通解形如 $u(x,y)=C$，只需求出原函数 $u$。
+
+（本题也是齐次方程，可用 $u=\frac xy$ 代换，但要解一个可分离变量方程并回代，比直接求原函数繁。**验出恰当性后走全微分路线最省事。**）
+
+求 $u$ 用"**偏积分 $+$ 比对**"：
+$$\frac{\partial u}{\partial x}=1+\mathrm e^{\frac xy} \Longrightarrow u=x+y \mathrm e^{\frac xy}+h(y) ,$$
+（注意 $\int\mathrm e^{x/y}dx=y\mathrm e^{x/y}$，因为把 $y$ 当常数，内层导数是 $\frac1y$）。再对 $y$ 求偏导与 $Q$ 比对：
+$$\frac{\partial u}{\partial y}=\mathrm e^{\frac xy}+y \mathrm e^{\frac xy}(-\frac{x}{y^{2}})+h'(y)=\mathrm e^{\frac xy}(1-\frac xy)+h'(y)=Q \Longrightarrow h'(y)=0 .$$
+**$h'(y)=0$ 说明验算无误**（若得到含 $x$ 的式子，说明前面算错了）。
+
+@解答
+记
+$$P(x,y)=1+\mathrm e^{\frac xy} , Q(x,y)=\mathrm e^{\frac xy}(1-\frac xy) , y>0 .$$
+
+**第一步：验证是全微分方程。**
+$$\frac{\partial P}{\partial y}=\mathrm e^{\frac xy}\cdot\frac{\partial}{\partial y}(\frac xy)=-\frac{x}{y^{2}}\mathrm e^{\frac xy} ,$$
+$$\frac{\partial Q}{\partial x}=\mathrm e^{\frac xy}\cdot\frac1y\cdot(1-\frac xy)+\mathrm e^{\frac xy}\cdot(-\frac1y)=\frac{\mathrm e^{\frac xy}}{y}(1-\frac xy-1)=-\frac{x}{y^{2}}\mathrm e^{\frac xy} .$$
+二者相等，故 $P dx+Q dy$ 是某函数 $u(x,y)$ 的全微分。
+
+**第二步：求原函数。** 由 $\dfrac{\partial u}{\partial x}=1+\mathrm e^{\frac xy}$，对 $x$ 偏积分（$y$ 视为常数）：
+$$u=x+y \mathrm e^{\frac xy}+h(y) .$$
+对 $y$ 求偏导：
+$$\frac{\partial u}{\partial y}=\mathrm e^{\frac xy}+y \mathrm e^{\frac xy}\cdot(-\frac{x}{y^{2}})+h'(y)=\mathrm e^{\frac xy}(1-\frac xy)+h'(y) .$$
+与 $Q$ 比较得 $h'(y)=0$，即 $h(y)=$ 常数。
+
+**第三步：写通解。**
+$$u(x,y)=x+y \mathrm e^{\frac xy}=C ,$$
+即原方程的通解为
+$$x+y \mathrm e^{\frac xy}=C (C\ \text{为任意常数}) .$$
+
+@考点
+全微分方程的判别 $\frac{\partial P}{\partial y}=\frac{\partial Q}{\partial x}$ 与求解（偏积分 $+$ 比对）；$\int\mathrm e^{\frac xy}dx=y\mathrm e^{\frac xy}$；复合函数对 $y$ 求导时 $\frac{\partial}{\partial y}(\frac xy)=-\frac{x}{y^{2}}$。
+
+易混：偏积分时出现的"常数"是另一个变量的函数 $h(y)$，不是真常数；只有在第二步比对之后才能确定它。
+
+@易错
+1. 不验证恰当性就当全微分方程做（若不恰当，结论全错）。
+2. $\int\mathrm e^{x/y}dx$ 写成 $\mathrm e^{x/y}$（漏掉因子 $y$）。
+3. 求 $\frac{\partial Q}{\partial x}$ 时漏掉乘积法则中的第二项。
+4. 把 $h(y)$ 写成常数 $C$，无法与 $Q$ 比对。
+
+[40]
+@切入点
+二元函数在给定点取极大值，需要**两个层次的条件**：
+
+**第一层（必要条件）：该点是驻点。**
+$$f'_{y}=\mathrm e^{-x}\cdot(-2y) ,$$
+由 $\mathrm e^{-x}>0$ 知 $f'_{y}=0\iff y=0$，故 $y_{0}=0$——**$y_{0}$ 是由方程定出来的，不是任意的**。
+$$f'_{x}=-\mathrm e^{-x}(ax+b-y^{2})+\mathrm e^{-x}\cdot a=\mathrm e^{-x}(a-ax-b+y^{2}) ,$$
+在 $(-1,0)$ 处：$a-a(-1)-b+0=2a-b=0$，即
+$$b=2a .$$
+
+**第二层（充分条件）：$AC-B^{2}>0$ 且 $A<0$。** 算二阶偏导时，**在驻点处 $a-ax-b+y^{2}=0$ 可以用来消项**，大幅简化：
+$$A=f''_{xx}=\mathrm e^{-x}[-(a-ax-b+y^{2})-a]|_{(-1,0)}=\mathrm e\cdot(-a)=-a\mathrm e ,$$
+$$B=f''_{xy}=\mathrm e^{-x}\cdot2y|_{(-1,0)}=0 , C=f''_{yy}=-2\mathrm e^{-x}|_{x=-1}=-2\mathrm e .$$
+于是
+$$AC-B^{2}=(-a\mathrm e)(-2\mathrm e)=2a\mathrm e^{2} .$$
+要取极大值，需 $AC-B^{2}>0$ 且 $A<0$，两者都归结为
+$$a>0 .$$
+
+**注意题目问的是"$a,b$ 满足的条件"，所以答案是一组约束 $a>0$ 且 $b=2a$，而不是具体数值。**
+
+@解答
+**第一步：驻点条件。**
+$$f'_{y}=\mathrm e^{-x}\cdot(-2y) .$$
+由 $\mathrm e^{-x}>0$，$f'_{y}=0$ 当且仅当 $y=0$，故
+$$y_{0}=0 .$$
+$$f'_{x}=-\mathrm e^{-x}(ax+b-y^{2})+\mathrm e^{-x}\cdot a=\mathrm e^{-x}(a-ax-b+y^{2}) .$$
+在点 $(-1,0)$ 处 $f'_{x}=0$：
+$$a-a(-1)-b+0=2a-b=0 \Longrightarrow b=2a .$$
+
+**第二步：二阶判别。** 由
+$$f''_{xx}=\frac{\partial}{\partial x}[\mathrm e^{-x}(a-ax-b+y^{2})]=\mathrm e^{-x}[-(a-ax-b+y^{2})-a] ,$$
+在驻点 $(-1,0)$ 处 $a-ax-b+y^{2}=2a-b=0$，故
+$$A=f''_{xx}(-1,0)=\mathrm e^{1}\cdot(-a)=-a\mathrm e .$$
+又
+$$B=f''_{xy}=\frac{\partial}{\partial y}[\mathrm e^{-x}(a-ax-b+y^{2})]=2y \mathrm e^{-x} , B(-1,0)=0 ,$$
+$$C=f''_{yy}=\frac{\partial}{\partial y}(-2y\mathrm e^{-x})=-2\mathrm e^{-x} , C(-1,0)=-2\mathrm e .$$
+于是
+$$AC-B^{2}=(-a\mathrm e)(-2\mathrm e)-0=2a\mathrm e^{2} .$$
+
+**第三步：极大值条件。** 取极大值要求
+$$AC-B^{2}>0 \ \text{且}\ A<0 ,$$
+即 $2a\mathrm e^{2}>0$ 且 $-a\mathrm e<0$，两者都等价于
+$$a>0 .$$
+
+综上，$a,b$ 满足的条件为
+$$a>0 , b=2a ,$$
+此时极大值点为 $(-1,0)$（即 $y_{0}=0$），极大值为 $f(-1,0)=\mathrm e\cdot(-a+b)=\mathrm e\cdot a$。
+
+@考点
+二元函数极值的必要条件（驻点）与充分条件（$AC-B^{2}>0$ 且 $A<0$ 为极大）；乘积求导；在驻点处用一阶条件化简二阶偏导。
+
+易混：$AC-B^{2}>0$ 时由 $A$ 的符号定极大（$A<0$）还是极小（$A>0$）；本题两个条件都指向 $a>0$，但推理必须两条都写。
+
+@易错
+1. 忘记先由 $f'_{y}=0$ 定出 $y_{0}=0$，把 $y_{0}$ 当未知量留着。
+2. 求 $f'_{x}$ 时漏掉 $\mathrm e^{-x}$ 求导产生的项。
+3. 只用驻点条件 $b=2a$ 作答，漏掉 $a>0$。
+4. 二阶判别时不利用驻点条件化简，导致 $A$ 的表达式算错。
+
+[41]
+@切入点
+关键是看清两组向量之间的**单向传递关系**：矩阵乘法是线性的，所以"零组合"能从（Ⅰ）传到（Ⅱ）：
+$$\sum_{i=1}^{t}c_{i}\alpha_{i}=0 \Longrightarrow \sum_{i=1}^{t}c_{i}A\alpha_{i}=A(\sum_{i=1}^{t}c_{i}\alpha_{i})=A\cdot0=0 ,$$
+且系数 $c_{i}$ 原封不动。于是
+$$（Ⅰ）\text{线性相关}\Longrightarrow（Ⅱ）\text{线性相关} .$$
+**这是唯一无条件成立的蕴含**，它的逆否命题就是
+$$（Ⅱ）\text{线性无关}\Longrightarrow（Ⅰ）\text{线性无关} ,$$
+正是选项 C。
+
+**反方向不成立**，因为 $A$ 可能把非零向量打到零：取 $A=O$，则不论（Ⅰ）多么无关，（Ⅱ）全是零向量，必然相关。这一个反例同时否掉 A（"（Ⅰ）无关 $\Rightarrow$（Ⅱ）无关"）、B（"（Ⅱ）相关 $\Rightarrow$（Ⅰ）相关"）和 D（"相关性相同"）。
+
+**记忆要点：线性变换只会"减少"无关性，不会"增加"**——$\mathrm r(A\alpha_{1},\cdots,A\alpha_{t})\leq\mathrm r(\alpha_{1},\cdots,\alpha_{t})$。所以"像无关 $\Rightarrow$ 原无关"总对，反之要 $A$ 列满秩才行。
+
+@解答
+**核心蕴含。** 若（Ⅰ）线性相关，则存在不全为零的 $c_{1},\cdots,c_{t}$ 使
+$$c_{1}\alpha_{1}+\cdots+c_{t}\alpha_{t}=0 .$$
+两端左乘 $A$：
+$$c_{1}A\alpha_{1}+\cdots+c_{t}A\alpha_{t}=A(c_{1}\alpha_{1}+\cdots+c_{t}\alpha_{t})=0 ,$$
+系数仍不全为零，故（Ⅱ）线性相关。即
+$$（Ⅰ）\text{相关}\Longrightarrow（Ⅱ）\text{相关} .$$
+其逆否命题为
+$$（Ⅱ）\text{无关}\Longrightarrow（Ⅰ）\text{无关} ,$$
+故 **C 正确**。
+
+**其余选项的反例。** 取 $A=O$（$m\times n$ 零矩阵），$\alpha_{1},\cdots,\alpha_{t}$ 线性无关（例如 $t\leq n$ 时取单位坐标向量），则
+$$A\alpha_{1}=\cdots=A\alpha_{t}=0 ,$$
+（Ⅱ）线性相关。此例说明：
+- A 不成立（（Ⅰ）无关但（Ⅱ）相关）；
+- B 不成立（（Ⅱ）相关但（Ⅰ）无关）；
+- D 不成立（二者相关性不同）。
+
+故选 **C**。
+
+@考点
+矩阵乘法的线性性把零组合从原像传到像；$\mathrm r(A\alpha_{1},\cdots,A\alpha_{t})\leq\mathrm r(\alpha_{1},\cdots,\alpha_{t})$；逆否命题的等价性；用 $A=O$ 构造反例。
+
+易混："（Ⅱ）无关 $\Rightarrow$（Ⅰ）无关"恒成立；反方向"（Ⅰ）无关 $\Rightarrow$（Ⅱ）无关"需要 $A$ 的列向量线性无关（即 $\mathrm r(A)=n$，$Ax=0$ 只有零解）。题目没有这个条件，故 A 不成立。
+
+@易错
+1. 把蕴含方向记反，选 A 或 B。
+2. 认为"乘一个矩阵不改变相关性"，选 D。
+3. 只找反例不给正面证明，或只证明不举反例。
+4. 忘记 $A$ 可以是零矩阵这种极端但合法的情形。
+
+[42]
+@切入点
+条件 $\lim_{x\to0}\frac{f(x)}{x^{2}}=1$ 能直接榨出两件事，**这两件事就是解题的全部依据**：
+
+**其一：$f(0)=0$。** 因为 $\frac{f(x)}{x^{2}}$ 有有限极限而 $x^{2}\to0$，故 $f(x)\to0$；又 $f$ 可导（从而连续），所以 $f(0)=\lim_{x\to0}f(x)=0$。
+
+**其二：$f$ 在 $0$ 的去心邻域内为正。** 由极限的局部保号性，存在 $\delta>0$ 使 $0<|x|<\delta$ 时 $\frac{f(x)}{x^{2}}>\frac12>0$，而 $x^{2}>0$，故
+$$f(x)>0=f(0) .$$
+这正是**极小值的定义**（严格极小），故 D 正确。
+
+再看其余选项为什么不必然：
+- **C**：$f'(0)=\lim_{x\to0}\frac{f(x)-f(0)}{x}=\lim_{x\to0}\frac{f(x)}{x^{2}}\cdot x=1\cdot0=0$ 确实成立；但 $f''(0)$ **要求 $f'$ 在 $0$ 可导**，题目只给了 $f$ 可导，$f'$ 未必可导。故 C 的后半句不必然。
+- **A、B**：$\frac{f'(x)}{x}$ 的极限**可能存在也可能不存在**。取 $f(x)=x^{2}$ 时 $\frac{f'(x)}{x}=2$，极限存在；取
+$$f(x)=x^{2}+x^{3}\sin\frac1x (x\neq0) , f(0)=0 ,$$
+则仍有 $\frac{f(x)}{x^{2}}\to1$，而
+$$\frac{f'(x)}{x}=2+3x\sin\frac1x-\cos\frac1x$$
+无极限。**同一条件下两种情况都能出现，所以 A、B 都不是必然结论。**
+
+**判断要点：条件只给了 $f$ 在 $0$ 处的"二阶量级"信息，推不出 $f'$ 的任何极限行为，更推不出 $f''$ 的存在。**
+
+@解答
+**由条件导出两条事实。**
+
+（i）因 $\lim_{x\to0}\frac{f(x)}{x^{2}}=1$ 存在有限且 $x^{2}\to0$，故
+$$\lim_{x\to0}f(x)=\lim_{x\to0}\frac{f(x)}{x^{2}}\cdot x^{2}=1\cdot0=0 ;$$
+又 $f$ 在 $(-1,1)$ 内可导故连续，所以 $f(0)=0$。
+
+（ii）由极限的局部保号性，存在 $\delta>0$，使 $0<|x|<\delta$ 时
+$$\frac{f(x)}{x^{2}}>\frac12>0 \Longrightarrow f(x)>\frac{x^{2}}{2}>0=f(0) .$$
+
+**D 正确。** 由（ii），在 $0$ 的某去心邻域内 $f(x)>f(0)$，按定义 $f(0)$ 是 $f$ 的（严格）极小值。
+
+**C 不正确。** 由（i）
+$$f'(0)=\lim_{x\to0}\frac{f(x)-f(0)}{x-0}=\lim_{x\to0}\frac{f(x)}{x^{2}}\cdot x=0$$
+确实成立；但题设只保证 $f$ 可导，并未保证 $f'$ 可导，故 $f''(0)$ 未必存在，C 的后半句不必然成立。
+
+**A、B 均不正确。** 取 $f(x)=x^{2}$，则 $\frac{f(x)}{x^{2}}\equiv1$，而 $\frac{f'(x)}{x}=2$，极限存在，说明 B 不成立；取
+$$f(x)=\begin{cases}x^{2}+x^{3}\sin\dfrac1x,&x\neq0,\\ 0,&x=0,\end{cases}$$
+则 $\frac{f(x)}{x^{2}}=1+x\sin\frac1x\to1$ 满足条件，$f$ 在 $(-1,1)$ 内可导，且当 $x\neq0$ 时
+$$f'(x)=2x+3x^{2}\sin\frac1x-x\cos\frac1x , \frac{f'(x)}{x}=2+3x\sin\frac1x-\cos\frac1x ,$$
+当 $x\to0$ 时 $\cos\frac1x$ 无极限，故 $\lim_{x\to0}\frac{f'(x)}{x}$ 不存在，说明 A 不成立。
+
+故选 **D**。
+
+@考点
+由 $\lim\frac{f(x)}{x^{2}}=1$ 推出 $f(0)=0$ 与 $f'(0)=0$；极限的局部保号性；极值的定义（不依赖导数）；可导 $\not\Rightarrow$ 二阶可导。
+
+易混：判断极值有两条路——用定义（比较函数值）与用二阶导数判别法。本题 $f''(0)$ 未必存在，**只能用定义**；这正是条件"$f(x)>f(0)$ 在去心邻域成立"的用处。
+
+@易错
+1. 想用二阶导判别法，却发现 $f''$ 不一定存在而卡住。
+2. 由 $\lim\frac{f(x)}{x^{2}}=1$ 断言 $f(x)=x^{2}+o(x^{2})$ 后误以为 $f''(0)=2$（泰勒展开的存在不等于二阶导数存在）。
+3. 选 A 或 B：把"可能存在"当成"一定存在"或"一定不存在"。
+4. 忘记先说明 $f(0)=0$，无法比较函数值。
+
+[43]
+@切入点
+（Ⅰ）方程 $f'+2xf^{2}=0$ 是**可分离变量**的（把 $f^{2}$ 移到左边）：
+$$\frac{df}{f^{2}}=-2x dx \Longrightarrow -\frac1f=-x^{2}+C \Longrightarrow \frac1f=x^{2}-C .$$
+由 $f(0)=1$ 得 $-C=1$，故
+$$f(x)=\frac{1}{1+x^{2}} .$$
+**认出结果是"标准柯西核"$\frac{1}{1+x^{2}}$ 很重要**——第（Ⅱ）问的反常积分正是围绕它设计的。
+
+（Ⅱ）
+$$a_{n}=\int_{-\infty}^{+\infty}\frac{dx}{(1+x^{2})^{n}} .$$
+直接算每个 $a_{n}$ 很麻烦，但题目只要**相邻两项之比**，所以走三角代换把它化成沃利斯型积分：令 $x=\tan\theta$，$dx=\sec^{2}\theta d\theta$，$1+x^{2}=\sec^{2}\theta$，
+$$a_{n}=\int_{-\frac\pi2}^{\frac\pi2}\frac{\sec^{2}\theta}{\sec^{2n}\theta}d\theta=\int_{-\frac\pi2}^{\frac\pi2}\cos^{2n-2}\theta d\theta .$$
+**化成 $\cos$ 的偶次幂后，比值由点火公式（沃利斯公式）一步给出**：
+$$\int_{-\frac\pi2}^{\frac\pi2}\cos^{2m}\theta d\theta=\pi\cdot\frac{(2m-1)!!}{(2m)!!} ,$$
+故
+$$\frac{a_{n+1}}{a_{n}}=\frac{(2n-1)!!/(2n)!!}{(2n-3)!!/(2n-2)!!}=\frac{2n-1}{2n} .$$
+
+于是要求的是幂级数 $\sum\frac{2n-1}{2n}x^{n}$ 的收敛域与和函数。**系数拆成 $1-\frac{1}{2n}$**，就化成两个熟悉的级数：
+$$\sum x^{n}=\frac{x}{1-x} , \sum\frac{x^{n}}{n}=-\ln(1-x) .$$
+
+@解答
+**（Ⅰ）** $f$ 非零，方程 $f'=-2xf^{2}$ 可分离变量：
+$$\frac{df}{f^{2}}=-2x dx \Longrightarrow -\frac{1}{f}=-x^{2}+C_{1} \Longrightarrow \frac1f=x^{2}-C_{1} .$$
+由 $f(0)=1$ 得 $1=-C_{1}$，即 $C_{1}=-1$，故
+$$\frac1f=x^{2}+1 , f(x)=\frac{1}{1+x^{2}} .$$
+
+**（Ⅱ）求 $\frac{a_{n+1}}{a_{n}}$。**
+$$a_{n}=\int_{-\infty}^{+\infty}\frac{dx}{(1+x^{2})^{n}} .$$
+令 $x=\tan\theta$（$\theta\in(-\frac\pi2,\frac\pi2)$），$dx=\sec^{2}\theta d\theta$，$1+x^{2}=\sec^{2}\theta$：
+$$a_{n}=\int_{-\frac\pi2}^{\frac\pi2}\frac{\sec^{2}\theta d\theta}{\sec^{2n}\theta}=\int_{-\frac\pi2}^{\frac\pi2}\cos^{2n-2}\theta d\theta=2\int_{0}^{\frac\pi2}\cos^{2n-2}\theta d\theta .$$
+由点火公式 $\int_{0}^{\frac\pi2}\cos^{2m}\theta d\theta=\frac{(2m-1)!!}{(2m)!!}\cdot\frac\pi2$（取 $m=n-1$）：
+$$a_{n}=\pi\cdot\frac{(2n-3)!!}{(2n-2)!!} , a_{n+1}=\pi\cdot\frac{(2n-1)!!}{(2n)!!} ,$$
+故
+$$\frac{a_{n+1}}{a_{n}}=\frac{(2n-1)!!}{(2n)!!}\cdot\frac{(2n-2)!!}{(2n-3)!!}=\frac{2n-1}{2n} .$$
+（检验 $n=1$：$a_{1}=\int\frac{dx}{1+x^{2}}=\pi$，$a_{2}=\int\frac{dx}{(1+x^{2})^{2}}=\frac\pi2$，比值 $\frac12=\frac{2\cdot1-1}{2\cdot1}$ ✓。）
+
+**收敛域。** 级数为
+$$\sum_{n=1}^{\infty}\frac{2n-1}{2n}x^{n} .$$
+由 $\lim_{n\to\infty}|\frac{c_{n+1}}{c_{n}}|=\lim_{n\to\infty}\frac{(2n+1)/(2n+2)}{(2n-1)/(2n)}=1$ 知收敛半径 $R=1$。端点处 $|\frac{2n-1}{2n}(\pm1)^{n}|\to1\neq0$，通项不趋于零，均发散。故收敛域为
+$$(-1,\ 1) .$$
+
+**和函数。** 在 $|x|<1$ 内把系数拆开：
+$$S(x)=\sum_{n=1}^{\infty}(1-\frac{1}{2n})x^{n}=\sum_{n=1}^{\infty}x^{n}-\frac12\sum_{n=1}^{\infty}\frac{x^{n}}{n}=\frac{x}{1-x}-\frac12[-\ln(1-x)] ,$$
+即
+$$S(x)=\frac{x}{1-x}+\frac12\ln(1-x) , x\in(-1,1) .$$
+
+@考点
+可分离变量方程；反常积分 $\int_{-\infty}^{+\infty}\frac{dx}{(1+x^{2})^{n}}$ 用 $x=\tan\theta$ 化为 $\cos$ 的偶次幂积分；点火（沃利斯）公式；幂级数收敛域与和函数（拆项化为几何级数与对数级数）。
+
+易混：$\sum_{n\geq1}x^{n}=\frac{x}{1-x}$（从 $n=1$ 起，分子是 $x$ 不是 $1$）；$\sum_{n\geq1}\frac{x^{n}}{n}=-\ln(1-x)$。两式的起点都要看准。
+
+@易错
+1. （Ⅰ）分离变量时把 $\frac{df}{f^{2}}$ 的原函数写成 $\ln|f|$。
+2. 代换后指数算错：$\frac{\sec^{2}\theta}{\sec^{2n}\theta}=\cos^{2n-2}\theta$。
+3. 端点处误用莱布尼茨判别法（通项根本不趋于零）。
+4. 和函数中漏掉 $\frac12$ 或把 $-\ln(1-x)$ 的负号处理错。
+
+[44]
+@切入点
+转动惯量的定义（密度 $\rho=1$）：
+$$I_{x}=\iint_{D}y^{2}dxdy , I_{y}=\iint_{D}x^{2}dxdy .$$
+**注意 $I_{x}$ 配的是 $y^{2}$（到 $x$ 轴距离的平方），$I_{y}$ 配的是 $x^{2}$**——这是最容易记反的地方。
+
+接下来定区域。$y^{2}=x^{3}$ 在 $x\geq0$ 时给出 $y=x^{\frac32}$（取与 $y=x$ 相交的上支）。交点：
+$$x^{3}=x^{2} \Longrightarrow x=0\ \text{或}\ x=1 ,$$
+即 $(0,0)$ 与 $(1,1)$。在 $0<x<1$ 内 $x^{\frac32}<x$（因为 $x^{\frac12}<1$），故区域是
+$$D:\ 0\leq x\leq1 , x^{\frac32}\leq y\leq x ,$$
+是 **X 型区域**，两个积分都按"先 $y$ 后 $x$"做最自然。
+
+$I_{x}$ 的内层积分给出 $\frac13(x^{3}-x^{\frac92})$；$I_{y}$ 的被积函数 $x^{2}$ 与 $y$ 无关，内层直接乘以区间长度 $x-x^{\frac32}$。两者都化成简单的幂函数积分。**分数次幂的积分容易出错，算完后可用数值粗查一遍**（本题 $I_{x}=\frac{1}{44}\approx0.0227$、$I_{y}=\frac{1}{36}\approx0.0278$，而区域面积 $\int_{0}^{1}(x-x^{3/2})dx=\frac12-\frac25=\frac1{10}$，量级相符）。
+
+@解答
+**确定区域。** 曲线 $y^{2}=x^{3}$ 在 $x\geq0$ 上的上支为 $y=x^{\frac32}$。与 $y=x$ 联立：
+$$x^{3}=x^{2} \Longrightarrow x=0\ \text{或}\ x=1 ,$$
+交点为 $(0,0)$ 与 $(1,1)$。当 $0<x<1$ 时 $x^{\frac32}=x\cdot x^{\frac12}<x$，故
+$$D=\{(x,y):\ 0\leq x\leq1,\ x^{\frac32}\leq y\leq x\} .$$
+
+**求 $I_{x}$。**
+$$I_{x}=\iint_{D}y^{2}dxdy=\int_{0}^{1}dx\int_{x^{\frac32}}^{x}y^{2}dy=\int_{0}^{1}\frac{y^{3}}{3}|_{x^{\frac32}}^{x}dx=\frac13\int_{0}^{1}(x^{3}-x^{\frac92})dx ,$$
+$$=\frac13(\frac14-\frac{1}{\frac{11}{2}})=\frac13(\frac14-\frac{2}{11})=\frac13\cdot\frac{11-8}{44}=\frac13\cdot\frac{3}{44}=\frac{1}{44} .$$
+
+**求 $I_{y}$。**
+$$I_{y}=\iint_{D}x^{2}dxdy=\int_{0}^{1}x^{2}(x-x^{\frac32})dx=\int_{0}^{1}(x^{3}-x^{\frac72})dx=\frac14-\frac{1}{\frac92}=\frac14-\frac29=\frac{9-8}{36}=\frac{1}{36} .$$
+
+故
+$$I_{x}=\frac{1}{44} , I_{y}=\frac{1}{36} .$$
+
+@考点
+平面薄片对坐标轴的转动惯量 $I_{x}=\iint y^{2}\rho dxdy$、$I_{y}=\iint x^{2}\rho dxdy$；X 型区域的累次积分；分数次幂函数的积分 $\int_{0}^{1}x^{\alpha}dx=\frac{1}{\alpha+1}$。
+
+易混：$I_{x}$ 用 $y^{2}$、$I_{y}$ 用 $x^{2}$（"到哪条轴的距离"决定用哪个变量）；另外还有对原点的转动惯量 $I_{O}=\iint(x^{2}+y^{2})\rho dxdy=I_{x}+I_{y}$，可作检验。
+
+@易错
+1. $I_{x}$ 与 $I_{y}$ 的被积函数弄反。
+2. 上下边界取反（在 $(0,1)$ 内是 $x^{\frac32}<x$，故 $y$ 从 $x^{\frac32}$ 到 $x$）。
+3. $\int_{0}^{1}x^{\frac92}dx=\frac{2}{11}$、$\int_{0}^{1}x^{\frac72}dx=\frac29$ 算错。
+4. 忘记 $y^{2}=x^{3}$ 只在 $x\geq0$ 时有实解，误把下支也算进来。
+
+[45]
+@切入点
+先把 $f(x_{1},x_{2})$ 真正算出来——它是一个 $3$ 阶行列式：
+$$f=\begin{vmatrix}1-a&a&x_{1}\\ a&a&x_{2}\\ -x_{1}&-x_{2}&0\end{vmatrix} .$$
+**按第三行展开最省事**（该行有一个零元）：
+$$f=(-x_{1})\begin{vmatrix}a&x_{1}\\ a&x_{2}\end{vmatrix}-(-x_{2})\begin{vmatrix}1-a&x_{1}\\ a&x_{2}\end{vmatrix}=(-x_{1})(ax_{2}-ax_{1})+x_{2}[(1-a)x_{2}-ax_{1}] ,$$
+整理得
+$$f=ax_{1}^{2}-2ax_{1}x_{2}+(1-a)x_{2}^{2} .$$
+于是 $f$ 的矩阵是
+$$B=\begin{pmatrix}a&-a\\ -a&1-a\end{pmatrix} .$$
+**注意交叉项 $-2ax_{1}x_{2}$ 对应矩阵元素 $-a$（系数的一半）。**
+
+接下来分别用**顺序主子式**判两个正定性：
+- $f$ 正定 $\iff a>0$ 且 $|B|=a(1-a)-a^{2}=a-2a^{2}>0\iff a>0$ 且 $a(1-2a)>0\iff0<a<\frac12$；
+- $A$ 正定 $\iff1-a>0$ 且 $|A|=(1-a)a-a^{2}=a-2a^{2}>0\iff a<1$ 且 $0<a<\frac12\iff0<a<\frac12$。
+
+**两者的条件完全相同**（这是因为 $|A|$ 与 $|B|$ 恰好相等，且两个矩阵的迹的符号约束最终都归结到同一区间），故互为充要条件，选 C。
+
+**判断要点：不要凭"$A$ 是 $f$ 的一部分"就猜单向蕴含，必须把两个条件都解出来比较区间。**
+
+@解答
+**第一步：展开行列式。** 按第三行展开：
+$$f(x_{1},x_{2})=\begin{vmatrix}1-a&a&x_{1}\\ a&a&x_{2}\\ -x_{1}&-x_{2}&0\end{vmatrix}=(-x_{1})\cdot\begin{vmatrix}a&x_{1}\\ a&x_{2}\end{vmatrix}-(-x_{2})\cdot\begin{vmatrix}1-a&x_{1}\\ a&x_{2}\end{vmatrix}+0$$
+$$=(-x_{1})(ax_{2}-ax_{1})+x_{2}[(1-a)x_{2}-ax_{1}]=ax_{1}^{2}-ax_{1}x_{2}-ax_{1}x_{2}+(1-a)x_{2}^{2} ,$$
+即
+$$f(x_{1},x_{2})=ax_{1}^{2}-2ax_{1}x_{2}+(1-a)x_{2}^{2} ,$$
+其对应的二次型矩阵为
+$$B=\begin{pmatrix}a&-a\\ -a&1-a\end{pmatrix} .$$
+
+**第二步：$f$ 正定的条件。** 由顺序主子式全为正：
+$$a>0 , |B|=a(1-a)-(-a)^{2}=a-2a^{2}=a(1-2a)>0 .$$
+第二式在 $a>0$ 时等价于 $1-2a>0$，故
+$$f\ \text{正定}\iff0<a<\frac12 .$$
+
+**第三步：$A$ 正定的条件。** $A=\begin{pmatrix}1-a&a\\ a&a\end{pmatrix}$，顺序主子式：
+$$1-a>0 , |A|=(1-a)a-a^{2}=a-2a^{2}=a(1-2a)>0 .$$
+第二式给出 $0<a<\frac12$，此时自动有 $1-a>0$，故
+$$A\ \text{正定}\iff0<a<\frac12 .$$
+
+**第四步：比较。** 两个条件都等价于 $0<a<\frac12$，故"$A$ 正定"与"$f$ 正定"互为充分必要条件。
+
+故选 **C**。
+
+@考点
+分块行列式按行展开；由二次型的表达式写出对称矩阵（交叉项系数取一半）；二阶矩阵正定的顺序主子式判别法；充要条件的判定（两个条件解出的区间相同）。
+
+易混：$f$ 的矩阵是 $B=\begin{pmatrix}a&-a\\-a&1-a\end{pmatrix}$，而不是题中的 $A$；两者只是恰好行列式相同、正定区间相同，不能混为一谈。
+
+@易错
+1. 行列式展开时符号出错（第三行第二个元素的代数余子式带负号）。
+2. 由 $f$ 写矩阵时交叉项不取一半，写成 $\begin{pmatrix}a&-2a\\-2a&1-a\end{pmatrix}$。
+3. 只验一个顺序主子式就下结论。
+4. 凭直觉猜单向蕴含（选 A 或 B）而不实际求解区间。
+
+[46]
+@切入点
+$L$ 是两曲面的交线：把 $z=3$ 代入 $z=4-x^{2}-y^{2}$ 得
+$$x^{2}+y^{2}=1 , z=3 ,$$
+即**位于平面 $z=3$ 上的单位圆**，从 $z$ 轴正向看逆时针。
+
+关键观察：**在 $L$ 上 $z\equiv3$ 是常数，故 $dz=0$**，于是被积表达式里
+- $y dz=0$（整项消失）；
+- $z dy=3 dy$，而 $\oint_{L}dy=0$（闭曲线上任一坐标的增量为零）。
+
+于是
+$$I=\oint_{L}x^{2}y^{3}dx .$$
+**"空间曲线落在 $z=$ 常数的平面上"把三维问题压成了平面问题**，这是本题的第一步，也是最关键的一步。
+
+剩下的是平面上的第二类曲线积分，边界是单位圆、方向逆时针，正好用**格林公式**（$P=x^{2}y^{3}$，$Q=0$）：
+$$\oint_{L}P dx=-\iint_{D}\frac{\partial P}{\partial y}dxdy=-\iint_{D}3x^{2}y^{2}dxdy .$$
+最后用极坐标算 $\iint_{D}x^{2}y^{2}dxdy$，注意
+$$\int_{0}^{2\pi}\cos^{2}\theta\sin^{2}\theta d\theta=\frac14\int_{0}^{2\pi}\sin^{2}2\theta d\theta=\frac{\pi}{4} .$$
+
+@解答
+**第一步：定出 $L$。** 由 $z=4-x^{2}-y^{2}$ 与 $z=3$ 得
+$$x^{2}+y^{2}=1 , z=3 ,$$
+即平面 $z=3$ 上的单位圆，从 $z$ 轴正向看为逆时针。
+
+**第二步：化简。** 在 $L$ 上 $z\equiv3$，故 $dz=0$，
+$$\oint_{L}y dz=0 , \oint_{L}z dy=3\oint_{L}dy=0$$
+（闭曲线上 $\oint dy=0$）。于是
+$$I=\oint_{L}x^{2}y^{3}dx .$$
+
+**第三步：格林公式。** 把 $L$ 投影到 $xOy$ 面（$dx$ 不受 $z$ 影响），得逆时针的单位圆周，所围区域 $D:x^{2}+y^{2}\leq1$。取 $P=x^{2}y^{3}$、$Q=0$：
+$$I=\oint_{L}P dx+Q dy=\iint_{D}(\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y})dxdy=-\iint_{D}3x^{2}y^{2}dxdy .$$
+
+**第四步：极坐标。**
+$$\iint_{D}x^{2}y^{2}dxdy=\int_{0}^{2\pi}\cos^{2}\theta\sin^{2}\theta d\theta\int_{0}^{1}r^{4}\cdot r dr=(\frac14\int_{0}^{2\pi}\sin^{2}2\theta d\theta)\cdot\frac16=\frac14\cdot\pi\cdot\frac16=\frac{\pi}{24} .$$
+故
+$$I=-3\cdot\frac{\pi}{24}=-\frac{\pi}{8} .$$
+
+@考点
+两曲面交线的求法；曲线落在 $z=$ 常数平面上时 $dz=0$ 与 $\oint dy=0$；格林公式 $\oint P dx=-\iint\frac{\partial P}{\partial y}dxdy$；极坐标计算 $\iint x^{2}y^{2}$ 与 $\int_{0}^{2\pi}\sin^{2}2\theta d\theta=\pi$。
+
+易混：$\oint_{L}z dy$ 中的 $z$ 是常数 $3$，可以提出来；不要把它当成变量而去找 $\frac{\partial}{\partial x}(z)$ 之类。另外格林公式中只含 $P dx$ 时前面带负号。
+
+@易错
+1. 忘记 $dz=0$，把 $y dz$ 也参与计算。
+2. 把 $\oint z dy$ 算成 $3\cdot2\pi$ 之类（闭路上 $\oint dy=0$）。
+3. 格林公式漏掉负号，答成 $\frac\pi8$。
+4. $\int_{0}^{2\pi}\cos^{2}\theta\sin^{2}\theta d\theta$ 算错（等于 $\frac\pi4$，不是 $\frac\pi2$ 或 $\pi$）。
+
+[47]
+@切入点
+这是**幂级数求和**：把 $\frac1a$ 记作 $x$，由 $a>1$ 知 $0<x<1$，所求即
+$$\lim_{n\to\infty}\sum_{k=1}^{n}kx^{k}=\sum_{k=1}^{\infty}kx^{k} .$$
+$|x|<1$ 保证级数收敛（通项 $kx^{k}\to0$ 且比值判别法给出收敛半径 $1$），**所以极限存在、就等于级数的和**。
+
+求 $\sum kx^{k}$ 的标准手法是"**逐项求导**"：从几何级数出发
+$$\sum_{k=0}^{\infty}x^{k}=\frac{1}{1-x} ,$$
+两端求导得
+$$\sum_{k=1}^{\infty}kx^{k-1}=\frac{1}{(1-x)^{2}} ,$$
+再乘 $x$：
+$$\sum_{k=1}^{\infty}kx^{k}=\frac{x}{(1-x)^{2}} .$$
+**"先求导得到 $kx^{k-1}$、再乘 $x$ 补回次数"是这个和式的固定推法，值得直接记住结论。**
+
+最后代回 $x=\frac1a$，化简时**分子分母同乘 $a^{2}$** 最干净：
+$$\frac{\frac1a}{(1-\frac1a)^{2}}=\frac{\frac1a}{\frac{(a-1)^{2}}{a^{2}}}=\frac{a}{(a-1)^{2}} .$$
+
+@解答
+记 $x=\dfrac1a$。由 $a>1$ 知 $0<x<1$。所求极限即幂级数之和
+$$\lim_{n\to\infty}\sum_{k=1}^{n}kx^{k}=\sum_{k=1}^{\infty}kx^{k} .$$
+（由比值判别法 $\frac{(k+1)x^{k+1}}{kx^{k}}\to x<1$ 知级数收敛，故极限存在。）
+
+由几何级数 $\sum_{k=0}^{\infty}x^{k}=\dfrac{1}{1-x} (|x|<1)$，在收敛区间内逐项求导：
+$$\sum_{k=1}^{\infty}kx^{k-1}=\frac{1}{(1-x)^{2}} ,$$
+两端乘 $x$：
+$$\sum_{k=1}^{\infty}kx^{k}=\frac{x}{(1-x)^{2}} .$$
+
+代入 $x=\dfrac1a$：
+$$\sum_{k=1}^{\infty}\frac{k}{a^{k}}=\frac{\dfrac1a}{(1-\dfrac1a)^{2}}=\frac{\dfrac1a}{\dfrac{(a-1)^{2}}{a^{2}}}=\frac{a}{(a-1)^{2}} .$$
+
+@考点
+把数列极限识别为幂级数的和；几何级数 $\sum x^{k}=\frac{1}{1-x}$；幂级数在收敛区间内可逐项求导；$\sum_{k\geq1}kx^{k}=\frac{x}{(1-x)^{2}}$。
+
+易混：$\sum_{k\geq1}kx^{k-1}=\frac{1}{(1-x)^{2}}$ 与 $\sum_{k\geq1}kx^{k}=\frac{x}{(1-x)^{2}}$ 差一个因子 $x$；代数值前先看清求的是哪一个。
+
+@易错
+1. 记成 $\frac{1}{(1-x)^{2}}$ 而漏掉分子的 $x$，答成 $\frac{a^{2}}{(a-1)^{2}}$。
+2. 逐项求导时把下标起点写错（求导后从 $k=1$ 起）。
+3. 代回 $x=\frac1a$ 后化简出错。
+4. 不说明 $0<x<1$（收敛性的依据就是 $a>1$）。
+
+[48]
+@切入点
+$A$ 与 $B$ 相似即存在可逆 $P$ 使 $B=P^{-1}AP$。要判断四个"必有"，只需回忆**相似的不变量**与**非不变量**：
+
+**相似必然相同的**：特征多项式、特征值（含重数）、迹、**行列式**、秩、可对角化性。
+**相似一般不同的**：矩阵本身的元素、特征向量、具体的分块结构。
+
+逐项看：
+- **A**："$\lambda E-A$ 与 $\lambda E-B$ 相等"要求 $A=B$，显然过强（相似的两个矩阵一般不相等）。错。
+- **B**：相似 $\Rightarrow|A|=|B|$（因 $|B|=|P^{-1}||A||P|=|A|$），故 $|A|=0\iff|B|=0$，即**同时可逆或同时不可逆**。**对**。
+- **C**："有相同的特征向量"错：若 $A\xi=\lambda\xi$，则 $B(P^{-1}\xi)=P^{-1}A\xi=\lambda P^{-1}\xi$，$B$ 的特征向量是 $P^{-1}\xi$ 而非 $\xi$。错。
+- **D**："均与同一个对角矩阵相似"要求二者**可对角化**，而相似并不保证这一点（例如 $A=B=\begin{pmatrix}0&1\\0&0\end{pmatrix}$ 相似于自身，但不可对角化）。错。
+
+**判别要点：凡是涉及"矩阵本身"或"特征向量"的选项一般都错；涉及"行列式、迹、特征值、秩"的才是相似不变量。**
+
+@解答
+$A$ 与 $B$ 相似，即存在可逆矩阵 $P$ 使
+$$B=P^{-1}AP .$$
+
+**B 正确。** 两端取行列式：
+$$|B|=|P^{-1}|\cdot|A|\cdot|P|=\frac{1}{|P|}\cdot|A|\cdot|P|=|A| ,$$
+故 $|A|=|B|$。于是 $|A|\neq0\iff|B|\neq0$，即 $A,B$ 同时可逆或同时不可逆。
+
+**A 不正确。** $\lambda E-A=\lambda E-B$ 等价于 $A=B$；相似的两个矩阵一般并不相等（例如 $A=\begin{pmatrix}1&0\\0&2\end{pmatrix}$ 与 $B=\begin{pmatrix}2&0\\0&1\end{pmatrix}$ 相似但不相等）。
+
+**C 不正确。** 若 $A\xi=\lambda\xi (\xi\neq0)$，则
+$$B(P^{-1}\xi)=P^{-1}AP\cdot P^{-1}\xi=P^{-1}A\xi=\lambda P^{-1}\xi ,$$
+即 $B$ 的特征向量是 $P^{-1}\xi$，一般与 $\xi$ 不同。（上例中 $A$ 的属于 $1$ 的特征向量是 $(1,0)^{\mathrm T}$，$B$ 的是 $(0,1)^{\mathrm T}$。）
+
+**D 不正确。** "与同一对角矩阵相似"要求 $A,B$ 都可对角化，而相似关系不保证可对角化。例如
+$$A=B=\begin{pmatrix}0&1\\ 0&0\end{pmatrix}$$
+相似（取 $P=E$），但它们的特征值都是 $0$（二重）而 $\mathrm r(A-0\cdot E)=1\neq0$，不可对角化，故不与任何对角矩阵相似。
+
+故选 **B**。
+
+@考点
+相似的定义 $B=P^{-1}AP$；相似不变量（特征多项式、特征值、迹、行列式、秩、可对角化性）；相似矩阵特征向量的对应关系 $\xi\mapsto P^{-1}\xi$；可对角化的判据。
+
+易混：相似矩阵有**相同的特征多项式**（即 $|\lambda E-A|=|\lambda E-B|$ 作为多项式相等），但**矩阵 $\lambda E-A$ 与 $\lambda E-B$ 本身不相等**。选项 A 正是利用这个混淆点。
+
+@易错
+1. 把"特征多项式相同"误读成"$\lambda E-A=\lambda E-B$"，选 A。
+2. 认为相似矩阵特征向量相同，选 C。
+3. 误以为相似就一定可对角化，选 D。
+4. 不验证 B（相似 $\Rightarrow$ 行列式相等）这一最基本的不变量。
