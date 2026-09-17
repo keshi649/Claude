@@ -897,3 +897,850 @@ C：系数之和为 $(C_{1}-C_{2})+C_{2}+1=C_{1}+1$，一般不等于 $1$。
 2. 只数常数个数而不检查系数和，选 A 或 C。
 3. 误以为 $y_{1},y_{2},y_{3}$ 线性无关就说明齐次解空间是三维的。
 4. 忘记证明 $\eta_{1},\eta_{2}$ 线性无关。
+
+[17]
+@题目
+在第一象限内，过曲线 $3x^{2}+2xy+3y^{2}=a$ 上任一点作其切线，若切线与两坐标轴所围成的三角形面积的最小值为 $\dfrac{1}{4}$，求 $a$ 的值.
+
+@切入点
+这是一道"**条件极值 $+$ 参数反求**"的题，主线是：写出面积关于切点的表达式 $\to$ 在曲线约束下求它的最小值 $\to$ 令最小值 $=\frac14$ 解出 $a$。
+
+第一步是**求切线的截距式**。对 $3x^{2}+2xy+3y^{2}=a$ 隐函数求导：
+$$6x+2y+2xy'+6yy'=0 \Longrightarrow y'=-\frac{3x+y}{x+3y} .$$
+在切点 $(x_{0},y_{0})$ 处写切线并整理，会出现一个漂亮的化简：
+$$(3x_{0}+y_{0})x+(x_{0}+3y_{0})y=3x_{0}^{2}+2x_{0}y_{0}+3y_{0}^{2}=a ,$$
+**右端恰好是曲线方程的左端，等于 $a$**（这是二次曲线切线的通性）。于是两个截距一眼可得：
+$$X=\frac{a}{3x_{0}+y_{0}} , Y=\frac{a}{x_{0}+3y_{0}} .$$
+
+第二步是**把面积化成只含 $x_{0}y_{0}$ 的式子**：
+$$S=\frac{XY}{2}=\frac{a^{2}}{2(3x_{0}+y_{0})(x_{0}+3y_{0})} ,$$
+而分母展开
+$$(3x_{0}+y_{0})(x_{0}+3y_{0})=3x_{0}^{2}+3y_{0}^{2}+10x_{0}y_{0}=(3x_{0}^{2}+2x_{0}y_{0}+3y_{0}^{2})+8x_{0}y_{0}=a+8x_{0}y_{0} .$$
+**用约束把 $3x_{0}^{2}+2x_{0}y_{0}+3y_{0}^{2}$ 整块替换成 $a$，是本题最关键的一步**——替换之后 $S$ 只依赖一个量 $x_{0}y_{0}$，问题降到一维。
+
+第三步：$S$ 关于 $x_{0}y_{0}$ 递减，故 $S$ 最小 $\iff x_{0}y_{0}$ 最大。由约束与均值不等式
+$$a=3(x_{0}^{2}+y_{0}^{2})+2x_{0}y_{0}\geq3\cdot2x_{0}y_{0}+2x_{0}y_{0}=8x_{0}y_{0} ,$$
+故 $x_{0}y_{0}\leq\frac a8$，等号当 $x_{0}=y_{0}$ 时取到。于是 $S_{\min}=\frac{a^{2}}{2\cdot2a}=\frac a4$，令其为 $\frac14$ 得 $a=1$。**用均值不等式代替拉格朗日乘数法，省去解方程组。**
+
+@解答
+**第一步：切线与截距。** 对 $3x^{2}+2xy+3y^{2}=a$ 两端求导：
+$$6x+2y+2xy'+6yy'=0 \Longrightarrow y'=-\frac{3x+y}{x+3y} .$$
+设第一象限内切点为 $(x_{0},y_{0})$（$x_{0},y_{0}>0$），切线为
+$$y-y_{0}=-\frac{3x_{0}+y_{0}}{x_{0}+3y_{0}}(x-x_{0}) ,$$
+整理得
+$$(3x_{0}+y_{0})x+(x_{0}+3y_{0})y=3x_{0}^{2}+2x_{0}y_{0}+3y_{0}^{2}=a .$$
+故在两坐标轴上的截距为
+$$X=\frac{a}{3x_{0}+y_{0}} , Y=\frac{a}{x_{0}+3y_{0}} ,$$
+（均为正，因 $x_{0},y_{0}>0$ 且 $a>0$）。
+
+**第二步：面积表达式。**
+$$S=\frac12XY=\frac{a^{2}}{2(3x_{0}+y_{0})(x_{0}+3y_{0})} .$$
+分母展开并用约束：
+$$(3x_{0}+y_{0})(x_{0}+3y_{0})=3x_{0}^{2}+10x_{0}y_{0}+3y_{0}^{2}=(3x_{0}^{2}+2x_{0}y_{0}+3y_{0}^{2})+8x_{0}y_{0}=a+8x_{0}y_{0} ,$$
+故
+$$S=\frac{a^{2}}{2(a+8x_{0}y_{0})} .$$
+
+**第三步：求最小值。** $S$ 关于 $x_{0}y_{0}$ 单调减少，故 $S$ 取最小值当且仅当 $x_{0}y_{0}$ 取最大值。由约束与 $x_{0}^{2}+y_{0}^{2}\geq2x_{0}y_{0}$：
+$$a=3(x_{0}^{2}+y_{0}^{2})+2x_{0}y_{0}\geq6x_{0}y_{0}+2x_{0}y_{0}=8x_{0}y_{0} ,$$
+即 $x_{0}y_{0}\leq\dfrac a8$，等号当且仅当 $x_{0}=y_{0}$（此时 $8x_{0}^{2}=a$，$x_{0}=y_{0}=\sqrt{\frac a8}$，确在第一象限）。于是
+$$S_{\min}=\frac{a^{2}}{2(a+8\cdot\frac a8)}=\frac{a^{2}}{4a}=\frac a4 .$$
+
+**第四步：定 $a$。**
+$$\frac a4=\frac14 \Longrightarrow a=1 .$$
+
+@考点
+隐函数求导与切线方程；二次曲线切线整理后右端等于常数项；用约束条件替换整块表达式降维；均值不等式求条件最值。
+
+易混：$S$ 的最小值对应 $x_{0}y_{0}$ 的**最大**值（因为 $x_{0}y_{0}$ 在分母里）。方向弄反会去求 $x_{0}y_{0}$ 的最小值（趋于 $0$），得到 $S$ 无上界的错误结论。
+
+@易错
+1. 切线整理时右端没认出等于 $a$，导致截距形式复杂。
+2. 分母展开算错：$(3x_{0}+y_{0})(x_{0}+3y_{0})$ 的交叉项是 $10x_{0}y_{0}$（$9+1$）。
+3. 忘记用约束把 $3x_{0}^{2}+3y_{0}^{2}+2x_{0}y_{0}$ 换成 $a$，停在二元问题上。
+4. 均值不等式取等条件没验证（要检查 $x_{0}=y_{0}$ 确实落在第一象限的曲线上）。
+
+[18]
+@题目
+设总体 $X \sim N(0,\sigma^2)\ (\sigma > 0)$，$X_1,X_2,\cdots,X_n\ (n>1)$ 为来自总体 $X$ 的简单随机样本，$\overline{X}$ 为样本均值，$S^2$ 为样本方差，则下列选项中错误的是（　）。
+$$\text{A. } \frac{\sqrt{n}\,\overline{X}}{S} \sim t(n-1) \qquad \text{B. } \frac{n\overline{X}^2}{\sigma^2} + \frac{(n-1)S^2}{\sigma^2} \sim \chi^2(n)$$
+$$\text{C. } \frac{n\overline{X}^2}{S^2} \sim F(1,n-1) \qquad \text{D. } \frac{X_i^2}{\sigma^2} + \frac{(n-1)S^2}{\sigma^2} \sim \chi^2(n)$$
+
+@切入点
+四个选项都是抽样分布的构造，判断真假的依据是三条基本结论（总体 $X\sim N(0,\sigma^{2})$，故 $\mu=0$）：
+$$\text{(i)}\ \frac{\sqrt n \overline X}{\sigma}\sim N(0,1) ; \text{(ii)}\ \frac{(n-1)S^{2}}{\sigma^{2}}\sim\chi^{2}(n-1) ; \text{(iii)}\ \overline X\ \text{与}\ S^{2}\ \textbf{相互独立} .$$
+**第三条（独立性）是所有构造的前提**，也是本题的考点所在。
+
+逐项检查：
+- **A**：$t$ 分布定义 $\frac{U}{\sqrt{V/m}}$，取 $U=\frac{\sqrt n\overline X}{\sigma}$、$V=\frac{(n-1)S^{2}}{\sigma^{2}}$、$m=n-1$，得 $\frac{\sqrt n\overline X}{S}\sim t(n-1)$。**正确**（$\sigma$ 约掉）。
+- **B**：$\frac{n\overline X^{2}}{\sigma^{2}}=(\frac{\sqrt n\overline X}{\sigma})^{2}\sim\chi^{2}(1)$，与 $\chi^{2}(n-1)$ 独立，可加，得 $\chi^{2}(n)$。**正确**。
+- **C**：$F$ 分布定义 $\frac{V_{1}/m_{1}}{V_{2}/m_{2}}$，取 $V_{1}\sim\chi^{2}(1)$、$V_{2}\sim\chi^{2}(n-1)$，得 $\frac{n\overline X^{2}/\sigma^{2}}{[(n-1)S^{2}/\sigma^{2}]/(n-1)}=\frac{n\overline X^{2}}{S^{2}}\sim F(1,n-1)$。**正确**。
+- **D**：把 $\overline X$ 换成了单个观测 $X_{i}$。虽然 $\frac{X_{i}^{2}}{\sigma^{2}}\sim\chi^{2}(1)$ 没错，但 **$X_{i}$ 与 $S^{2}$ 不独立**（$S^{2}$ 的表达式里就含 $X_{i}$），卡方分布的可加性要求独立，故和不服从 $\chi^{2}(n)$。**错误**。
+
+**辨认要点：只有 $\overline X$（整体的样本均值）才与 $S^{2}$ 独立，单个 $X_{i}$ 不行。** 这是费希尔定理的精确内容，D 就是把它偷换成了单个样本。
+
+@解答
+总体 $X\sim N(0,\sigma^{2})$，即 $\mu=0$。由抽样分布定理：
+$$\frac{\sqrt n \overline X}{\sigma}\sim N(0,1) , \frac{(n-1)S^{2}}{\sigma^{2}}\sim\chi^{2}(n-1) ,$$
+且 $\overline X$ 与 $S^{2}$ **相互独立**。
+
+**A 正确。** 由 $t$ 分布的定义
+$$\frac{\frac{\sqrt n\overline X}{\sigma}}{\sqrt{\frac{(n-1)S^{2}/\sigma^{2}}{n-1}}}=\frac{\sqrt n \overline X}{S}\sim t(n-1) .$$
+
+**B 正确。** $\frac{n\overline X^{2}}{\sigma^{2}}=(\frac{\sqrt n\overline X}{\sigma})^{2}\sim\chi^{2}(1)$，它与 $\frac{(n-1)S^{2}}{\sigma^{2}}\sim\chi^{2}(n-1)$ 独立，由卡方分布的可加性，
+$$\frac{n\overline X^{2}}{\sigma^{2}}+\frac{(n-1)S^{2}}{\sigma^{2}}\sim\chi^{2}(1+n-1)=\chi^{2}(n) .$$
+
+**C 正确。** 由 $F$ 分布的定义
+$$\frac{\frac{n\overline X^{2}}{\sigma^{2}}/1}{\frac{(n-1)S^{2}}{\sigma^{2}}/(n-1)}=\frac{n\overline X^{2}}{S^{2}}\sim F(1,\ n-1) .$$
+
+**D 错误。** 虽然 $X_{i}\sim N(0,\sigma^{2})$ 给出 $\frac{X_{i}^{2}}{\sigma^{2}}\sim\chi^{2}(1)$，但
+$$S^{2}=\frac{1}{n-1}\sum_{j=1}^{n}(X_{j}-\overline X)^{2}$$
+中含有 $X_{i}$，故 $X_{i}$ 与 $S^{2}$ **不相互独立**；而卡方分布的可加性要求两部分独立，因此
+$$\frac{X_{i}^{2}}{\sigma^{2}}+\frac{(n-1)S^{2}}{\sigma^{2}}$$
+一般不服从 $\chi^{2}(n)$。
+
+故选 **D**。
+
+@考点
+正态总体的抽样分布三定理（$\overline X$ 的分布、$\frac{(n-1)S^{2}}{\sigma^{2}}\sim\chi^{2}(n-1)$、$\overline X$ 与 $S^{2}$ 独立）；$t$、$F$、$\chi^{2}$ 分布的定义；卡方可加性需要独立。
+
+易混：**$\overline X$ 与 $S^{2}$ 独立是正态总体特有的结论**，而且只对样本均值成立；单个样本 $X_{i}$ 与 $S^{2}$ 一定不独立（可算出 $\mathrm{Cov}$ 相关的量非零）。D 正是利用这一点设的陷阱。
+
+@易错
+1. 只看"$\chi^{2}(1)+\chi^{2}(n-1)=\chi^{2}(n)$"的自由度相加而忽略独立性前提，认为 D 正确。
+2. 记不清 $t$、$F$ 的定义式，误判 A 或 C。
+3. 忘记 $\mu=0$，在 A 中写成 $\frac{\sqrt n(\overline X-\mu)}{S}$ 后不知如何对上选项。
+4. 把 $S^{2}$ 当成 $\frac1n\sum(X_{i}-\overline X)^{2}$，自由度与系数全乱。
+
+[19]
+@题目
+设 $f(x)$ 可导，对任意 $x,y$，有
+$$f(x+y)=\int_{x}^{x+y}\frac{t(t^{2}+1)}{f(t)}\,\mathrm{d}t+f(x)$$
+且 $f(1)=\sqrt{2}$，则 $f(x)=$ ______.
+
+@切入点
+等式
+$$f(x+y)=\int_{x}^{x+y}\frac{t(t^{2}+1)}{f(t)}dt+f(x)$$
+对任意 $x,y$ 成立。**两个变量中 $y$ 出现得最"单纯"**——它只出现在 $x+y$ 里，而右端的 $f(x)$ 与 $y$ 无关。所以固定 $x$、对 $y$ 求导最省事：
+$$f'(x+y)=\frac{(x+y)[(x+y)^{2}+1]}{f(x+y)} .$$
+由于 $x,y$ 任意，$x+y$ 可取遍实数，记作 $t$，即得**微分方程**
+$$f(t)f'(t)=t^{3}+t .$$
+**"哪个变量出现得更单纯就对它求导"，是处理含参函数方程的通用判断。** 若对 $x$ 求导，则上下限都含 $x$，还会出现 $f'(x)$，反而纠缠。
+
+得到 $ff'=t^{3}+t$ 后，认出左端是**凑微分**
+$$ff'=(\frac{f^{2}}{2})' ,$$
+一次积分即得 $f^{2}$，再用 $f(1)=\sqrt2$ 定常数。最后开方时要根据初值选正号（$f(1)=\sqrt2>0$，且所得表达式恒正，故整条曲线取正支）。
+
+@解答
+**第一步：化为微分方程。** 把 $x$ 视为常数，等式两端对 $y$ 求导（右端 $f(x)$ 与 $y$ 无关，变限积分对上限求导）：
+$$f'(x+y)=\frac{(x+y)[(x+y)^{2}+1]}{f(x+y)} .$$
+由于 $x,y$ 任意，$x+y$ 可取遍实数，记 $t=x+y$，得
+$$f(t)f'(t)=t^{3}+t .$$
+
+**第二步：积分。** 左端 $f f'=(\frac{f^{2}}{2})'$，故
+$$\frac{f^{2}(t)}{2}=\frac{t^{4}}{4}+\frac{t^{2}}{2}+C_{1} , \text{即} f^{2}(t)=\frac{t^{4}}{2}+t^{2}+C .$$
+
+**第三步：定常数。** 由 $f(1)=\sqrt2$：
+$$2=\frac12+1+C \Longrightarrow C=\frac12 ,$$
+故
+$$f^{2}(x)=\frac{x^{4}}{2}+x^{2}+\frac12=\frac{x^{4}+2x^{2}+1}{2}=\frac{(x^{2}+1)^{2}}{2} .$$
+
+**第四步：开方定号。**
+$$f(x)=\pm\frac{x^{2}+1}{\sqrt2} .$$
+由 $f(1)=\sqrt2>0$ 且 $f$ 连续、$\frac{x^{2}+1}{\sqrt2}$ 恒不为零（连续函数不能跨过零点改变符号），取正号：
+$$f(x)=\frac{\sqrt2}{2}(1+x^{2}) .$$
+
+（验证：$f(1)=\frac{\sqrt2}{2}\cdot2=\sqrt2$ ✓；$ff'=\frac{\sqrt2}{2}(1+x^{2})\cdot\frac{\sqrt2}{2}\cdot2x=\frac{x(1+x^{2})\cdot2}{4}\cdot2=x^{3}+x$ ✓。）
+
+@考点
+含参函数方程两端对参数求导；变上限积分求导公式；可分离变量方程与凑微分 $ff'=(\frac{f^{2}}{2})'$；由初值定常数并确定根号的符号。
+
+易混：方程里 $f$ 出现在分母，故 $f$ 处处非零；加上 $f$ 连续与 $f(1)>0$，就能断定 $f$ 恒正，从而唯一地取正根。若不做这个论证，答案会带 $\pm$。
+
+@易错
+1. 对 $x$ 求导（上下限都含 $x$），式子复杂且难以收尾。
+2. 变上限积分求导时漏掉内层导数（本题内层是 $x+y$ 对 $y$ 的导数 $1$，容易蒙混，但方法要正确）。
+3. 积分后忘记 $f^{2}$ 的系数：由 $\frac{f^{2}}{2}=\frac{t^{4}}{4}+\frac{t^{2}}{2}+C_{1}$ 得 $f^{2}=\frac{t^{4}}{2}+t^{2}+C$。
+4. 开方时保留 $\pm$ 或取负号。
+
+[20]
+@题目
+设 $L:x^2+y^2=R^2$，取顺时针方向，则
+$$I=\oint_L \frac{e^{x^2}-x^2y}{x^2+y^2}\,dx+\frac{xy^2-e^{y^2}}{x^2+y^2}\,dy=\underline{\qquad}$$
+
+@切入点
+被积表达式的分母都是 $x^{2}+y^{2}$，而积分路径恰好是圆 $x^{2}+y^{2}=R^{2}$——**在路径上这个分母是常数 $R^{2}$**，可以直接提到积分号外。**"曲线方程可代入被积函数"对第二类曲线积分同样适用**（它不改变 $dx,dy$，只改变被积的函数值），这是本题的第一个突破口：
+$$I=\frac{1}{R^{2}}\oint_{L}[(\mathrm e^{x^{2}}-x^{2}y)dx+(xy^{2}-\mathrm e^{y^{2}})dy] .$$
+
+第二步是**把被积表达式拆成两块**：
+$$\underbrace{\mathrm e^{x^{2}}dx-\mathrm e^{y^{2}}dy}_{\text{全微分}}+\underbrace{(-x^{2}y)dx+xy^{2}dy}_{\text{用格林公式}} .$$
+第一块是全微分 $\mathrm d[F(x)-G(y)]$（其中 $F'=\mathrm e^{x^{2}}$、$G'=\mathrm e^{y^{2}}$，虽然 $F,G$ 不是初等函数，但**存在性足够**），沿闭曲线的积分为零——**这就绕开了 $\mathrm e^{x^{2}}$ 没有初等原函数的困难**，是出题人把它放进来的唯一用意。
+
+第三块用格林公式：
+$$\frac{\partial(xy^{2})}{\partial x}-\frac{\partial(-x^{2}y)}{\partial y}=y^{2}+x^{2} ,$$
+故逆时针时等于 $\iint_{D}(x^{2}+y^{2})dxdy=\frac{\pi R^{4}}{2}$。最后**别忘了题目给的是顺时针**，要加负号。
+
+@解答
+**第一步：代入曲线方程。** 在 $L$ 上 $x^{2}+y^{2}=R^{2}$，故
+$$I=\frac{1}{R^{2}}\oint_{L}[(\mathrm e^{x^{2}}-x^{2}y)dx+(xy^{2}-\mathrm e^{y^{2}})dy] .$$
+
+**第二步：拆分。**
+$$(\mathrm e^{x^{2}}-x^{2}y)dx+(xy^{2}-\mathrm e^{y^{2}})dy=(\mathrm e^{x^{2}}dx-\mathrm e^{y^{2}}dy)+(-x^{2}y dx+xy^{2}dy) .$$
+设 $F(x)$、$G(y)$ 分别是 $\mathrm e^{x^{2}}$、$\mathrm e^{y^{2}}$ 的原函数（连续函数必有原函数），则第一块为全微分
+$$\mathrm e^{x^{2}}dx-\mathrm e^{y^{2}}dy=\mathrm d[F(x)-G(y)] ,$$
+沿任何闭曲线的积分为零：
+$$\oint_{L}(\mathrm e^{x^{2}}dx-\mathrm e^{y^{2}}dy)=0 .$$
+
+**第三步：格林公式。** 记 $P=-x^{2}y$，$Q=xy^{2}$，则
+$$\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}=y^{2}-(-x^{2})=x^{2}+y^{2} .$$
+若 $L$ 取**逆时针**（正向），由格林公式
+$$\oint_{L^{+}}(-x^{2}y dx+xy^{2}dy)=\iint_{D}(x^{2}+y^{2})dxdy=\int_{0}^{2\pi}d\theta\int_{0}^{R}r^{2}\cdot r dr=2\pi\cdot\frac{R^{4}}{4}=\frac{\pi R^{4}}{2} .$$
+题中 $L$ 取**顺时针**，故
+$$\oint_{L}(-x^{2}y dx+xy^{2}dy)=-\frac{\pi R^{4}}{2} .$$
+
+**第四步：合并。**
+$$I=\frac{1}{R^{2}}(0-\frac{\pi R^{4}}{2})=-\frac{\pi R^{2}}{2} .$$
+
+@考点
+第二类曲线积分中可代入曲线方程化简被积函数；全微分沿闭曲线积分为零（原函数不必是初等函数）；格林公式；顺时针取向要加负号；极坐标算 $\iint(x^{2}+y^{2})$。
+
+易混：格林公式要求曲线取**正向（逆时针）**。本题明确给顺时针，必须在最后变号；若忘记，答案的符号会反。
+
+@易错
+1. 看到 $\mathrm e^{x^{2}}$ 无初等原函数就卡住，没意识到它在闭路上的积分为零。
+2. 不代入 $x^{2}+y^{2}=R^{2}$，直接对整个分式用格林公式（被积函数在原点无定义，且求导极繁）。
+3. 格林公式里 $\frac{\partial Q}{\partial x}-\frac{\partial P}{\partial y}$ 的次序或符号写错。
+4. 忘记顺时针的负号。
+
+[21]
+@题目
+设 $n$ 阶非零实矩阵 $A$ 满足 $A^{\mathrm{T}} + A = O$，$B$ 为 $n$ 阶矩阵，矩阵
+$$\begin{bmatrix} A & E \\ -B & B \end{bmatrix}, \qquad \begin{bmatrix} A-E & O \\ A & AB \end{bmatrix}, \qquad \begin{bmatrix} A+E & O \\ B & A-E \end{bmatrix}$$
+的秩依次为 $r_{1}, r_{2}, r_{3}$，则（　　）.
+A. $r_{1} \geqslant r_{2} \geqslant r_{3}$　B. $r_{3} \geqslant r_{2} \geqslant r_{1}$　C. $r_{2} \geqslant r_{1} \geqslant r_{3}$　D. $r_{3} \geqslant r_{1} \geqslant r_{2}$
+
+@切入点
+题设 $A^{\mathrm T}+A=O$ 即 $A$ 是**反对称矩阵**。它有一条极重要的性质：
+$$\text{对任意实向量}\ x, x^{\mathrm T}Ax=0 .$$
+（因为 $x^{\mathrm T}Ax$ 是数，等于自己的转置 $x^{\mathrm T}A^{\mathrm T}x=-x^{\mathrm T}Ax$。）由此立刻推出
+$$(E+A)x=0 \Longrightarrow x=-Ax \Longrightarrow x^{\mathrm T}x=-x^{\mathrm T}Ax=0 \Longrightarrow x=0 ,$$
+即 **$E+A$ 可逆；同理 $E-A$ 可逆**。这是全题的地基——三个分块矩阵的秩都要靠它来化简。
+
+接下来用**分块初等变换**（左乘或右乘可逆分块矩阵不改变秩）逐个处理：
+
+$r_{1}$：$\begin{pmatrix}A&E\\ -B&B\end{pmatrix}$，右上角的 $E$ 是最好的"支点"。用它把第一列清零（右乘 $\begin{pmatrix}E&O\\ -A&E\end{pmatrix}$），再用它把右下角清零，得到 $\begin{pmatrix}O&E\\ -B(E+A)&O\end{pmatrix}$，故
+$$r_{1}=n+\mathrm r(B(E+A))=n+\mathrm r(B) ,$$
+最后一步用了 $E+A$ 可逆（右乘可逆阵不改变秩）。
+
+$r_{2}$：$\begin{pmatrix}A-E&O\\ A&AB\end{pmatrix}$ 已是分块下三角，且 $A-E$ 可逆，可把左下角消掉：
+$$r_{2}=\mathrm r(A-E)+\mathrm r(AB)=n+\mathrm r(AB) .$$
+
+$r_{3}$：$\begin{pmatrix}A+E&O\\ B&A-E\end{pmatrix}$ 的两个对角块都可逆，故满秩：$r_{3}=2n$。
+
+最后比较：$\mathrm r(AB)\leq\mathrm r(B)\leq n$，故
+$$r_{2}=n+\mathrm r(AB)\leq n+\mathrm r(B)=r_{1}\leq2n=r_{3} ,$$
+即 $r_{3}\geq r_{1}\geq r_{2}$，选 D。
+
+@解答
+**第一步：$E\pm A$ 可逆。** 由 $A^{\mathrm T}=-A$，对任意实向量 $x$，数 $x^{\mathrm T}Ax$ 满足
+$$x^{\mathrm T}Ax=(x^{\mathrm T}Ax)^{\mathrm T}=x^{\mathrm T}A^{\mathrm T}x=-x^{\mathrm T}Ax \Longrightarrow x^{\mathrm T}Ax=0 .$$
+若 $(E+A)x=0$，则 $x=-Ax$，两端左乘 $x^{\mathrm T}$：
+$$x^{\mathrm T}x=-x^{\mathrm T}Ax=0 \Longrightarrow x=0 ,$$
+故 $E+A$ 可逆；同理（把 $A$ 换成 $-A$，$-A$ 也反对称）$E-A$ 可逆，即 $A-E$ 也可逆。
+
+**第二步：求 $r_{1}$。** 作分块初等列变换（右乘可逆矩阵）：
+$$\begin{pmatrix}A&E\\ -B&B\end{pmatrix}\begin{pmatrix}E&O\\ -A&E\end{pmatrix}=\begin{pmatrix}A-A&E\\ -B-BA&B\end{pmatrix}=\begin{pmatrix}O&E\\ -B(E+A)&B\end{pmatrix} ,$$
+再作分块初等行变换（第二行减去 $B$ 乘第一行）：
+$$\begin{pmatrix}E&O\\ -B&E\end{pmatrix}\begin{pmatrix}O&E\\ -B(E+A)&B\end{pmatrix}=\begin{pmatrix}O&E\\ -B(E+A)&O\end{pmatrix} ,$$
+故
+$$r_{1}=\mathrm r(E)+\mathrm r(B(E+A))=n+\mathrm r(B) ,$$
+（$E+A$ 可逆，右乘可逆矩阵不改变秩）。
+
+**第三步：求 $r_{2}$。** $A-E$ 可逆，作行变换消去左下块：
+$$\begin{pmatrix}E&O\\ -A(A-E)^{-1}&E\end{pmatrix}\begin{pmatrix}A-E&O\\ A&AB\end{pmatrix}=\begin{pmatrix}A-E&O\\ O&AB\end{pmatrix} ,$$
+故
+$$r_{2}=\mathrm r(A-E)+\mathrm r(AB)=n+\mathrm r(AB) .$$
+
+**第四步：求 $r_{3}$。** $\begin{pmatrix}A+E&O\\ B&A-E\end{pmatrix}$ 是分块下三角且两个对角块都可逆，故它可逆：
+$$r_{3}=2n .$$
+
+**第五步：比较。** 由 $\mathrm r(AB)\leq\mathrm r(B)$ 及 $\mathrm r(B)\leq n$：
+$$r_{2}=n+\mathrm r(AB)\leq n+\mathrm r(B)=r_{1}\leq n+n=2n=r_{3} ,$$
+即
+$$r_{3}\geq r_{1}\geq r_{2} .$$
+
+故选 **D**。
+
+@考点
+反对称矩阵的性质 $x^{\mathrm T}Ax=0$ 与 $E\pm A$ 可逆；分块初等变换不改变秩；分块三角矩阵的秩等于对角块秩之和（当另一个角能被消去时）；$\mathrm r(AB)\leq\min\{\mathrm r(A),\mathrm r(B)\}$。
+
+易混：分块矩阵的秩**不等于**各块秩的简单相加，只有化成分块对角（或能消去非对角块）之后才可以。本题三个矩阵都恰好能通过初等变换化到分块对角形。
+
+@易错
+1. 不证 $E\pm A$ 可逆就直接使用（这是全题的关键，且需要用到反对称性）。
+2. 由 $A^{\mathrm T}=-A$ 误推 $|A|=0$（只有**奇数阶**反对称矩阵才必然奇异；本题 $n$ 未指定奇偶，且也用不到）。
+3. 分块变换时左乘右乘搞混，或消元后漏掉某块。
+4. 比较时把 $\mathrm r(AB)$ 与 $\mathrm r(B)$ 的大小关系弄反。
+
+[22]
+@题目
+设 $y=y(x)$ 是方程 $y''+2y'+y=e^{3x}$ 的解，且满足 $y(0)=y'(0)=0$，则当 $x\to 0$ 时，与 $y(x)$ 为等价无穷小的是（　）.
+A. $\sin x^{2}$　　B. $\sin x$　　C. $\ln(1+x^{2})$　　D. $\ln\sqrt{1+x^{2}}$
+
+@切入点
+问题是"$y(x)$ 与哪个函数等价"，本质上是**求 $y(x)$ 在 $x\to0$ 时的主部**。$y$ 由微分方程与初值确定，但**完全不必解方程**——只要用泰勒展开，把 $y$ 在 $0$ 处的前几阶导数算出来即可。
+
+已知 $y(0)=y'(0)=0$，所以一次项也为零，主部至少是 $x^{2}$ 级。把 $x=0$ 代入方程求 $y''(0)$：
+$$y''(0)=\mathrm e^{0}-2y'(0)-y(0)=1-0-0=1 .$$
+于是
+$$y(x)=y(0)+y'(0)x+\frac{y''(0)}{2}x^{2}+o(x^{2})=\frac{x^{2}}{2}+o(x^{2})\sim\frac{x^{2}}{2} .$$
+**"用方程本身在初值点求高阶导数"是这类题的标准手法**：方程就是一个把 $y''$ 用 $y,y'$ 表示的公式，代 $0$ 即得。
+
+再看四个选项的主部：
+$$\sin x^{2}\sim x^{2} , \sin x\sim x , \ln(1+x^{2})\sim x^{2} , \ln\sqrt{1+x^{2}}=\frac12\ln(1+x^{2})\sim\frac{x^{2}}{2} .$$
+**只有 D 的主部带 $\frac12$**，与 $y$ 的 $\frac{x^{2}}{2}$ 完全一致。A、C 是同阶但不等价（差一个因子 $2$），B 连阶都不同。
+
+@解答
+由题设 $y(0)=y'(0)=0$，且 $y$ 满足
+$$y''+2y'+y=\mathrm e^{3x} .$$
+令 $x=0$：
+$$y''(0)+2y'(0)+y(0)=\mathrm e^{0}=1 \Longrightarrow y''(0)=1 .$$
+
+由泰勒公式（$y$ 二阶可导）
+$$y(x)=y(0)+y'(0)x+\frac{y''(0)}{2!}x^{2}+o(x^{2})=\frac{x^{2}}{2}+o(x^{2}) ,$$
+故 $x\to0$ 时
+$$y(x)\sim\frac{x^{2}}{2} .$$
+
+比较各选项在 $x\to0$ 时的主部：
+$$\text{A}: \sin x^{2}\sim x^{2} ; \text{B}: \sin x\sim x ; \text{C}: \ln(1+x^{2})\sim x^{2} ;$$
+$$\text{D}: \ln\sqrt{1+x^{2}}=\frac12\ln(1+x^{2})\sim\frac{x^{2}}{2} .$$
+
+只有 D 与 $y(x)$ 的主部相同，即
+$$\lim_{x\to0}\frac{y(x)}{\ln\sqrt{1+x^{2}}}=\lim_{x\to0}\frac{x^{2}/2}{x^{2}/2}=1 .$$
+
+故选 **D**。
+
+@考点
+用微分方程在初值点递推高阶导数；泰勒展开求无穷小的主部；等价无穷小的定义（比值极限为 $1$，系数必须相同）；常用等价式 $\sin u\sim u$、$\ln(1+u)\sim u$。
+
+易混："等价"要求比值极限恰为 $1$，**系数必须一致**；"同阶"只要求比值为非零常数。A、C 与 $y$ 同阶但不等价，这正是本题设置它们的目的。
+
+@易错
+1. 去解微分方程求出 $y$ 的显式表达式（要算特解与两个常数，费时且易错）。
+2. 求 $y''(0)$ 时忘记代入 $y(0)=y'(0)=0$，或把 $\mathrm e^{3x}$ 在 $0$ 处的值写成 $3$。
+3. 主部只写到"$x^{2}$ 阶"就选 A 或 C，忽略系数 $\frac12$。
+4. $\ln\sqrt{1+x^{2}}$ 没化成 $\frac12\ln(1+x^{2})$。
+
+[23]
+@题目
+设气体以 $100\ \mathrm{cm}^{3}/\mathrm{s}$ 的速率注入球状气球，求当半径为 $10\ \mathrm{cm}$ 时，气球半径增加的速率.
+
+@切入点
+这是**相关变化率**问题：两个随时间变化的量通过一个几何关系联系起来，已知其中一个的变化率，求另一个的。做法固定为三步：
+
+1. **写出几何关系**：球的体积与半径的关系
+$$V=\frac43\pi r^{3} ;$$
+2. **两端对时间 $t$ 求导**（把 $V,r$ 都看成 $t$ 的函数，用链式法则）：
+$$\frac{dV}{dt}=4\pi r^{2}\frac{dr}{dt} ;$$
+3. **代入已知数值求未知变化率**。
+
+**注意求导要在代入数值之前完成**——如果先把 $r=10$ 代进 $V=\frac43\pi r^{3}$ 得到常数，再求导就变成 $0$ 了。这是相关变化率题最典型的错误。
+
+代入 $\frac{dV}{dt}=100$、$r=10$：
+$$100=4\pi\cdot100\cdot\frac{dr}{dt} \Longrightarrow \frac{dr}{dt}=\frac{1}{4\pi}\ \mathrm{cm/s} .$$
+$4\pi r^{2}$ 恰是球的表面积，所以这个结果也有直观解释：**注入的体积速率 $=$ 表面积 $\times$ 半径增长速率**。
+
+@解答
+设 $t$ 时刻气球的半径为 $r(t)$（单位 $\mathrm{cm}$），体积为 $V(t)$（单位 $\mathrm{cm}^{3}$），则
+$$V=\frac43\pi r^{3} .$$
+两端对 $t$ 求导（链式法则）：
+$$\frac{dV}{dt}=\frac43\pi\cdot3r^{2}\cdot\frac{dr}{dt}=4\pi r^{2}\frac{dr}{dt} .$$
+
+已知 $\dfrac{dV}{dt}=100\ \mathrm{cm^{3}/s}$，当 $r=10\ \mathrm{cm}$ 时
+$$100=4\pi\cdot10^{2}\cdot\frac{dr}{dt} \Longrightarrow \frac{dr}{dt}=\frac{100}{400\pi}=\frac{1}{4\pi}\ \mathrm{cm/s} .$$
+
+即此时气球半径增加的速率为 $\dfrac{1}{4\pi}\ \mathrm{cm/s}$（约 $0.0796\ \mathrm{cm/s}$）。
+
+@考点
+相关变化率：由几何关系两端对时间求导，用链式法则联系两个变化率；球的体积公式 $V=\frac43\pi r^{3}$ 与表面积 $4\pi r^{2}$。
+
+易混：$\frac{dV}{dr}=4\pi r^{2}$ 与 $\frac{dV}{dt}=4\pi r^{2}\frac{dr}{dt}$ 是两回事；漏掉 $\frac{dr}{dt}$ 这个因子就等于把"对半径的导数"当成了"对时间的导数"。
+
+@易错
+1. 先代入 $r=10$ 再求导，得到 $\frac{dV}{dt}=0$ 的荒谬结论。
+2. 链式法则漏掉 $\frac{dr}{dt}$。
+3. 体积公式写成 $4\pi r^{3}$ 或 $\frac43\pi r^{2}$。
+4. 忘记写单位，或单位写成 $\mathrm{cm^{3}/s}$。
+
+[24]
+@题目
+设 3 阶实对称矩阵 $A$ 的特征值为 $1, 2, -1$，特征值 1 与 2 的特征向量分别为 $\alpha_{1} = (2,3,-1)^{\mathrm{T}}$ 与 $\alpha_{2} = (1,a,2a)^{\mathrm{T}}$，$A^{*}$ 是 $A$ 的伴随矩阵，则方程组 $(A^{*} - 2E)X = 0$ 的通解是 $\underline{\hspace{2cm}}$.
+
+@切入点
+题目要解 $(A^{*}-2E)X=0$，所以**核心是搞清 $A^{*}$ 的特征值与特征向量**。三步：
+
+**第一步：用正交性定 $a$。** $A$ 是实对称矩阵，**不同特征值的特征向量必正交**，故 $\alpha_{1}\perp\alpha_{2}$：
+$$\alpha_{1}\cdot\alpha_{2}=2\cdot1+3\cdot a+(-1)\cdot2a=2+a=0 \Longrightarrow a=-2 ,$$
+即 $\alpha_{2}=(1,-2,-4)^{\mathrm T}$。**这是题目给 $\alpha_{2}$ 带参数的唯一用意。**
+
+**第二步：求 $A^{*}$ 的谱。** $|A|=1\cdot2\cdot(-1)=-2\neq0$，故 $A^{*}=|A|A^{-1}=-2A^{-1}$。若 $A\xi=\lambda\xi$，则
+$$A^{*}\xi=\frac{|A|}{\lambda}\xi ,$$
+即 $A^{*}$ 与 $A$ **特征向量完全相同**，特征值按 $\lambda\mapsto\frac{|A|}{\lambda}$ 对应：
+$$\lambda=1\mapsto-2 , \lambda=2\mapsto-1 , \lambda=-1\mapsto2 .$$
+
+**第三步：识别解空间。** $(A^{*}-2E)X=0$ 的解空间正是 $A^{*}$ 关于特征值 $2$ 的特征子空间；由上表，它对应 $A$ 的特征值 $-1$，即 $\alpha_{3}$ 方向。$A^{*}$ 的三个特征值 $-2,-1,2$ 互不相同，故该子空间是**一维**的。
+
+而 $\alpha_{3}$ 未给出——但由实对称矩阵特征向量两两正交，$\alpha_{3}$ 同时垂直于 $\alpha_{1},\alpha_{2}$，用**叉积**一步求出：
+$$\alpha_{3}\parallel\alpha_{1}\times\alpha_{2} .$$
+**"缺的第三个特征向量用前两个的叉积补"，是三阶实对称矩阵题的标准补位技巧。**
+
+@解答
+**第一步：定 $a$。** $A$ 为实对称矩阵，其不同特征值对应的特征向量相互正交，故 $\alpha_{1}\perp\alpha_{2}$：
+$$\alpha_{1}^{\mathrm T}\alpha_{2}=2\times1+3\times a+(-1)\times2a=2+3a-2a=2+a=0 \Longrightarrow a=-2 ,$$
+即
+$$\alpha_{2}=(1,-2,-4)^{\mathrm T} .$$
+
+**第二步：求 $A^{*}$ 的特征值。** $|A|=1\times2\times(-1)=-2\neq0$，故 $A$ 可逆，$A^{*}=|A|A^{-1}=-2A^{-1}$。设 $A\xi=\lambda\xi (\lambda\neq0)$，则
+$$A^{*}\xi=-2A^{-1}\xi=-\frac{2}{\lambda}\xi ,$$
+即 $A^{*}$ 的特征向量与 $A$ 相同，特征值为 $\frac{|A|}{\lambda}=-\frac2\lambda$：
+$$\lambda=1\ \longrightarrow\ -2\ (\text{对应}\ \alpha_{1}) , \lambda=2\ \longrightarrow\ -1\ (\text{对应}\ \alpha_{2}) , \lambda=-1\ \longrightarrow\ 2\ (\text{对应}\ \alpha_{3}) ,$$
+其中 $\alpha_{3}$ 是 $A$ 关于特征值 $-1$ 的特征向量。
+
+**第三步：求 $\alpha_{3}$。** $A$ 实对称，$\alpha_{3}$ 与 $\alpha_{1},\alpha_{2}$ 都正交，故可取
+$$\alpha_{3}=\alpha_{1}\times\alpha_{2}=\begin{vmatrix}i&j&k\\ 2&3&-1\\ 1&-2&-4\end{vmatrix}=(3(-4)-(-1)(-2))i-(2(-4)-(-1)\cdot1)j+(2(-2)-3\cdot1)k$$
+$$=(-14)i-(-7)j+(-7)k=(-14,\ 7,\ -7)=-7 (2,-1,1)^{\mathrm T} ,$$
+故可取 $\alpha_{3}=(2,-1,1)^{\mathrm T}$。（验证：$\alpha_{3}\cdot\alpha_{1}=4-3-1=0$，$\alpha_{3}\cdot\alpha_{2}=2+2-4=0$ ✓。）
+
+**第四步：写通解。** $A^{*}$ 的三个特征值 $-2,-1,2$ 互不相同，故 $(A^{*}-2E)X=0$ 的解空间是 $A^{*}$ 关于特征值 $2$ 的特征子空间，维数为 $1$，由 $\alpha_{3}$ 张成。所求通解为
+$$X=k(2,-1,1)^{\mathrm T} (k\ \text{为任意常数}) .$$
+
+@考点
+实对称矩阵不同特征值的特征向量正交；伴随矩阵 $A^{*}=|A|A^{-1}$ 及其特征值 $\frac{|A|}{\lambda}$、特征向量不变；齐次方程组 $(M-\mu E)X=0$ 的解空间即 $M$ 的特征子空间；用叉积求与两向量都正交的向量。
+
+易混：$A^{*}$ 的特征值是 $\frac{|A|}{\lambda}$，**不是** $\lambda$ 也不是 $\frac1\lambda$；本题 $|A|=-2$，所以 $\lambda=-1$ 对应的是 $\frac{-2}{-1}=2$，恰与题目要解的 $A^{*}-2E$ 匹配。
+
+@易错
+1. 不用正交性定 $a$，或正交条件算错（$\alpha_{1}\cdot\alpha_{2}=2+3a-2a$）。
+2. 把 $A^{*}$ 的特征值写成 $\frac1\lambda$（漏掉 $|A|$）。
+3. 找错对应的特征值：$A^{*}$ 的特征值 $2$ 对应的是 $A$ 的 $\lambda=-1$，不是 $\lambda=2$。
+4. 叉积算错符号（中间分量要变号），或忘了验证正交性。
+
+[25]
+@题目
+设实对称矩阵 $A=(a_{ij})_{3\times3}$ 有二重特征值 $1$，且 $\sum\limits_{i=1}^{3}a_{ij}=0\ (j=1,2,3)$.
+（Ⅰ）记 $X=(x_1,x_2,x_3)^{\mathrm T}$，求方程 $X^{\mathrm T}AX=0$ 的全部解；
+（Ⅱ）求可逆矩阵 $P$，使得 $X^{\mathrm T}(2E-A)X=\|PX\|^2$.
+
+@切入点
+条件 $\sum_{i=1}^{3}a_{ij}=0$ 说的是**每一列的元素之和为零**，写成矩阵语言就是
+$$(1,1,1)A=(0,0,0) \Longleftrightarrow A^{\mathrm T}(1,1,1)^{\mathrm T}=0 .$$
+再用 $A$ 实对称（$A^{\mathrm T}=A$）得
+$$A(1,1,1)^{\mathrm T}=0 ,$$
+即 **$\lambda=0$ 是特征值，$(1,1,1)^{\mathrm T}$ 是对应的特征向量**。加上题设"二重特征值 $1$"，三个特征值就是 $1,1,0$，于是 $A$ **半正定**，且 $\mathrm r(A)=2$。**"列和为零 $\to$ 全 $1$ 向量是零特征向量"是本题的第一把钥匙。**
+
+（Ⅰ）问 $X^{\mathrm T}AX=0$ 的全部解。对**半正定**矩阵有一条重要结论：
+$$X^{\mathrm T}AX=0\iff AX=0 .$$
+（用正交对角化 $A=Q \mathrm{diag}(1,1,0) Q^{\mathrm T}$，令 $Y=Q^{\mathrm T}X$，则 $X^{\mathrm T}AX=y_{1}^{2}+y_{2}^{2}$，为零当且仅当 $y_{1}=y_{2}=0$，即 $X$ 落在 $\lambda=0$ 的特征子空间。）所以解集就是 $(1,1,1)^{\mathrm T}$ 张成的直线。**若 $A$ 不定，这个等价就不成立**——本题能这么做，全靠半正定。
+
+（Ⅱ）要求 $P$ 使 $X^{\mathrm T}(2E-A)X=\|PX\|^{2}=X^{\mathrm T}P^{\mathrm T}PX$，即
+$$P^{\mathrm T}P=2E-A .$$
+这就是在求 $2E-A$ 的"平方根型分解"。$2E-A$ 的特征值为 $2-1,2-1,2-0=1,1,2$，全正，故**正定**，分解存在。做法是先正交对角化
+$$Q^{\mathrm T}(2E-A)Q=\Lambda=\mathrm{diag}(1,1,2) ,$$
+再取
+$$P=\Lambda^{\frac12}Q^{\mathrm T} \Longrightarrow P^{\mathrm T}P=Q\Lambda^{\frac12}\Lambda^{\frac12}Q^{\mathrm T}=Q\Lambda Q^{\mathrm T}=2E-A .$$
+**关键在于把 $\Lambda$ 劈成两个 $\Lambda^{1/2}$，一半归 $P^{\mathrm T}$、一半归 $P$。**（答案不唯一，任何 $P$ 左乘正交矩阵后仍满足要求。）
+
+@解答
+**预备：定出 $A$ 的谱。** 由 $\sum_{i=1}^{3}a_{ij}=0 (j=1,2,3)$ 得 $(1,1,1)A=0$，转置并用 $A^{\mathrm T}=A$：
+$$A(1,1,1)^{\mathrm T}=0 ,$$
+故 $\lambda=0$ 是 $A$ 的特征值，$\xi_{3}=(1,1,1)^{\mathrm T}$ 是对应特征向量。又 $1$ 是二重特征值，故 $A$ 的特征值为
+$$1,\ 1,\ 0 ,$$
+$A$ 半正定，$\mathrm r(A)=2$，且 $\lambda=1$ 的特征子空间是 $\xi_{3}$ 的正交补
+$$x_{1}+x_{2}+x_{3}=0 .$$
+
+**（Ⅰ）** 设 $A=Q\Lambda_{0}Q^{\mathrm T}$，$\Lambda_{0}=\mathrm{diag}(1,1,0)$，$Q$ 正交。令 $Y=Q^{\mathrm T}X=(y_{1},y_{2},y_{3})^{\mathrm T}$，则
+$$X^{\mathrm T}AX=Y^{\mathrm T}\Lambda_{0}Y=y_{1}^{2}+y_{2}^{2} .$$
+故
+$$X^{\mathrm T}AX=0\iff y_{1}=y_{2}=0\iff X\ \text{属于}\ \lambda=0\ \text{的特征子空间} .$$
+该子空间由 $\xi_{3}=(1,1,1)^{\mathrm T}$ 张成，故全部解为
+$$X=k(1,1,1)^{\mathrm T} (k\ \text{为任意常数}) .$$
+
+**（Ⅱ）** $2E-A$ 的特征值为 $2-1=1$（二重）与 $2-0=2$，全为正，故 $2E-A$ 正定，且与 $A$ 有相同的特征向量。取 $\lambda=1$ 的特征子空间 $x_{1}+x_{2}+x_{3}=0$ 内的两个正交单位向量与 $\frac{\xi_{3}}{\sqrt3}$ 组成正交矩阵
+$$Q=\begin{pmatrix}\frac{1}{\sqrt2}&\frac{1}{\sqrt6}&\frac{1}{\sqrt3}\\[2pt] -\frac{1}{\sqrt2}&\frac{1}{\sqrt6}&\frac{1}{\sqrt3}\\[2pt] 0&-\frac{2}{\sqrt6}&\frac{1}{\sqrt3}\end{pmatrix} ,$$
+则
+$$Q^{\mathrm T}(2E-A)Q=\Lambda=\mathrm{diag}(1,1,2) , \text{即} 2E-A=Q\Lambda Q^{\mathrm T} .$$
+令 $\Lambda^{\frac12}=\mathrm{diag}(1,1,\sqrt2)$，取
+$$P=\Lambda^{\frac12}Q^{\mathrm T}=\begin{pmatrix}\frac{1}{\sqrt2}&-\frac{1}{\sqrt2}&0\\[2pt] \frac{1}{\sqrt6}&\frac{1}{\sqrt6}&-\frac{2}{\sqrt6}\\[2pt] \frac{\sqrt2}{\sqrt3}&\frac{\sqrt2}{\sqrt3}&\frac{\sqrt2}{\sqrt3}\end{pmatrix} ,$$
+它可逆（$|P|=|\Lambda^{\frac12}||Q^{\mathrm T}|=\pm\sqrt2\neq0$），且
+$$P^{\mathrm T}P=Q\Lambda^{\frac12}\cdot\Lambda^{\frac12}Q^{\mathrm T}=Q\Lambda Q^{\mathrm T}=2E-A ,$$
+故对一切 $X$
+$$X^{\mathrm T}(2E-A)X=X^{\mathrm T}P^{\mathrm T}PX=(PX)^{\mathrm T}(PX)=\|PX\|^{2} .$$
+（$P$ 不唯一：对任意正交矩阵 $U$，$UP$ 同样满足要求。）
+
+@考点
+列和为零 $\iff$ 全 $1$ 向量是 $A^{\mathrm T}$ 的零特征向量；实对称半正定矩阵的 $X^{\mathrm T}AX=0\iff AX=0$；正交对角化；正定矩阵的分解 $P^{\mathrm T}P$（取 $P=\Lambda^{1/2}Q^{\mathrm T}$）。
+
+易混：$X^{\mathrm T}AX=0$ 与 $AX=0$ 等价，**仅当 $A$ 半正定（或半负定）**。若 $A$ 不定，例如 $A=\mathrm{diag}(1,-1)$，则 $X=(1,1)^{\mathrm T}$ 使 $X^{\mathrm T}AX=0$ 但 $AX\neq0$。
+
+@易错
+1. 把"列和为零"误读成"行和为零"（本题 $A$ 对称，两者等价，但一般情形要分清）。
+2. （Ⅰ）不说明半正定就断言 $X^{\mathrm T}AX=0\iff AX=0$。
+3. （Ⅱ）取 $P=Q\Lambda^{\frac12}$（那样 $P^{\mathrm T}P=\Lambda^{\frac12}Q^{\mathrm T}Q\Lambda^{\frac12}=\Lambda$，不是 $2E-A$）。
+4. $\lambda=1$ 的两个特征向量没取成互相正交。
+
+[26]
+@题目
+设 $\sum\limits_{n=1}^{\infty} u_n\ (u_n > 0)$ 发散，$S_n = u_1 + u_2 + \cdots + u_n$.
+（Ⅰ）求 $\sum\limits_{n=1}^{\infty} (\dfrac{1}{S_n} - \dfrac{1}{S_{n+1}})$ 的和；
+（Ⅱ）证明：$\sum\limits_{n=1}^{\infty} \dfrac{u_n}{S_n^2}$ 收敛.
+
+@切入点
+两问是"给工具 $+$ 用工具"的结构：（Ⅰ）算出一个裂项级数的和，（Ⅱ）就用它作比较对象。
+
+（Ⅰ）**裂项（望远镜）求和**：部分和
+$$\sum_{n=1}^{N}(\frac{1}{S_{n}}-\frac{1}{S_{n+1}})=\frac{1}{S_{1}}-\frac{1}{S_{N+1}} .$$
+关键是 $N\to\infty$ 时 $\frac{1}{S_{N+1}}\to0$——这需要 $S_{n}\to+\infty$，**而这正是题设"$\sum u_{n}$ 发散"给出的**（正项级数发散 $\iff$ 部分和趋于 $+\infty$）。于是和为 $\frac{1}{S_{1}}=\frac{1}{u_{1}}$。
+
+（Ⅱ）要证 $\sum\frac{u_{n}}{S_{n}^{2}}$ 收敛。**注意 $u_{n}=S_{n}-S_{n-1}$**，这是把通项与部分和挂钩的桥梁。想把 $\frac{u_{n}}{S_{n}^{2}}$ 凑成（Ⅰ）里那种裂项的形状 $\frac{1}{S_{n-1}}-\frac{1}{S_{n}}$，先算一下：
+$$\frac{1}{S_{n-1}}-\frac{1}{S_{n}}=\frac{S_{n}-S_{n-1}}{S_{n-1}S_{n}}=\frac{u_{n}}{S_{n-1}S_{n}} .$$
+这与要证的通项只差分母：$S_{n-1}S_{n}$ 与 $S_{n}^{2}$。由于 $u_{n}>0$，$S_{n-1}<S_{n}$，故 $S_{n-1}S_{n}<S_{n}^{2}$，即
+$$\frac{u_{n}}{S_{n}^{2}}\leq\frac{u_{n}}{S_{n-1}S_{n}}=\frac{1}{S_{n-1}}-\frac{1}{S_{n}} .$$
+**"把 $S_{n}^{2}$ 放大成 $S_{n-1}S_{n}$ 以凑出裂项"是本题的全部技巧**（放大方向要对：分母变小、整体变大，才能用比较判别法证收敛）。右端级数由（Ⅰ）同型的裂项知收敛，比较判别法即得结论。
+
+@解答
+$u_{n}>0$ 故 $\{S_{n}\}$ 严格递增；又 $\sum u_{n}$ 发散，正项级数发散意味着
+$$\lim_{n\to\infty}S_{n}=+\infty .$$
+
+**（Ⅰ）** 部分和望远镜式相消：
+$$\sum_{n=1}^{N}(\frac{1}{S_{n}}-\frac{1}{S_{n+1}})=\frac{1}{S_{1}}-\frac{1}{S_{N+1}} .$$
+令 $N\to\infty$，由 $S_{N+1}\to+\infty$ 得 $\frac{1}{S_{N+1}}\to0$，故
+$$\sum_{n=1}^{\infty}(\frac{1}{S_{n}}-\frac{1}{S_{n+1}})=\frac{1}{S_{1}}=\frac{1}{u_{1}} .$$
+
+**（Ⅱ）** 当 $n\geq2$ 时，由 $u_{n}=S_{n}-S_{n-1}$ 与 $0<S_{n-1}<S_{n}$，
+$$\frac{u_{n}}{S_{n}^{2}}\leq\frac{u_{n}}{S_{n-1}S_{n}}=\frac{S_{n}-S_{n-1}}{S_{n-1}S_{n}}=\frac{1}{S_{n-1}}-\frac{1}{S_{n}} .$$
+而由与（Ⅰ）同样的裂项，
+$$\sum_{n=2}^{N}(\frac{1}{S_{n-1}}-\frac{1}{S_{n}})=\frac{1}{S_{1}}-\frac{1}{S_{N}}\longrightarrow\frac{1}{u_{1}} ,$$
+即 $\sum_{n=2}^{\infty}(\frac{1}{S_{n-1}}-\frac{1}{S_{n}})$ 收敛。
+
+$\sum\frac{u_{n}}{S_{n}^{2}}$ 是正项级数，由比较判别法（去掉第一项不影响敛散性），
+$$\sum_{n=1}^{\infty}\frac{u_{n}}{S_{n}^{2}}\ \text{收敛} .$$
+证毕。
+
+@考点
+正项级数发散 $\iff$ 部分和趋于 $+\infty$；裂项（望远镜）求和；$u_{n}=S_{n}-S_{n-1}$；用放大不等式把待证通项夹到一个可裂项的级数之下；正项级数的比较判别法。
+
+易混：证**收敛**要把通项**放大**成收敛级数的通项；证发散才是缩小。本题 $\frac{u_{n}}{S_{n}^{2}}\leq\frac{u_{n}}{S_{n-1}S_{n}}$ 正是放大（分母变小）。
+
+@易错
+1. （Ⅰ）忘记说明 $S_{n}\to+\infty$（这是用发散条件的地方），直接写和为 $\frac{1}{u_{1}}$。
+2. （Ⅱ）不等号方向弄反，写成 $\frac{u_{n}}{S_{n}^{2}}\geq\frac{1}{S_{n-1}}-\frac{1}{S_{n}}$。
+3. 忘记从 $n=2$ 起（$n=1$ 时没有 $S_{0}$）。
+4. 试图用比值判别法或根值判别法（通项含未知的 $u_{n}$，无法处理）。
+
+[27]
+@题目
+设 $f(y)$ 有连续导数，$f(0)=0$，曲线 $\overset{\frown}{OA}$ 的极坐标方程为 $r=a(1-\cos\theta)$（$a>0$，$0\leqslant\theta\leqslant\pi$），$O(0,0)$ 与 $A$ 分别对应 $\theta=0$ 与 $\theta=\pi$，计算
+$$I=\int_{\overset{\frown}{OA}}[f(y)e^{x}-\pi y]\,dx+[f'(y)e^{x}-\pi]\,dy$$
+
+@切入点
+被积表达式里含未知函数 $f$，所以第一件事是**把与 $f$ 有关的部分识别为全微分**：
+$$f(y)\mathrm e^{x}dx+f'(y)\mathrm e^{x}dy=\mathrm d[f(y)\mathrm e^{x}] ,$$
+（正是把 $f$ 配 $dx$、$f'$ 配 $dy$ 的原因）。全微分的曲线积分只看端点：起点 $O(0,0)$ 与终点 $A$ 的纵坐标都是 $0$，而 $f(0)=0$，故这一整块积分为 $0$——**未知函数被端点条件彻底消掉**。
+
+剩下的 $-\pi y dx-\pi dy$ 中，$\int_{L}(-\pi)dy=-\pi[y]_{O}^{A}=0$（两端 $y$ 都是 $0$），所以
+$$I=-\pi\int_{L}y dx .$$
+
+算 $\int_{L}y dx$ 有两条路：直接参数化（$x=r\cos\theta=a(1-\cos\theta)\cos\theta$，求导后积分，很繁），或者**补线用格林公式**。后者好得多：把 $A(-2a,0)$ 沿 $x$ 轴回到 $O$ 的线段补上（该段 $y\equiv0$，$\int y dx=0$，白补），闭曲线取的是**逆时针**（上边界自右向左、下边界自左向右），故
+$$\oint y dx=\iint_{D}(-\frac{\partial y}{\partial y})dxdy=-S ,$$
+其中 $S$ 是上半心形线所围的面积，用极坐标面积公式 $S=\frac12\int_{0}^{\pi}r^{2}d\theta$ 一步算出。
+
+**先求 $A$ 的坐标**：$\theta=\pi$ 时 $r=a(1-\cos\pi)=2a$，故 $A=(2a\cos\pi,\ 2a\sin\pi)=(-2a,0)$。
+
+@解答
+**第一步：分离全微分。** 注意
+$$f(y)\mathrm e^{x}dx+f'(y)\mathrm e^{x}dy=\mathrm d[f(y)\mathrm e^{x}] ,$$
+故
+$$I=\int_{L}\mathrm d[f(y)\mathrm e^{x}]-\pi\int_{L}y dx-\pi\int_{L}dy .$$
+曲线起点 $O(0,0)$，终点 $A$：由 $\theta=\pi$ 得 $r=a(1-\cos\pi)=2a$，故 $A=(-2a,0)$。两端点的纵坐标均为 $0$，而 $f(0)=0$，所以
+$$\int_{L}\mathrm d[f(y)\mathrm e^{x}]=f(0)\mathrm e^{-2a}-f(0)\mathrm e^{0}=0 , \int_{L}dy=0-0=0 .$$
+于是
+$$I=-\pi\int_{L}y dx .$$
+
+**第二步：补线用格林公式。** 补上从 $A(-2a,0)$ 沿 $x$ 轴到 $O(0,0)$ 的线段 $L_{1}$（其上 $y\equiv0$，故 $\int_{L_{1}}y dx=0$）。$L+L_{1}$ 是闭曲线，围成上半心形线所围的区域 $D$；$L$ 是上边界（自右向左），$L_{1}$ 是下边界（自左向右），故 $L+L_{1}$ 取**逆时针**（正向）。由格林公式（$P=y$，$Q=0$）
+$$\oint_{L+L_{1}}y dx=\iint_{D}(0-\frac{\partial y}{\partial y})dxdy=-\iint_{D}dxdy=-S .$$
+故
+$$\int_{L}y dx=\oint_{L+L_{1}}y dx-\int_{L_{1}}y dx=-S-0=-S .$$
+
+**第三步：求面积 $S$。** 用极坐标面积公式：
+$$S=\frac12\int_{0}^{\pi}r^{2}(\theta)d\theta=\frac{a^{2}}{2}\int_{0}^{\pi}(1-\cos\theta)^{2}d\theta=\frac{a^{2}}{2}\int_{0}^{\pi}(1-2\cos\theta+\cos^{2}\theta)d\theta .$$
+其中 $\int_{0}^{\pi}d\theta=\pi$，$\int_{0}^{\pi}\cos\theta d\theta=0$，$\int_{0}^{\pi}\cos^{2}\theta d\theta=\frac\pi2$，故
+$$S=\frac{a^{2}}{2}(\pi+\frac{\pi}{2})=\frac{3\pi a^{2}}{4} .$$
+
+**第四步：合并。**
+$$\int_{L}y dx=-\frac{3\pi a^{2}}{4} , I=-\pi\cdot(-\frac{3\pi a^{2}}{4})=\frac{3\pi^{2}a^{2}}{4} .$$
+
+@考点
+第二类曲线积分中分离全微分部分（只与端点有关）；补线法与格林公式；$\oint y dx=-S$（正向闭曲线）；极坐标面积公式 $S=\frac12\int r^{2}d\theta$；心形线 $r=a(1-\cos\theta)$。
+
+易混：$\oint_{L^{+}}y dx=-S$ 而 $\oint_{L^{+}}x dy=+S$，两者符号相反；本题用的是前者，符号弄反会得到 $-\frac{3\pi^{2}a^{2}}{4}$。
+
+@易错
+1. 看不出 $f\mathrm e^{x}dx+f'\mathrm e^{x}dy$ 是全微分，被未知函数卡住。
+2. 端点 $A$ 的坐标算错（$\theta=\pi$ 时 $r=2a$，点在 $x$ 轴负方向）。
+3. 补线后方向判断错（本题闭路是逆时针）。
+4. 面积积分里漏掉 $\int_{0}^{\pi}\cos^{2}\theta d\theta=\frac\pi2$，或把心形线整周面积 $\frac{3\pi a^{2}}{2}$ 当成上半部分。
+
+[28]
+@题目
+设随机变量 $X$ 的概率密度为 $f(x)=\dfrac{1}{\sqrt\pi}\mathrm e^{-x^2+2x-1}\ (-\infty<x<+\infty)$，则 $E(X^2)=$ ______.
+
+@切入点
+看到密度是 $\mathrm e$ 的二次式指数，**第一反应是配方，把它认成正态密度**：
+$$f(x)=\frac{1}{\sqrt\pi}\mathrm e^{-x^{2}+2x-1}=\frac{1}{\sqrt\pi}\mathrm e^{-(x-1)^{2}} .$$
+与正态密度的标准形
+$$\frac{1}{\sqrt{2\pi} \sigma}\mathrm e^{-\frac{(x-\mu)^{2}}{2\sigma^{2}}}$$
+对照：指数部分 $\frac{(x-\mu)^{2}}{2\sigma^{2}}=(x-1)^{2}$ 给出
+$$\mu=1 , 2\sigma^{2}=1 \Longrightarrow \sigma^{2}=\frac12 ,$$
+再验系数：$\frac{1}{\sqrt{2\pi}\sigma}=\frac{1}{\sqrt{2\pi}\cdot\frac{1}{\sqrt2}}=\frac{1}{\sqrt\pi}$ ✓，与题给一致。所以 $X\sim N(1,\frac12)$。
+
+**认出分布之后就不必积分**，直接用
+$$E(X^{2})=DX+(EX)^{2}=\frac12+1^{2}=\frac32 .$$
+若硬算 $\int x^{2}f(x)dx$，需要做两次分部积分并用到 $\int\mathrm e^{-t^{2}}dt=\sqrt\pi$，费时得多。
+
+**配方时注意 $-x^{2}+2x-1=-(x^{2}-2x+1)=-(x-1)^{2}$ 恰好是完全平方**，这是题目把常数项设成 $-1$ 的用意；同时 $\frac{1}{\sqrt\pi}$ 这个系数也正好与 $\sigma^{2}=\frac12$ 相配——两处都对上，才说明认对了分布。
+
+@解答
+对指数部分配方：
+$$-x^{2}+2x-1=-(x^{2}-2x+1)=-(x-1)^{2} ,$$
+故
+$$f(x)=\frac{1}{\sqrt\pi}\mathrm e^{-(x-1)^{2}} .$$
+
+与正态分布 $N(\mu,\sigma^{2})$ 的密度
+$$\frac{1}{\sqrt{2\pi} \sigma}\mathrm e^{-\frac{(x-\mu)^{2}}{2\sigma^{2}}}$$
+比较：由指数部分得 $\mu=1$ 且 $\frac{1}{2\sigma^{2}}=1$，即
+$$\sigma^{2}=\frac12 ;$$
+系数也吻合：$\frac{1}{\sqrt{2\pi}\cdot\frac{1}{\sqrt2}}=\frac{1}{\sqrt\pi}$。故
+$$X\sim N(1,\ \frac12) , EX=1 , DX=\frac12 .$$
+
+于是
+$$E(X^{2})=DX+(EX)^{2}=\frac12+1=\frac32 .$$
+
+@考点
+由密度的指数配方识别正态分布；正态密度中 $\sigma^{2}$ 与指数系数的关系 $\frac{1}{2\sigma^{2}}$；公式 $E(X^{2})=DX+(EX)^{2}$。
+
+易混：$\mathrm e^{-(x-1)^{2}}$ 的指数分母是 $1$ 而不是 $2$，故 $2\sigma^{2}=1$、$\sigma^{2}=\frac12$（**不是 $\sigma^{2}=1$**）。记忆时以"$\frac{(x-\mu)^{2}}{2\sigma^{2}}$"的整体形式对照最稳妥。
+
+@易错
+1. 不配方，看不出是正态分布。
+2. 把 $\sigma^{2}$ 读成 $1$ 或 $2$（应为 $\frac12$）。
+3. 把 $E(X^{2})$ 写成 $(EX)^{2}=1$ 或 $DX=\frac12$。
+4. 不核对系数 $\frac{1}{\sqrt\pi}$ 是否与 $\sigma^{2}$ 相配（这是验算的好机会）。
+
+[29]
+@题目
+设 $f(x)$ 有二阶连续导数，且
+$$f(x) = \int_0^x f(1 - t)\,dt + 1,$$
+则 $f(x) = \underline{\qquad\qquad}$.
+
+@切入点
+方程
+$$f(x)=\int_{0}^{x}f(1-t)dt+1$$
+的积分号里是 $f(1-t)$ 而不是 $f(t)$，**直接对 $x$ 求导会得到 $f(1-x)$，仍含复合**，所以先**换元把被积函数变成 $f(u)$**：令 $u=1-t$，则 $dt=-du$，$t:0\to x$ 对应 $u:1\to1-x$，
+$$\int_{0}^{x}f(1-t)dt=\int_{1}^{1-x}f(u)(-du)=\int_{1-x}^{1}f(u)du .$$
+于是
+$$f(x)=\int_{1-x}^{1}f(u)du+1 .$$
+**换元后积分变量与被积函数统一，下一步求导才干净。**
+
+求导（下限含 $x$，注意内层导数与负号）：
+$$f'(x)=-f(1-x)\cdot(1-x)'=-f(1-x)\cdot(-1)=f(1-x) .$$
+再求一次导，并注意 $f'(1-x)=f(1-(1-x))=f(x)$：
+$$f''(x)=f'(1-x)\cdot(-1)=-f(x) ,$$
+**得到最简单的二阶方程 $f''+f=0$**，通解 $f=C_{1}\cos x+C_{2}\sin x$。
+
+定常数需要两个条件：
+- $f(0)=\int_{1}^{1}f+1=1$，给出 $C_{1}=1$；
+- 由 $f'(x)=f(1-x)$ 令 $x=0$ 得 $f'(0)=f(1)$，这把 $C_{2}$ 与 $C_{1},C_{2}$ 联系起来，解出 $C_{2}$。**第二个条件不是"$f'(0)=$ 某个数"，而是由函数方程本身导出的关系**，这是本题最容易忽略的一步。
+
+@解答
+**第一步：换元。** 令 $u=1-t$，则 $dt=-du$；$t=0$ 时 $u=1$，$t=x$ 时 $u=1-x$。故
+$$\int_{0}^{x}f(1-t)dt=\int_{1}^{1-x}f(u)(-du)=\int_{1-x}^{1}f(u)du ,$$
+原方程化为
+$$f(x)=\int_{1-x}^{1}f(u)du+1 .  (\ast)$$
+
+**第二步：两次求导。** 对 $(\ast)$ 求导（下限为 $1-x$）：
+$$f'(x)=-f(1-x)\cdot\frac{d(1-x)}{dx}=-f(1-x)\cdot(-1)=f(1-x) .  (\ast\ast)$$
+再求导，并用 $f'(1-x)=f(1-(1-x))=f(x)$（这是把 $(\ast\ast)$ 中的 $x$ 换成 $1-x$ 得到的）：
+$$f''(x)=f'(1-x)\cdot(-1)=-f(x) ,$$
+即
+$$f''+f=0 .$$
+
+**第三步：通解与定常数。** 特征方程 $r^{2}+1=0$，$r=\pm\mathrm i$，故
+$$f(x)=C_{1}\cos x+C_{2}\sin x , f'(x)=-C_{1}\sin x+C_{2}\cos x .$$
+
+由 $(\ast)$ 取 $x=0$：$f(0)=\int_{1}^{1}f+1=1$，故
+$$C_{1}=1 .$$
+由 $(\ast\ast)$ 取 $x=0$：$f'(0)=f(1)$，即
+$$C_{2}=C_{1}\cos1+C_{2}\sin1=\cos1+C_{2}\sin1 ,$$
+$$C_{2}(1-\sin1)=\cos1 \Longrightarrow C_{2}=\frac{\cos1}{1-\sin1}=\frac{\cos1(1+\sin1)}{1-\sin^{2}1}=\frac{1+\sin1}{\cos1} .$$
+
+故
+$$f(x)=\cos x+\frac{1+\sin1}{\cos1}\sin x .$$
+
+@考点
+变限积分中被积函数含复合时先换元；变下限积分求导（带负号与内层导数）；由 $f'(x)=f(1-x)$ 再求导得到 $f''=-f$；用函数方程本身导出第二个定解条件。
+
+易混：$f'(1-x)$ 表示"先求导再代 $1-x$"，由 $(\ast\ast)$ 把变量换成 $1-x$ 得 $f'(1-x)=f(x)$；不要与 $\frac{d}{dx}f(1-x)=-f'(1-x)$ 混为一谈。
+
+@易错
+1. 不换元直接求导，得到 $f'(x)=f(1-x)$ 后不知如何继续（其实也可以，但换元能保证下限求导的符号不出错）。
+2. 变下限求导漏掉负号，得到 $f'(x)=-f(1-x)$，进而 $f''=f$，通解变成指数型。
+3. 只用 $f(0)=1$ 一个条件，$C_{2}$ 定不出来。
+4. 化简 $\frac{\cos1}{1-\sin1}$ 时分母有理化出错。
+
+[30]
+@题目
+设随机变量 $X$ 与 $Y$ 相互独立，$X$ 服从二项分布 $B\!\big(4,\tfrac{1}{2}\big)$，$Y$ 服从 $\lambda=1$ 的泊松分布，则概率 $P\{1<\max\{X,Y\}\leqslant3\}=$ ______.
+
+@切入点
+$\max$ 型事件的概率，核心翻译是
+$$\{\max\{X,Y\}\leq m\}=\{X\leq m\}\cap\{Y\leq m\} ,$$
+再由**独立性**拆成乘积。而题目要的是一个区间事件，用**分布函数作差**：
+$$P\{1<\max\leq3\}=P\{\max\leq3\}-P\{\max\leq1\} .$$
+**注意 $X,Y$ 都取整数值，所以 $\{\max\leq1\}$ 与 $\{\max\leq3\}$ 的边界无歧义。**
+
+于是只需算四个一维概率：
+$$P\{X\leq3\}=1-P\{X=4\}=1-(\frac12)^{4}=\frac{15}{16} ,$$
+（用对立事件比直接加四项快）
+$$P\{X\leq1\}=P\{X=0\}+P\{X=1\}=\frac{1}{16}+\frac{4}{16}=\frac{5}{16} ,$$
+$$P\{Y\leq3\}=\mathrm e^{-1}(1+1+\frac12+\frac16)=\frac{8}{3\mathrm e} , P\{Y\leq1\}=\mathrm e^{-1}(1+1)=\frac2{\mathrm e} .$$
+最后代入相减。**$X\sim B(4,\frac12)$ 的分布律系数是 $\frac{C_{4}^{k}}{16}$，即 $1,4,6,4,1$ 除以 $16$，记住这行"杨辉三角"能省时间。**
+
+@解答
+$X\sim B(4,\frac12)$，$Y\sim P(1)$，且 $X,Y$ 相互独立，取值均为非负整数。
+
+由
+$$\{\max\{X,Y\}\leq m\}=\{X\leq m\}\cap\{Y\leq m\}$$
+及独立性，
+$$P\{\max\leq m\}=P\{X\leq m\}\cdot P\{Y\leq m\} .$$
+
+**计算各项。**
+$$P\{X=k\}=C_{4}^{k}(\frac12)^{4}=\frac{C_{4}^{k}}{16} , \text{即}\ \frac{1}{16},\frac{4}{16},\frac{6}{16},\frac{4}{16},\frac{1}{16} (k=0,1,2,3,4) ,$$
+$$P\{X\leq3\}=1-P\{X=4\}=1-\frac{1}{16}=\frac{15}{16} , P\{X\leq1\}=\frac{1}{16}+\frac{4}{16}=\frac{5}{16} .$$
+$$P\{Y=k\}=\frac{1}{k!}\mathrm e^{-1} ,$$
+$$P\{Y\leq3\}=\mathrm e^{-1}(1+1+\frac12+\frac16)=\mathrm e^{-1}\cdot\frac{8}{3}=\frac{8}{3\mathrm e} , P\{Y\leq1\}=\mathrm e^{-1}(1+1)=\frac{2}{\mathrm e} .$$
+
+**合并。**
+$$P\{\max\leq3\}=\frac{15}{16}\cdot\frac{8}{3\mathrm e}=\frac{120}{48\mathrm e}=\frac{5}{2\mathrm e} ,$$
+$$P\{\max\leq1\}=\frac{5}{16}\cdot\frac{2}{\mathrm e}=\frac{10}{16\mathrm e}=\frac{5}{8\mathrm e} ,$$
+$$P\{1<\max\{X,Y\}\leq3\}=\frac{5}{2\mathrm e}-\frac{5}{8\mathrm e}=\frac{20-5}{8\mathrm e}=\frac{15}{8\mathrm e} .$$
+
+@考点
+$\{\max\leq m\}=\{X\leq m\}\cap\{Y\leq m\}$ 与独立性下的乘积；区间概率用分布函数作差；二项分布与泊松分布的分布律及累积概率；用对立事件简化 $P\{X\leq3\}$。
+
+易混：$\{\max\leq m\}$ 是交（两个都小），$\{\min\leq m\}$ 是并（至少一个小）；只有前者能直接乘。若题目问 $\min$，要先用对立事件转成"都大于"。
+
+@易错
+1. 把 $P\{\max\leq m\}$ 写成 $P\{X\leq m\}+P\{Y\leq m\}$。
+2. 区间事件直接算 $P\{\max=2\}+P\{\max=3\}$（可行但繁），或把差写成 $P\{\max\leq3\}-P\{\max\leq2\}$（边界取错）。
+3. 泊松累积概率算错：$1+1+\frac12+\frac16=\frac{8}{3}$。
+4. 二项分布的 $P\{X\leq1\}$ 漏掉 $k=0$ 项。
+
+[31]
+@题目
+设 $X\sim N(0,\sigma^2)$，$X$ 在区间 $(a,b)$ 内取值的概率最大，其中 $a>0$，则 $\sigma^2=$ ______.
+
+@切入点
+$X\sim N(0,\sigma^{2})$，所求概率
+$$P\{a<X<b\}=\Phi(\frac b\sigma)-\Phi(\frac a\sigma)$$
+是 $\sigma$ 的函数，要求它取最大值时的 $\sigma^{2}$。**这是一个一元函数求最值问题，方法是求导、令导数为零。**
+
+技巧上，**令 $t=\frac1\sigma$（$t>0$）比直接对 $\sigma$ 求导更清爽**：
+$$g(t)=\Phi(bt)-\Phi(at) , g'(t)=b\varphi(bt)-a\varphi(at) ,$$
+其中 $\varphi(u)=\frac{1}{\sqrt{2\pi}}\mathrm e^{-\frac{u^{2}}{2}}$ 是标准正态密度。令 $g'(t)=0$：
+$$b\mathrm e^{-\frac{b^{2}t^{2}}{2}}=a\mathrm e^{-\frac{a^{2}t^{2}}{2}} .$$
+**两端取对数把指数拉下来**，是解这类方程的必然一步：
+$$\ln b-\frac{b^{2}t^{2}}{2}=\ln a-\frac{a^{2}t^{2}}{2} \Longrightarrow \ln\frac ba=\frac{(b^{2}-a^{2})t^{2}}{2} ,$$
+$$t^{2}=\frac{2\ln\frac ba}{b^{2}-a^{2}} \Longrightarrow \sigma^{2}=\frac{1}{t^{2}}=\frac{b^{2}-a^{2}}{2\ln\frac ba} .$$
+（题设 $0<a<b$ 保证 $\ln\frac ba>0$、$b^{2}-a^{2}>0$，故 $\sigma^{2}>0$ 有意义。）
+
+**还要说明它是最大值点**：$t\to0^{+}$（即 $\sigma\to+\infty$）时 $g\to\Phi(0)-\Phi(0)=0$；$t\to+\infty$（即 $\sigma\to0^{+}$）时 $g\to1-1=0$；而 $g>0$ 且驻点唯一，故该驻点必为最大值点。**这个"两端趋于零 $+$ 唯一驻点"的论证比算二阶导省事得多。**
+
+@解答
+由 $X\sim N(0,\sigma^{2})$，
+$$P\{a<X<b\}=\Phi(\frac b\sigma)-\Phi(\frac a\sigma) .$$
+令 $t=\dfrac1\sigma>0$，记
+$$g(t)=\Phi(bt)-\Phi(at) , t>0 .$$
+
+**求导定驻点。** 由 $\Phi'(u)=\varphi(u)=\frac{1}{\sqrt{2\pi}}\mathrm e^{-\frac{u^{2}}{2}}$，
+$$g'(t)=b\varphi(bt)-a\varphi(at)=\frac{1}{\sqrt{2\pi}}(b \mathrm e^{-\frac{b^{2}t^{2}}{2}}-a \mathrm e^{-\frac{a^{2}t^{2}}{2}}) .$$
+令 $g'(t)=0$：
+$$b \mathrm e^{-\frac{b^{2}t^{2}}{2}}=a \mathrm e^{-\frac{a^{2}t^{2}}{2}} ,$$
+两端取对数（$a,b>0$）：
+$$\ln b-\frac{b^{2}t^{2}}{2}=\ln a-\frac{a^{2}t^{2}}{2} \Longrightarrow \ln\frac ba=\frac{(b^{2}-a^{2})t^{2}}{2} ,$$
+$$t^{2}=\frac{2\ln\frac ba}{b^{2}-a^{2}} .$$
+由 $0<a<b$ 知右端为正，驻点唯一。
+
+**判定最大值。** 当 $t\to0^{+}$ 时 $g(t)\to\Phi(0)-\Phi(0)=0$；当 $t\to+\infty$ 时 $g(t)\to1-1=0$；而 $g(t)>0$ 对一切 $t>0$ 成立（因 $bt>at>0$）。故 $g$ 在 $(0,+\infty)$ 内的唯一驻点即为最大值点。
+
+**回代。**
+$$\sigma^{2}=\frac{1}{t^{2}}=\frac{b^{2}-a^{2}}{2\ln\frac ba} .$$
+
+@考点
+正态分布区间概率用 $\Phi$ 表示；$\Phi'=\varphi$；含参数的最值问题（对参数求导）；换元 $t=\frac1\sigma$ 简化求导；用端点极限论证唯一驻点是最大值点。
+
+易混：这里对**参数 $\sigma$** 求导，不是对随机变量取值求导；$\Phi(\frac b\sigma)$ 对 $\sigma$ 求导要用链式法则，会出现 $-\frac{b}{\sigma^{2}}$，比换成 $t=\frac1\sigma$ 后的形式繁琐，所以换元很值得。
+
+@易错
+1. 直接对 $\sigma$ 求导时链式法则的因子 $-\frac{b}{\sigma^{2}}$、$-\frac{a}{\sigma^{2}}$ 处理不当。
+2. 取对数时漏掉系数 $b,a$ 的对数，写成 $-\frac{b^{2}t^{2}}{2}=-\frac{a^{2}t^{2}}{2}$（那会得到 $a=b$ 的矛盾）。
+3. 最后忘记由 $t^{2}$ 反求 $\sigma^{2}=\frac{1}{t^{2}}$，答成 $\frac{2\ln\frac ba}{b^{2}-a^{2}}$。
+4. 不说明是最大值（题目问的是概率最大时的 $\sigma^{2}$）。
+
+[32]
+@题目
+设 $D=\{(x,y)\mid 0\leqslant y\leqslant 1-x,\ 0\leqslant x\leqslant 1\}$，则
+$$\iint_{D}\mathrm{e}^{\frac{x}{x+y}}\mathrm{d}x\mathrm{d}y=\underline{\qquad}$$
+
+@切入点
+被积函数是 $\mathrm e^{\frac{x}{x+y}}$，指数上的 $\frac{x}{x+y}$ 既不是 $x$ 也不是 $y$ 的简单函数，**直接按 X 型或 Y 型累次积分都积不出来**（内层会出现 $\mathrm e^{\frac{x}{x+y}}$ 对 $y$ 的积分）。所以必须换元。
+
+换什么？指数里出现的组合是 $\frac{x}{x+y}$，而区域 $D$（以 $(0,0),(1,0),(0,1)$ 为顶点的三角形）的边界恰好是 $x=0$、$y=0$、$x+y=1$，**这两处提示的都是同一对量**：
+$$u=x+y , v=\frac{x}{x+y} .$$
+在这组新变量下：
+- 被积函数变成 $\mathrm e^{v}$，与 $u$ 无关；
+- 区域变成**正方形** $0\leq u\leq1$、$0\leq v\leq1$（$x,y\geq0$ 给 $0\leq v\leq1$，$x+y\leq1$ 给 $0\leq u\leq1$）。
+
+**"被积函数化简 $+$ 区域化成矩形"同时达成，说明换元选对了。**
+
+逆变换 $x=uv$、$y=u(1-v)$，雅可比
+$$\frac{\partial(x,y)}{\partial(u,v)}=\begin{vmatrix}v&u\\ 1-v&-u\end{vmatrix}=-uv-u(1-v)=-u , |\frac{\partial(x,y)}{\partial(u,v)}|=u .$$
+于是积分完全分离：
+$$\iint_{D}\mathrm e^{\frac{x}{x+y}}dxdy=\int_{0}^{1}\int_{0}^{1}\mathrm e^{v}\cdot u dv du=(\int_{0}^{1}u du)(\int_{0}^{1}\mathrm e^{v}dv) .$$
+
+@解答
+$D$ 是以 $(0,0),(1,0),(0,1)$ 为顶点的三角形：$x\geq0$，$y\geq0$，$x+y\leq1$。
+
+**换元。** 令
+$$u=x+y , v=\frac{x}{x+y} ,$$
+则逆变换为
+$$x=uv , y=u(1-v) .$$
+雅可比行列式
+$$\frac{\partial(x,y)}{\partial(u,v)}=\begin{vmatrix}\dfrac{\partial x}{\partial u}&\dfrac{\partial x}{\partial v}\\[4pt] \dfrac{\partial y}{\partial u}&\dfrac{\partial y}{\partial v}\end{vmatrix}=\begin{vmatrix}v&u\\ 1-v&-u\end{vmatrix}=-uv-u(1-v)=-u ,$$
+故 $|\frac{\partial(x,y)}{\partial(u,v)}|=u$（在 $u>0$ 处）。
+
+**新区域。** $x\geq0,y\geq0$ 且 $u=x+y>0$ 给出 $0\leq v\leq1$；$x+y\leq1$ 给出 $0\leq u\leq1$。故新区域为正方形
+$$\tilde D=\{(u,v): 0\leq u\leq1,\ 0\leq v\leq1\} .$$
+（$u=0$ 只对应原点，为零测集，不影响积分。）
+
+**计算。**
+$$\iint_{D}\mathrm e^{\frac{x}{x+y}}dxdy=\iint_{\tilde D}\mathrm e^{v}\cdot u dudv=(\int_{0}^{1}u du)(\int_{0}^{1}\mathrm e^{v}dv)=\frac12\cdot(\mathrm e-1)=\frac{\mathrm e-1}{2} .$$
+
+@考点
+二重积分的一般换元公式与雅可比行列式；根据被积函数的组合与区域边界选择换元 $u=x+y$、$v=\frac{x}{x+y}$；矩形区域上变量可分离时积分化为乘积。
+
+易混：换元公式中的雅可比是 $|\frac{\partial(x,y)}{\partial(u,v)}|$（**旧对新**）且要取绝对值。若误用 $\frac{\partial(u,v)}{\partial(x,y)}=\frac1{-u}$，因子就会变成 $\frac1u$，结果全错。
+
+@易错
+1. 不换元，按 X 型硬积（内层 $\int\mathrm e^{\frac{x}{x+y}}dy$ 无初等原函数）。
+2. 雅可比取成倒数或漏掉绝对值。
+3. 新区域的范围写错（例如把 $v$ 的范围写成 $0\leq v\leq u$）。
+4. 计算 $\int_{0}^{1}u du=\frac12$ 时漏掉，答成 $\mathrm e-1$。
