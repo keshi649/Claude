@@ -39,7 +39,7 @@ body.dead #game{filter:grayscale(.85) brightness(.8)}
 /* ---------- HUD ---------- */
 #hud{position:fixed;inset:0;z-index:5;pointer-events:none}
 #hud button,#hud .pe{pointer-events:auto}
-#mmWrap{position:absolute;left:calc(var(--sl) + 8px);top:calc(var(--st) + 8px);padding:3px;border-radius:6px;
+#mmWrap{position:absolute;z-index:3;left:calc(var(--sl) + 8px);top:calc(var(--st) + 8px);padding:3px;border-radius:6px;
   background:rgba(6,10,20,.72);border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.4)}
 #minimap{display:block;width:var(--mm);height:var(--mm);border-radius:4px;touch-action:none}
 #heroChip{position:absolute;left:calc(var(--sl) + 8px);top:calc(var(--st) + var(--mm) + 20px);display:flex;align-items:center;gap:8px;
@@ -85,7 +85,7 @@ body.dead #game{filter:grayscale(.85) brightness(.8)}
   animation:toastIn 1.9s forwards}
 .toast b{color:var(--gold)}
 @keyframes toastIn{0%{opacity:0;transform:translateY(8px)}10%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
-#gold{position:absolute;left:calc(var(--sl) + 8px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+#gold{position:absolute;z-index:3;left:calc(var(--sl) + 8px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
 #btnShop{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 8px;border-radius:22px;background:rgba(6,10,20,.8);
   border:1px solid var(--line);font:700 17px var(--fn);color:var(--gold3);font-variant-numeric:tabular-nums}
 #btnShop .coin{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3c4,#e8c26a 45%,#9a6a18);
@@ -187,23 +187,24 @@ body:not(.desktop) .cbtn .key{display:none}
 
 /* Hero select */
 #select{background:radial-gradient(ellipse at 70% 20%,rgba(40,58,100,.5),transparent 60%),linear-gradient(180deg,rgba(9,14,27,.97),rgba(6,10,20,.99))}
-#select .wrap{min-height:100%;display:flex;flex-direction:column;gap:12px;padding:calc(var(--st) + 12px) calc(var(--sr) + 16px) calc(var(--sb) + 14px) calc(var(--sl) + 16px);
+#select .wrap{height:100%;display:flex;flex-direction:column;gap:12px;padding:calc(var(--st) + 12px) calc(var(--sr) + 16px) calc(var(--sb) + 12px) calc(var(--sl) + 16px);
   max-width:1200px;margin:0 auto}
+#select header,#select footer{flex:none}
 #select header{display:flex;align-items:center;gap:14px}
 #select header h2{margin:0;font-family:var(--fd);font-weight:400;font-size:clamp(26px,5vh,38px);color:var(--gold3)}
 #select header p{margin:0;color:var(--muted);font-size:13px}
 #select .main{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;flex:1;min-height:0}
-#roster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-content:start}
+#roster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-content:start;overflow:auto;min-height:0;touch-action:pan-y;padding:2px}
 .hc{position:relative;display:flex;flex-direction:column;align-items:stretch;padding:0;border-radius:6px;overflow:hidden;text-align:left;
   background:#0f1830;border:1px solid var(--line2);transition:transform .12s,border-color .12s}
-.hc canvas{width:100%;aspect-ratio:1/1;display:block}
+.hc canvas{width:100%;aspect-ratio:1/1;display:block;object-fit:cover}
 .hc .nm{padding:5px 8px 6px;display:flex;align-items:baseline;justify-content:space-between;gap:4px;background:linear-gradient(180deg,#131e38,#0d152a)}
 .hc .nm b{font-family:var(--fd);font-weight:400;font-size:clamp(17px,3vh,22px);color:var(--parch)}
 .hc .nm small{font-size:11px;color:var(--muted)}
 .hc:hover{transform:translateY(-2px);border-color:var(--line)}
 .hc.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 22px rgba(232,194,106,.35)}
 .hc.on .nm b{color:var(--gold3)}
-#detail{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:6px;background:rgba(14,22,42,.85);border:1px solid var(--line2);min-width:0}
+#detail{display:flex;flex-direction:column;gap:10px;padding:14px 16px;border-radius:6px;background:rgba(14,22,42,.85);border:1px solid var(--line2);min-width:0;min-height:0;overflow:auto;touch-action:pan-y}
 #detail .top{display:flex;gap:14px;align-items:center}
 #detail .top canvas{width:clamp(64px,13vh,96px);height:clamp(64px,13vh,96px);border-radius:8px;border:1px solid var(--line);flex:none}
 #detail h3{margin:0;font-family:var(--fd);font-weight:400;font-size:clamp(30px,6vh,44px);line-height:1;color:var(--gold3)}
@@ -275,7 +276,7 @@ body:not(.desktop) .cbtn .key{display:none}
 .teamhd{display:flex;align-items:center;gap:10px;padding:8px 8px 2px;font-family:var(--fd);font-size:20px}
 .teamhd.b{color:#9fd0ff}.teamhd.r{color:#ffb2a6}
 .teamhd small{font-family:var(--fn);font-size:14px;color:var(--muted)}
-.scroll{overflow:auto;padding:4px 12px 12px;touch-action:pan-y}
+.scroll{overflow:auto;padding:4px 12px 12px;touch-action:pan-y;flex:1 1 auto;min-height:0}
 #result{display:grid;place-items:center;background:radial-gradient(ellipse at 50% 30%,rgba(40,50,80,.55),rgba(4,7,14,.94) 70%);padding:16px}
 #result .panel{width:min(980px,100%)}
 #result .big{font-family:var(--fd);font-size:clamp(64px,16vh,130px);line-height:1;text-align:center;margin:14px 0 2px;color:var(--gold3);
@@ -311,6 +312,15 @@ body:not(.desktop) .cbtn .key{display:none}
 
 @media (max-width:760px){#itemBar,#buffBar{display:none}}
 @media (max-height:520px){
+  #select .wrap{gap:8px;padding-top:calc(var(--st) + 8px);padding-bottom:calc(var(--sb) + 8px)}
+  #select header p{display:none}
+  .hc canvas{aspect-ratio:5/4}
+  .hc .nm{flex-direction:column;align-items:flex-start;gap:0;padding:3px 6px 4px}
+  .hc .nm b,.hc .nm small{white-space:nowrap}
+  .hc .nm b{font-size:17px}
+  #select footer{gap:8px 14px}
+  #select footer .btn{padding:9px 28px;font-size:15px}
+  .chip{padding:5px 9px}
   #select .main{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
   #roster{gap:6px}
   .hc .nm{padding:3px 6px}
@@ -322,7 +332,7 @@ body:not(.desktop) .cbtn .key{display:none}
   #shopGrid{grid-template-columns:repeat(auto-fill,minmax(74px,1fr));padding:8px}
   .it canvas{width:36px;height:36px}
 }
-@media (max-width:720px){
+@media (max-width:720px) and (min-height:521px){
   #select .main{grid-template-columns:1fr}
   #roster{grid-template-columns:repeat(4,minmax(0,1fr))}
   #shop .body{grid-template-columns:1fr}
