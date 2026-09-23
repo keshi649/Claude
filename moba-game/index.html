@@ -9,7 +9,6 @@
 <title>峡谷争锋</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Barlow+Semi+Condensed:wght@500;700&display=swap">
 <style>
 :root{
   color-scheme:dark;
@@ -62,6 +61,20 @@ body.dead #game{filter:grayscale(.85) brightness(.8)}
 .hbtn{width:34px;height:34px;border-radius:6px;border:1px solid var(--line);background:rgba(8,12,22,.78);color:var(--gold);
   font-family:var(--fd);font-size:19px;line-height:1;display:grid;place-items:center;padding:0}
 .hbtn:active{transform:scale(.94)}
+#tip{position:absolute;left:calc(var(--sl) + 8px);top:calc(50% + 62px);max-width:min(330px,40vw);display:flex;align-items:center;gap:10px;
+  padding:8px 16px 8px 8px;border-radius:6px;background:rgba(6,10,20,.88);border:1px solid var(--gold);font-size:13px;line-height:1.5;color:var(--parch);
+  box-shadow:0 6px 20px rgba(0,0,0,.45);animation:tipIn 6s forwards}
+#tip i{flex:none;font-style:normal;font-family:var(--fd);font-size:18px;color:#2a1a04;background:var(--gold);border-radius:4px;padding:1px 6px}
+#tip b{color:var(--gold3)}
+@keyframes tipIn{0%{opacity:0;transform:translateX(-10px)}6%{opacity:1;transform:none}88%{opacity:1}100%{opacity:0}}
+@media (max-height:520px){#tip{font-size:12px;padding:6px 10px 6px 6px;top:calc(50% + 48px)}#tip i{font-size:15px}}
+#sigs{position:absolute;z-index:3;left:calc(var(--sl) + var(--mm) + 22px);top:calc(var(--st) + 8px);display:flex;flex-direction:column;gap:6px}
+.sig{width:32px;height:32px;border-radius:50%;padding:0;display:grid;place-items:center;font-family:var(--fd);font-size:17px;line-height:1;
+  border:1px solid var(--line);background:rgba(6,10,20,.78);color:var(--parch)}
+.sig[data-s="attack"]{color:#ffb09a}.sig[data-s="retreat"]{color:#9fd0ff}.sig[data-s="gather"]{color:#ffe08a}
+.sig:active{transform:scale(.92)}
+.fe.sg{padding:3px 10px;font-size:12px}
+.fe.sg b{color:var(--self);font-weight:600}
 #fps{position:absolute;right:calc(var(--sr) + 8px);bottom:calc(var(--sb) + 4px);font:500 11px var(--fn);color:var(--muted)}
 #feed{position:absolute;right:calc(var(--sr) + 8px);top:calc(var(--st) + 50px);display:flex;flex-direction:column;gap:4px;align-items:flex-end}
 .fe{display:flex;align-items:center;gap:6px;padding:3px 8px 3px 4px;border-radius:14px;background:rgba(6,10,20,.74);font-size:12px;
@@ -351,12 +364,14 @@ body:not(.desktop) .cbtn .key{display:none}
 
 <div id="hud" hidden>
   <div id="mmWrap" class="pe"><canvas id="minimap" width="200" height="200" aria-label="小地图"></canvas></div>
+  <div id="sigs"><button class="sig" data-s="attack" aria-label="发起进攻" title="发起进攻（Z）">进</button><button class="sig" data-s="retreat" aria-label="开始撤退" title="开始撤退（X）">撤</button><button class="sig" data-s="gather" aria-label="请求集合" title="请求集合（G）">集</button></div>
   <div id="heroChip"><canvas id="chipPic" width="68" height="68"></canvas><div><div class="lvl" id="chipLvl">Lv.1</div><div class="xp"><i id="chipXp"></i></div></div></div>
   <div id="scorebar"><div class="tm b" id="sBlue">0</div><div id="clock">00:00</div><div class="tm r" id="sRed">0</div></div>
   <div id="topRight"><div id="kda"><small>战绩</small>0/0/0</div><button class="hbtn" id="btnBoard" aria-label="战绩面板">绩</button><button class="hbtn" id="btnPause" aria-label="暂停菜单">停</button></div>
   <div id="feed"></div>
   <div id="announce"></div>
   <div id="toast"></div>
+  <div id="tipBox"></div>
   <div id="gold">
     <button id="btnShop" aria-label="打开商店"><span class="coin">金</span><span id="goldN">0</span></button>
     <button id="quickBuy" hidden aria-label="快速购买"><canvas width="72" height="72"></canvas><span><b id="qbName"></b><small id="qbCost"></small></span></button>
@@ -435,6 +450,7 @@ body:not(.desktop) .cbtn .key{display:none}
       <div class="opt"><div>语音播报<small>击杀、推塔等中文播报（需浏览器支持）</small></div><button class="sw2" id="optVoice" aria-label="语音开关"></button></div>
       <div class="opt"><div>自动购买装备<small>金币足够时按推荐出装自动购买</small></div><button class="sw2" id="optAuto" aria-label="自动购买开关"></button></div>
       <div class="opt"><div>托管<small>由 AI 暂时接管你的英雄</small></div><button class="sw2" id="optBot" aria-label="托管开关"></button></div>
+      <div class="opt"><div>新手提示<small>开局指引路线与操作要点</small></div><button class="sw2" id="optTips" aria-label="新手提示开关"></button></div>
       <div class="opt"><div>显示帧率</div><button class="sw2" id="optFps" aria-label="帧率开关"></button></div>
       <button class="btn gold" id="btnResume">继续游戏</button>
       <div class="row" style="display:flex;gap:10px">
@@ -458,12 +474,14 @@ body:not(.desktop) .cbtn .key{display:none}
         <li><kbd>J</kbd> / <kbd>空格</kbd> / 鼠标左键：普通攻击（自动选择目标，按住持续攻击）</li>
         <li><kbd>Q</kbd><kbd>E</kbd><kbd>R</kbd>（或 <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd>）：按住瞄准鼠标方向，松开释放；<kbd>Esc</kbd> 取消</li>
         <li><kbd>F</kbd> 召唤师技能 · <kbd>B</kbd> 回城 · <kbd>H</kbd> 恢复 · <kbd>P</kbd> 商店 · <kbd>Tab</kbd> 战绩 · <kbd>T</kbd> 托管</li>
+        <li><kbd>Z</kbd> 发起进攻 · <kbd>X</kbd> 开始撤退 · <kbd>G</kbd> 请求集合（AI 队友会响应信号）</li>
       </ul>
       <h4>手机触屏（请横屏）</h4>
       <ul>
         <li>左侧任意位置按住拖动：虚拟摇杆移动</li>
         <li>右下角「攻」：普通攻击；技能键<b>轻点</b>自动瞄准最近的敌人，<b>按住拖动</b>手动瞄准，拖到「取消施法」处松开可取消</li>
         <li>点左侧金币打开商店，或点闪烁的推荐装备一键购买；拖动小地图可观察战场</li>
+        <li>小地图右侧「进 / 撤 / 集」给 AI 队友发信号：进攻、撤退、集合</li>
       </ul>
       <h4>小贴士</h4>
       <ul>
@@ -1101,10 +1119,16 @@ function dealDamage(src, t, amt, type, o = {}) {
     if (src && src.team !== t.team) { if (t.restoreT > 0 && (src.kind === 'hero' || src.isStructure)) { t.restoreT = 0; } if (t.channel === 'recall') cancelChannel(t, true); }
     if (t.def.hooks.onDamaged) t.def.hooks.onDamaged(t, src, a);
   }
+  if (t.isStructure && src && src.team !== t.team && G.player && t.team === G.player.team && !G.demo && G.time - (t.alertT || -99) > 25 && (src.kind === 'hero' || t.kind === 'crystal')) {
+    t.alertT = G.time; ping(t.x, t.y, '#ff5a4a');
+    if (t.kind === 'crystal') announce('我方水晶正在遭受攻击', 'bad info', null, null, '我方水晶正在遭受攻击');
+    else toast(`我方<b>${LANE_NAME[t.lane]}${t.tier === 3 ? '高地塔' : t.tier === 2 ? '二塔' : '一塔'}</b>正在遭受攻击`);
+  }
   if (!o.noText) dmgText(src, t, a, type, o);
   if (t.hp <= 0) killUnit(t, src);
   return a;
 }
+function ping(x, y, col) { if (!G || G.fastSim) return; G.pings.push({ x, y, t: G.time, col }); if (G.pings.length > 12) G.pings.shift(); }
 function skillProcs(src, t, a, o) {
   if (src.pas.echo && src.echoCd <= 0) {
     src.echoCd = 5;
@@ -2336,7 +2360,7 @@ function newGame(o) {
   G = { time: 0, units: [], heroes: [], minions: [], towers: [], structs: [], monsters: [], projs: [], zones: [], fx: [], parts: [], texts: [], timers: [],
     teamKills: [0, 0], firstBlood: false, over: false, winner: -1, overT: 0, wave: 0, nextWave: 15, superLane: [{}, {}], camps: [],
     demo: !!o.demo, difficulty: o.difficulty || 'normal', autoPlay: false, player: null, passiveT: 0, visT: 0, stratT: 0, fountT: 0, cleanT: 0,
-    mobile: [], fastSim: false, strategy: [{}, {}], laneCache: [{}, {}], said: {}, overShown: false };
+    mobile: [], fastSim: false, strategy: [{}, {}], laneCache: [{}, {}], said: {}, overShown: false, pings: [], tipIdx: 0, sigT: -99 };
   for (const t of TOWER_BLUE) {
     addUnit(new Tower(BLUE, t));
     const p = T_P(t.x, t.y); addUnit(new Tower(RED, { lane: t.lane === 'top' ? 'bot' : t.lane === 'bot' ? 'top' : 'mid', tier: t.tier, x: p[0], y: p[1] }));
@@ -2512,6 +2536,11 @@ function areaPower(team, x, y, r, viewer) {
   let mc = 0; for (const m of G.minions) if (m.alive && m.team === team && d2(m.x, m.y, x, y) < 600 * 600) mc++;
   return p + Math.min(0.5, mc * 0.07);
 }
+function nearestLane(x, y) {
+  let best = 'mid', bd = 1e18;
+  for (const lane of LANES) { const P = LANE_PTS[lane]; for (let i = 1; i < P.length; i++) { const dd = segDist2(P[i - 1][0], P[i - 1][1], P[i][0], P[i][1], x, y); if (dd < bd) { bd = dd; best = lane; } } }
+  return best;
+}
 const inFountain = (h) => d2(h.x, h.y, FOUNTAIN[h.team].x, FOUNTAIN[h.team].y) < (FOUNTAIN_R - 60) * (FOUNTAIN_R - 60);
 
 class Brain {
@@ -2550,9 +2579,12 @@ class Brain {
     const cur = this.state === 'fight' && this.target && this.target.alive ? this.target : null;
     const commit = cur && hpF > 0.08 && cur.hp / cur.maxHp < hpF * 0.85 && danger < 2.2;
     if (!commit && (hpF < 0.22 || (hpF < 0.4 && danger > 1.4) || (h.maxMp > 0 && mpF < 0.12 && hpF < 0.55 && !near))) { this.state = 'retreat'; this.target = null; return; }
-    const tgt = this.pickFight(foes);
+    const O = this.order && G.time < this.order.until ? this.order : (this.order = null);
+    if (O && O.kind === 'retreat') { this.state = 'fallback'; this.target = null; return; }
+    const tgt = this.pickFight(foes, O && O.kind === 'attack' ? 0.8 : 1);
     if (tgt) { this.state = 'fight'; this.target = tgt; return; }
     this.target = null;
+    if (O) { this.state = 'order'; return; }
     if (near && near.dd < 750 && danger > this.p.aggro * 1.25) { this.state = 'evade'; this.threat = near.e; return; }
     if (hpF < 0.4 && !near && !home) { this.state = 'retreat'; return; }
     if (hpF < 0.62 && h.restoreCd <= 0 && !near && G.time - h.combatT > 3 && !home) startRestore(h);
@@ -2563,9 +2595,9 @@ class Brain {
     if (S.group && (this.pos !== 'jungle' || G.time > 900)) { this.state = 'group'; return; }
     this.state = this.pos === 'jungle' ? 'jungle' : this.pos === 'roam' ? 'roam' : 'lane';
   }
-  pickFight(foes) {
+  pickFight(foes, aggroMul = 1) {
     const h = this.h, T = h.team, hpF = h.hp / h.maxHp;
-    const reach = this.state === 'fight' ? 1250 : (this.pos === 'jungle' || this.pos === 'roam') ? 1100 : 950;
+    const reach = (this.state === 'fight' ? 1250 : (this.pos === 'jungle' || this.pos === 'roam') ? 1100 : 950) * (aggroMul < 1 ? 1.25 : 1);
     let best = null, bs = -1e9;
     for (const { e, dd } of foes) {
       if (dd > reach) continue;
@@ -2574,7 +2606,7 @@ class Brain {
       const tw = enemyTowerAt(T, e.x, e.y, 60);
       if (tw && !(eHp < 0.22 && hpF > 0.5 && tw.target && tw.target.kind === 'minion')) continue;
       const ours = areaPower(T, e.x, e.y, 950, T) + (dd > 950 ? heroPower(h) : 0), theirs = areaPower(e.team, e.x, e.y, 950, T);
-      const adv = ours / Math.max(0.25, theirs) * (1 + (hpF - eHp) * 0.8) * this.bold, thr = this.p.aggro * (this.target === e ? 0.8 : 1);
+      const adv = ours / Math.max(0.25, theirs) * (1 + (hpF - eHp) * 0.8) * this.bold, thr = this.p.aggro * aggroMul * (this.target === e ? 0.8 : 1);
       if (adv < thr && !(eHp < 0.2 && hpF > 0.45)) continue;
       const s = (1 - eHp) * 2 - dd / 700 + (this.target === e ? 0.5 : 0) + (e.def.role === 'marksman' || e.def.role === 'mage' ? 0.3 : 0);
       if (s > bs) { bs = s; best = e; }
@@ -2630,6 +2662,8 @@ class Brain {
       case 'jungle': this.actJungle(); break;
       case 'objective': this.actObjective(); break;
       case 'gank': this.actGank(); break;
+      case 'order': this.actOrder(); break;
+      case 'fallback': this.actFallback(); break;
       case 'roam': this.actRoam(); break;
       case 'group': this.actLane(G.strategy[h.team].focusLane || 'mid'); break;
       default: this.actLane(this.lane);
@@ -2794,6 +2828,23 @@ class Brain {
     const f = FOUNTAIN[h.team], a1 = angTo(e, h), a2 = angTo(h, f);
     const a = Math.atan2(Math.sin(a1) + Math.sin(a2) * 0.8, Math.cos(a1) + Math.cos(a2) * 0.8);
     navTo(h, h.x + Math.cos(a) * 400, h.y + Math.sin(a) * 400);
+  }
+  actOrder() {
+    const h = this.h, O = this.order;
+    if (!O || G.time > O.until) { this.order = null; this.state = 'lane'; this.thinkT = 0; return; }
+    let tx = O.x, ty = O.y;
+    if (O.kind === 'gather' && O.from && O.from.alive) { tx = O.from.x; ty = O.from.y; }
+    const k = (h.id % 5) / 5 * TAU, ox = Math.cos(k) * 150, oy = Math.sin(k) * 150;
+    if (Math.hypot(tx - h.x, ty - h.y) > 330) navTo(h, tx + ox, ty + oy);
+    else this.actLane(nearestLane(h.x, h.y));
+  }
+  actFallback() {
+    const h = this.h, f = FOUNTAIN[h.team], myD = d2(h.x, h.y, f.x, f.y);
+    if (!this.order || G.time > this.order.until) { this.order = null; this.state = 'lane'; this.thinkT = 0; return; }
+    let best = null, bd = 1e18;
+    for (const s of G.structs) { if (!s.alive || s.team !== h.team || d2(s.x, s.y, f.x, f.y) > myD + 250000) continue; const dd = d2(s.x, s.y, h.x, h.y); if (dd < bd) { bd = dd; best = s; } }
+    const tx = best ? best.x : f.x, ty = best ? best.y : f.y, a = Math.atan2(f.y - ty, f.x - tx);
+    navTo(h, tx + Math.cos(a) * 220, ty + Math.sin(a) * 220);
   }
   actGank() {
     const h = this.h, t = this.target;
@@ -3575,6 +3626,33 @@ function drawParts(add) {
   ctx.globalAlpha = 1;
 }
 
+// ---- 新手指引箭头 ----
+function guideTarget(P) {
+  if (P.pos === 'jungle') {
+    let best = null, bd = 1e18;
+    for (const c of G.camps) if (c.side === P.team && (c.kind === 'blue' || c.kind === 'red')) { const dd = d2(c.x, c.y, P.x, P.y); if (dd < bd) { bd = dd; best = c; } }
+    return best ? [best.x, best.y] : null;
+  }
+  const lane = P.pos === 'roam' ? 'bot' : P.pos, L = laneInfo(P.team, lane);
+  if (L.front > 0) return lanePoint(L.lp, L.front - 320);
+  return L.ourTower ? [L.ourTower.x, L.ourTower.y] : null;
+}
+function drawGuide(P, now) {
+  const g = guideTarget(P); if (!g) return;
+  const dx = g[0] - P.x, dy = g[1] - P.y, d = Math.hypot(dx, dy); if (d < 650) return;
+  let tx = g[0], ty = g[1];
+  const path = navLOS(P.x, P.y, tx, ty) ? null : findPath(P.x, P.y, tx, ty);
+  if (path && path.length) { tx = path[0][0]; ty = path[0][1]; }
+  const a = Math.atan2(ty - P.y, tx - P.x);
+  ctx.save(); ctx.translate(P.x, P.y); ctx.rotate(a); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (let i = 0; i < 3; i++) {
+    const k = ((now * 1.6 - i * 0.22) % 1 + 1) % 1, x = 100 + i * 55;
+    ctx.strokeStyle = `rgba(255,214,110,${0.35 + 0.55 * (1 - k)})`; ctx.lineWidth = 11;
+    ctx.beginPath(); ctx.moveTo(x - 18, -22); ctx.lineTo(x + 8, 0); ctx.lineTo(x - 18, 22); ctx.stroke();
+  }
+  ctx.restore();
+}
+
 // ---- 瞄准指示 ----
 function drawAim() {
   const P = G.player, A = INPUT.aim; if (!P || !P.alive || !A) return;
@@ -3699,6 +3777,7 @@ function render(now) {
   drawTerrain(x0, y0, x1, y1, t);
   for (const zn of G.zones) if (zn.x + zn.r > x0 && zn.x - zn.r < x1 && zn.y + zn.r > y0 && zn.y - zn.r < y1) drawZone(zn);
   const P = G.player, pt = P ? P.team : -1;
+  if (P && P.alive && SETTINGS.tips && G.time < 150 && !G.autoPlay) drawGuide(P, t);
   // 敌方塔攻击范围
   if (P && P.alive) {
     for (const s of G.structs) {
@@ -3786,6 +3865,10 @@ function drawMinimap() {
     m.strokeStyle = col; m.lineWidth = 2; m.beginPath(); m.arc(x, y, 6.5, 0, TAU); m.stroke();
     m.fillStyle = '#10131c'; m.font = '700 8px ' + FONT_UI; m.textAlign = 'center'; m.textBaseline = 'middle'; m.fillText(h.name[0], x, y + 0.5);
   }
+  for (const pg of G.pings) {
+    const age = G.time - pg.t; if (age > 3) continue;
+    for (let k = 0; k < 2; k++) { const a = (age * 1.4 + k * 0.5) % 1; m.strokeStyle = hexA(pg.col, 1 - a); m.lineWidth = 2; m.beginPath(); m.arc(pg.x * S, pg.y * S, 4 + a * 16, 0, TAU); m.stroke(); }
+  }
   const hw = W / 2 / cam.zoom * S, hh = H / 2 / cam.zoom * S;
   m.strokeStyle = 'rgba(255,255,255,0.65)'; m.lineWidth = 1; m.strokeRect(cam.x * S - hw, cam.y * S - hh, hw * 2, hh * 2);
 }
@@ -3817,7 +3900,7 @@ function paintItem(canvas, id) {
   c.shadowColor = 'rgba(0,0,0,0.6)'; c.shadowBlur = s * 0.08; c.fillText(it.glyph, s / 2, s * 0.54); c.shadowBlur = 0;
 }
 // ---------------- 设置 ----------------
-const SETTINGS = { sfx: true, voice: true, autoBuy: true, fps: false };
+const SETTINGS = { sfx: true, voice: true, autoBuy: true, fps: false, tips: true };
 function loadSettings() { try { const s = JSON.parse(localStorage.getItem('xgzf-settings') || '{}'); Object.assign(SETTINGS, s); } catch (e) {} }
 function saveSettings() { try { localStorage.setItem('xgzf-settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 const MENU = { hero: 'yunxi', spell: 'flash', diff: 'normal' };
@@ -3864,6 +3947,53 @@ function announceKill(k, v, special, vStreak) {
   else if (k === G.player) { announce('击败敌人', 'info', k, v, null); Sound.play('kill'); }
   else if (v === G.player) announce('你被击败了', 'bad info', k, v, null);
 }
+const TIPS = [
+  [1.5, () => `你的位置：<b>${POS_NAME[G.player.pos]}</b>，跟随地上的金色箭头出发${IS_TOUCH ? '（左手摇杆移动）' : '（WASD 移动）'}`],
+  [17, () => '小兵出发了！跟在己方小兵身后，<b>最后一击</b>敌方小兵才能拿到全额金币'],
+  [38, () => IS_TOUCH ? '技能键<b>轻点</b>自动瞄准最近的敌人，<b>按住拖动</b>可手动瞄准' : '按住 <b>Q / E / R</b> 瞄准鼠标方向，松开即释放；<b>J</b> 或鼠标左键普攻'],
+  [66, () => '敌方防御塔会先打小兵；<b>没有小兵掩护</b>时别走进塔下的红圈'],
+  [100, () => IS_TOUCH ? '血量低时点「<b>归</b>」回城，泉水能快速回满状态' : '血量低时按 <b>B</b> 回城，泉水能快速回满状态'],
+  [140, () => '装备会按推荐自动购买，点左侧<b>金币</b>可打开商店自己挑选'],
+  [200, () => IS_TOUCH ? '小地图旁的「<b>进 / 撤 / 集</b>」可以指挥 AI 队友' : '按 <b>Z / X / G</b> 让 AI 队友 进攻 / 撤退 / 集合'],
+];
+function tip(html) {
+  const box = $('tipBox'); box.innerHTML = '';
+  const d = document.createElement('div'); d.id = 'tip'; d.innerHTML = '<i>提示</i><span>' + html + '</span>'; box.appendChild(d);
+  setTimeout(() => { if (d.parentNode) d.remove(); }, 6000);
+}
+function tickTips() {
+  if (!SETTINGS.tips || G.autoPlay || G.fastSim || G.tipIdx >= TIPS.length) return;
+  if (G.time >= TIPS[G.tipIdx][0]) { tip(TIPS[G.tipIdx][1]()); G.tipIdx++; }
+}
+function addFeedText(html) {
+  const f = $('feed'); if (f.children.length > 4) f.firstChild.remove();
+  const d = document.createElement('div'); d.className = 'fe sg'; d.innerHTML = html; f.appendChild(d); setTimeout(() => d.remove(), 7000);
+}
+const SIG = { attack: ['发起进攻！', '#ff7a5a'], retreat: ['开始撤退！', '#6ab8ff'], gather: ['请求集合！', '#ffd35a'] };
+function signal(kind) {
+  const P = G && G.player; if (!P || G.over || G.demo) return;
+  if (G.time - G.sigT < 2) return; G.sigT = G.time;
+  const [txt, col] = SIG[kind];
+  ping(P.x, P.y, col); FX.ring(P.x, P.y, 170, col, 0.9, { width: 12 }); Sound.play('click');
+  addFeedText(`<b>${P.name}（你）</b>：${txt}`);
+  const mates = G.heroes.filter((h) => h.team === P.team && h !== P && h.alive && h.brain);
+  for (const h of mates) h.brain.order = { kind, x: P.x, y: P.y, from: P, until: G.time + (kind === 'retreat' ? 8 : 18) };
+  const near = mates.filter((h) => dist(h, P) < 4500);
+  if (near.length) { const h = pick(near); later(0.7, () => addFeedText(`<b style="color:var(--ally)">${h.name}</b>：${kind === 'retreat' ? '好的，撤！' : kind === 'gather' ? '马上到！' : '跟上！'}`)); }
+}
+document.querySelectorAll('.sig').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); if (inMatch() && !isPaused()) signal(b.dataset.s); }));
+function loadFonts() {
+  try {
+    const lk = document.createElement('link'); lk.rel = 'stylesheet';
+    lk.href = 'https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Barlow+Semi+Condensed:wght@500;700&display=swap';
+    lk.onload = () => {
+      if (!document.fonts || !document.fonts.load) return;
+      Promise.all([document.fonts.load('40px "Ma Shan Zheng"', '峡谷争锋攻剑'), document.fonts.load('700 16px "Barlow Semi Condensed"', '0123')]).then(onFontsReady).catch(() => {});
+    };
+    document.head.appendChild(lk);
+  } catch (e) {}
+}
+function onFontsReady() { HUD.itemsKey = '#'; HUD.qbId = null; if (!$('select').hidden) showSelect(); if (!$('shop').hidden) renderShop(); }
 function addFeed(k, v) {
   const f = $('feed'); if (f.children.length > 4) f.firstChild.remove();
   const d = document.createElement('div'); d.className = 'fe';
@@ -3983,7 +4113,10 @@ function onKey(e, down) {
   if (k === 'f') { if (down) startAim('spell', 'key'); else if (INPUT.aim && INPUT.aim.spell && INPUT.aim.src === 'key') releaseAim(false); return; }
   if (!down) return;
   if (k === 'b') { const P = G.player; if (P.channel) cancelChannel(P); else if (!startRecall(P)) toast('无法回城'); }
-  else if (k === 'h' || k === 'c') { if (!startRestore(G.player)) toast('恢复冷却中'); }
+  else if (k === 'h') { if (!startRestore(G.player)) toast('恢复冷却中'); }
+  else if (k === 'z') signal('attack');
+  else if (k === 'x') signal('retreat');
+  else if (k === 'g') signal('gather');
   else if (k === 'p') openShop();
   else if (k === 'tab') toggleBoard();
   else if (k === 't') setAuto(!G.autoPlay);
@@ -4250,6 +4383,8 @@ function mvpOf(team) {
 }
 function showResult() {
   if (G.overShown) return; G.overShown = true;
+  if (SETTINGS.tips && G.time > 240) { SETTINGS.tips = false; saveSettings(); }
+  $('tipBox').innerHTML = '';
   const win = G.winner === playerTeam(), P = G.player;
   const r = $('result'); r.classList.toggle('lose', !win);
   $('resBig').textContent = win ? '胜利' : '失败';
@@ -4273,6 +4408,7 @@ function togglePause(force) {
 function syncOptions() {
   $('optSfx').classList.toggle('on', SETTINGS.sfx); $('optVoice').classList.toggle('on', SETTINGS.voice); $('optAuto').classList.toggle('on', SETTINGS.autoBuy);
   $('optBot').classList.toggle('on', !!(G && G.autoPlay)); $('optFps').classList.toggle('on', SETTINGS.fps); $('fps').hidden = !SETTINGS.fps;
+  $('optTips').classList.toggle('on', SETTINGS.tips);
   Sound.sfxOn = SETTINGS.sfx; Sound.voiceOn = SETTINGS.voice;
 }
 function setAuto(on) {
@@ -4289,6 +4425,7 @@ $('optVoice').addEventListener('click', () => { SETTINGS.voice = !SETTINGS.voice
 $('optAuto').addEventListener('click', () => { SETTINGS.autoBuy = !SETTINGS.autoBuy; saveSettings(); syncOptions(); });
 $('optBot').addEventListener('click', () => setAuto(!G.autoPlay));
 $('optFps').addEventListener('click', () => { SETTINGS.fps = !SETTINGS.fps; saveSettings(); syncOptions(); });
+$('optTips').addEventListener('click', () => { SETTINGS.tips = !SETTINGS.tips; saveSettings(); syncOptions(); });
 $('btnFull').addEventListener('click', () => { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => toast('当前环境不支持全屏')); } catch (e) { toast('当前环境不支持全屏'); } });
 $('btnQuit').addEventListener('click', () => { togglePause(false); if (G && !G.over) { G.winner = 1 - playerTeam(); G.over = true; G.time = G.time; showResult(); } });
 $('btnHelp1').addEventListener('click', () => { Sound.init(); $('help').hidden = false; });
@@ -4339,7 +4476,7 @@ $('btnAgain').addEventListener('click', () => { Sound.play('click'); showSelect(
 $('btnHome').addEventListener('click', () => { Sound.play('click'); showTitle(); });
 function startMatch() {
   $('select').hidden = true; $('title').hidden = true; $('result').hidden = true; UI.covered = false;
-  annQueue.length = 0; $('announce').innerHTML = ''; $('feed').innerHTML = ''; $('toast').innerHTML = '';
+  annQueue.length = 0; $('announce').innerHTML = ''; $('feed').innerHTML = ''; $('toast').innerHTML = ''; $('tipBox').innerHTML = '';
   newGame({ hero: HERO_BY_ID[MENU.hero], spell: MENU.spell, difficulty: MENU.diff });
   INPUT.keys = {}; INPUT.aim = null; INPUT.atkHeld = false; joyReset();
   $('hud').hidden = false; PAUSED = false; setupSkillButtons(); syncOptions(); layoutHud(); updateHud(true);
@@ -4379,6 +4516,7 @@ function update(dt) {
   G.time += dt;
   runTimers();
   gameEvents(dt);
+  if (!G.demo && G.player) tickTips();
   G.mobile.length = 0; for (const u of G.units) if (u.alive && !u.isStructure) G.mobile.push(u);
   for (let i = 0; i < G.units.length; i++) { const u = G.units[i]; if (u.alive || u.kind === 'hero') u.update(dt); }
   separateUnits();
@@ -4422,7 +4560,7 @@ function boot(hot) {
   addEventListener('orientationchange', () => setTimeout(resize, 200));
   $('loading').remove();
   Sound.sfxOn = SETTINGS.sfx; Sound.voiceOn = SETTINGS.voice;
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { HUD.itemsKey = '#'; if (!$('select').hidden) showSelect(); }).catch(() => {});
+  loadFonts();
   if (TEST) {
     window.__game = {
       get G() { return G; }, newGame, HERO_DEFS, ITEMS, castSkill, buyItem, nextBuy, findPath, WALLS, BUSHES, startMatch, MENU, cam, INPUT, setAuto,
