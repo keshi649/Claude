@@ -2439,12 +2439,13 @@ function spawnWave() {
     for (const [ty, d, lo] of list) later(d, () => spawnMinion(team, lane, ty, lo));
   }
 }
-function composeTeam(forced) {
+function composeTeam(forced, avoid = new Set()) {
   const order = ['top', 'jungle', 'mid', 'bot', 'roam'], used = new Set(), res = {};
   if (forced) { res[forced.pos] = forced.id; used.add(forced.id); }
   for (const pos of order) {
     if (res[pos]) continue;
-    const opts = POOLS[pos].filter((id) => !used.has(id));
+    const fresh = POOLS[pos].filter((id) => !used.has(id) && !avoid.has(id));   // 尽量避免两队同英雄
+    const opts = fresh.length ? fresh : POOLS[pos].filter((id) => !used.has(id));
     const id = opts.length ? pick(opts) : pick(HERO_DEFS.map((d) => d.id).filter((x) => !used.has(x)));
     res[pos] = id; used.add(id);
   }
@@ -2464,7 +2465,7 @@ function newGame(o) {
   addUnit(new Tower(RED, { tier: 4, x: CRYSTAL[1].x, y: CRYSTAL[1].y, lane: null }));
   G.camps = CAMP_DEFS.map((c) => Object.assign({}, c, { unit: null, respawnAt: CAMP_FIRST[c.kind] }));
   const diff = DIFF[G.difficulty];
-  const blue = composeTeam(o.demo ? null : o.hero), red = composeTeam(null);
+  const blue = composeTeam(o.demo ? null : o.hero), red = composeTeam(null, new Set(blue.map((s) => s.def.id)));
   const mk = (slot, team, isPlayer) => {
     const spell = isPlayer ? (o.spell || 'flash') : (slot.pos === 'jungle' ? 'smite' : slot.pos === 'bot' && Math.random() < 0.4 ? 'heal' : 'flash');
     const h = new Hero(slot.def, team, { player: isPlayer, pos: slot.pos, spell, dmgMult: team === RED && !o.demo ? diff.dmg : 1 });
