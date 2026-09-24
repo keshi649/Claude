@@ -110,14 +110,18 @@ body.short #tip i{font-size:15px}
   animation:toastIn 1.9s forwards}
 .toast b{color:var(--gold)}
 @keyframes toastIn{0%{opacity:0;transform:translateY(8px)}10%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0}}
-#gold{position:absolute;z-index:3;left:calc(var(--sl) + 8px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+#gold{position:absolute;z-index:3;left:calc(var(--sl) + 8px);top:calc(var(--st) + var(--mm) + 70px);display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+body.short #gold{top:calc(var(--st) + var(--mm) + 16px);gap:5px}
+body.short #quickBuy{padding:3px 9px 3px 3px}body.short #quickBuy canvas{width:28px;height:28px}
 #btnShop{display:flex;align-items:center;gap:7px;padding:6px 12px 6px 8px;border-radius:22px;background:rgba(6,10,20,.8);
   border:1px solid var(--line);font:700 17px var(--fn);color:var(--gold3);font-variant-numeric:tabular-nums}
 #btnShop .coin{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3c4,#e8c26a 45%,#9a6a18);
   box-shadow:0 0 6px rgba(232,194,106,.6);display:grid;place-items:center;font:12px var(--fd);color:#5a3a06}
-#quickBuy{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:8px;background:rgba(6,10,20,.84);
+#quickBuy.idle{pointer-events:none;animation:none;border-color:var(--line2)}
+#quickBuy{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:8px;background:rgba(6,10,20,.84);
   border:1px solid var(--gold);font-size:12px;color:var(--parch);animation:qbPulse 1.6s infinite;max-width:180px;text-align:left}
-#quickBuy canvas{width:36px;height:36px;border-radius:6px;flex:none}
+#quickBuy canvas{width:32px;height:32px;border-radius:6px;flex:none}
+body.short #quickBuy b{font-size:12px}body.short #quickBuy small{font-size:11px}
 #quickBuy b{display:block;color:var(--gold3);font-size:13px}
 #quickBuy small{font:600 12px var(--fn);color:var(--gold)}
 @keyframes qbPulse{0%,100%{box-shadow:0 0 0 rgba(232,194,106,0)}50%{box-shadow:0 0 14px rgba(232,194,106,.55)}}
@@ -141,6 +145,9 @@ body.desktop #joyZone{display:none}
   border:2px solid rgba(232,194,106,.6);color:var(--parch);font-family:var(--fd);
   background:radial-gradient(circle at 50% 30%,rgba(70,86,126,.95),rgba(14,20,38,.95) 72%);
   box-shadow:0 4px 14px rgba(0,0,0,.5),inset 0 0 14px rgba(0,0,0,.55)}
+.cbtn::before{content:"";position:absolute;inset:-9px;border-radius:50%}
+.cbtn.sm::before,.cbtn.mini::before,.cbtn.sp::before{inset:-6px}
+.cbtn.atk{z-index:2}
 .cbtn .glyph{font-style:normal;line-height:1;pointer-events:none;text-shadow:0 2px 5px rgba(0,0,0,.7)}
 .cbtn .cd{position:absolute;inset:0;border-radius:50%;pointer-events:none;display:grid;place-items:center;
   font:700 18px var(--fn);color:#fff;text-shadow:0 1px 3px #000;
@@ -387,6 +394,7 @@ body.desktop .touch-only{display:none}
 #loading{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:var(--ink);font-family:var(--fd);font-size:40px;color:var(--gold3)}
 
 body.w760 #itemBar{display:none}
+body.short #itemBar{display:none}
 body.short #heroChip{display:none}
 body.short #select .wrap{gap:8px;padding-top:calc(var(--st) + 8px);padding-bottom:calc(var(--sb) + 8px)}
 body.short #select header p{display:none}
@@ -1129,7 +1137,7 @@ function tryAttack(u, t) {
   if (!u.canAct() || u.windT > 0 || u.atkT > 0) return false;
   if (!validTarget(u, t) || !inRange(u, t)) return false;
   const iv = 1 / u.as;
-  u.atkT = iv; u.windT = Math.min(0.26, iv * 0.32); u.windTarget = t; u.face = angTo(u, t);
+  u.atkT = iv; u.windT = u.kind === 'hero' ? Math.min(0.2, iv * 0.26) : Math.min(0.26, iv * 0.32); u.windTarget = t; u.face = angTo(u, t); u.windStartT = G.time;
   u.atkAnim = u.atkAnimMax = Math.min(0.42, iv * 0.85);
   if (u.channel) cancelChannel(u);
   if (u.kind === 'hero') u.moveDir = null;
@@ -2363,13 +2371,19 @@ function separateUnits() {
     const a = arr[i]; if (a.dash || a.z > 1 || !a.alive) continue;
     for (let j = i + 1; j < n; j++) {
       const b = arr[j]; if (b.dash || b.z > 1 || !b.alive) continue;
-      // 英雄之间保持明显间距（避免团战时叠成一团看不清），英雄与小兵次之
-      const R = (a.r + b.r) * (a.kind === 'hero' ? (b.kind === 'hero' ? 1.3 : 0.95) : b.kind === 'hero' ? 0.95 : 0.82), dx = b.x - a.x, dy = b.y - a.y;
+      // 与王者一致：英雄穿行不受任何单位阻挡。英雄推开小兵（自身不动）、与野怪互不碰撞；
+      // 玩家不会被其他英雄挤开，其他英雄会慢慢让位（团战时画面不叠成一团）
+      const ha = a.kind === 'hero', hb = b.kind === 'hero';
+      if (ha !== hb && (a.kind === 'monster' || b.kind === 'monster')) continue;
+      const R = (a.r + b.r) * (ha ? (hb ? 1.3 : 0.8) : hb ? 0.8 : 0.82), dx = b.x - a.x, dy = b.y - a.y;
       if (dx > R || dx < -R || dy > R || dy < -R) continue;
       const dd = dx * dx + dy * dy; if (dd >= R * R) continue;
       let d = Math.sqrt(dd), nx, ny;
       if (d < 0.01) { const ang = Math.random() * TAU; nx = Math.cos(ang); ny = Math.sin(ang); d = 0; } else { nx = dx / d; ny = dy / d; }
-      const k = (R - d) * 0.5, wa = b.mass / (a.mass + b.mass), wb = 1 - wa;
+      let k = (R - d) * 0.5, wa, wb;
+      if (ha && hb) { const P = G.player; if (a === P) { wa = 0; wb = 0.35; } else if (b === P) { wa = 0.35; wb = 0; } else { wa = wb = 0.5; } }
+      else if (ha) { wa = 0; wb = 0.6; } else if (hb) { wa = 0.6; wb = 0; }
+      else { wa = b.mass / (a.mass + b.mass); wb = 1 - wa; }
       a.x -= nx * k * wa; a.y -= ny * k * wa; b.x += nx * k * wb; b.y += ny * k * wb;
     }
   }
@@ -4991,7 +5005,7 @@ function aimPoint(A) {
     const L = Math.hypot(A.dx, A.dy) || 1, dx = A.dx, dy = A.dy / TILT, D = Math.hypot(dx, dy) || 1;
     if (A.spell) return [P.x + dx / D * 430, P.y + dy / D * 430];
     const sk = P.def.skills[A.slot];
-    if (sk.aim === 'point' || sk.aim === 'target') { const k = clamp(L / A.maxDrag, 0, 1) * sk.range; return [P.x + dx / D * k, P.y + dy / D * k]; }
+    if (sk.aim === 'point' || sk.aim === 'target') { const k = clamp((L - (A.dz || 0)) / Math.max(1, A.maxDrag - (A.dz || 0)), 0.05, 1) * sk.range; return [P.x + dx / D * k, P.y + dy / D * k]; }
     return [P.x + dx / D * 300, P.y + dy / D * 300];
   }
   return [P.x, P.y];
@@ -5015,10 +5029,18 @@ function lockAt(wx, wy, hard) {
 function autoAimPoint(P, sk, spell) {
   const range = spell ? 500 : sk ? (sk.aim === 'self' ? 0 : Math.min(sk.range, 1400)) : 600;
   if (sk && sk.aim === 'self') return [P.x, P.y];
-  const L = lockValid(P); if (L && !spell && Math.hypot(L.x - P.x, L.y - P.y) < range + 150) return [L.x, L.y];
+  if ((spell && P.spell === 'flash') || (sk && sk.ai === 'kite')) {   // 逃生位移：往正在移动（或面朝）的方向
+    const a = P.moveDir ?? P.face, d = spell ? 430 : sk.range; return [P.x + Math.cos(a) * d, P.y + Math.sin(a) * d];
+  }
+  const lead = (t) => {   // 轻点施放时按目标移动做预判：飞行类按飞行时间，延迟落地类按延迟
+    if (!sk || !(t.vx || t.vy)) return [t.x, t.y];
+    const dd = Math.hypot(t.x - P.x, t.y - P.y), tt = sk.speed ? dd / sk.speed : sk.delay || 0;
+    return [t.x + t.vx * tt * 0.75, t.y + t.vy * tt * 0.75];
+  };
+  const L = lockValid(P); if (L && !spell && Math.hypot(L.x - P.x, L.y - P.y) < range + 150) return lead(L);
   let t = nearestEnemyHero(P, P.x, P.y, range + 120);
   if (!t) t = nearestEnemyUnit(P, P.x, P.y, range + 60);
-  if (t) return [t.x, t.y];
+  if (t) return lead(t);
   const d = sk && sk.aim === 'point' ? sk.range * 0.6 : 300;
   const a = P.moveDir ?? P.face; return [P.x + Math.cos(a) * d, P.y + Math.sin(a) * d];
 }
@@ -5033,12 +5055,13 @@ function pickAttackTarget(h, near, mode) {
     if (mode === 'minion' ? u.kind !== 'minion' && u.kind !== 'monster' : mode === 'struct' ? !u.isStructure : false) continue;
     const ed = edgeDist(h, u);
     let s;
-    if (u.kind === 'hero') { if (ed > R + 260) continue; s = ed; }
+    // 优先级：攻击距离内（含少许余量）的英雄 > 距离内的小兵野怪（能击杀的优先）> 距离内的塔 > 距离外需要走过去的目标
+    if (u.kind === 'hero') { if (ed > R + 260) continue; s = ed <= R + 110 ? ed : 50000 + ed; }
     else if (u.isStructure) { if (ed > R + (mode ? 420 : 60)) continue; s = 30000 + ed; }
     else {
       if (ed > R + (mode ? 360 : 180)) continue;
       const kill = u.hp <= h.ad * 600 / (600 + u.armor);
-      s = mode ? (kill ? 0 : 4000) + 3000 * u.hp / u.maxHp + ed : 10000 + (kill ? 0 : 3000) + ed;
+      s = mode ? (kill ? 0 : 4000) + 3000 * u.hp / u.maxHp + ed : (ed <= R + 40 ? 10000 : 60000) + (kill ? 0 : 3000) + ed;
     }
     if (near) s += Math.hypot(u.x - cx, u.y - cy) * 0.5;
     if (s < bs) { bs = s; best = u; }
@@ -5055,8 +5078,11 @@ function playerControl(h, dt) {
   let mx = INPUT.joyX, my = INPUT.joyY;
   const K = INPUT.keys;
   if (K.w || K.arrowup) my -= 1; if (K.s || K.arrowdown) my += 1; if (K.a || K.arrowleft) mx -= 1; if (K.d || K.arrowright) mx += 1;
-  const mag = Math.hypot(mx, my);
-  if (mag > 0.15) {
+  const mag = Math.hypot(mx, my), moving = mag > 0.15;
+  if (moving && !h.wasMoving) h.moveStartT = G.time; h.wasMoving = moving;
+  // 普攻前摇中重新推摇杆 = 取消这次攻击立即移动（边走边按攻击时不取消）
+  if (moving && h.windT > 0 && !INPUT.atkHeld && h.moveStartT > (h.windStartT ?? -1)) { h.windT = 0; h.windTarget = null; h.atkT = 0; h.atkAnim = 0; }
+  if (moving) {
     h.moveDir = Math.atan2(my / TILT, mx); h.dest = null; h.path = null; h.chase = null;   // 屏幕方向 → 地面方向
     if (h.channel) cancelChannel(h, false);
   } else h.moveDir = null;
@@ -5067,16 +5093,18 @@ function playerControl(h, dt) {
   }
   if (INPUT.atkPulse > 0) INPUT.atkPulse -= dt;
   if (INPUT.atkHeld || INPUT.atkPulse > 0) {
+    h.atkInT = G.time;
     const t = pickAttackTarget(h, INPUT.atkPoint, INPUT.atkMode);
     if (t) {
-      if (inRange(h, t)) { if (h.windT <= 0 && h.atkT <= 0) { h.moveDir = null; h.dest = null; h.path = null; tryAttack(h, t); } else if (mag <= 0.15) { h.dest = null; h.path = null; } }
+      if (inRange(h, t)) { if (h.windT <= 0 && h.atkT <= 0) { h.moveDir = null; h.dest = null; h.path = null; if (tryAttack(h, t)) INPUT.atkPulse = 0; } else if (mag <= 0.15) { h.dest = null; h.path = null; } }
       else if (mag <= 0.15) h.chase = t;
     }
   }
   if (h.chase) {
     const t = h.chase;
-    if (!validTarget(h, t) || mag > 0.15 || edgeDist(h, t) > h.range + 700) h.chase = null;
-    else if (inRange(h, t)) { h.chase = null; h.dest = null; h.path = null; tryAttack(h, t); }
+    // 松开攻击键 1 秒后不再自动追人（避免被带进塔下）
+    if (!validTarget(h, t) || mag > 0.15 || edgeDist(h, t) > h.range + 700 || G.time - (h.atkInT || 0) > 1) { h.chase = null; h.dest = null; h.path = null; }
+    else if (inRange(h, t)) { h.chase = null; h.dest = null; h.path = null; if (tryAttack(h, t)) INPUT.atkPulse = 0; }
     else if (h.windT <= 0) navTo(h, t.x, t.y);
   }
 }
@@ -5157,14 +5185,14 @@ cv.addEventListener('pointerdown', (e) => {
   if (!mid && !(IS_TOUCH && e.pointerType !== 'mouse') && !(IS_TOUCH && e.button === 0)) return;
   if (mid) e.preventDefault();
   const [x, y] = gp(e), now = performance.now();
-  Object.assign(PAN, { id: e.pointerId, sx: x, sy: y, lx: x, ly: y, t0: now, lt: now, drag: mid, mouse: mid, vx: 0, vy: 0 });
+  Object.assign(PAN, { id: e.pointerId, sx: x, sy: y, lx: x, ly: y, t0: now, lt: now, drag: mid, mouse: mid, vx: 0, vy: 0, nopan: !mid && x > (HUD.ctrlX0 ?? 1e9) && y > (HUD.ctrlY0 ?? 1e9) });
   cam.vx = cam.vy = 0;
   try { cv.setPointerCapture(e.pointerId); } catch (er) {}
 });
 cv.addEventListener('pointermove', (e) => {
   if (e.pointerId !== PAN.id) return;
   const [x, y] = gp(e), now = performance.now();
-  if (!PAN.drag && Math.hypot(x - PAN.sx, y - PAN.sy) > 12 && SETTINGS.dragCam) { PAN.drag = true; PAN.lx = x; PAN.ly = y; }
+  if (!PAN.drag && !PAN.nopan && Math.hypot(x - PAN.sx, y - PAN.sy) > 12 && SETTINGS.dragCam) { PAN.drag = true; PAN.lx = x; PAN.ly = y; }
   if (PAN.drag) {
     // 触屏：往哪滑镜头就往哪看（同王者的镜头拖动）；鼠标中键或开启「拖动地图」时画面跟着手指走
     const k = PAN.mouse || SETTINGS.dragMap ? -1 : 1.3;
@@ -5203,7 +5231,7 @@ function joyReset() { INPUT.joy = null; INPUT.joyX = INPUT.joyY = 0; joyBase.cla
 joyZone.addEventListener('pointerdown', (e) => {
   if (INPUT.joy !== null) return; e.preventDefault(); Sound.init();
   const zr = grect(joyZone), [px, py] = gp(e);
-  const cx = clamp(px - zr.x, JOY_R, zr.w - JOY_R * 0.4), cy = clamp(py - zr.y, JOY_R * 0.6, zr.h - JOY_R);
+  const cx = clamp(px - zr.x, 0, zr.w), cy = clamp(py - zr.y, 0, zr.h);
   INPUT.joy = { id: e.pointerId, cx, cy }; joyBase.style.left = cx + 'px'; joyBase.style.top = cy + 'px'; joyBase.classList.add('on');
   try { joyZone.setPointerCapture(e.pointerId); } catch (er) {}
   joyMove(e);
@@ -5251,8 +5279,10 @@ function bindSkillButton(el, slot) {
   });
   el.addEventListener('pointermove', (e) => {
     if (e.pointerId !== pid || !INPUT.aim) return;
-    const [px, py] = gp(e), dx = px - ox, dy = py - oy, A = INPUT.aim, L = Math.hypot(dx, dy);
-    if (L > size * 0.28) { A.manual = true; A.dx = dx; A.dy = dy; showCancel(); }
+    const [px, py] = gp(e), dx = px - ox, dy = py - oy, A = INPUT.aim, L = Math.hypot(dx, dy), dz = size * 0.42;
+    A.dz = dz * 0.5;
+    if (L > dz) { A.manual = true; A.dx = dx; A.dy = dy; showCancel(); }
+    else if (A.manual && L < dz * 0.55) { A.manual = false; A.dx = A.dy = 0; }   // 拖回中心 = 取消手动，恢复自动瞄准
     const k = L > R ? R / L : 1; wheelKnob.style.transform = `translate(calc(-50% + ${dx * k}px), calc(-50% + ${dy * k}px))`;
     A.cancel = overCancel(px, py); cancelZone.classList.toggle('hot', A.cancel); wheel.classList.toggle('cancel', A.cancel);
   });
@@ -5294,7 +5324,7 @@ document.addEventListener('touchmove', (e) => { if (!e.target.closest('.scroll,.
 const HUD = { sk: [...document.querySelectorAll('.cbtn.sk')], lastUpd: 0, lastMm: 0, itemsKey: '', buffKey: '', qbId: null };
 function layoutHud() {
   const base = Math.min(W, H);
-  const A = clamp(base * 0.21, 72, 124), S = A * 0.68, s = A * 0.5;
+  const A = clamp(base * 0.225, 76, 128), S = A * 0.7, s = A * 0.52;
   const right = 18 + (IS_TOUCH ? 16 : 10), bottom = 16 + (IS_TOUCH ? 10 : 6);
   const ax = W - right - A / 2, ay = H - bottom - A / 2;
   const place = (el, x, y, d, fs) => { el.style.left = x + 'px'; el.style.top = y + 'px'; el.style.width = d + 'px'; el.style.height = d + 'px'; const g = el.querySelector('.glyph'); if (g) g.style.fontSize = (fs || d * 0.46) + 'px'; };
@@ -5309,10 +5339,11 @@ function layoutHud() {
   place($('btnLast'), ax + Math.cos(Math.PI * 0.8) * Rm, ay + Math.sin(Math.PI * 0.8) * Rm, m);
   place($('btnTower'), ax + Math.cos(Math.PI * 1.73) * Rm, ay + Math.sin(Math.PI * 1.73) * Rm, m);
   const u = clamp(S * 0.42, 24, 34);
-  UPS.forEach((el, i) => { const x = ax + Math.cos(angs[i]) * Ra, y = ay + Math.sin(angs[i]) * Ra; el.style.left = (x - S * 0.4) + 'px'; el.style.top = (y - S * 0.4) + 'px'; el.style.width = el.style.height = u + 'px'; });
+  UPS.forEach((el, i) => { const x = ax + Math.cos(angs[i]) * Ra, y = ay + Math.sin(angs[i]) * Ra; el.style.left = (x - S * 0.5) + 'px'; el.style.top = (y - S * 0.5) + 'px'; el.style.width = el.style.height = u + 'px'; });
   HUD.btnPx = { A, S, s, m };
+  HUD.ctrlX0 = ax - Ra - S * 0.5 - s * 3.6 - 16; HUD.ctrlY0 = ay - Ra - S * 0.5 - 24;
   const cz = S * 1.05; cancelZone.style.left = (ax - Ra * 0.55) + 'px'; cancelZone.style.top = (ay - Ra - S * 1.3) + 'px'; cancelZone.style.width = cz + 'px'; cancelZone.style.height = cz + 'px';
-  JOY_R = clamp(base * 0.16, 50, 90);
+  JOY_R = clamp(base * 0.18, 56, 100);
   joyBase.style.width = joyBase.style.height = JOY_R * 2.2 + 'px';
   const zr = grect(joyZone); joyHome = [clamp(zr.w * 0.36, JOY_R * 1.2, 260), zr.h - JOY_R * 1.35];
   if (!INPUT.joy) joyReset();
@@ -5379,8 +5410,8 @@ function updateHud(force) {
     const id = next || nextSaveFor(target, P.items.slice()), p = purchasePlan(P, id);
     if (HUD.qbId !== id) { HUD.qbId = id; paintItem($('quickBuy').querySelector('canvas'), id); $('qbName').textContent = ITEMS[id].name; }
     $('qbCost').textContent = next ? `${p.cost} 金币 · ${SETTINGS.autoBuy ? '自动购买' : '点击购买'}` : `还差 ${Math.max(0, p.cost - Math.floor(P.gold))} 金币`;
-    $('quickBuy').style.animationPlayState = next ? 'running' : 'paused';
-    $('quickBuy').style.opacity = next ? 1 : 0.6;
+    $('quickBuy').classList.toggle('idle', !next);   // 买不起时只做展示，触摸穿透
+    $('quickBuy').style.opacity = next ? 1 : 0.7;
   }
   $('spectate').hidden = !G.autoPlay;
   const pc = panned() && !cam.free; if ($('btnCam').hidden === pc) $('btnCam').hidden = !pc;
@@ -5688,7 +5719,7 @@ function updateCamera(dt) {
   }
   tx = cx(tx); ty = cy(ty);
   const direct = follow && (PAN.id !== null && PAN.drag || cam.vx || cam.vy);   // 拖动时镜头 1:1 跟手
-  const k = direct ? 1 : 1 - Math.exp(-dt * (cam.free ? 10 : 7));
+  const k = direct ? 1 : 1 - Math.exp(-dt * (cam.free ? 10 : 13));
   cam.x = lerp(cam.x, tx, k); cam.y = lerp(cam.y, ty, k);
   if (follow && !cam.px && !cam.py && Math.hypot(cam.x - tx, cam.y - ty) > 1500) { cam.x = tx; cam.y = ty; }
   if (cam.shake > 0) { cam.shake *= Math.exp(-dt * 10); if (cam.shake < 0.3) cam.shake = 0; }
@@ -5707,6 +5738,11 @@ function update(dt) {
   G.mobile.length = 0; for (const u of G.units) if (u.alive && !u.isStructure) G.mobile.push(u);
   for (let i = 0; i < G.units.length; i++) { const u = G.units[i]; if (u.alive || u.kind === 'hero') u.update(dt); }
   separateUnits();
+  for (const u of G.mobile) {   // 平滑速度（用于预判瞄准；闪现、位移造成的瞬移不计入）
+    const px = u.px ?? u.x, py = u.py ?? u.y, jump = Math.hypot(u.x - px, u.y - py) > 40;
+    u.vx = jump ? 0 : lerp(u.vx || 0, (u.x - px) / dt, 0.25); u.vy = jump ? 0 : lerp(u.vy || 0, (u.y - py) / dt, 0.25); u.px = u.x; u.py = u.y;
+    const sp = Math.hypot(u.vx, u.vy); if (sp > 620) { u.vx *= 620 / sp; u.vy *= 620 / sp; }
+  }
   updateProjs(dt); updateZones(dt);
   fountainDamage(dt);
   G.visT -= dt; if (G.visT <= 0) { G.visT = 0.1; updateVision(); }
