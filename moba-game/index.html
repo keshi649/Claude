@@ -76,6 +76,9 @@ body:not(.desktop) #tip{max-width:min(400px,calc(var(--vw)*44))}
 body.short #tip{font-size:12px;padding:6px 10px 6px 6px}
 body.desktop.short #tipBox{top:calc(50% + 48px)}
 body.short #tip i{font-size:15px}
+#btnCam{position:absolute;z-index:3;left:calc(var(--sl) + var(--mm) + 20px);top:calc(var(--st) + 124px);padding:5px 12px;border-radius:16px;white-space:nowrap;
+  border:1px solid var(--gold);background:rgba(6,10,20,.84);color:var(--gold3);font-size:13px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+#btnCam::before{content:"◎ ";color:var(--gold)}
 #sigs{position:absolute;z-index:3;left:calc(var(--sl) + var(--mm) + 22px);top:calc(var(--st) + 8px);display:flex;flex-direction:column;gap:6px}
 .sig{width:32px;height:32px;border-radius:50%;padding:0;display:grid;place-items:center;font-family:var(--fd);font-size:17px;line-height:1;
   border:1px solid var(--line);background:rgba(6,10,20,.78);color:var(--parch)}
@@ -356,8 +359,16 @@ body:not(.desktop) .cbtn .key{display:none}
 .lvs small{font-size:12px;color:var(--muted);max-width:60%}
 
 /* Pause / help */
-#pause .panel,#help .panel{width:min(560px,100%)}
-.menu{display:grid;gap:10px;padding:16px}
+#pause .panel{width:min(820px,100%)}
+#help .panel{width:min(560px,100%)}
+.menu{display:grid;gap:10px;padding:12px 16px 16px;overflow:auto;min-height:0;touch-action:pan-y}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:0 22px;overflow:auto;min-height:0;flex:1 1 auto;touch-action:pan-y;padding-right:4px}
+#pause .menu{display:flex;flex-direction:column;overflow:hidden}
+.macts{flex:none;display:grid;grid-template-columns:2fr 1fr 1fr 1.2fr;gap:8px;padding-top:10px;border-top:1px solid var(--line2)}
+.macts .btn{padding:10px 8px;letter-spacing:.06em;white-space:nowrap}
+body.narrow .macts{grid-template-columns:1fr 1fr}
+.og{grid-column:1/-1;font-size:12px;color:var(--gold);letter-spacing:.2em;padding:8px 2px 2px}
+body.desktop .touch-only{display:none}
 .menu .btn{width:100%}
 .opt{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 2px;border-bottom:1px solid rgba(255,255,255,.05);font-size:14px}
 .opt small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
@@ -411,6 +422,7 @@ body.narrow #title .inner{flex-wrap:wrap;align-content:center}
 
 <div id="hud" hidden>
   <div id="mmWrap" class="pe"><canvas id="minimap" width="200" height="200" aria-label="小地图"></canvas></div>
+  <button id="btnCam" hidden aria-label="镜头回到英雄">回到英雄</button>
   <div id="sigs"><button class="sig" data-s="attack" aria-label="发起进攻" title="发起进攻（Z）">进</button><button class="sig" data-s="retreat" aria-label="开始撤退" title="开始撤退（X）">撤</button><button class="sig" data-s="gather" aria-label="请求集合" title="请求集合（G）">集</button></div>
   <div id="heroChip"><canvas id="chipPic" width="68" height="68"></canvas><div><div class="lvl" id="chipLvl">Lv.1</div><div class="xp"><i id="chipXp"></i></div></div></div>
   <div id="scorebar"><div class="tm b" id="sBlue">0</div><div id="clock">00:00</div><div class="tm r" id="sRed">0</div></div>
@@ -499,19 +511,26 @@ body.narrow #title .inner{flex-wrap:wrap;align-content:center}
   <div class="panel" role="dialog" aria-label="暂停">
     <header><h2>暂停</h2><button class="x" id="pauseX" aria-label="继续游戏">×</button></header>
     <div class="menu">
+      <div class="opts">
+      <div class="og">操作</div>
+      <div class="opt"><div>滑动屏幕移动视角<small>在空白战场上拖动平移镜头，轻触敌人锁定</small></div><button class="sw2" id="optDrag" aria-label="滑动屏幕移动视角开关"></button></div>
+      <div class="opt"><div>镜头视野较远<small>看得更远，单位显示略小</small></div><button class="sw2" id="optFar" aria-label="镜头视野开关"></button></div>
+      <div class="opt"><div>自动升级技能<small>关闭时点击技能旁的 + 手动加点</small></div><button class="sw2" id="optSkill" aria-label="自动升级技能开关"></button></div>
+      <div class="opt"><div>自动购买装备<small>金币足够时按推荐出装自动购买</small></div><button class="sw2" id="optAuto" aria-label="自动购买开关"></button></div>
+      <div class="opt touch-only"><div>震动反馈<small>被控制、击杀与阵亡时轻微震动（部分手机支持）</small></div><button class="sw2" id="optVibe" aria-label="震动反馈开关"></button></div>
+      <div class="og">声音与显示</div>
       <div class="opt"><div>音效<small>技能、攻击与环境音</small></div><button class="sw2" id="optSfx" aria-label="音效开关"></button></div>
       <div class="opt"><div>语音播报<small>击杀、推塔等中文播报（需浏览器支持）</small></div><button class="sw2" id="optVoice" aria-label="语音开关"></button></div>
-      <div class="opt"><div>自动购买装备<small>金币足够时按推荐出装自动购买</small></div><button class="sw2" id="optAuto" aria-label="自动购买开关"></button></div>
-      <div class="opt"><div>自动升级技能<small>关闭时点击技能旁的 + 手动加点</small></div><button class="sw2" id="optSkill" aria-label="自动升级技能开关"></button></div>
-      <div class="opt"><div>托管<small>由 AI 暂时接管你的英雄</small></div><button class="sw2" id="optBot" aria-label="托管开关"></button></div>
       <div class="opt"><div>新手提示<small>开局指引路线与操作要点</small></div><button class="sw2" id="optTips" aria-label="新手提示开关"></button></div>
       <div class="opt"><div>显示帧率</div><button class="sw2" id="optFps" aria-label="帧率开关"></button></div>
-      <button class="btn gold" id="btnResume">继续游戏</button>
-      <div class="row" style="display:flex;gap:10px">
-        <button class="btn ghost" id="btnHelp2" style="flex:1">操作说明</button>
-        <button class="btn ghost" id="btnFull" style="flex:1">全屏</button>
+      <div class="opt"><div>托管<small>由 AI 暂时接管你的英雄</small></div><button class="sw2" id="optBot" aria-label="托管开关"></button></div>
       </div>
-      <button class="btn ghost" id="btnQuit">投降并退出</button>
+      <div class="macts">
+        <button class="btn gold" id="btnResume">继续游戏</button>
+        <button class="btn ghost" id="btnHelp2">操作说明</button>
+        <button class="btn ghost" id="btnFull">全屏</button>
+        <button class="btn ghost" id="btnQuit">投降退出</button>
+      </div>
     </div>
   </div>
 </div>
@@ -531,6 +550,7 @@ body.narrow #title .inner{flex-wrap:wrap;align-content:center}
         <li>升级时点击技能旁闪烁的 <b>+</b>（或 <kbd>Shift</kbd> + <kbd>Q</kbd><kbd>E</kbd><kbd>R</kbd>）学习 / 升级技能；大招在 4、8、12 级可升级</li>
         <li><kbd>F</kbd> 召唤师技能 · <kbd>B</kbd> 回城 · <kbd>H</kbd> 恢复 · <kbd>P</kbd> 商店 · <kbd>Tab</kbd> 战绩 · <kbd>T</kbd> 托管</li>
         <li><kbd>Z</kbd> 发起进攻 · <kbd>X</kbd> 开始撤退 · <kbd>G</kbd> 请求集合（AI 队友会响应信号）</li>
+        <li>按住鼠标<b>中键</b>拖动平移视角，<kbd>Y</kbd> 回到英雄；拖动小地图可观察战场</li>
       </ul>
       <h4>手机触屏（请横屏）</h4>
       <ul>
@@ -538,7 +558,8 @@ body.narrow #title .inner{flex-wrap:wrap;align-content:center}
         <li>右下角大按钮普通攻击，旁边两个小按钮分别是<b>补刀</b>（只打小兵野怪）和<b>推塔</b>（只打塔）</li>
         <li>技能键<b>轻点</b>自动瞄准最近的敌人，<b>按住拖动</b>出现轮盘手动瞄准，拖到「取消施法」处松开可取消</li>
         <li>升级后技能键旁会出现闪烁的 <b>+</b>，点击即可学习 / 升级该技能（暂停菜单可改为自动升级）</li>
-        <li>点左侧金币打开商店，或点闪烁的推荐装备一键购买；拖动小地图可观察战场</li>
+        <li><b>在空白战场上滑动</b>可以平移视角（松手有惯性），移动、攻击或施法时自动回到英雄，也可点「回到英雄」；拖动小地图同样可以观察战场</li>
+        <li>轻触画面上的敌人可以锁定目标；点左侧金币打开商店，或点推荐装备一键购买</li>
         <li>小地图右侧「进 / 撤 / 集」给 AI 队友发信号：进攻、撤退、集合</li>
       </ul>
       <h4>小贴士</h4>
@@ -1012,7 +1033,7 @@ function lanePoint(lp, s) {
 
 // ---------------- 游戏状态 ----------------
 let G = null; // 当前对局
-const cam = { x: 2500, y: 2500, zoom: 1, shake: 0, sx: 0, sy: 0, free: false };
+const cam = { x: 2500, y: 2500, zoom: 1, shake: 0, sx: 0, sy: 0, free: false, px: 0, py: 0, vx: 0, vy: 0, panT: 0 };
 
 // ---------------- 单位 ----------------
 let UID = 0;
@@ -1217,7 +1238,8 @@ function healUnit(t, amt, src, silent) {
 function addShield(t, amt, dur) { if (!t.alive) return; t.shields.push({ amt, t: dur, max: amt }); }
 function tenacity(t) { return t.kind === 'hero' ? t.tenacity : 0; }
 function stopActions(t) { t.windT = 0; t.windTarget = null; if (t.channel) cancelChannel(t, true); }
-function ccText(t, str) { if (t.kind === 'hero' && !G.fastSim && inView(t.x, t.y) && (!G.player || t.vis[G.player.team] || t.team === G.player.team)) FX.text(t.x, t.y - 150, str, '#e8dcff', 17, { ui: true, bold: true, dur: 0.8, vy: -40 }); }
+function buzz(p) { if (!SETTINGS.vibe || !IS_TOUCH || !navigator.vibrate) return; try { navigator.vibrate(p); } catch (e) {} }
+function ccText(t, str) { if (t === G.player && !G.fastSim && !G.demo) buzz(30); if (t.kind === 'hero' && !G.fastSim && inView(t.x, t.y) && (!G.player || t.vis[G.player.team] || t.team === G.player.team)) FX.text(t.x, t.y - 150, str, '#e8dcff', 17, { ui: true, bold: true, dur: 0.8, vy: -40 }); }
 function applyStun(t, d) { if (!t.alive || t.isStructure || t.ccImmune) return; d *= 1 - tenacity(t); if (t.stunT <= 0) ccText(t, '眩晕'); t.stunT = Math.max(t.stunT, d); t.stunTM = Math.max(t.stunT, d); stopActions(t); }
 function applyRoot(t, d) { if (!t.alive || t.isStructure || t.ccImmune) return; d *= 1 - tenacity(t); if (t.rootT <= 0) ccText(t, '禁锢'); t.rootT = Math.max(t.rootT, d); t.rootTM = t.rootT; if (t.channel) cancelChannel(t, true); }
 function applySilence(t, d) { if (!t.alive || t.isStructure || t.ccImmune) return; if (t.silT <= 0) ccText(t, '沉默'); t.silT = Math.max(t.silT, d * (1 - tenacity(t))); t.silTM = t.silT; }
@@ -2016,7 +2038,7 @@ function respawnHero(h) {
   h.path = null; h.dest = null; h.windT = 0; h.moveDir = null; h.buffs = {}; h.hitBy.clear(); h.restoreT = 0; h.fade = 1;
   h.invuln = false; h.untargetable = false; h.reviving = false;
   FX.pillar(h.x, h.y, h.team === BLUE ? '#8fd0ff' : '#ffb09a', 0.8);
-  if (h === G.player) { cam.x = h.x; cam.y = h.y; document.body.classList.remove('dead'); }
+  if (h === G.player) { recenter(); cam.x = h.x; cam.y = h.y; document.body.classList.remove('dead'); }
 }
 
 const MINION_SPEC = {
@@ -2358,7 +2380,8 @@ function onHeroDeath(v, src) {
   announceKill(killer, v, special, vStreak);
   FX.burst(v.x, v.y, v.team === BLUE ? '#8fc9ff' : '#ff9d8a', 22, 300, 9, 0.8);
   Sound.play('death', v.x, v.y);
-  if (v === G.player) { document.body.classList.add('dead'); Sound.play('death'); }
+  if (v === G.player) { document.body.classList.add('dead'); Sound.play('death'); buzz(90); }
+  if (killer && killer === G.player && !G.fastSim) buzz([25, 40, 25]);
   if (G.heroes.filter((h) => h.team === v.team).every((h) => !h.alive)) later(1.2, () => announce(v.team === playerTeam() ? '我方团灭' : '团灭！', v.team === playerTeam() ? 'bad' : '', null, null, v.team === playerTeam() ? '' : '团灭'));
 }
 function onMinionDeath(m, src) {
@@ -3371,7 +3394,7 @@ function paintTerrain(g, x0, y0, x1, y1, lod) {
 }
 
 // ---- 地形分块缓存 ----
-const CH = { size: 1000, sx: 1, sy: 1, key: '', map: new Map(), max: IS_TOUCH ? 10 : 16 };
+const CH = { size: 1000, sx: 1, sy: 1, key: '', map: new Map(), max: IS_TOUCH ? 10 : 16, lx: 0, ly: 0, lt: 0, calm: 0 };
 function chunkParams() {
   const dens = Math.min(IS_TOUCH ? 1.35 : 1.7, cam.zoom * DPR);
   const sx = Math.max(0.3, Math.round(dens * 40) / 40), sy = Math.max(0.2, Math.round(dens * TILT * 40) / 40), key = sx + ':' + sy;
@@ -3400,7 +3423,11 @@ function drawTerrain() {
   const S = CH.size, z = RV.z * DPR, zt = RV.zt * DPR;
   const i0 = clamp(Math.floor(RV.x0 / S), 0, 4), i1 = clamp(Math.floor(RV.x1 / S), 0, 4), j0 = clamp(Math.floor(RV.y0 / S), 0, 4), j1 = clamp(Math.floor(RV.y1 / S), 0, 4);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  let built = 0; const now = performance.now();
+  // 镜头快速移动（滑屏、拖小地图）时先用低清底图，停稳后再逐块精绘，避免掉帧
+  const now = performance.now(), sp = Math.hypot(cam.x - CH.lx, cam.y - CH.ly) / Math.max(0.008, (now - (CH.lt || now - 16)) / 1000);
+  CH.lx = cam.x; CH.ly = cam.y; CH.lt = now;
+  CH.calm = sp > 1100 ? 0 : CH.calm + 1;
+  let built = CH.calm >= 3 ? 0 : 1;
   for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
     const dx = Math.floor((i * S) * z + RV.ox * DPR), dy = Math.floor((j * S) * zt + RV.oy * DPR);
     const dx2 = Math.floor(((i + 1) * S) * z + RV.ox * DPR), dy2 = Math.floor(((j + 1) * S) * zt + RV.oy * DPR);
@@ -3409,7 +3436,7 @@ function drawTerrain() {
     if (e) { e.used = now; ctx.drawImage(e.cv, dx, dy, dx2 - dx, dy2 - dy); }
     else { const k = 640 / MAP; ctx.drawImage(MAPLOW, i * S * k, j * S * k, S * k, S * k, dx, dy, dx2 - dx, dy2 - dy); }
   }
-  if (!built) {
+  if (!built && CH.calm >= 12) {
     for (let i = Math.max(0, i0 - 1); i <= Math.min(4, i1 + 1) && !built; i++) for (let j = Math.max(0, j0 - 1); j <= Math.min(4, j1 + 1); j++) {
       if (!CH.map.has(i * 16 + j) && CH.map.size < CH.max) { buildChunk(i, j); built++; break; }
     }
@@ -3460,7 +3487,7 @@ function resize() {
   document.documentElement.style.setProperty('--vh', H / 100 + 'px'); document.documentElement.style.setProperty('--vw', W / 100 + 'px');
   DPR = Math.min(window.devicePixelRatio || 1, 2);
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  cam.zoom = Math.max(W, H) / VIEW_W;
+  cam.zoom = Math.max(W, H) / (VIEW_W * (SETTINGS.farView ? 1.15 : 1));
   if (FOG.c) { FOG.c.width = Math.ceil(W / 4); FOG.c.height = Math.ceil(H / 4); }
   if (WALLS.length && TEX.grass) chunkParams();
   if (typeof layoutHud === 'function') layoutHud();
@@ -4634,7 +4661,7 @@ function paintItem(canvas, id) {
 }
 function iconURL(motif, color, size = 64) { const c = document.createElement('canvas'); c.width = c.height = size; paintIcon(c, motif, color); return c.toDataURL(); }
 // ---------------- 设置 ----------------
-const SETTINGS = { sfx: true, voice: true, autoBuy: true, autoSkill: false, fps: false, tips: true };
+const SETTINGS = { sfx: true, voice: true, autoBuy: true, autoSkill: false, fps: false, tips: true, dragCam: true, farView: false, vibe: true };
 function loadSettings() { try { const s = JSON.parse(localStorage.getItem('xgzf-settings') || '{}'); Object.assign(SETTINGS, s); } catch (e) {} }
 function saveSettings() { try { localStorage.setItem('xgzf-settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 const MENU = { hero: 'yunxi', spell: 'flash', diff: 'normal' };
@@ -4689,6 +4716,7 @@ const TIPS = [
   [66, () => '敌方防御塔会先打小兵；<b>没有小兵掩护</b>时别走进塔下的红圈'],
   [100, () => IS_TOUCH ? '血量低时点「<b>归</b>」回城，泉水能快速回满状态' : '血量低时按 <b>B</b> 回城，泉水能快速回满状态'],
   [140, () => '装备会按推荐自动购买，点左侧<b>金币</b>可打开商店自己挑选'],
+  [170, () => IS_TOUCH ? '在空白战场上<b>滑动</b>可以移动视角，一动英雄就会自动回来' : '按住鼠标<b>中键</b>拖动可以移动视角，按 <b>Y</b> 回到英雄'],
   [200, () => IS_TOUCH ? '小地图旁的「<b>进 / 撤 / 集</b>」可以指挥 AI 队友' : '按 <b>Z / X / G</b> 让 AI 队友 进攻 / 撤退 / 集合'],
 ];
 function tip(html) {
@@ -4738,18 +4766,19 @@ function addFeed(k, v) {
 }
 
 // ---------------- 输入 ----------------
-const INPUT = { keys: {}, mx: 0, my: 0, mwx: 0, mwy: 0, joy: null, joyX: 0, joyY: 0, atkHeld: false, atkPulse: 0, atkPoint: null, atkMode: null, aim: null, moveCmd: null, moveMark: null, lastMouseMove: 0, lock: null, lockT: -99, lockHard: false };
+const INPUT = { buf: null, keys: {}, mx: 0, my: 0, mwx: 0, mwy: 0, joy: null, joyX: 0, joyY: 0, atkHeld: false, atkPulse: 0, atkPoint: null, atkMode: null, aim: null, moveCmd: null, moveMark: null, lastMouseMove: 0, lock: null, lockT: -99, lockHard: false };
 function mouseWorld() { return [(INPUT.mx - W / 2) / cam.zoom + cam.x, (INPUT.my - H / 2) / (cam.zoom * TILT) + cam.y]; }
 function aimPoint(A) {
   const P = G.player;
   if (A.src === 'key') { const [x, y] = mouseWorld(); return [x, y]; }
   if (A.src === 'touch') {
     if (!A.manual) return autoAimPoint(P, A.spell ? null : P.def.skills[A.slot], A.spell);
-    const dx = A.dx, dy = A.dy, L = Math.hypot(dx, dy) || 1;
-    if (A.spell) return [P.x + dx / L * 430, P.y + dy / L * 430];
+    // 拖动方向是屏幕方向，换算到地面（纵向被压扁了 TILT）后，指向与手指一致
+    const L = Math.hypot(A.dx, A.dy) || 1, dx = A.dx, dy = A.dy / TILT, D = Math.hypot(dx, dy) || 1;
+    if (A.spell) return [P.x + dx / D * 430, P.y + dy / D * 430];
     const sk = P.def.skills[A.slot];
-    if (sk.aim === 'point' || sk.aim === 'target') { const k = clamp(L / A.maxDrag, 0, 1) * sk.range; return [P.x + dx / L * k, P.y + dy / L * k]; }
-    return [P.x + dx / L * 300, P.y + dy / L * 300];
+    if (sk.aim === 'point' || sk.aim === 'target') { const k = clamp(L / A.maxDrag, 0, 1) * sk.range; return [P.x + dx / D * k, P.y + dy / D * k]; }
+    return [P.x + dx / D * 300, P.y + dy / D * 300];
   }
   return [P.x, P.y];
 }
@@ -4807,13 +4836,14 @@ function pickAttackTarget(h, near, mode) {
   return best;
 }
 function playerControl(h, dt) {
+  flushBuffer(h);
   if (SETTINGS.autoBuy) { h.autoBuyT = (h.autoBuyT || 0) - dt; if (h.autoBuyT <= 0) { h.autoBuyT = 0.6; autoBuy(h, true); } }
   let mx = INPUT.joyX, my = INPUT.joyY;
   const K = INPUT.keys;
   if (K.w || K.arrowup) my -= 1; if (K.s || K.arrowdown) my += 1; if (K.a || K.arrowleft) mx -= 1; if (K.d || K.arrowright) mx += 1;
   const mag = Math.hypot(mx, my);
   if (mag > 0.15) {
-    h.moveDir = Math.atan2(my, mx); h.dest = null; h.path = null; h.chase = null;
+    h.moveDir = Math.atan2(my / TILT, mx); h.dest = null; h.path = null; h.chase = null;   // 屏幕方向 → 地面方向
     if (h.channel) cancelChannel(h, false);
   } else h.moveDir = null;
   if (INPUT.moveCmd) {
@@ -4853,7 +4883,18 @@ function releaseAim(cancel) {
   const A = INPUT.aim; INPUT.aim = null; hideCancel();
   const P = G && G.player; if (!A || !P || !P.alive || cancel || A.cancel) return;
   const [tx, ty] = aimPoint(A);
-  if (A.spell) castSpell(P, tx, ty); else castSkill(P, A.slot, tx, ty);
+  const ok = A.spell ? castSpell(P, tx, ty) : castSkill(P, A.slot, tx, ty);
+  // 位移途中按下的技能先缓存，落地后 0.45 秒内自动放出（预输入）
+  if (!ok && P.dash && !P.isCC() && (A.spell ? P.spellCd <= 0 : P.cds[A.slot] <= 0 && P.mp >= P.def.skills[A.slot].mana))
+    INPUT.buf = { A, t: G.time, ang: Math.atan2(ty - P.y, tx - P.x), dist: Math.hypot(tx - P.x, ty - P.y) };
+}
+function flushBuffer(h) {
+  const B = INPUT.buf; if (!B) return;
+  if (G.time - B.t > 0.45 || !h.alive || h.isCC()) { INPUT.buf = null; return; }
+  if (h.dash) return;
+  INPUT.buf = null; const A = B.A;
+  const [tx, ty] = A.src === 'touch' && !A.manual ? autoAimPoint(h, A.spell ? null : h.def.skills[A.slot], A.spell) : [h.x + Math.cos(B.ang) * B.dist, h.y + Math.sin(B.ang) * B.dist];
+  if (A.spell) castSpell(h, tx, ty); else castSkill(h, A.slot, tx, ty);
 }
 const KEYMAP = { q: 0, 1: 0, u: 0, e: 1, 2: 1, i: 1, r: 2, 3: 2, o: 2 };
 function onKey(e, down) {
@@ -4882,19 +4923,50 @@ function onKey(e, down) {
   else if (k === 'p') openShop();
   else if (k === 'tab') toggleBoard();
   else if (k === 't') setAuto(!G.autoPlay);
-  else if (k === 'y') { cam.free = false; }
+  else if (k === 'y') recenter();
 }
 addEventListener('keydown', (e) => onKey(e, true));
 addEventListener('keyup', (e) => onKey(e, false));
 addEventListener('blur', () => { INPUT.keys = {}; INPUT.atkHeld = false; INPUT.joyX = INPUT.joyY = 0; });
 cv.addEventListener('mousemove', (e) => { [INPUT.mx, INPUT.my] = gp(e); INPUT.lastMouseMove = performance.now(); });
 cv.addEventListener('contextmenu', (e) => e.preventDefault());
+// 滑动屏幕移动视角：手指按在空白战场上拖动即可平移镜头（松手后带惯性），轻触敌人则锁定目标。
+// 电脑上用鼠标中键拖动。移动 / 攻击 / 施法或 5 秒无操作后镜头自动回到英雄。
+const PAN = { id: null, sx: 0, sy: 0, lx: 0, ly: 0, t0: 0, lt: 0, drag: false, mouse: false, vx: 0, vy: 0 };
+function panBy(dx, dy) { cam.px += dx; cam.py += dy; cam.panT = performance.now(); }
+function recenter() { cam.px = cam.py = cam.vx = cam.vy = 0; cam.free = false; }
+const panned = () => Math.hypot(cam.px, cam.py) > 120;
 cv.addEventListener('pointerdown', (e) => {
-  if (!IS_TOUCH || !inMatch() || isPaused() || !G.player.alive) return;
+  if (!inMatch() || isPaused() || PAN.id !== null) return;
+  const mid = e.pointerType === 'mouse' && e.button === 1;
+  if (!mid && !(IS_TOUCH && e.pointerType !== 'mouse') && !(IS_TOUCH && e.button === 0)) return;
+  if (mid) e.preventDefault();
+  const [x, y] = gp(e), now = performance.now();
+  Object.assign(PAN, { id: e.pointerId, sx: x, sy: y, lx: x, ly: y, t0: now, lt: now, drag: mid, mouse: mid, vx: 0, vy: 0 });
+  cam.vx = cam.vy = 0;
+  try { cv.setPointerCapture(e.pointerId); } catch (er) {}
+});
+cv.addEventListener('pointermove', (e) => {
+  if (e.pointerId !== PAN.id) return;
+  const [x, y] = gp(e), now = performance.now();
+  if (!PAN.drag && Math.hypot(x - PAN.sx, y - PAN.sy) > 12 && SETTINGS.dragCam) { PAN.drag = true; PAN.lx = x; PAN.ly = y; }
+  if (PAN.drag) {
+    const wx = -(x - PAN.lx) / cam.zoom, wy = -(y - PAN.ly) / (cam.zoom * TILT), dtm = Math.max(8, now - PAN.lt);
+    panBy(wx, wy); PAN.vx = lerp(PAN.vx, wx / dtm * 1000, 0.6); PAN.vy = lerp(PAN.vy, wy / dtm * 1000, 0.6); PAN.lt = now;
+  }
+  PAN.lx = x; PAN.ly = y;
+});
+function panEnd(e) {
+  if (e.pointerId !== PAN.id) return; PAN.id = null;
+  const now = performance.now();
+  if (PAN.drag) { if (now - PAN.lt < 90) { cam.vx = clamp(PAN.vx, -6000, 6000); cam.vy = clamp(PAN.vy, -6000, 6000); } cam.panT = now; return; }
+  if (e.type !== 'pointerup' || now - PAN.t0 > 450 || !inMatch() || !G.player.alive) return;
   [INPUT.mx, INPUT.my] = gp(e); const [wx, wy] = mouseWorld();
   if (lockAt(wx, wy + 70, true)) { Sound.play('click'); FX.ring(INPUT.lock.x, INPUT.lock.y, INPUT.lock.r * 1.8, '#ff5a4a', 0.3, { width: 6 }); }
-});
+}
+cv.addEventListener('pointerup', panEnd); cv.addEventListener('pointercancel', panEnd);
 cv.addEventListener('mousedown', (e) => {
+  if (e.button === 1) e.preventDefault();
   if (!inMatch() || isPaused() || IS_TOUCH) return;
   [INPUT.mx, INPUT.my] = gp(e);
   if (e.button === 2) {
@@ -4922,7 +4994,12 @@ joyZone.addEventListener('pointerdown', (e) => {
 function joyMove(e) {
   const J = INPUT.joy; if (!J || e.pointerId !== J.id) return;
   const zr = grect(joyZone), [px, py] = gp(e); let dx = px - zr.x - J.cx, dy = py - zr.y - J.cy;
-  const L = Math.hypot(dx, dy); if (L > JOY_R) { dx = dx / L * JOY_R; dy = dy / L * JOY_R; }
+  const L = Math.hypot(dx, dy);
+  if (L > JOY_R * 1.6) {   // 手指拖得太远时摇杆底座跟过去，不用抬手重按
+    const m = L - JOY_R * 1.6; J.cx = clamp(J.cx + dx / L * m, JOY_R, zr.w - JOY_R * 0.4); J.cy = clamp(J.cy + dy / L * m, JOY_R * 0.6, zr.h - JOY_R);
+    joyBase.style.left = J.cx + 'px'; joyBase.style.top = J.cy + 'px'; dx = px - zr.x - J.cx; dy = py - zr.y - J.cy;
+  }
+  const L2 = Math.hypot(dx, dy); if (L2 > JOY_R) { dx = dx / L2 * JOY_R; dy = dy / L2 * JOY_R; }
   INPUT.joyX = dx / JOY_R; INPUT.joyY = dy / JOY_R;
   joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 }
@@ -4991,7 +5068,7 @@ let mmDrag = null;
 function mmPoint(e) { const r = grect(mmCv), [px, py] = gp(e); return [clamp((px - r.x) / r.w, 0, 1) * MAP, clamp((py - r.y) / r.h, 0, 1) * MAP]; }
 mmCv.addEventListener('pointerdown', (e) => { if (!inMatch()) return; e.preventDefault(); e.stopPropagation(); mmDrag = e.pointerId; const [x, y] = mmPoint(e); cam.free = true; cam.tx = x; cam.ty = y; try { mmCv.setPointerCapture(e.pointerId); } catch (er) {} });
 mmCv.addEventListener('pointermove', (e) => { if (e.pointerId !== mmDrag) return; const [x, y] = mmPoint(e); cam.tx = x; cam.ty = y; });
-const mmUp = (e) => { if (e.pointerId !== mmDrag) return; mmDrag = null; if (!G.over) cam.free = false; };
+const mmUp = (e) => { if (e.pointerId !== mmDrag) return; mmDrag = null; if (!G.over) recenter(); };
 mmCv.addEventListener('pointerup', mmUp); mmCv.addEventListener('pointercancel', mmUp);
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 document.addEventListener('touchmove', (e) => { if (!e.target.closest('.scroll,.help,#shopGrid,#shopInfo,.screen')) e.preventDefault(); }, { passive: false });
@@ -5089,6 +5166,7 @@ function updateHud(force) {
     $('quickBuy').style.opacity = next ? 1 : 0.6;
   }
   $('spectate').hidden = !G.autoPlay;
+  const pc = panned() && !cam.free; if ($('btnCam').hidden === pc) $('btnCam').hidden = !pc;
   if (SETTINGS.fps) $('fps').textContent = FPS.v + ' FPS';
 }
 $('quickBuy').addEventListener('click', () => { const P = G && G.player; if (!P) return; const id = nextBuy(P); if (id && buyItem(P, id)) { Sound.play('buy'); toast('已购买：<b>' + ITEMS[id].name + '</b>'); HUD.qbId = null; updateHud(true); } else Sound.play('deny'); });
@@ -5224,6 +5302,7 @@ function syncOptions() {
   $('optSfx').classList.toggle('on', SETTINGS.sfx); $('optVoice').classList.toggle('on', SETTINGS.voice); $('optAuto').classList.toggle('on', SETTINGS.autoBuy);
   $('optBot').classList.toggle('on', !!(G && G.autoPlay)); $('optFps').classList.toggle('on', SETTINGS.fps); $('fps').hidden = !SETTINGS.fps;
   $('optTips').classList.toggle('on', SETTINGS.tips); $('optSkill').classList.toggle('on', SETTINGS.autoSkill);
+  $('optDrag').classList.toggle('on', SETTINGS.dragCam); $('optFar').classList.toggle('on', SETTINGS.farView); $('optVibe').classList.toggle('on', SETTINGS.vibe);
   Sound.sfxOn = SETTINGS.sfx; Sound.voiceOn = SETTINGS.voice;
 }
 function setAuto(on) {
@@ -5242,6 +5321,12 @@ $('optBot').addEventListener('click', () => setAuto(!G.autoPlay));
 $('optFps').addEventListener('click', () => { SETTINGS.fps = !SETTINGS.fps; saveSettings(); syncOptions(); });
 $('optTips').addEventListener('click', () => { SETTINGS.tips = !SETTINGS.tips; saveSettings(); syncOptions(); });
 $('optSkill').addEventListener('click', () => { SETTINGS.autoSkill = !SETTINGS.autoSkill; saveSettings(); syncOptions(); });
+$('optDrag').addEventListener('click', () => { SETTINGS.dragCam = !SETTINGS.dragCam; saveSettings(); syncOptions(); });
+$('optFar').addEventListener('click', () => { SETTINGS.farView = !SETTINGS.farView; saveSettings(); syncOptions(); resize(); });
+$('optVibe').addEventListener('click', () => { SETTINGS.vibe = !SETTINGS.vibe; saveSettings(); syncOptions(); buzz(30); });
+$('btnCam').addEventListener('click', () => { recenter(); Sound.play('click'); });
+// 切到后台时自动暂停，回来不会发现英雄已经阵亡
+document.addEventListener('visibilitychange', () => { if (document.hidden && inMatch() && !PAUSED && !G.over) togglePause(true); });
 $('btnFull').addEventListener('click', () => { try { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(() => toast('当前环境不支持全屏')); } catch (e) { toast('当前环境不支持全屏'); } });
 $('btnQuit').addEventListener('click', () => { togglePause(false); if (G && !G.over) { G.winner = 1 - playerTeam(); G.over = true; G.time = G.time; showResult(); } });
 $('btnHelp1').addEventListener('click', () => { Sound.init(); $('help').hidden = false; });
@@ -5352,12 +5437,27 @@ const UI = { covered: false };
 function updateCamera(dt) {
   if (!G) return;
   const P = G.player;
-  let tx = cam.x, ty = cam.y;
+  const hwv = W / 2 / cam.zoom, hhv = H / 2 / (cam.zoom * TILT);
+  const cx = (x) => clamp(x, Math.min(MAP / 2, hwv - 60), Math.max(MAP / 2, MAP - hwv + 60)), cy = (y) => clamp(y, Math.min(MAP / 2, hhv - 80), Math.max(MAP / 2, MAP - hhv + 60));
+  let tx = cam.x, ty = cam.y, follow = false;
   if (cam.free) { tx = cam.tx; ty = cam.ty; }
   else if (P) {
+    follow = true;
     tx = P.x; ty = P.y - H * 0.08 / (cam.zoom * TILT);
     const A = INPUT.aim;   // 远程技能手动瞄准时镜头向瞄准方向延伸
     if (A && A.manual && !A.spell && P.alive) { const sk = P.def.skills[A.slot]; if (sk.aim !== 'self' && sk.range > 1000) { const [ax, ay] = aimPoint(A); tx += (ax - P.x) * 0.45; ty += (ay - P.y) * 0.45; } }
+    // 滑屏偏移：惯性滑行；英雄有动作或 5 秒无操作后回正
+    if (PAN.id === null) {
+      if (cam.vx || cam.vy) { cam.px += cam.vx * dt; cam.py += cam.vy * dt; const f = Math.exp(-dt * 4.5); cam.vx *= f; cam.vy *= f; cam.panT = performance.now(); if (Math.hypot(cam.vx, cam.vy) < 40) cam.vx = cam.vy = 0; }
+      const acting = P.alive && !G.autoPlay && (P.moveDir !== null || P.dest || INPUT.atkHeld || INPUT.aim || INPUT.moveCmd);
+      if ((cam.px || cam.py) && (acting || (P.alive && performance.now() - cam.panT > 5000))) {
+        const f = Math.exp(-dt * 9); cam.px *= f; cam.py *= f; cam.vx = cam.vy = 0; if (Math.hypot(cam.px, cam.py) < 8) cam.px = cam.py = 0;
+      }
+    }
+    const bx = cx(tx), by = cy(ty);
+    tx = cx(bx + cam.px); ty = cy(by + cam.py);
+    cam.px = tx - bx; cam.py = ty - by;   // 到地图边缘后不再累积偏移
+    if (tx === bx && cam.vx) cam.vx = 0; if (ty === by && cam.vy) cam.vy = 0;
   }
   else if (G.demo) {
     G.demoFocusT -= dt;
@@ -5368,11 +5468,11 @@ function updateCamera(dt) {
     }
     if (G.demoFocus) { tx = G.demoFocus.x + W * 0.12 / cam.zoom; ty = G.demoFocus.y; }
   }
-  const hwv = W / 2 / cam.zoom, hhv = H / 2 / (cam.zoom * TILT);
-  tx = clamp(tx, Math.min(MAP / 2, hwv - 60), Math.max(MAP / 2, MAP - hwv + 60)); ty = clamp(ty, Math.min(MAP / 2, hhv - 80), Math.max(MAP / 2, MAP - hhv + 60));
-  const k = 1 - Math.exp(-dt * (cam.free ? 10 : 7));
+  tx = cx(tx); ty = cy(ty);
+  const direct = follow && (PAN.id !== null && PAN.drag || cam.vx || cam.vy);   // 拖动时镜头 1:1 跟手
+  const k = direct ? 1 : 1 - Math.exp(-dt * (cam.free ? 10 : 7));
   cam.x = lerp(cam.x, tx, k); cam.y = lerp(cam.y, ty, k);
-  if (P && !cam.free && Math.hypot(cam.x - tx, cam.y - ty) > 1500) { cam.x = tx; cam.y = ty; }
+  if (follow && !cam.px && !cam.py && Math.hypot(cam.x - tx, cam.y - ty) > 1500) { cam.x = tx; cam.y = ty; }
   if (cam.shake > 0) { cam.shake *= Math.exp(-dt * 10); if (cam.shake < 0.3) cam.shake = 0; }
 }
 function update(dt) {
@@ -5432,7 +5532,7 @@ function boot(hot) {
   loadFonts();
   if (TEST) {
     window.__game = {
-      get G() { return G; }, newGame, HERO_DEFS, ITEMS, castSkill, buyItem, nextBuy, findPath, WALLS, BUSHES, startMatch, MENU, cam, INPUT, setAuto, SETTINGS, learnSkill, killUnit, dealDamage,
+      get G() { return G; }, newGame, HERO_DEFS, ITEMS, castSkill, buyItem, nextBuy, findPath, WALLS, BUSHES, startMatch, MENU, cam, INPUT, setAuto, SETTINGS, learnSkill, killUnit, dealDamage, CH, buildChunk, aimPoint,
       step(n, dt = 1 / 60) { G.fastSim = true; for (let i = 0; i < n; i++) update(dt); G.fastSim = false; },
       renderBench(n = 60) { const t = performance.now(); for (let i = 0; i < n; i++) render(performance.now()); return (performance.now() - t) / n; },
       sim(sec, dt = 1 / 30) { G.fastSim = true; const n = Math.round(sec / dt); for (let i = 0; i < n && !G.over; i++) update(dt); G.fastSim = false; },
