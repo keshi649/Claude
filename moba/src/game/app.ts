@@ -1,6 +1,9 @@
 import { Sfx } from '../audio/sfx';
+import { Voice } from '../audio/voice';
 import type { MatchSummary } from '../sim/summary';
 import { applyUiScale } from '../ui/dom';
+import { openSettings } from '../ui/settingsPanel';
+import { recordMatch, showHistory } from '../ui/history';
 import { HeroSelect, LoadingScreen, MainMenu, ResultScreen, loadSetup, type MatchSetup } from '../ui/menu';
 import type { PlayerConfig } from '../sim/world';
 import { GameSession, sessionLineup } from './session';
@@ -14,6 +17,7 @@ const PLAYER_PID = 1;
  */
 export class App {
   private readonly sfx = new Sfx();
+  private readonly voice = new Voice();
   private screen: { destroy(): void } | null = null;
   private session: GameSession | null = null;
   private setup: MatchSetup = loadSetup();
@@ -48,6 +52,13 @@ export class App {
       },
       isMuted: () => this.sfx.muted,
       onClick: this.click,
+      onSettings: () =>
+        openSettings(this.root, {
+          isMuted: () => this.sfx.muted,
+          setMuted: (m) => this.sfx.setMuted(m),
+          voiceSupported: this.voice.supported,
+        }),
+      onHistory: () => showHistory(this.root),
     });
   }
 
@@ -88,6 +99,7 @@ export class App {
       lineup,
       startLevel: s.mode === 'training' ? 4 : 1,
       sfx: this.sfx,
+      voice: this.voice,
       onEnd: (sum) => this.result(sum),
       onQuit: () => this.home(),
     });
@@ -104,6 +116,7 @@ export class App {
   }
 
   result(sum: MatchSummary): void {
+    recordMatch(sum, PLAYER_PID, this.setup);
     this.clear();
     this.screen = new ResultScreen(this.root, sum, PLAYER_PID, {
       onAgain: () => this.select(this.setup.mode),

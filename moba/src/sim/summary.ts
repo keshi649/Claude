@@ -28,6 +28,8 @@ export interface PlayerSummary {
   kp: number;
   score: number;
   mvp: 'win' | 'lose' | null;
+  /** 全场单项第一的称号（金牌输出 / 金牌承伤 / 金牌经济 / 金牌推塔 / 金牌辅助 / 金牌补刀） */
+  titles: string[];
 }
 
 export interface MatchSummary {
@@ -38,6 +40,8 @@ export interface MatchSummary {
   /** 各队摧毁的敌方防御塔数 */
   towers: [number, number];
   players: PlayerSummary[];
+  /** 经济差曲线：每 10 秒一个点，蓝方总经济 − 红方总经济（界面层记录后填入） */
+  goldTimeline?: { t: number; diff: number }[];
 }
 
 const share = (v: number, total: number): number => (total > 0 ? v / total : 0);
@@ -68,6 +72,7 @@ export function summarize(w: World): MatchSummary {
       kp: 0,
       score: 0,
       mvp: null,
+      titles: [],
     });
   }
   const kills: [number, number] = [0, 0];
@@ -101,5 +106,16 @@ export function summarize(w: World): MatchSummary {
     const best = mine.reduce<PlayerSummary | null>((b, r) => (!b || r.score > b.score ? r : b), null);
     if (best && w.winner !== null) best.mvp = w.winner === t ? 'win' : 'lose';
   }
+  // 全场单项第一（同分取先出现的）
+  const award = (title: string, f: (r: PlayerSummary) => number): void => {
+    const best = rows.reduce<PlayerSummary | null>((b, r) => (f(r) > 0 && (!b || f(r) > f(b)) ? r : b), null);
+    if (best) best.titles.push(title);
+  };
+  award('金牌输出', (r) => r.damageDealt);
+  award('金牌承伤', (r) => r.damageTaken);
+  award('金牌经济', (r) => r.gold);
+  award('金牌推塔', (r) => r.towerDamage);
+  award('金牌辅助', (r) => r.support);
+  award('金牌补刀', (r) => r.lastHits);
   return { winner: w.winner, duration: w.time, kills, towers, players: rows };
 }

@@ -80,6 +80,8 @@ export interface MainMenuHooks {
   onToggleMute: () => boolean;
   isMuted: () => boolean;
   onClick: () => void;
+  onSettings: () => void;
+  onHistory: () => void;
 }
 
 export class MainMenu {
@@ -133,6 +135,16 @@ export class MainMenu {
       const fs = el('button', 'pill', foot, '⛶ 全屏');
       fs.addEventListener('click', () => void toggleFullscreen());
     }
+    const st = el('button', 'pill', foot, '⚙ 设置');
+    st.addEventListener('click', () => {
+      hooks.onClick();
+      hooks.onSettings();
+    });
+    const hi = el('button', 'pill', foot, '📜 历史战绩');
+    hi.addEventListener('click', () => {
+      hooks.onClick();
+      hooks.onHistory();
+    });
     el('span', 'ver', foot, '所有角色、技能、装备与美术均为原创，程序绘制');
   }
 
@@ -291,13 +303,47 @@ export class LoadingScreen {
         .join('')}</div>`;
     r.innerHTML =
       (mode === 'match' ? `${row(0)}<div class="vs">VS</div>${row(1)}` : `${row(0)}<div class="vs small">训练场</div>`) +
-      `<div class="load-bar"><i></i></div><div class="load-tip">小提示：草丛能隐藏身形，在草丛里出手会暴露 1.2 秒</div>`;
+      `<div class="load-bar"><i></i></div><div class="load-tip">小提示：${LOADING_TIPS[Math.floor(Math.random() * LOADING_TIPS.length)]}</div>`;
   }
 
   destroy(): void {
     this.root.classList.add('out');
     window.setTimeout(() => this.root.remove(), 350);
   }
+}
+
+const LOADING_TIPS = [
+  '草丛能隐藏身形，在草丛里出手会暴露 1.2 秒',
+  '没有己方小兵时，英雄打塔伤害减半——跟着兵线推塔',
+  '按 1 / 2 / 3（手机点小地图旁的按钮）发出进攻、撤退、集合信号，AI 队友会响应',
+  '10 分钟后巨龟和龙王会进化，击败它们全队都能获得强力增益',
+  '河道之灵不会反击，顺路拿下能得到金币和加速',
+  '被防御塔锁定时屏幕边缘会变红，赶紧退出塔的范围',
+  '附近的队友补刀时你也能分到一部分金币',
+  '护命玉佩能让你免死一次，关键时刻救命',
+  '回城和复活后在泉水附近会获得大幅加速',
+];
+
+/** 经济差曲线（SVG）：中线以上蓝方领先，以下红方领先 */
+function goldChart(s: MatchSummary): string {
+  const pts = s.goldTimeline ?? [];
+  if (pts.length < 2) return '';
+  const W = 240;
+  const H = 70;
+  const T = Math.max(1, pts[pts.length - 1]!.t);
+  const max = Math.max(1000, ...pts.map((p) => Math.abs(p.diff)));
+  const xy = pts.map((p) => [(p.t / T) * W, H / 2 - (p.diff / max) * (H / 2 - 4)] as const);
+  const line = xy.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+  const area = `0,${H / 2} ${line} ${W},${H / 2}`;
+  const peak = pts.reduce((a, b) => (Math.abs(b.diff) > Math.abs(a.diff) ? b : a));
+  return `<div class="gold-chart"><small>经济差 · 最大 ${peak.diff >= 0 ? '蓝方' : '红方'}领先 ${Math.abs(peak.diff)}</small>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+      <defs><clipPath id="gcTop"><rect x="0" y="0" width="${W}" height="${H / 2}"/></clipPath><clipPath id="gcBot"><rect x="0" y="${H / 2}" width="${W}" height="${H / 2}"/></clipPath></defs>
+      <polygon points="${area}" fill="rgba(63,182,255,.45)" clip-path="url(#gcTop)"/>
+      <polygon points="${area}" fill="rgba(255,90,60,.45)" clip-path="url(#gcBot)"/>
+      <line x1="0" y1="${H / 2}" x2="${W}" y2="${H / 2}" stroke="rgba(255,255,255,.35)" stroke-dasharray="3 3"/>
+      <polyline points="${line}" fill="none" stroke="#fff" stroke-width="1.5"/>
+    </svg></div>`;
 }
 
 // ————————————————————————— 结算 —————————————————————————
@@ -330,7 +376,7 @@ export class ResultScreen {
           });
           const badge = p.mvp === 'win' ? '<i class="mvp">MVP</i>' : p.mvp === 'lose' ? '<i class="mvp lose">败方MVP</i>' : '';
           return `<tr class="${p.pid === selfPid ? 'me' : ''}">
-            <td class="who"><div>${faceHtml(p.heroId, p.team)}<div><b>${h.name}</b><small>${p.pid === selfPid ? '你' : p.name} · Lv${p.level}</small></div></div></td>
+            <td class="who"><div>${faceHtml(p.heroId, p.team)}<div><b>${h.name}${p.titles.map((t) => `<em class="ttl">${t}</em>`).join('')}</b><small>${p.pid === selfPid ? '你' : p.name} · Lv${p.level}</small></div></div></td>
             <td class="sc"><b>${p.score.toFixed(1)}</b>${badge}</td>
             <td class="kda">${p.kills}/${p.deaths}/${p.assists}<small>参团 ${Math.round(p.kp * 100)}%</small></td>
             <td class="dmg"><span>${p.damageDealt}</span><i style="width:${Math.round((p.damageDealt / maxDmg) * 100)}%"></i></td>
@@ -352,6 +398,7 @@ export class ResultScreen {
       <div class="res-head">
         <h1>${win ? '胜利' : '失败'}</h1>
         <div class="res-meta"><div><span class="b">${s.kills[0]}</span> : <span class="r">${s.kills[1]}</span></div><small>对局时长 ${Math.floor(t / 60)} 分 ${t % 60} 秒 · 推塔 ${s.towers[0]} : ${s.towers[1]}</small></div>
+        ${goldChart(s)}
         ${mvpCard}
       </div>
       <div class="res-tables">${table(0)}${table(1)}</div>

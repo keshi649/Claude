@@ -1,6 +1,6 @@
 import { Sfx, type SfxName } from '../audio/sfx';
 import { FixedStepLoop } from '../core/loop';
-import { BALANCE } from '../data/balance';
+import { BALANCE, WAVES } from '../data/balance';
 import { getHero } from '../data/heroes';
 import { CommandMapper, liveSnapshot, stageOf } from '../input/commandMapper';
 import { KeyboardMouse } from '../input/keyboardMouse';
@@ -22,6 +22,9 @@ import { BOSSES } from '../data/monsters';
 import { getUnitDef } from '../data/units';
 import { summarize, type MatchSummary } from '../sim/summary';
 import { Announcer } from '../ui/announcer';
+import type { Voice } from '../audio/voice';
+import { openSettings } from '../ui/settingsPanel';
+import { onSettingsChange } from './settings';
 
 const PLAYER_PID = 1;
 
@@ -51,6 +54,8 @@ export interface SessionOptions extends Omit<WorldConfig, 'players'> {
   lineup?: Lineup;
   /** 全局共用的音效（避免每局重复创建 AudioContext） */
   sfx: Sfx;
+  /** 全局共用的语音播报 */
+  voice: Voice;
   /** 对局结束、看完“胜利 / 失败”后调用 */
   onEnd?: (summary: MatchSummary) => void;
   /** 玩家在设置里退出对局 */
@@ -73,6 +78,15 @@ export class GameSession {
   private gameEl: HTMLElement | null = null;
   private vignette: HTMLElement | null = null;
   private ended = false;
+  private firstWave = false;
+  private goldTimeline: { t: number; diff: number }[] = [];
+  private nextGoldSample = 0;
+  private goldDiff(): number {
+    let d = 0;
+    for (const u of this.world.list) if (u.hero) d += (u.team === 0 ? 1 : -1) * u.hero.goldEarned;
+    return Math.round(d);
+  }
+  private offSettings: (() => void) | null = null;
   private shop!: ShopPanel;
   private scoreboard!: Scoreboard;
   private debug!: DebugPanel;
@@ -147,8 +161,21 @@ export class GameSession {
       isMuted: () => this.sfx.muted,
       onQuit: () => this.cfg.onQuit?.(),
       onSignal: (kind) => this.sendSignal(kind),
+      onSettings: () =>
+        openSettings(this.hud.root, {
+          isMuted: () => this.sfx.muted,
+          setMuted: (m) => this.sfx.setMuted(m),
+          voiceSupported: this.cfg.voice.supported,
+        }),
     });
-    this.announcer = new Announcer(this.hud.root, (n, v) => this.sfx.play(n, v));
+    this.announcer = new Announcer(
+      this.hud.root,
+      (n, v) => this.sfx.play(n, v),
+      (text, pr) => this.cfg.voice.say(text, pr),
+    );
+    this.offSettings = onSettingsChange(() => this.renderer.applySettings());
+    // 开场语音
+    if (this.world.config.mode === 'match') this.cfg.voice.say('欢迎来到晶核争锋', 1);
     this.shop = new ShopPanel(
       this.hud.root,
       (item) => this.pending.push({ t: 'buy', pid: PLAYER_PID, item }),
@@ -304,6 +331,16 @@ export class GameSession {
     this.renderer.handleEvents(events);
     this.announcer.tick(now);
     if (hero) this.structureAlerts(hero.team, now);
+    // 经济差曲线：每 10 秒记一个点
+    if (w.config.mode === 'match' && w.time >= this.nextGoldSample) {
+      this.goldTimeline.push({ t: w.time, diff: this.goldDiff() });
+      this.nextGoldSample += 10;
+    }
+    // 第一波兵线出发：全军出击
+    if (!this.firstWave && w.config.mode === 'match' && w.time >= WAVES.firstWaveAt) {
+      this.firstWave = true;
+      this.announcer.pushText('全军出击', '第一波兵线已出发', true);
+    }
     this.bossWarnings();
     this.vignette?.classList.toggle('danger', this.renderer.selfLocked);
     if (hero && w.config.mode === 'training') this.trackDps(events, hero.id, now);
@@ -446,14 +483,18 @@ export class GameSession {
     const crystal = w.list.find((u) => u.kind === 'crystal' && !u.alive);
     if (crystal) this.renderer.focus = { x: crystal.pos.x, y: crystal.pos.y };
     const summary = summarize(w);
+    summary.goldTimeline = this.goldTimeline.concat([{ t: w.time, diff: this.goldDiff() }]);
     window.setTimeout(() => {
       this.sfx.play(win ? 'victory' : 'defeat', 1);
+      this.cfg.voice.say(win ? '胜利' : '失败', 3);
       this.hud.showEnd(win, () => this.cfg.onEnd?.(summary));
     }, 2600);
   }
 
   destroy(): void {
     cancelAnimationFrame(this.raf);
+    this.offSettings?.();
+    this.cfg.voice.stop();
     window.removeEventListener('resize', this.onResize);
     this.keyboard.destroy();
     this.hud?.destroy();

@@ -40,6 +40,22 @@ describe('结算与 MVP', () => {
     }
   });
 
+  it('全场单项第一获得金牌称号，每个称号只给一个人', () => {
+    const w = world();
+    const h = (pid: number) => w.heroOf(pid)!.hero!;
+    Object.assign(h(1), { damageDealt: 30000, goldEarned: 9000, lastHits: 80 });
+    Object.assign(h(2), { support: 8000, damageTaken: 12000 });
+    Object.assign(h(4), { damageTaken: 40000, towerDamage: 5000 });
+    w.winner = 0;
+    const s = summarize(w);
+    const t = new Map(s.players.map((p) => [p.pid, p.titles]));
+    expect(t.get(1)).toEqual(expect.arrayContaining(['金牌输出', '金牌经济', '金牌补刀']));
+    expect(t.get(2)).toContain('金牌辅助');
+    expect(t.get(4)).toEqual(expect.arrayContaining(['金牌承伤', '金牌推塔']));
+    const all = s.players.flatMap((p) => p.titles);
+    expect(new Set(all).size).toBe(all.length);
+  });
+
   it('没有分出胜负时不评 MVP', () => {
     const s = summarize(world());
     expect(s.players.every((p) => p.mvp === null)).toBe(true);

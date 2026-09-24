@@ -28,6 +28,9 @@ interface Banner {
   sound: SfxName;
   vol: number;
   dur: number;
+  /** 语音播报的文字与优先级（没有则不朗读） */
+  speech?: string;
+  priority?: number;
 }
 
 /**
@@ -39,7 +42,11 @@ export class Announcer {
   private queue: Banner[] = [];
   private showingUntil = 0;
 
-  constructor(parent: HTMLElement, private readonly play: (n: SfxName, vol: number) => void) {
+  constructor(
+    parent: HTMLElement,
+    private readonly play: (n: SfxName, vol: number) => void,
+    private readonly speak: (text: string, priority: number) => void = () => undefined,
+  ) {
     this.el = document.createElement('div');
     this.el.className = 'announcer';
     parent.appendChild(this.el);
@@ -62,6 +69,9 @@ export class Announcer {
       sound: allyKill ? (e.multi >= 3 ? 'multikill' : 'announce') : 'announceBad',
       vol: big || me ? 1 : 0.6,
       dur: big ? 2.4 : 1.7,
+      // 语音：大播报都读；普通击杀只读和自己有关的
+      speech: big ? text : e.killer === selfId ? '击败敌人' : e.victim === selfId ? '你已阵亡' : undefined,
+      priority: big && e.multi >= 2 ? 2 : 1,
     });
     // 团灭：被击杀一方的英雄全部阵亡
     const team = w.list.filter((u) => u.hero && u.team === victim.team);
@@ -72,13 +82,15 @@ export class Announcer {
         sound: allyKill ? 'multikill' : 'announceBad',
         vol: 1,
         dur: 2.6,
+        speech: '团灭',
+        priority: 2,
       });
     }
   }
 
   /** 通用播报（Boss、推塔等），不排挤击杀播报 */
   pushText(text: string, sub: string, ally: boolean): void {
-    this.push({ html: `<div class="txt"><b>${text}</b><small>${sub}</small></div>`, cls: `${ally ? 'ally' : 'enemy'} big`, sound: ally ? 'announce' : 'announceBad', vol: 0.8, dur: 2.2 });
+    this.push({ html: `<div class="txt"><b>${text}</b><small>${sub}</small></div>`, cls: `${ally ? 'ally' : 'enemy'} big`, sound: ally ? 'announce' : 'announceBad', vol: 0.8, dur: 2.2, speech: text });
   }
 
   private push(b: Banner): void {
@@ -104,6 +116,7 @@ export class Announcer {
     row.style.setProperty('--dur', `${b.dur}s`);
     this.el.replaceChildren(row);
     this.play(b.sound, b.vol);
+    if (b.speech) this.speak(b.speech, b.priority ?? 1);
     this.showingUntil = now + b.dur * 1000;
   }
 }

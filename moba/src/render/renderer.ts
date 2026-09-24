@@ -4,6 +4,7 @@ import type { Team } from '../sim/entity';
 import { lerpAngle } from '../core/vec2';
 import { getHero } from '../data/heroes';
 import { getItem } from '../data/items';
+import { resolutionFor, settings, zoomScaleFor } from '../game/settings';
 import { CC_NAMES, type SkillStage } from '../data/schema';
 import { getBuff } from '../data/units';
 import type { AimPreview } from '../input/aim';
@@ -87,12 +88,13 @@ export class GameRenderer {
       antialias: true,
       background: 0x16230f,
       // 手机上限 1.5 倍分辨率，节省 GPU 填充率；电脑上限 2 倍
-      resolution: Math.min(window.devicePixelRatio || 1, matchMedia('(pointer: coarse)').matches ? 1.5 : 2),
+      resolution: resolutionFor(settings.quality),
       autoDensity: true,
       powerPreference: 'high-performance',
     });
     parent.appendChild(this.app.canvas);
     this.camera = new Camera(this.world.map.size);
+    this.camera.zoomScale = zoomScaleFor(settings.camera);
     this.tex = createTextures();
     this.effects = new EffectsLayer(this.tex);
 
@@ -128,6 +130,14 @@ export class GameRenderer {
 
   resize(): void {
     this.camera.resize(this.app.screen.width, this.app.screen.height);
+  }
+
+  /** 设置面板改动后：画质（渲染分辨率）与镜头远近立即生效 */
+  applySettings(): void {
+    const res = resolutionFor(settings.quality);
+    if (this.app.renderer.resolution !== res) this.app.renderer.resize(this.app.screen.width, this.app.screen.height, res);
+    this.camera.zoomScale = zoomScaleFor(settings.camera);
+    this.resize();
   }
 
   private ensureView(u: Unit): UnitView {

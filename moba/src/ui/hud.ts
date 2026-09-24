@@ -1,6 +1,7 @@
 import { getHero } from '../data/heroes';
 import { getSummoner, RESTORE } from '../data/summoners';
 import { getBuff } from '../data/units';
+import { settings } from '../game/settings';
 import { applyUiScale, canFullscreen, el, hex, toggleFullscreen } from './dom';
 import { faceHtml } from './portrait';
 import { bindHoldButton, bindJoystick, bindSkillButton, bindTapButton } from '../input/touch';
@@ -45,6 +46,7 @@ export interface HudHooks {
   isMuted: () => boolean;
   onQuit: () => void;
   onSignal: (kind: 'attack' | 'retreat' | 'gather') => void;
+  onSettings: () => void;
 }
 
 /**
@@ -112,6 +114,11 @@ export class Hud {
       const fs = el('button', '', settings, '⛶ 全屏');
       fs.addEventListener('click', () => void toggleFullscreen());
     }
+    const more = el('button', '', settings, '⚙ 设置（语音 / 画质 / 镜头）');
+    more.addEventListener('click', () => {
+      settings.classList.remove('show');
+      hooks.onSettings();
+    });
     const dbg = el('button', '', settings, '🛠 调试面板（`）');
     dbg.addEventListener('click', () => hooks.onToggleDebug());
     const quit = el('button', '', settings, '🏳 退出对局');
@@ -369,8 +376,8 @@ export class Hud {
     const t = Math.floor(w.time);
     const clock = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
     this.set('clock', clock, () => (this.clock.textContent = clock));
-    const f = String(Math.round(fps));
-    this.set('fps', f, () => (this.fps.textContent = `${f}FPS`));
+    const f = settings.showFps ? String(Math.round(fps)) : '';
+    this.set('fps', f, () => (this.fps.textContent = f ? `${f}FPS` : ''));
     const h = hero.hero!;
     const kda = `${h.kills}/${h.deaths}/${h.assists}`;
     this.set('kda', kda, () => (this.kda.textContent = kda));

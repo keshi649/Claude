@@ -20,6 +20,8 @@ export class Camera {
   private shakeTime = 0;
   offsetX = 0;
   offsetY = 0;
+  /** 镜头远近倍率（设置面板） */
+  zoomScale = 1;
 
   constructor(private readonly mapSize: number) {}
 
@@ -27,7 +29,7 @@ export class Camera {
     this.screenW = w;
     this.screenH = h;
     // 横屏约显示 30 米宽的地面；矮屏幕保证纵深至少约 16 米
-    this.zoom = Math.min(w / 30, h / (16 * TILT));
+    this.zoom = Math.min(w / 30, h / (16 * TILT)) * this.zoomScale;
   }
 
   get anchorY(): number {
