@@ -60,6 +60,8 @@ export interface SessionOptions extends Omit<WorldConfig, 'players'> {
   onEnd?: (summary: MatchSummary) => void;
   /** 玩家在设置里退出对局 */
   onQuit?: () => void;
+  /** 调试面板里切换英雄 / 模式 */
+  onSwitch?: (heroId: string, mode: 'training' | 'match') => void;
 }
 
 /**
@@ -190,6 +192,8 @@ export class GameSession {
         this.loop.timeScale = s.fast ? 4 : 1;
       },
       (op, value) => this.pending.push({ t: 'debug', pid: PLAYER_PID, op, value }),
+      this.cfg.heroId,
+      (heroId, mode) => this.cfg.onSwitch?.(heroId, mode),
     );
 
     // 调试：点击地图寻路

@@ -38,6 +38,7 @@ html, body {
   width: 230px; background: rgba(12,18,26,.95); border: 1px solid rgba(255,255,255,.2); border-radius: 10px; padding: 10px;
   pointer-events: auto; display: none; font-size: 14px; z-index: 30; }
 .settings.show { display: block; }
+.settings button.danger { border-color: #ff5a3c; color: #ffb0a0; }
 .settings button { width: 100%; margin: 4px 0; padding: 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,.2);
   background: #223040; color: #fff; font-size: 14px; cursor: pointer; text-align: left; }
 .settings .help-text { font-size: 12px; line-height: 1.7; opacity: .85; margin-top: 6px; }
@@ -126,8 +127,15 @@ body.aiming .cancel-zone { display: grid; }
   font-size: 12px; opacity: .7; line-height: 1.7; display: none; text-shadow: 0 1px 2px #000; }
 body.desktop .help { display: block; }
 
-.rotate-hint { position: fixed; inset: 0; display: none; place-items: center; background: #0b120b; z-index: 50; font-size: 20px; text-align: center; pointer-events: auto; }
-@media (orientation: portrait) and (pointer: coarse) { .rotate-hint { display: grid; } }
+.rotate-hint { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: radial-gradient(ellipse at 50% 40%, #1f4d8e, #05070d 75%); z-index: 90; text-align: center; pointer-events: auto; color: #fff; padding: 0 24px; }
+.rotate-hint b { font-size: 22px; letter-spacing: .1em; }
+.rotate-hint small { font-size: 13px; opacity: .7; }
+.rotate-hint .go-btn { font-size: 18px; margin-top: 6px; }
+.rot-phone { width: 46px; height: 80px; border: 4px solid #ffd86a; border-radius: 10px; animation: rot-phone 2s ease-in-out infinite; }
+@keyframes rot-phone { 0%, 20% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+@media (orientation: portrait) and (pointer: coarse) { .rotate-hint { display: flex; } }
+@media (prefers-reduced-motion: reduce) { .rot-phone { animation: none; } }
 
 /* ——— 调试面板 ——— */
 .debug-panel { position: absolute; top: calc(210 * var(--ui) * 1px + env(safe-area-inset-top)); left: calc(8px + env(safe-area-inset-left));

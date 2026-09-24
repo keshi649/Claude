@@ -1,7 +1,7 @@
 import { Sfx } from '../audio/sfx';
 import { Voice } from '../audio/voice';
 import type { MatchSummary } from '../sim/summary';
-import { applyUiScale } from '../ui/dom';
+import { applyUiScale, canFullscreen, toggleFullscreen } from '../ui/dom';
 import { openSettings } from '../ui/settingsPanel';
 import { recordMatch, showHistory } from '../ui/history';
 import { HeroSelect, LoadingScreen, MainMenu, ResultScreen, loadSetup, type MatchSetup } from '../ui/menu';
@@ -27,6 +27,18 @@ export class App {
   constructor(private readonly root: HTMLElement) {
     applyUiScale();
     window.addEventListener('resize', applyUiScale);
+    // 手机竖屏时整屏提示横过来（菜单和对局都适用）；支持的浏览器可一键全屏并锁定横屏
+    const hint = document.createElement('div');
+    hint.className = 'rotate-hint';
+    hint.innerHTML = '<div class="rot-phone"></div><b>请把手机横过来游玩</b><small>如果手机锁定了竖屏，请先在控制中心解除锁定</small>';
+    if (canFullscreen()) {
+      const fs = document.createElement('button');
+      fs.className = 'go-btn';
+      fs.textContent = '全屏横屏';
+      fs.addEventListener('click', () => void toggleFullscreen());
+      hint.appendChild(fs);
+    }
+    document.body.appendChild(hint);
   }
 
   private clear(): void {
@@ -46,6 +58,8 @@ export class App {
     this.clear();
     this.screen = new MainMenu(this.root, {
       onPlay: (mode) => this.select(mode),
+      onQuickPlay: () => void this.play({ ...this.setup, mode: 'match' }),
+      quickHero: this.setup.heroId,
       onToggleMute: () => {
         this.sfx.setMuted(!this.sfx.muted);
         return this.sfx.muted;
@@ -102,6 +116,7 @@ export class App {
       voice: this.voice,
       onEnd: (sum) => this.result(sum),
       onQuit: () => this.home(),
+      onSwitch: (heroId, mode) => void this.play({ ...s, heroId, mode }, undefined, { solo: mode === 'match' }),
     });
     this.session = session;
     (window as unknown as { game?: GameSession }).game = session;

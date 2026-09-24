@@ -121,9 +121,22 @@ export class Hud {
     });
     const dbg = el('button', '', settings, '🛠 调试面板（`）');
     dbg.addEventListener('click', () => hooks.onToggleDebug());
+    // 二次确认做在按钮上（不用 confirm()，某些嵌入环境会直接返回 false）
     const quit = el('button', '', settings, '🏳 退出对局');
+    let armed = 0;
     quit.addEventListener('click', () => {
-      if (confirm('确定退出对局，返回主页？')) hooks.onQuit();
+      if (armed) {
+        clearTimeout(armed);
+        hooks.onQuit();
+        return;
+      }
+      quit.textContent = '再点一次确认退出';
+      quit.classList.add('danger');
+      armed = window.setTimeout(() => {
+        armed = 0;
+        quit.textContent = '🏳 退出对局';
+        quit.classList.remove('danger');
+      }, 3000);
     });
     const help = el('div', 'help-text', settings);
     help.innerHTML =
@@ -231,7 +244,6 @@ export class Hud {
     this.toastEl = el('div', 'toast', root);
     const h = el('div', 'help', root);
     h.innerHTML = 'WASD 移动 · 空格 普攻 · C 补刀 · Z 推塔<br>Q/E/R 技能 · F 召唤师技能（按住瞄准，松开释放，Esc 取消）<br>B 回城 · V 恢复 · Ctrl+Q/E/R 加点 · ` 调试';
-    el('div', 'rotate-hint', root, '请把手机横过来游玩 ↻');
   }
 
   private makeSkillButton(parent: HTMLElement, cls: string, glyph: string, key: string, maxLevel: number): SkillUi {

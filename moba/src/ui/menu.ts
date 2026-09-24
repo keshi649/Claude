@@ -77,6 +77,9 @@ export const HELP_HTML = `
 
 export interface MainMenuHooks {
   onPlay: (mode: 'match' | 'training') => void;
+  /** 快速开始：用上次的英雄 / 召唤师技能 / 难度直接开一局 5v5 */
+  onQuickPlay: () => void;
+  quickHero: string;
   onToggleMute: () => boolean;
   isMuted: () => boolean;
   onClick: () => void;
@@ -97,8 +100,14 @@ export class MainMenu {
       <div class="hero-strip"></div>
       <div class="menu-foot"></div>`;
     const btns = r.querySelector<HTMLElement>('.menu-buttons')!;
-    const play = el('button', 'big-btn primary', btns);
-    play.innerHTML = '<b>开始对战</b><small>5V5 人机 · 约 10~15 分钟</small>';
+    const quick = el('button', 'big-btn primary', btns);
+    quick.innerHTML = `<b>快速开始</b><small>${getHero(hooks.quickHero).name} · 5V5 人机 · 点一下直接开打</small>`;
+    quick.addEventListener('click', () => {
+      hooks.onClick();
+      hooks.onQuickPlay();
+    });
+    const play = el('button', 'big-btn', btns);
+    play.innerHTML = '<b>选择英雄</b><small>挑英雄、召唤师技能与难度再开局</small>';
     play.addEventListener('click', () => {
       hooks.onClick();
       hooks.onPlay('match');

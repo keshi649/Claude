@@ -1,4 +1,6 @@
 import './ui/styles.css';
+// 不用 new Function 生成着色器同步代码：在禁止 eval 的页面（嵌入式托管）里也能运行
+import 'pixi.js/unsafe-eval';
 import { App } from './game/app';
 import { HEROES } from './data/heroes';
 import { SUMMONERS } from './data/summoners';

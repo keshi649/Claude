@@ -27,6 +27,9 @@ export class DebugPanel {
     parent: HTMLElement,
     private readonly onChange: (s: DebugState) => void,
     private readonly onOp: (op: DebugOp, value?: number) => void,
+    private readonly heroId: string,
+    /** 切换英雄 / 模式（重新开局） */
+    private readonly onSwitch: (heroId: string, mode: 'training' | 'match') => void,
   ) {
     const el = document.createElement('div');
     el.className = 'debug-panel';
@@ -91,7 +94,7 @@ export class DebugPanel {
     }
     el.appendChild(row2);
 
-    // 切换英雄 / 模式（重新载入页面）
+    // 切换英雄 / 模式（重新开一局）
     const row3 = document.createElement('div');
     row3.className = 'row';
     const sel = document.createElement('select');
@@ -101,13 +104,8 @@ export class DebugPanel {
       o.textContent = `${h.name}（${ROLE_NAMES[h.role]}）`;
       sel.appendChild(o);
     }
-    const params = new URLSearchParams(location.search);
-    sel.value = params.get('hero') ?? 'lifeng';
-    const go = (mode: string): void => {
-      params.set('hero', sel.value);
-      params.set('mode', mode);
-      location.search = params.toString();
-    };
+    sel.value = this.heroId;
+    const go = (mode: 'training' | 'match'): void => this.onSwitch(sel.value, mode);
     const t = document.createElement('button');
     t.textContent = '训练场';
     t.addEventListener('click', () => go('training'));
