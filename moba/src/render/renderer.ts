@@ -1,4 +1,4 @@
-import { Application, Container, Graphics, Sprite, Texture, type TilingSprite } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Text, Texture, type TilingSprite } from 'pixi.js';
 import { SIGHT, sightOf, visibleTo } from '../sim/vision';
 import type { Team } from '../sim/entity';
 import { lerpAngle } from '../core/vec2';
@@ -62,6 +62,9 @@ export class GameRenderer {
   private lastZoom = 0;
   private dashTrailAt = new Map<number, number>();
   debugOptions: DebugDrawOptions = { colliders: false, paths: false };
+  /** 调试：显示 AI 当前决策（返回某单位的决策文字） */
+  aiInfo: ((id: number) => string | null) | null = null;
+  private aiLabels = new Map<number, Text>();
 
   constructor(
     private readonly world: World,
@@ -396,6 +399,7 @@ export class GameRenderer {
     }
 
     this.drawTowerHints(self ?? null);
+    this.drawAiLabels();
     this.effects.syncProjectiles(w.projectiles, alpha);
     this.effects.syncZones(w.zones, now);
     this.effects.update(now, dtSec, (x, y, h) => cam.worldToScreen(x, y, h));
@@ -405,8 +409,38 @@ export class GameRenderer {
       this.indicator.draw(v.rx, v.ry, aim.stage, aim.preview, aim.cancel, now);
     } else this.indicator.clear();
 
-    if (this.debugOptions.colliders || this.debugOptions.paths) this.debugDraw.draw(w, this.debugOptions, view);
+    if (this.debugOptions.colliders || this.debugOptions.paths || this.debugOptions.vision) this.debugDraw.draw(w, this.debugOptions, view);
     else this.debugDraw.g.clear();
+  }
+
+  private drawAiLabels(): void {
+    for (const [id, t] of this.aiLabels) {
+      const v = this.views.get(id);
+      const text = this.aiInfo?.(id) ?? null;
+      if (!v || !text || !v.root.visible) {
+        t.visible = false;
+        continue;
+      }
+    }
+    if (!this.aiInfo) return;
+    for (const u of this.world.list) {
+      if (!u.hero) continue;
+      const text = this.aiInfo(u.id);
+      if (!text) continue;
+      const v = this.views.get(u.id);
+      if (!v || !v.root.visible) continue;
+      let t = this.aiLabels.get(u.id);
+      if (!t) {
+        t = new Text({ text: '', style: { fontFamily: 'sans-serif', fontSize: 11, fill: 0xfff0a0, stroke: { color: 0x000000, width: 3 } } });
+        t.anchor.set(0.5, 1);
+        this.aiLabels.set(u.id, t);
+        this.overlayLayer.addChild(t);
+      }
+      t.visible = true;
+      if (t.text !== text) t.text = text;
+      const s = this.camera.worldToScreen(v.rx, v.ry, v.model.height + 0.6);
+      t.position.set(s.x, s.y - 26);
+    }
   }
 
   /** 防御塔：自己靠近时显示攻击范围圈；塔与当前攻击目标之间画连线 */

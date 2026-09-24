@@ -18,7 +18,10 @@ const app = document.getElementById('app')!;
 const mode = params.get('mode') === 'training' ? 'training' : 'match';
 const heroId = HEROES[params.get('hero') ?? ''] ? params.get('hero')! : 'lifeng';
 const summoner = SUMMONERS[params.get('summoner') ?? ''] ? params.get('summoner')! : 'blink';
-const session = new GameSession(app, { seed, mode, heroId, summoner, startLevel: mode === 'training' ? 4 : 1 });
+const dp = params.get('difficulty');
+const difficulty = dp === 'easy' || dp === 'hard' ? dp : 'normal';
+const solo = params.get('solo') === '1';
+const session = new GameSession(app, { seed, mode, heroId, summoner, difficulty, solo, startLevel: mode === 'training' ? 4 : 1 });
 void session.start();
 
 // 便于在控制台调试

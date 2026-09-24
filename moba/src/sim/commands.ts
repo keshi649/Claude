@@ -23,6 +23,8 @@ export type Command =
   | { t: 'stop'; pid: number }
   /** 普攻：auto 默认优先英雄；farm 只打小兵和野怪（补刀键）；tower 只打建筑（推塔键） */
   | { t: 'attack'; pid: number; mode: AttackMode }
+  /** 攻击指定单位（AI 用） */
+  | { t: 'attackUnit'; pid: number; id: EntityId }
   /** 施法。蓄力技能用 phase 区分按下 / 松开 */
   | { t: 'cast'; pid: number; slot: 0 | 1 | 2; aim: Aim; phase?: 'start' | 'release' }
   | { t: 'levelSkill'; pid: number; slot: 0 | 1 | 2 }

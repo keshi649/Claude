@@ -11,6 +11,8 @@ import type { SimEvent } from '../sim/events';
 import { World, type WorldConfig } from '../sim/world';
 import { DebugPanel } from '../ui/debugPanel';
 import { Hud } from '../ui/hud';
+import { AIDirector, makeLineup } from '../sim/ai/director';
+import type { Difficulty } from '../sim/ai/difficulty';
 import { ShopPanel } from '../ui/shop';
 import { Scoreboard } from '../ui/scoreboard';
 import { checkBuy, nextRecommended } from '../sim/shop';
@@ -42,19 +44,35 @@ export class GameSession {
   private minimapAt = 0;
   private quickBuyAt = 0;
 
+  private ai: AIDirector | null = null;
+
   constructor(
     private readonly container: HTMLElement,
-    cfg: Omit<WorldConfig, 'players'> & { heroId: string; summoner?: string },
+    cfg: Omit<WorldConfig, 'players'> & { heroId: string; summoner?: string; difficulty?: Difficulty; solo?: boolean },
   ) {
-    this.world = new World({
-      ...cfg,
-      players: [{ pid: PLAYER_PID, team: 0, heroId: cfg.heroId, name: '玩家', isAI: false, summoner: cfg.summoner }],
-    });
+    if (cfg.mode === 'match' && !cfg.solo) {
+      // 5v5：玩家 + 4 个 AI 队友 对 5 个 AI 敌人
+      const lineup = makeLineup({
+        seed: cfg.seed,
+        playerHero: cfg.heroId,
+        playerSummoner: cfg.summoner,
+        allyDifficulty: 'normal',
+        enemyDifficulty: cfg.difficulty ?? 'normal',
+      });
+      this.world = new World({ ...cfg, players: lineup.players });
+      this.ai = new AIDirector(this.world, lineup.difficulties, lineup.positions);
+    } else {
+      this.world = new World({
+        ...cfg,
+        players: [{ pid: PLAYER_PID, team: 0, heroId: cfg.heroId, name: '玩家', isAI: false, summoner: cfg.summoner }],
+      });
+    }
     const hero = this.world.heroOf(PLAYER_PID)!;
     this.renderer = new GameRenderer(this.world, hero.id);
     this.loop = new FixedStepLoop(BALANCE.tickRate, () => {
       const t0 = performance.now();
-      this.world.step(this.pending);
+      const aiCmds = this.ai ? this.ai.think(this.world) : [];
+      this.world.step(aiCmds.length ? [...this.pending, ...aiCmds] : this.pending);
       this.pending = [];
       this.stepMs = this.stepMs * 0.9 + (performance.now() - t0) * 0.1;
     });
@@ -96,7 +114,8 @@ export class GameSession {
     this.debug = new DebugPanel(
       this.hud.root,
       (s) => {
-        this.renderer.debugOptions = { colliders: s.colliders, paths: s.paths };
+        this.renderer.debugOptions = { colliders: s.colliders, paths: s.paths, vision: s.vision };
+        this.renderer.aiInfo = s.aiDecisions && this.ai ? (id) => this.ai!.brainOf(id)?.debugText ?? null : null;
         this.loop.timeScale = s.fast ? 4 : 1;
       },
       (op, value) => this.pending.push({ t: 'debug', pid: PLAYER_PID, op, value }),

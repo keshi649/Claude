@@ -9,6 +9,8 @@ export interface DebugState {
   clickPath: boolean;
   fast: boolean;
   noCooldown: boolean;
+  vision: boolean;
+  aiDecisions: boolean;
 }
 
 /**
@@ -17,7 +19,7 @@ export interface DebugState {
  */
 export class DebugPanel {
   readonly el: HTMLElement;
-  readonly state: DebugState = { colliders: false, paths: false, clickPath: false, fast: false, noCooldown: false };
+  readonly state: DebugState = { colliders: false, paths: false, clickPath: false, fast: false, noCooldown: false, vision: false, aiDecisions: false };
   private stats: HTMLElement;
   visible = false;
 
@@ -45,6 +47,8 @@ export class DebugPanel {
     toggle('colliders', '显示碰撞体');
     toggle('paths', '显示寻路路径 / 导航网格');
     toggle('clickPath', '点击地图寻路（A* 测试）');
+    toggle('vision', '显示视野范围');
+    toggle('aiDecisions', '显示 AI 当前决策');
     toggle('fast', '时间 ×4');
     toggle('noCooldown', '无冷却');
     const row = document.createElement('div');

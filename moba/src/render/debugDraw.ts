@@ -1,9 +1,11 @@
 import { Graphics } from 'pixi.js';
 import type { World } from '../sim/world';
+import { sightOf } from '../sim/vision';
 
 export interface DebugDrawOptions {
   colliders: boolean;
   paths: boolean;
+  vision?: boolean;
 }
 
 /**
@@ -31,6 +33,18 @@ export class DebugDraw {
         if (u.kind === 'hero') {
           g.circle(u.pos.x, u.pos.y, u.stats.range + u.radius).stroke({ width: 0.04, color: 0xffff00, alpha: 0.5 });
         }
+      }
+    }
+    if (opt.vision) {
+      // 每个视野源的视野圈：蓝方青色、红方橙色；草丛高亮
+      for (const u of w.list) {
+        const r = u.alive ? sightOf(u) : 0;
+        if (r <= 0) continue;
+        if (u.pos.x + r < view.x0 || u.pos.x - r > view.x1 || u.pos.y + r < view.y0 || u.pos.y - r > view.y1) continue;
+        g.circle(u.pos.x, u.pos.y, r).stroke({ width: 0.06, color: u.team === 0 ? 0x40c0ff : 0xff8040, alpha: 0.6 });
+      }
+      for (const b of w.map.bushes) {
+        for (let i = 0; i + 1 < b.pts.length; i++) g.moveTo(b.pts[i]!.x, b.pts[i]!.y).lineTo(b.pts[i + 1]!.x, b.pts[i + 1]!.y).stroke({ width: b.w, color: 0x80ff80, alpha: 0.18, cap: 'round' });
       }
     }
     if (opt.paths) {

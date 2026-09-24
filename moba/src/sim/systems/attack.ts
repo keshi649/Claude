@@ -41,6 +41,19 @@ export function commandAttack(w: World, u: Unit, mode: AttackMode): void {
   if (u.cast && u.cast.phase === 'recovery') u.cast = null;
 }
 
+/** 攻击指定单位：目标必须可见、可被攻击 */
+export function commandAttackUnit(w: World, u: Unit, id: number): void {
+  const t = w.get(id);
+  if (!u.alive || !attackDefOf(u) || !t) return;
+  const ok = t.team !== u.team && validAttackTarget(u, t, isStructure(t) ? 'tower' : t.kind === 'hero' || t.kind === 'dummy' ? 'auto' : 'farm');
+  if (!ok) return;
+  const a = u.attack;
+  a.orderTarget = t.id;
+  a.orderMode = 'auto';
+  a.orderTime = BALANCE.attackOrderHold;
+  if (u.cast && u.cast.phase === 'recovery') u.cast = null;
+}
+
 export function updateAttacks(w: World): void {
   const dt = w.dt;
   for (const u of w.list) {

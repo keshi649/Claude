@@ -21,7 +21,7 @@ import { WallField } from './nav/walls';
 import { cancelCharge, commandCast, updateCasts } from './skills/cast';
 import { SpatialHash } from './spatial';
 import { recomputeStats, statsAtLevel } from './stats';
-import { commandAttack, updateAttacks } from './systems/attack';
+import { commandAttack, commandAttackUnit, updateAttacks } from './systems/attack';
 import { separateUnits, updateMovement } from './systems/movement';
 import { updateProjectiles, updateZones } from './systems/projectiles';
 import { updateDummies, updateStatus } from './systems/status';
@@ -433,6 +433,10 @@ export class World {
       case 'attack':
         cancelRecall(this, u);
         commandAttack(this, u, c.mode);
+        return;
+      case 'attackUnit':
+        cancelRecall(this, u);
+        commandAttackUnit(this, u, c.id);
         return;
       case 'cast':
         cancelRecall(this, u);
