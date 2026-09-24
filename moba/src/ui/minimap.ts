@@ -104,6 +104,15 @@ export class Minimap {
       } else c.rect(x - r, y - r, r * 2, r * 2);
       c.fill();
       c.stroke();
+      // 己方建筑正在被攻击：红色脉冲圈
+      if (u.alive && u.team === team && w.time - u.lastDamagedAt < 1.5 && w.get(u.lastAttacker)?.team !== team) {
+        const k = (performance.now() % 700) / 700;
+        c.strokeStyle = `rgba(255,60,40,${1 - k})`;
+        c.lineWidth = 2 * dpr;
+        c.beginPath();
+        c.arc(x, y, r + (4 + k * 8) * dpr, 0, Math.PI * 2);
+        c.stroke();
+      }
     }
     // 小兵 / 木桩
     for (const u of w.list) {

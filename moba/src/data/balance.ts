@@ -64,6 +64,19 @@ export const ECONOMY = {
   heroKillXpPerLevel: 30,
   /** 多杀判定窗口（秒） */
   multiKillWindow: 10,
+  /** 小兵死亡时，经验范围内没有补到刀的己方英雄分得的金币比例（对标手游的共享经济，辅助也有收入） */
+  minionShare: 0.35,
+} as const;
+
+/** 建筑保护：附近没有进攻方小兵时，建筑受到英雄的伤害降低（防止无兵越塔偷塔） */
+export const STRUCTURE_PROTECT = {
+  noMinionReduction: 0.5,
+} as const;
+
+/** 泉水加速：己方英雄在基地附近移速大幅提高，离开后还能持续一小会儿（回城 / 复活后快速回到战场） */
+export const BASE_HASTE = {
+  radius: 20,
+  duration: 2.5,
 } as const;
 
 /** 升到下一级所需经验 */
@@ -75,8 +88,12 @@ export const respawnTime = (level: number): number => 5 + 2.4 * (level - 1);
 export const WAVES = {
   firstWaveAt: 12,
   interval: 30,
-  /** 每几波出一次炮车 */
+  /** 每几波出一次炮车：前 10 分钟 3 波一次，10 分钟后 2 波一次，18 分钟后每波都有 */
   siegeEvery: 3,
+  siegeEveryMid: 2,
+  siegeMidAt: 600,
+  siegeEveryLate: 1,
+  siegeLateAt: 1080,
   /** 同一波小兵之间的出生间隔（米，沿路线排开） */
   spacing: 1.3,
 } as const;

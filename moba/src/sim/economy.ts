@@ -80,9 +80,16 @@ export function onKill(w: World, victim: Unit, killer: Unit | null): void {
   // 小兵 / 野怪：最后一击的英雄得金币，附近敌方英雄分享经验
   const def = getUnitDef(victim.defId);
   if (victim.kind === 'monster' && killer && killer.team !== 2) monsterRewards(w, victim, killer);
-  if (killer?.hero && killer.team !== victim.team) {
-    grantGold(w, killer, def.gold);
-    killer.hero.lastHits++;
+  const lastHitter = killer?.hero && killer.team !== victim.team ? killer : null;
+  if (lastHitter) {
+    grantGold(w, lastHitter, def.gold);
+    lastHitter.hero!.lastHits++;
+  }
+  // 共享经济：敌方小兵死亡时，附近没补到刀的己方英雄也分到一部分金币
+  if (victim.kind === 'minion' && victim.team !== 2) {
+    for (const h of heroesNear(w, enemyTeam, victim.pos.x, victim.pos.y, ECONOMY.xpRadius)) {
+      if (h !== lastHitter) grantGold(w, h, def.gold * ECONOMY.minionShare);
+    }
   }
   if (victim.team === 2) {
     // 中立单位：击杀方分享经验

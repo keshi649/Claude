@@ -11,7 +11,8 @@ import { visibleTo } from '../vision';
 
 /**
  * 兵线：
- *   - 第一波在 WAVES.firstWaveAt 秒，之后每 30 秒一波：3 近战 + 2 远程，每 3 波加 1 个炮车
+ *   - 第一波在 WAVES.firstWaveAt 秒，之后每 30 秒一波：3 近战 + 2 远程；炮车前 10 分钟每 3 波一个，
+ *     10 分钟后每 2 波，18 分钟后每波都有
  *   - 敌方某路高地塔被推掉后，己方这一路每波额外出 1 个超级兵
  *   - 小兵沿路线前进，就近攻击：小兵 > 英雄 > 建筑；
  *     敌方英雄攻击己方英雄时，附近小兵转火该英雄
@@ -48,7 +49,8 @@ export function updateWaves(w: World): void {
 
 function spawnWave(w: World, team: Team, lane: LaneId, idx: number): void {
   const kinds: (keyof typeof MINIONS)[] = ['melee', 'melee', 'melee', 'ranged', 'ranged'];
-  if ((idx + 1) % WAVES.siegeEvery === 0) kinds.push('siege');
+  const every = w.time >= WAVES.siegeLateAt ? WAVES.siegeEveryLate : w.time >= WAVES.siegeMidAt ? WAVES.siegeEveryMid : WAVES.siegeEvery;
+  if ((idx + 1) % every === 0) kinds.push('siege');
   if (enemyHighDown(w, team, lane)) kinds.unshift('super');
   const path = w.map.lanes[team as 0 | 1][lane];
   const n = kinds.length;

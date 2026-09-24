@@ -230,6 +230,12 @@ export class GameSession {
           if (u && u.kind === 'hero') play('death', u.pos.x, u.pos.y);
           break;
         }
+        case 'structureDown': {
+          const u = w.get(e.unit);
+          // 建筑爆炸全图都听得到，只是远处轻一些
+          if (u) this.sfx.play('explosion', u.kind === 'crystal' ? 1 : Math.max(0.35, vol(u.pos.x, u.pos.y)));
+          break;
+        }
         default:
           break;
       }
@@ -258,8 +264,12 @@ export class GameSession {
       if (e.t === 'kill' && hero) {
         this.hud.pushKill(w, e.killer, e.victim, hero.team);
         this.announcer.onKill(w, e, hero.team, hero.id);
+        if (e.victim === hero.id) this.hud.setDeathInfo(w, e.killer, e.assists);
       }
-      if (e.t === 'structureDown' && hero) this.hud.toast(e.team === hero.team ? '我方防御塔被摧毁' : '摧毁敌方防御塔！');
+      if (e.t === 'structureDown' && hero && w.get(e.unit)?.kind === 'tower') {
+        const mine = e.team === hero.team;
+        this.announcer.pushText(mine ? '我方防御塔被摧毁' : '摧毁敌方防御塔', mine ? '守住下一座塔' : '全队获得金币', !mine);
+      }
       if (e.t === 'gameOver' && hero) this.onGameOver(e.winner === hero.team);
       if (e.t === 'campSpawn' && (e.kind === 'turtle' || e.kind === 'dragon')) this.hud.toast(e.kind === 'turtle' ? '玄甲巨龟出现在上河道' : '霆角龙王出现在下河道');
       if (e.t === 'bossKilled' && hero) {
@@ -270,6 +280,8 @@ export class GameSession {
     }
     this.renderer.handleEvents(events);
     this.announcer.tick(now);
+    if (hero) this.structureAlerts(hero.team, now);
+    this.vignette?.classList.toggle('danger', this.renderer.selfLocked);
     if (hero && w.config.mode === 'training') this.trackDps(events, hero.id, now);
     if (hero) this.playSounds(events, hero.id);
 
@@ -327,12 +339,35 @@ export class GameSession {
     });
   }
 
+  /** 己方建筑被攻击时提示（同一座建筑 20 秒内只提示一次） */
+  private alertAt = new Map<number, number>();
+  private alertCheckAt = 0;
+  private structureAlerts(team: number, now: number): void {
+    if (now - this.alertCheckAt < 250) return;
+    this.alertCheckAt = now;
+    const w = this.world;
+    for (const u of w.list) {
+      if ((u.kind !== 'tower' && u.kind !== 'crystal') || !u.alive || u.team !== team) continue;
+      if (w.time - u.lastDamagedAt > 1 || w.get(u.lastAttacker)?.team === team) continue;
+      if (now - (this.alertAt.get(u.id) ?? -1e9) < 20000) continue;
+      this.alertAt.set(u.id, now);
+      this.hud.toast(u.kind === 'crystal' ? '我方水晶正在被攻击！' : '我方防御塔正在被攻击');
+      this.sfx.play('warning', 0.8);
+    }
+  }
+
+  /** 对局结束：镜头移到被摧毁的水晶，爆炸之后再显示“胜利 / 失败” */
   private onGameOver(win: boolean): void {
     if (this.ended) return;
     this.ended = true;
-    this.sfx.play(win ? 'victory' : 'defeat', 1);
-    const summary = summarize(this.world);
-    this.hud.showEnd(win, () => this.cfg.onEnd?.(summary));
+    const w = this.world;
+    const crystal = w.list.find((u) => u.kind === 'crystal' && !u.alive);
+    if (crystal) this.renderer.focus = { x: crystal.pos.x, y: crystal.pos.y };
+    const summary = summarize(w);
+    window.setTimeout(() => {
+      this.sfx.play(win ? 'victory' : 'defeat', 1);
+      this.hud.showEnd(win, () => this.cfg.onEnd?.(summary));
+    }, 2600);
   }
 
   destroy(): void {

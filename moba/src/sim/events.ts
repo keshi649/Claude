@@ -17,6 +17,8 @@ export type SimEvent =
       isAttack: boolean;
       x: number;
       y: number;
+      /** 建筑在无兵保护下受到的伤害（已减免） */
+      protectedHit: boolean;
     }
   | { t: 'heal'; target: EntityId; amount: number; x: number; y: number }
   | { t: 'shield'; target: EntityId; amount: number }

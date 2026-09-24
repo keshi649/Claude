@@ -41,14 +41,14 @@ export class Camera {
   }
 
   /** 每帧平滑跟随（指数插值，与帧率无关） */
-  follow(p: Vec2, dtSec: number): void {
-    const k = 1 - Math.exp(-dtSec * 14);
+  follow(p: Vec2, dtSec: number, speed = 14): void {
+    const k = 1 - Math.exp(-dtSec * speed);
     this.x += (p.x - this.x) * k;
     this.y += (p.y - this.y) * k;
     this.clamp();
     if (this.shakeTime > 0) {
       this.shakeTime -= dtSec;
-      const a = this.shakeAmp * Math.max(0, this.shakeTime / 0.22);
+      const a = this.shakeAmp * Math.min(1, Math.max(0, this.shakeTime / 0.22));
       this.offsetX = (Math.random() * 2 - 1) * a;
       this.offsetY = (Math.random() * 2 - 1) * a;
     } else {
@@ -57,10 +57,10 @@ export class Camera {
     }
   }
 
-  /** 震屏（单位：米） */
-  shake(amp: number): void {
+  /** 震屏（单位：米）；long 为更长的余震（建筑爆炸） */
+  shake(amp: number, long = false): void {
     this.shakeAmp = this.shakeTime > 0 ? Math.max(this.shakeAmp, amp) : amp;
-    this.shakeTime = 0.22;
+    this.shakeTime = Math.max(this.shakeTime, long ? 0.6 : 0.22);
   }
 
   private clamp(): void {

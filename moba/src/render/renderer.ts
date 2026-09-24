@@ -19,6 +19,10 @@ import { PALETTE, teamColor } from './palette';
 import { createTextures, type GameTextures } from './textures';
 import { UnitView } from './unitView';
 
+/** 小兵 / 野怪死亡动画时长、英雄倒地动画时长（毫秒） */
+const DEATH_MS = 650;
+const HERO_DEATH_MS = 1100;
+
 export interface AimRender {
   stage: SkillStage;
   preview: AimPreview;
@@ -64,6 +68,11 @@ export class GameRenderer {
   debugOptions: DebugDrawOptions = { colliders: false, paths: false };
   /** 调试：显示 AI 当前决策（返回某单位的决策文字） */
   aiInfo: ((id: number) => string | null) | null = null;
+  /** 镜头焦点覆盖（结束时对准被摧毁的水晶），null 表示跟随自己的英雄 */
+  focus: { x: number; y: number } | null = null;
+  /** 自己正被敌方防御塔锁定（界面据此显示红色警示） */
+  selfLocked = false;
+  private protectHintAt = new Map<number, number>();
   private aiLabels = new Map<number, Text>();
 
   constructor(
@@ -155,6 +164,15 @@ export class GameRenderer {
           if (e.isAttack && src && src.kind === 'hero' && !getHero(src.defId).attack.projectile) {
             this.effects.swing(src.pos.x, src.pos.y, src.facing, src.stats.range + src.radius, getHero(src.defId).palette.secondary, now);
           }
+          if (e.protectedHit && e.src === this.selfId) {
+            const last = this.protectHintAt.get(e.target) ?? 0;
+            if (now - last > 1600) {
+              this.protectHintAt.set(e.target, now);
+              this.effects.floatText(e.x, e.y - 1.2, '无兵减伤', 0x9fd8ff, 16, now);
+            }
+            if (tv) this.effects.shieldFlash(tv.rx, tv.ry, now);
+          }
+          if (e.target === this.selfId && src && (src.kind === 'tower' || src.kind === 'crystal')) this.camera.shake(0.14);
           const color =
             e.target === this.selfId
               ? PALETTE.dmgTaken
@@ -234,9 +252,19 @@ export class GameRenderer {
         case 'structureDown': {
           const u = w.get(e.unit);
           if (u) {
-            this.effects.area(u.pos.x, u.pos.y, 1, 0, { k: 'circle', r: 4 }, { color: teamColor(u.team), style: 'slam' }, now);
-            this.effects.pillar(u.pos.x, u.pos.y, teamColor(u.team), 3, 900, now);
-            this.camera.shake(0.25);
+            this.effects.explosion(u.pos.x, u.pos.y, teamColor(u.team), u.kind === 'crystal' ? 1.8 : 1, now);
+            const self = w.get(this.selfId);
+            const d = self ? Math.hypot(self.pos.x - u.pos.x, self.pos.y - u.pos.y) : 0;
+            if (d < 26 || u.kind === 'crystal') this.camera.shake(u.kind === 'crystal' ? 0.5 : 0.32, true);
+          }
+          break;
+        }
+        case 'respawn': {
+          // 泉水复活：光柱 + 扩散光圈
+          const u = w.get(e.unit);
+          if (u) {
+            this.effects.pillar(u.pos.x, u.pos.y, teamColor(u.team), 2.2, 900, now);
+            this.effects.levelUp(u.pos.x, u.pos.y, now);
           }
           break;
         }
@@ -310,7 +338,8 @@ export class GameRenderer {
       }
       return { x: u.prevPos.x + (u.pos.x - u.prevPos.x) * alpha, y: u.prevPos.y + (u.pos.y - u.prevPos.y) * alpha };
     };
-    if (self) cam.follow(posOf(self), dtSec);
+    if (this.focus) cam.follow(this.focus, dtSec, 3.2);
+    else if (self) cam.follow(posOf(self), dtSec);
 
     const ox = cam.originX();
     const oy = cam.originY();
@@ -356,22 +385,43 @@ export class GameRenderer {
       s.alpha += (target - s.alpha) * Math.min(1, dtSec * 10);
     }
 
-    // 单位
+    // 单位：已被移除的单位（小兵 / 野怪）播放完死亡动画再销毁
     for (const [id, v] of this.views) {
-      if (!w.units.has(id)) {
+      if (w.units.has(id)) continue;
+      if (!v.deathAt) {
+        if (!v.root.visible) {
+          v.destroy();
+          this.views.delete(id);
+          continue;
+        }
+        v.deathAt = now;
+      }
+      const t = (now - v.deathAt) / DEATH_MS;
+      if (t >= 1) {
         v.destroy();
         this.views.delete(id);
-      }
+      } else v.dieAnim(t);
     }
     for (const u of w.list) {
       const v = this.ensureView(u);
       const { x, y } = posOf(u);
       const onScreen = x > view.x0 && x < view.x1 && y > view.y0 && y < view.y1 + 4;
       const ruin = !u.alive && isStructure(u);
-      const visible = (u.alive || ruin) && onScreen && visibleTo(u, this.selfTeam);
+      // 英雄死亡不会被移除：发现“刚死”就开始播放倒地动画
+      if (u.kind === 'hero') {
+        if (v.wasAlive && !u.alive) v.deathAt = now;
+        if (u.alive && v.deathAt) v.revive();
+        v.wasAlive = u.alive;
+      }
+      const dying = !u.alive && !ruin && v.deathAt > 0 && now - v.deathAt < HERO_DEATH_MS;
+      const visible = (u.alive || ruin || dying) && onScreen && visibleTo(u, this.selfTeam);
+      v.root.visible = visible;
+      if (dying) {
+        if (visible) v.dieAnim((now - v.deathAt) / HERO_DEATH_MS);
+        continue;
+      }
       // 自己人藏在草丛里时半透明
       v.root.alpha = u.bush > 0 && u.team === this.selfTeam ? 0.55 : 1;
-      v.root.visible = visible;
       v.overlay.visible = visible && u.alive && !u.innate.untargetable;
       if (ruin) v.showRuins();
       if (!visible) continue;
@@ -449,6 +499,7 @@ export class GameRenderer {
     const cam = this.camera;
     this.rings.clear();
     this.lines.clear();
+    let locked = false;
     for (const u of w.list) {
       if (!isStructure(u) || !u.alive || u.innate.untargetable) continue;
       const range = u.stats.range + 0.6;
@@ -472,8 +523,21 @@ export class GameRenderer {
         const col = danger ? 0xff3a2a : teamColor(u.team);
         this.lines.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: danger ? 4 : 2.5, color: col, alpha: 0.85 });
         this.lines.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: 1, color: 0xffffff, alpha: 0.7 });
+        if (danger) {
+          locked = true;
+          // 头顶红色感叹号：被塔锁定
+          const hv = this.views.get(t.id)!;
+          const p = cam.worldToScreen(hv.rx, hv.ry, hv.model.height + 0.5);
+          const pulse = 1 + Math.sin(performance.now() / 90) * 0.12;
+          const r = 13 * pulse;
+          this.lines.poly([p.x, p.y - 44 - r, p.x + r, p.y - 44 + r * 0.75, p.x - r, p.y - 44 + r * 0.75]).fill(0xff2a1a);
+          this.lines.poly([p.x, p.y - 44 - r, p.x + r, p.y - 44 + r * 0.75, p.x - r, p.y - 44 + r * 0.75]).stroke({ width: 2, color: 0xffffff });
+          this.lines.rect(p.x - 1.8, p.y - 44 - r * 0.45, 3.6, r * 0.75).fill(0xffffff);
+          this.lines.circle(p.x, p.y - 44 + r * 0.48, 2).fill(0xffffff);
+        }
       }
     }
+    this.selfLocked = locked;
   }
 
   destroy(): void {

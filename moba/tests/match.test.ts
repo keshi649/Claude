@@ -122,7 +122,7 @@ describe('经济与经验', () => {
     expect(hero.hero!.lastHits).toBe(1);
   });
 
-  it('小兵不是被英雄击杀时没有金币，但附近英雄仍分享经验', () => {
+  it('没补到刀时，附近英雄分得部分金币（共享经济）并分享经验', () => {
     const w = match();
     const hero = w.heroOf(PID)!;
     place(hero, 40, 82);
@@ -130,8 +130,31 @@ describe('经济与经验', () => {
     const gold0 = hero.hero!.gold;
     const xp0 = hero.hero!.xp;
     w.killUnit(m, null);
-    expect(hero.hero!.gold).toBe(gold0);
+    expect(hero.hero!.gold - gold0).toBeCloseTo(MINIONS.melee.gold * ECONOMY.minionShare, 5);
+    expect(hero.hero!.lastHits).toBe(0);
     expect(hero.hero!.xp - xp0).toBeCloseTo(MINIONS.melee.xp, 5);
+    // 离得太远则什么都没有
+    place(hero, 40, 40);
+    const m2 = w.spawnMinion(MINIONS.melee, 1, { x: 40, y: 80 }, 'mid');
+    const gold1 = hero.hero!.gold;
+    w.killUnit(m2, null);
+    expect(hero.hero!.gold).toBe(gold1);
+  });
+
+  it('补刀的英雄拿全额，身边的队友拿分成', () => {
+    const w = match(3, [
+      { pid: 1, team: 0, heroId: 'qingling', name: '射手', isAI: false },
+      { pid: 2, team: 0, heroId: 'zhiying', name: '辅助', isAI: true },
+    ]);
+    const adc = w.heroOf(1)!;
+    const sup = w.heroOf(2)!;
+    place(adc, 40, 82);
+    place(sup, 42, 83);
+    const m = w.spawnMinion(MINIONS.ranged, 1, { x: 40, y: 80 }, 'mid');
+    const [a0, s0] = [adc.hero!.gold, sup.hero!.gold];
+    w.killUnit(m, adc);
+    expect(adc.hero!.gold - a0).toBeCloseTo(MINIONS.ranged.gold, 5);
+    expect(sup.hero!.gold - s0).toBeCloseTo(MINIONS.ranged.gold * ECONOMY.minionShare, 5);
   });
 
   it('超出经验范围的英雄拿不到经验；两人分享时各得总经验（含加成）的一半', () => {
@@ -238,5 +261,47 @@ describe('泉水', () => {
     const hp0 = hero.hp;
     run(w, 31);
     expect(hp0 - hero.hp).toBeGreaterThan(1000);
+  });
+});
+
+describe('建筑保护与泉水加速（对标手游）', () => {
+  it('附近没有己方小兵时，英雄打塔伤害减半；有小兵时正常', () => {
+    const w = match();
+    const hero = w.heroOf(PID)!;
+    const t = tower(w, 1, 'mid', 0);
+    place(hero, t.pos.x - 4, t.pos.y + 4);
+    w.step([]);
+    const hp0 = t.hp;
+    const dealt = applyDamage(w, hero, t, 1000, 'true');
+    expect(hp0 - t.hp).toBeCloseTo(500, 5);
+    expect(dealt).toBeCloseTo(500, 5);
+    // 己方小兵到塔下
+    w.spawnMinion(MINIONS.melee, 0, { x: t.pos.x - 3, y: t.pos.y + 3 }, 'mid');
+    w.step([]);
+    const hp1 = t.hp;
+    applyDamage(w, hero, t, 1000, 'true');
+    expect(hp1 - t.hp).toBeCloseTo(1000, 5);
+  });
+
+  it('小兵打塔不受保护影响', () => {
+    const w = match();
+    const t = tower(w, 1, 'mid', 0);
+    const m = w.spawnMinion(MINIONS.melee, 0, { x: t.pos.x - 3, y: t.pos.y + 3 }, 'mid');
+    w.step([]);
+    const hp0 = t.hp;
+    applyDamage(w, m, t, 300, 'true');
+    expect(hp0 - t.hp).toBeCloseTo(300, 5);
+  });
+
+  it('在基地附近获得泉水加速，离开后几秒消失', () => {
+    const w = match();
+    const hero = w.heroOf(PID)!;
+    const base = hero.stats.moveSpeed;
+    run(w, 20);
+    expect(hero.buffs.some((b) => b.id === 'base_haste')).toBe(true);
+    expect(hero.stats.moveSpeed).toBeGreaterThan(base * 1.5);
+    place(hero, 60, 60);
+    run(w, 30 * 4);
+    expect(hero.buffs.some((b) => b.id === 'base_haste')).toBe(false);
   });
 });

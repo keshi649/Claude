@@ -163,8 +163,21 @@ body.desktop .help { display: block; }
 #game.dead canvas { filter: grayscale(.85) brightness(.8); transition: filter .4s; }
 .death { position: absolute; inset: 0; display: none; place-items: center; pointer-events: none; }
 .death.show { display: grid; }
-.death-text { font-size: calc(30 * var(--ui) * 1px); font-weight: 900; color: #fff; text-shadow: 0 0 10px #000, 0 2px 4px #000;
-  background: rgba(0,0,0,.35); padding: 8px 26px; border-radius: 12px; }
+.death-box { display: flex; flex-direction: column; align-items: center; gap: calc(8 * var(--ui) * 1px); margin-top: -8vh;
+  background: linear-gradient(180deg, rgba(40,6,6,.75), rgba(10,10,14,.6)); border: 1px solid rgba(255,90,60,.45);
+  border-radius: 14px; padding: calc(12 * var(--ui) * 1px) calc(30 * var(--ui) * 1px); animation: fadein .4s; }
+.death-who { display: flex; align-items: center; gap: calc(12 * var(--ui) * 1px); }
+.death-who .face.big { width: calc(58 * var(--ui) * 1px); height: calc(58 * var(--ui) * 1px); border-radius: 50%; border: 3px solid #ff5a3c; }
+.death-who .face.neutral { display: grid; place-items: center; background: #3a3f48; color: #fff; font-weight: 800; font-size: calc(22 * var(--ui) * 1px); }
+.death-who b { font-size: calc(24 * var(--ui) * 1px); margin: 0 6px; color: #ff8a70; }
+.death-who small { font-size: calc(13 * var(--ui) * 1px); opacity: .8; }
+.death-who .assists { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+.death-who .assists .face { width: calc(24 * var(--ui) * 1px); height: calc(24 * var(--ui) * 1px); border-radius: 50%; border: 2px solid; }
+.death-text { font-size: calc(30 * var(--ui) * 1px); font-weight: 900; color: #fff; text-shadow: 0 0 10px #000, 0 2px 4px #000; }
+.death-tip { font-size: calc(11 * var(--ui) * 1px); opacity: .6; }
+/* 被防御塔锁定：屏幕边缘红色脉冲 */
+#vignette.danger { box-shadow: inset 0 0 calc(110 * var(--ui) * 1px) rgba(255,30,20,.55); animation: danger-pulse .6s ease-in-out infinite alternate; }
+@keyframes danger-pulse { from { opacity: .65; } to { opacity: 1; } }
 
 /* ——— 结算 ——— */
 .result { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 18px; pointer-events: auto;

@@ -349,6 +349,107 @@ export class EffectsLayer {
     this.burst(x, y, 0xffd23c, 18, 3, now, 1.2);
   }
 
+  /** 建筑的无兵保护护盾：被英雄打时闪一下半透明的蓝色护罩 */
+  shieldFlash(x: number, y: number, now: number): void {
+    this.addGround(x, y, 0, 380, now, (g, t) => {
+      g.clear();
+      g.circle(0, 0, 2.1 + t * 0.4).fill({ color: 0x7fd4ff, alpha: 0.22 * (1 - t) });
+      g.circle(0, 0, 2.1 + t * 0.4).stroke({ width: 0.14, color: 0xbfe8ff, alpha: 0.8 * (1 - t) });
+    });
+  }
+
+  /**
+   * 建筑爆炸（推塔 / 水晶被毁）：闪光、地面冲击波、碎石飞溅、火星、升腾的烟尘。
+   * scale：塔 1，水晶约 1.8
+   */
+  explosion(x: number, y: number, color: number, scale: number, now: number): void {
+    // 中心闪光：快速放大后消散
+    const flash = new Sprite(this.tex.glow);
+    flash.anchor.set(0.5);
+    flash.tint = 0xfff2d0;
+    flash.blendMode = 'add';
+    this.addAir({ obj: flash, x, y, h: 2.2 * scale, vx: 0, vy: 0, vh: 0, gravity: 0, life: 520, size: 3 * scale, flat: false, fade: true, grow: 2.2 }, now);
+    const flash2 = this.sprite(color);
+    flash2.texture = this.tex.glow;
+    this.addAir({ obj: flash2, x, y, h: 1.5 * scale, vx: 0, vy: 0, vh: 0, gravity: 0, life: 900, size: 5 * scale, flat: false, fade: true, grow: 1.4 }, now);
+    // 地面冲击波（两圈）+ 焦痕
+    for (const [delay, col] of [
+      [0, 0xffe0a0],
+      [0.18, color],
+    ] as const) {
+      this.addGround(x, y, 0, 900, now, (g, t) => {
+        g.clear();
+        const k = Math.max(0, (t - delay) / (1 - delay));
+        if (k <= 0) return;
+        const r = (1 + k * 7) * scale;
+        g.circle(0, 0, r).stroke({ width: 0.5 * scale * (1 - k) + 0.05, color: col, alpha: (1 - k) * 0.9 });
+      });
+    }
+    this.addGround(x, y, 0, 4000, now, (g, t) => {
+      g.clear();
+      g.circle(0, 0, 3.2 * scale).fill({ color: 0x14100c, alpha: 0.55 * (1 - t) });
+    }, true);
+    // 碎石：带重力、边飞边转
+    for (let i = 0; i < 18; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = (3 + Math.random() * 5) * scale;
+      const chunk = new Graphics();
+      const sz = (0.12 + Math.random() * 0.22) * scale;
+      chunk.poly([-sz, -sz * 0.6, sz * 0.8, -sz, sz, sz * 0.5, -sz * 0.4, sz]).fill(i % 3 === 0 ? color : i % 2 ? 0x6a6f78 : 0x4a4e56);
+      const spin = (Math.random() - 0.5) * 16;
+      this.addAir(
+        {
+          obj: chunk,
+          x,
+          y,
+          h: (1 + Math.random() * 2.5) * scale,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          vh: 4 + Math.random() * 6,
+          gravity: 18,
+          life: 900 + Math.random() * 500,
+          size: 1,
+          flat: false,
+          fade: false,
+          grow: 0,
+          update: (o, t) => {
+            o.rotation = spin * t;
+            o.alpha = t > 0.75 ? (1 - t) / 0.25 : 1;
+          },
+        },
+        now,
+      );
+    }
+    // 火星
+    this.burst(x, y, 0xffa040, Math.round(26 * scale), 9 * scale, now, 1.6 * scale);
+    this.burst(x, y, color, Math.round(14 * scale), 6 * scale, now, 2.4 * scale);
+    // 烟尘：非发光、缓慢上升变大
+    for (let i = 0; i < 14; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = this.sprite(i % 2 ? 0x3a3530 : 0x5a5248, false);
+      s.texture = this.tex.glow;
+      this.addAir(
+        {
+          obj: s,
+          x: x + Math.cos(a) * 1.2 * scale,
+          y: y + Math.sin(a) * 1.2 * scale,
+          h: (0.5 + Math.random() * 2) * scale,
+          vx: Math.cos(a) * 1.5,
+          vy: Math.sin(a) * 1.5,
+          vh: 1.2 + Math.random() * 1.2,
+          gravity: 0,
+          life: 1600 + Math.random() * 900,
+          size: (1.6 + Math.random() * 1.4) * scale,
+          flat: false,
+          fade: true,
+          grow: 1.5,
+        },
+        now,
+      );
+    }
+    this.pillar(x, y, color, 3.4 * scale, 1100, now);
+  }
+
   /** 伤害 / 治疗飘字（世界坐标，屏幕层显示） */
   floatText(x: number, y: number, text: string, color: number, size: number, now: number, big = false): void {
     const t =

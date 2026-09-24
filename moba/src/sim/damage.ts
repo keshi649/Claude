@@ -1,4 +1,4 @@
-import { BALANCE } from '../data/balance';
+import { BALANCE, STRUCTURE_PROTECT } from '../data/balance';
 import type { DamageType, Impact, StatBlock } from '../data/schema';
 import type { Unit } from './entity';
 import { isInvulnerable } from './status';
@@ -54,6 +54,9 @@ export function applyDamage(
   if (src && target.kind === 'monster' && src.stats.monsterDmg > 0) raw *= 1 + src.stats.monsterDmg;
   let dmg = computeDamage(raw, dtype, src?.stats ?? null, target.stats);
   if (dmg <= 0) return 0;
+  // 建筑保护：附近没有进攻方小兵时，英雄对建筑的伤害降低
+  const protectedHit = !!src?.hero && (target.kind === 'tower' || target.kind === 'crystal') && !attackingMinionsNear(w, target, src.team);
+  if (protectedHit) dmg *= 1 - STRUCTURE_PROTECT.noMinionReduction;
   const total = dmg;
 
   // 护盾按施加顺序吸收
@@ -103,6 +106,7 @@ export function applyDamage(
     isAttack: !!opts.isAttack,
     x: target.pos.x,
     y: target.pos.y,
+    protectedHit,
   });
 
   // 物理吸血
@@ -112,6 +116,14 @@ export function applyDamage(
 
   if (target.hp <= 0) w.killUnit(target, src);
   return total;
+}
+
+const nearBuf: Unit[] = [];
+
+/** 建筑射程附近是否有进攻方的小兵 / 召唤物（先锋） */
+export function attackingMinionsNear(w: World, structure: Unit, team: number): boolean {
+  w.spatial.query(structure.pos.x, structure.pos.y, structure.stats.range + 2, nearBuf);
+  return nearBuf.some((m) => m.alive && m.team === team && (m.kind === 'minion' || m.kind === 'summon'));
 }
 
 /** 治疗（不超过最大生命）。返回实际治疗量 */

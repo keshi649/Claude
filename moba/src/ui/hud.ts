@@ -73,6 +73,7 @@ export class Hud {
   private feed!: HTMLElement;
   private deathEl!: HTMLElement;
   private deathText!: HTMLElement;
+  private deathWho!: HTMLElement;
   /** 销毁时要解除的全局监听 */
   private offs: (() => void)[] = [];
 
@@ -193,7 +194,10 @@ export class Hud {
     this.feed = el('div', 'killfeed', root);
     // 死亡遮罩
     this.deathEl = el('div', 'death', root);
-    this.deathText = el('div', 'death-text', this.deathEl);
+    const deathBox = el('div', 'death-box', this.deathEl);
+    this.deathWho = el('div', 'death-who', deathBox);
+    this.deathText = el('div', 'death-text', deathBox);
+    el('div', 'death-tip', deathBox, '阵亡期间也可以打开商店购买装备');
 
     this.toastEl = el('div', 'toast', root);
     const h = el('div', 'help', root);
@@ -237,6 +241,19 @@ export class Hud {
     row.innerHTML = `${face(k)}<em>⚔</em>${face(v)}`;
     setTimeout(() => row.remove(), 5000);
     while (this.feed.children.length > 4) this.feed.firstElementChild?.remove();
+  }
+
+  /** 阵亡信息：被谁击败、谁参与了助攻 */
+  setDeathInfo(w: World, killerId: number, assists: readonly number[]): void {
+    const k = w.get(killerId);
+    const kFace = k?.hero ? faceHtml(k.defId, k.team, 'face big') : `<b class="face big neutral">${k?.kind === 'tower' || k?.kind === 'crystal' ? '塔' : k?.kind === 'monster' ? '怪' : '兵'}</b>`;
+    const kName = k?.hero ? getHero(k.defId).name : k?.kind === 'tower' || k?.kind === 'crystal' ? '防御塔' : k?.kind === 'monster' ? '野怪' : '小兵';
+    const as = assists
+      .map((id) => w.get(id))
+      .filter((u): u is Unit => !!u?.hero)
+      .map((u) => faceHtml(u.defId, u.team))
+      .join('');
+    this.deathWho.innerHTML = `${kFace}<div><small>你被</small><b>${kName}</b><small>击败了</small>${as ? `<div class="assists"><small>助攻</small>${as}</div>` : ''}</div>`;
   }
 
   /** 对局结束：全屏“胜利 / 失败”，点击或数秒后进入结算 */
@@ -336,7 +353,8 @@ export class Hud {
     this.setCooldown('res', this.restoreUi, h.restoreCd, RESTORE.cooldown);
     const gold = String(Math.floor(h.gold));
     this.set('gold', gold, () => (this.goldText.textContent = gold));
-    const dead = !hero.alive && h.respawnAt > 0;
+    // 对局结束后不再显示阵亡界面（镜头要去看水晶爆炸）
+    const dead = !hero.alive && h.respawnAt > 0 && w.winner === null;
     this.set('dead', String(dead), () => {
       this.deathEl.classList.toggle('show', dead);
       document.getElementById('game')?.classList.toggle('dead', dead);

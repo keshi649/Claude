@@ -305,6 +305,32 @@ export class UnitView {
     this.ruins = g;
   }
 
+  /** 死亡动画开始时刻（0 表示没有在播放） */
+  deathAt = 0;
+  /** 上一帧是否存活（英雄死亡不会被移除，要靠它发现“刚死”） */
+  wasAlive = true;
+
+  /** 死亡动画（t 为 0~1）：朝背对面倒下、下沉、淡出，血条隐藏 */
+  dieAnim(t: number): void {
+    const side = Math.cos(this.unit.facing) >= 0 ? -1 : 1;
+    const fall = Math.min(1, t / 0.4);
+    this.lift.rotation = side * (1 - (1 - fall) * (1 - fall)) * 1.35;
+    this.lift.position.set(0, t * 0.35);
+    this.root.alpha = t < 0.55 ? 1 : 1 - (t - 0.55) / 0.45;
+    this.groundPart.alpha = 1 - t;
+    this.overlay.visible = false;
+    this.statusFx.visible = false;
+  }
+
+  /** 复活：清掉死亡动画的残留 */
+  revive(): void {
+    this.deathAt = 0;
+    this.lift.rotation = 0;
+    this.root.alpha = 1;
+    this.groundPart.alpha = 1;
+    this.statusFx.visible = true;
+  }
+
   destroy(): void {
     this.root.destroy({ children: true });
     this.overlay.destroy({ children: true });

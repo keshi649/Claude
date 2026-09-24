@@ -21,7 +21,9 @@ export type SfxName =
   | 'announceBad'
   | 'multikill'
   | 'victory'
-  | 'defeat';
+  | 'defeat'
+  | 'explosion'
+  | 'warning';
 
 const MUTE_KEY = 'jinghe.mute';
 
@@ -190,6 +192,18 @@ export class Sfx {
           [659, 831, 988, 1319],
         ].forEach((chord, i) => chord.forEach((f) => this.tone(t + i * 0.28, i === 2 ? 1.6 : 0.35, f, f, 0.14 * v, 'triangle')));
         this.tone(t, 0.8, 130, 65, 0.5 * v, 'sine');
+        break;
+      case 'explosion':
+        // 建筑爆炸：低频轰鸣 + 碎裂噪声 + 余响
+        this.tone(t, 1.1, 80, 28, 0.95 * v, 'sine');
+        this.tone(t, 0.5, 160, 50, 0.4 * v, 'triangle');
+        this.noise(t, 1.2, 1400, 90, 0.7, 0.9 * v, 'lowpass');
+        this.noise(t + 0.08, 0.9, 3500, 900, 1.2, 0.35 * v, 'bandpass');
+        break;
+      case 'warning':
+        // 己方建筑被攻击：两声急促提示
+        this.tone(t, 0.12, 880, 880, 0.18 * v, 'square');
+        this.tone(t + 0.16, 0.12, 880, 880, 0.18 * v, 'square');
         break;
       case 'defeat':
         [440, 415, 392, 330].forEach((f, i) => this.tone(t + i * 0.3, i === 3 ? 1.4 : 0.4, f, f * 0.99, 0.18 * v, 'triangle'));

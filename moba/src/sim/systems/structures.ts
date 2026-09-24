@@ -1,9 +1,9 @@
-import { FOUNTAIN } from '../../data/balance';
+import { BASE_HASTE, FOUNTAIN } from '../../data/balance';
 import { applyDamage } from '../damage';
 import type { Unit } from '../entity';
 import { isEnemy } from '../entity';
 import { edgeDist } from '../query';
-import { isStructure, isTargetable } from '../status';
+import { addBuff, isStructure, isTargetable } from '../status';
 import type { World } from '../world';
 import { visibleTo } from '../vision';
 import { findAggressor } from './minions';
@@ -13,7 +13,7 @@ import { findAggressor } from './minions';
  *   - 保护规则：同一路前一座塔没被推掉时，后面的塔无敌；己方至少一座高地塔被推掉后，水晶才能被攻击
  *   - 防御塔索敌：敌方英雄在塔下攻击己方英雄 → 立即转火；否则保持当前目标；
  *     没有目标时优先范围内的小兵，其次英雄
- *   - 泉水：己方单位快速回血回蓝，对闯入的敌方英雄造成高额真实伤害
+ *   - 泉水：己方单位快速回血回蓝，对闯入的敌方英雄造成高额真实伤害；基地附近的己方英雄获得泉水加速
  */
 
 const near: Unit[] = [];
@@ -81,6 +81,13 @@ export function updateFountains(w: World): void {
   const damageTick = w.tick % 15 === 0;
   for (const team of [0, 1] as const) {
     const f = w.map.fountain[team];
+    // 泉水加速：每 0.5 秒刷新一次基地附近己方英雄的加速增益
+    if (w.tick % 15 === 0) {
+      for (const u of w.list) {
+        if (!u.hero || !u.alive || u.team !== team) continue;
+        if (Math.hypot(u.pos.x - f.x, u.pos.y - f.y) <= BASE_HASTE.radius) addBuff(w, u, 'base_haste', u.id, BASE_HASTE.duration);
+      }
+    }
     w.spatial.query(f.x, f.y, FOUNTAIN.radius, near);
     for (const u of near) {
       if (!u.alive || isStructure(u)) continue;
