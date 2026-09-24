@@ -1,6 +1,7 @@
 import { BALANCE } from '../data/balance';
 import { STAT_KEYS, type StatBlock, type StatMods } from '../data/schema';
 import { getBuff } from '../data/units';
+import { getItem } from '../data/items';
 import type { Unit } from './entity';
 
 /** 某等级下的基础属性 = 1 级属性 + 成长 × (等级 − 1) */
@@ -22,6 +23,7 @@ export function recomputeStats(u: Unit, extraFlat: readonly StatMods[] = []): vo
   const flat: StatMods = {};
   const pct: StatMods = {};
   for (const m of extraFlat) addMods(flat, m, 1);
+  if (u.hero) for (const id of u.hero.items) if (id) addMods(flat, getItem(id).stats, 1);
   for (const b of u.buffs) {
     const def = getBuff(b.id);
     if (def.stats) addMods(flat, def.stats, b.stacks);

@@ -75,6 +75,15 @@ export function evalCond(w: World, c: Cond, ctx: EffectCtx): boolean {
     }
     case 'isPrimaryTarget':
       return ctx.primaryId !== 0 && ctx.targetId === ctx.primaryId;
+    case 'targetIsAlly':
+      return !!target && target.team === ctx.team;
+    case 'targetKind':
+      return !!target && (c.kinds as string[]).includes(target.kind);
+    case 'casterBuffStacks': {
+      const caster = w.get(ctx.casterId);
+      const b = caster?.buffs.find((x) => x.id === c.buff);
+      return !!b && b.stacks >= c.gte;
+    }
     case 'not':
       return !evalCond(w, c.c, ctx);
   }
@@ -121,9 +130,12 @@ function runEffect(w: World, e: Effect, ctx: EffectCtx): void {
     }
     case 'cc': {
       const target = w.get(ctx.targetId);
-      if (target) applyCc(w, caster ?? null, target, e.cc, e.duration, e.power ?? 0, ctx.origin);
+      if (target) applyCc(w, caster ?? null, target, e.cc, e.duration, e.power ?? 0, ctx.origin, e.wallStun ?? 0);
       return;
     }
+    case 'resetAttack':
+      if (caster) caster.attack.cd = 0;
+      return;
     case 'buff': {
       const t = pickTo(w, e.to, ctx);
       if (t) addBuff(w, t, e.buff, ctx.casterId, e.duration ?? Infinity, e.stacks ?? 1, caster?.hero?.level ?? ctx.rank);

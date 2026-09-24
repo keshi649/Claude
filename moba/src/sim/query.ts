@@ -1,5 +1,5 @@
 import { BALANCE } from '../data/balance';
-import type { Affects, Shape } from '../data/schema';
+import type { Affects, Shape, UnitFilter } from '../data/schema';
 import type { Vec2 } from '../core/vec2';
 import { isEnemy, type Team, type Unit } from './entity';
 import { isInvulnerable, isStructure, isTargetable } from './status';
@@ -142,22 +142,37 @@ export function pickAttackTarget(w: World, u: Unit, mode: AttackMode): Unit | nu
  * 技能自动瞄准：射程（+ 少量余量）内最近的敌方英雄；
  * 没有英雄时取最近的非建筑敌方单位；都没有返回 null。
  */
+/** 指向性目标筛选 */
+export function passesFilter(u: Unit, t: Unit, filter: UnitFilter): boolean {
+  if (t === u || !isTargetable(t) || isStructure(t)) return false;
+  switch (filter) {
+    case 'enemy':
+      return isEnemy(u, t);
+    case 'ally':
+      return !isEnemy(u, t);
+    case 'any':
+      return true;
+    case 'monster':
+      return isEnemy(u, t) && (t.kind === 'minion' || t.kind === 'monster');
+  }
+}
+
 export function pickAutoAimTarget(
   w: World,
   u: Unit,
   range: number,
-  filter: 'enemy' | 'ally' | 'any' = 'enemy',
+  filter: UnitFilter = 'enemy',
 ): Unit | null {
   const search = range + BALANCE.autoAimBonus;
   w.spatial.query(u.pos.x, u.pos.y, search, tmp);
   let best: Unit | null = null;
   let bestKey = Infinity;
   for (const t of tmp) {
-    if (t === u || !isTargetable(t) || isStructure(t)) continue;
-    if (filter === 'enemy' && !isEnemy(u, t)) continue;
-    if (filter === 'ally' && isEnemy(u, t)) continue;
+    if (!passesFilter(u, t, filter)) continue;
     const d = Math.hypot(t.pos.x - u.pos.x, t.pos.y - u.pos.y);
-    const key = (isHeroLike(t) ? 0 : 1e4) + d;
+    if (d - t.radius > search) continue;
+    // 敌方英雄优先；“任意”目标时优先敌方英雄，其次友方英雄；打野技能优先野怪
+    const key = (filter === 'monster' ? (t.kind === 'monster' ? 0 : 1e4) : (isHeroLike(t) ? 0 : 1e4) + (filter === 'any' && !isEnemy(u, t) ? 5e3 : 0)) + d;
     if (key < bestKey) {
       bestKey = key;
       best = t;
@@ -172,15 +187,13 @@ export function pickUnitNearPoint(
   u: Unit,
   point: Vec2,
   range: number,
-  filter: 'enemy' | 'ally' | 'any',
+  filter: UnitFilter,
 ): Unit | null {
   w.spatial.query(u.pos.x, u.pos.y, range + BALANCE.autoAimBonus, tmp);
   let best: Unit | null = null;
   let bestD = Infinity;
   for (const t of tmp) {
-    if (t === u || !isTargetable(t) || isStructure(t)) continue;
-    if (filter === 'enemy' && !isEnemy(u, t)) continue;
-    if (filter === 'ally' && isEnemy(u, t)) continue;
+    if (!passesFilter(u, t, filter)) continue;
     const d = Math.hypot(t.pos.x - point.x, t.pos.y - point.y) - t.radius;
     if (d < bestD) {
       bestD = d;

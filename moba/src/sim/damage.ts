@@ -50,6 +50,8 @@ export function applyDamage(
   opts: DamageOpts = {},
 ): number {
   if (!target.alive || isInvulnerable(target)) return 0;
+  // 打野装：对野怪额外伤害
+  if (src && target.kind === 'monster' && src.stats.monsterDmg > 0) raw *= 1 + src.stats.monsterDmg;
   let dmg = computeDamage(raw, dtype, src?.stats ?? null, target.stats);
   if (dmg <= 0) return 0;
   const total = dmg;

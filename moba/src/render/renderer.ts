@@ -171,6 +171,8 @@ export class GameRenderer {
           break;
         }
         case 'area':
+          // 没有配置视觉效果的区域（例如被动的周期治疗）不绘制
+          if (!e.vfx) break;
           if (e.warn > 0) this.effects.warn(e.x, e.y, e.dirX, e.dirY, e.shape, e.vfx?.color ?? 0xffffff, e.warn, now);
           else this.effects.area(e.x, e.y, e.dirX, e.dirY, e.shape, e.vfx, now);
           break;

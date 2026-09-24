@@ -21,6 +21,10 @@ export interface AimingState {
 export type InputAction =
   | { k: 'castRelease'; slot: SlotId; aim: AimSnapshot }
   | { k: 'castStart'; slot: 0 | 1 | 2 }
+  /** 开始瞄准（蓄力技能在此刻开始蓄力） */
+  | { k: 'aimStart'; slot: SlotId }
+  /** 取消瞄准（蓄力中的技能被取消并返还法力） */
+  | { k: 'aimCancel' }
   | { k: 'levelSkill'; slot: 0 | 1 | 2 }
   | { k: 'moveTo'; x: number; y: number }
   | { k: 'recall' }

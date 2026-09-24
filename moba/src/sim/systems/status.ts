@@ -1,5 +1,6 @@
 import { BALANCE } from '../../data/balance';
 import { getBuff } from '../../data/units';
+import { getHero } from '../../data/heroes';
 import { heal } from '../damage';
 import { makeCtx, runEffects } from '../skills/effects';
 import { recomputeStats } from '../stats';
@@ -43,6 +44,19 @@ export function updateStatus(w: World): void {
       }
       u.buffs = u.buffs.filter((b) => b.remaining > 0);
       if (changed) u.statsDirty = true;
+    }
+
+    // 周期被动（例如“每秒为身边友军回复”）
+    if (u.hero) {
+      const def = getHero(u.defId);
+      for (const tr of def.passive.triggers) {
+        if (tr.on !== 'interval' || !tr.every) continue;
+        u.hero.passiveTimer += dt;
+        if (u.hero.passiveTimer >= tr.every) {
+          u.hero.passiveTimer -= tr.every;
+          runEffects(w, tr.effects, makeCtx(u, { rank: u.hero.level }));
+        }
+      }
     }
 
     if (u.statsDirty) recomputeStats(u);

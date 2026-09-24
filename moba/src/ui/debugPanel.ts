@@ -1,4 +1,6 @@
 import type { DebugOp } from '../sim/commands';
+import { HERO_LIST } from '../data/heroes';
+import { ROLE_NAMES } from '../data/schema';
 
 export interface DebugState {
   colliders: boolean;
@@ -60,7 +62,49 @@ export class DebugPanel {
     btn('升一级', 'levelUp');
     btn('升满级', 'maxLevel');
     btn('回满状态', 'heal');
+    const gold = document.createElement('button');
+    gold.textContent = '金币 +2000';
+    gold.addEventListener('click', () => this.onOp('addGold', 2000));
+    row.appendChild(gold);
     el.appendChild(row);
+
+    // 木桩防御（训练场）
+    const row2 = document.createElement('div');
+    row2.className = 'row';
+    row2.append('木桩双抗：');
+    for (const v of [0, 100, 300, 600]) {
+      const b = document.createElement('button');
+      b.textContent = String(v);
+      b.addEventListener('click', () => this.onOp('dummyArmor', v));
+      row2.appendChild(b);
+    }
+    el.appendChild(row2);
+
+    // 切换英雄 / 模式（重新载入页面）
+    const row3 = document.createElement('div');
+    row3.className = 'row';
+    const sel = document.createElement('select');
+    for (const h of HERO_LIST) {
+      const o = document.createElement('option');
+      o.value = h.id;
+      o.textContent = `${h.name}（${ROLE_NAMES[h.role]}）`;
+      sel.appendChild(o);
+    }
+    const params = new URLSearchParams(location.search);
+    sel.value = params.get('hero') ?? 'lifeng';
+    const go = (mode: string): void => {
+      params.set('hero', sel.value);
+      params.set('mode', mode);
+      location.search = params.toString();
+    };
+    const t = document.createElement('button');
+    t.textContent = '训练场';
+    t.addEventListener('click', () => go('training'));
+    const m = document.createElement('button');
+    m.textContent = '单人对局';
+    m.addEventListener('click', () => go('match'));
+    row3.append(sel, t, m);
+    el.appendChild(row3);
     this.stats = document.createElement('pre');
     el.appendChild(this.stats);
     parent.appendChild(el);

@@ -14,6 +14,8 @@ export const LIFENG: HeroDef = {
   name: '厉锋',
   title: '裂风战士',
   role: 'fighter',
+  intro: '以风为刃的剑客。技能与普攻穿插输出，突进后越战越勇。',
+  difficulty: 2,
   palette: { primary: 0xd9573b, secondary: 0xffc46b },
   emblem: 'blade',
   radius: 0.6,
@@ -208,4 +210,5 @@ export const LIFENG: HeroDef = {
     },
   ],
   skillOrder: [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+  build: ['mountain_blade', 'guard_boots', 'eternal_shield', 'meteor_bow'],
 };

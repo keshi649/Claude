@@ -56,6 +56,8 @@ export interface StatBlock {
   mpRegen: number;
   /** 普攻射程（米） */
   range: number;
+  /** 对野怪的额外伤害比例（打野装） */
+  monsterDmg: number;
 }
 
 export type StatKey = keyof StatBlock;
@@ -63,7 +65,7 @@ export type StatMods = Partial<StatBlock>;
 
 export const STAT_KEYS: readonly StatKey[] = [
   'maxHp', 'maxMp', 'ad', 'ap', 'armor', 'mr', 'attackSpeed', 'moveSpeed', 'crit', 'critDmg',
-  'cdr', 'lifesteal', 'armorPen', 'armorPenPct', 'mrPen', 'mrPenPct', 'hpRegen', 'mpRegen', 'range',
+  'cdr', 'lifesteal', 'armorPen', 'armorPenPct', 'mrPen', 'mrPenPct', 'hpRegen', 'mpRegen', 'range', 'monsterDmg',
 ];
 
 export const STAT_NAMES: Record<StatKey, string> = {
@@ -71,7 +73,7 @@ export const STAT_NAMES: Record<StatKey, string> = {
   mr: '法术防御', attackSpeed: '攻击速度', moveSpeed: '移动速度', crit: '暴击率',
   critDmg: '暴击伤害', cdr: '冷却缩减', lifesteal: '物理吸血', armorPen: '物理穿透',
   armorPenPct: '物理穿透%', mrPen: '法术穿透', mrPenPct: '法术穿透%', hpRegen: '每秒回血',
-  mpRegen: '每秒回蓝', range: '攻击距离',
+  mpRegen: '每秒回蓝', range: '攻击距离', monsterDmg: '对野怪伤害',
 };
 
 /** 用部分字段生成完整属性块（未写的为 0，暴击伤害默认 2） */
@@ -142,6 +144,12 @@ export type Cond =
   | { k: 'casterHasBuff'; buff: string }
   /** 当前目标是否为指向性技能锁定的主目标 */
   | { k: 'isPrimaryTarget' }
+  /** 当前目标是否为施法者的友军（含自己） */
+  | { k: 'targetIsAlly' }
+  /** 当前目标的单位类型 */
+  | { k: 'targetKind'; kinds: ('hero' | 'minion' | 'monster' | 'dummy')[] }
+  /** 施法者身上某增益的层数 ≥ n */
+  | { k: 'casterBuffStacks'; buff: string; gte: number }
   | { k: 'not'; c: Cond };
 
 // ————————————————————————— 视觉描述（表现层解释） —————————————————————————
@@ -173,8 +181,11 @@ export type Effect =
   /** 回复法力 */
   | { t: 'mana'; amount: Scaling; to?: EffectTo }
   | { t: 'shield'; amount: Scaling; duration: number; to?: EffectTo }
-  /** 控制。slow 的 power 为减速比例（0.4 = 40%）；knockback 的 power 为击退距离（米） */
-  | { t: 'cc'; cc: CcKind; duration: number; power?: number }
+  /** 控制。slow 的 power 为减速比例（0.4 = 40%）；knockback 的 power 为击退距离（米）；
+   *  wallStun：击退途中撞墙时额外眩晕的秒数 */
+  | { t: 'cc'; cc: CcKind; duration: number; power?: number; wallStun?: number }
+  /** 重置普攻冷却（位移后立刻接普攻） */
+  | { t: 'resetAttack' }
   | { t: 'buff'; buff: string; duration?: number; to?: EffectTo; stacks?: number }
   | { t: 'removeBuff'; buff: string; to?: EffectTo }
   | {
@@ -240,6 +251,7 @@ export type Effect =
 // ————————————————————————— 技能 —————————————————————————
 
 export type Targeting = 'direction' | 'unit' | 'point' | 'self';
+export type UnitFilter = 'enemy' | 'ally' | 'any' | 'monster';
 
 /** 瞄准指示器 */
 export type IndicatorSpec =
@@ -264,8 +276,8 @@ export interface SkillStage {
   /** 施法距离 / 方向技能的指示长度 */
   range: number;
   indicator: IndicatorSpec;
-  /** 指向性技能的目标筛选 */
-  unitFilter?: 'enemy' | 'ally' | 'any';
+  /** 指向性技能的目标筛选：monster = 只能选小兵和野怪（打野技能） */
+  unitFilter?: UnitFilter;
   /** 前摇（秒） */
   windup: number;
   /** 后摇（秒），可被移动取消 */
@@ -315,7 +327,7 @@ export interface BuffDef {
   aura?: number;
 }
 
-export type TriggerOn = 'skillHit' | 'attackHit' | 'damaged' | 'kill';
+export type TriggerOn = 'skillHit' | 'attackHit' | 'damaged' | 'kill' | 'interval';
 
 export interface PassiveTrigger {
   on: TriggerOn;
@@ -323,6 +335,8 @@ export interface PassiveTrigger {
   heroOnly?: boolean;
   /** 同一次施法最多触发一次（技能命中多个目标时） */
   oncePerCast?: boolean;
+  /** interval 触发器的周期（秒） */
+  every?: number;
   effects: Effect[];
 }
 
@@ -365,6 +379,12 @@ export interface HeroDef {
   buffs?: BuffDef[];
   /** AI 加点顺序（技能槽 0/1/2，大招在满足等级时优先） */
   skillOrder: readonly (0 | 1 | 2)[];
+  /** 推荐出装（成装 id 顺序），“推荐购买”按这个顺序逐件购买 */
+  build: readonly string[];
+  /** 英雄简介（选英雄界面） */
+  intro: string;
+  /** 操作难度 1~3 */
+  difficulty: 1 | 2 | 3;
 }
 
 /** 小兵 / 野怪 / 建筑 / 木桩等非英雄单位的配置 */

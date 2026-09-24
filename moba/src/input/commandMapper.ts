@@ -1,6 +1,6 @@
 import type { Command } from '../sim/commands';
 import type { Unit } from '../sim/entity';
-import { currentStage } from '../sim/hero';
+import { currentStage, skillDef } from '../sim/hero';
 import type { World } from '../sim/world';
 import { previewAim, type AimPreview } from './aim';
 import type { AimSnapshot, InputState, SlotId } from './state';
@@ -17,8 +17,16 @@ export function stageOf(hero: Unit, slot: SlotId): SkillStage {
  * 输入状态 → 逻辑命令。移动只在方向变化时发送（便于将来联机节省带宽），
  * 普攻按住期间每帧发送（逻辑层据此保持攻击指令）。
  */
+/** 该技能此刻按下是否会进入蓄力（有蓄力配置、已学习、不在二段窗口） */
+export function isChargeCast(hero: Unit, slot: 0 | 1 | 2): boolean {
+  const def = skillDef(hero, slot);
+  return !!def.charge && hero.hero!.skillLevels[slot] > 0 && currentStage(hero, slot).idx === -1;
+}
+
 export class CommandMapper {
   private lastMoveKey = '';
+  /** 正在蓄力的技能槽（-1 表示没有） */
+  private charging = -1;
 
   constructor(private readonly pid: number) {}
 
@@ -53,11 +61,27 @@ export class CommandMapper {
         case 'castStart':
           out.push({ t: 'cast', pid, slot: a.slot, aim: { k: 'auto' }, phase: 'start' });
           break;
+        case 'aimStart':
+          // 蓄力技能：按下即开始蓄力
+          if (hero && a.slot !== 3 && isChargeCast(hero, a.slot)) {
+            this.charging = a.slot;
+            out.push({ t: 'cast', pid, slot: a.slot, aim: { k: 'auto' }, phase: 'start' });
+          }
+          break;
+        case 'aimCancel':
+          if (this.charging >= 0) {
+            this.charging = -1;
+            out.push({ t: 'cancelCast', pid });
+          }
+          break;
         case 'castRelease': {
           if (!hero) break;
           const p = this.preview(w, hero, a.slot, a.aim);
           if (a.slot === 3) out.push({ t: 'summoner', pid, aim: p.aim });
-          else out.push({ t: 'cast', pid, slot: a.slot, aim: p.aim });
+          else if (this.charging === a.slot) {
+            this.charging = -1;
+            out.push({ t: 'cast', pid, slot: a.slot, aim: p.aim, phase: 'release' });
+          } else out.push({ t: 'cast', pid, slot: a.slot, aim: p.aim });
           break;
         }
       }

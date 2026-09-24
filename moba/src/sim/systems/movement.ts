@@ -3,7 +3,7 @@ import type { Unit } from '../entity';
 import { isEnemy } from '../entity';
 import { isHeroLike } from '../query';
 import { runEffects } from '../skills/effects';
-import { canAct, isStructure, isTargetable } from '../status';
+import { applyCc, canAct, isStructure, isTargetable } from '../status';
 import { currentMoveSpeed } from '../stats';
 import type { World } from '../world';
 import { laneDirection } from './minions';
@@ -144,8 +144,17 @@ function stepForced(w: World, u: Unit): void {
       }
     }
   }
-  // 顶墙走不动了也结束
-  if (step > 0 && moved < step * 0.25) stop = true;
+  // 顶墙走不动了也结束；被击退撞墙时附加眩晕（例如“钉墙”）
+  if (step > 0 && moved < step * 0.25) {
+    stop = true;
+    if (f.kind === 'knockback' && f.wallStun && f.wallStun > 0) {
+      const src = w.get(f.sourceId ?? 0) ?? null;
+      u.forced = null;
+      applyCc(w, src, u, 'stun', f.wallStun, 0, u.pos);
+      w.emit({ t: 'area', team: src?.team ?? 2, owner: src?.id ?? 0, x: u.pos.x, y: u.pos.y, dirX: 1, dirY: 0, shape: { k: 'circle', r: 1.2 }, vfx: { color: 0xffe25a, style: 'slam' }, warn: 0 });
+      return;
+    }
+  }
   if (stop || f.remaining <= 1e-4 || !u.alive) {
     u.forced = null;
     if (f.onEnd && f.ctx && u.alive) runEffects(w, f.onEnd, { ...f.ctx, origin: { ...u.pos } });

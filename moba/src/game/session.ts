@@ -11,6 +11,10 @@ import type { SimEvent } from '../sim/events';
 import { World, type WorldConfig } from '../sim/world';
 import { DebugPanel } from '../ui/debugPanel';
 import { Hud } from '../ui/hud';
+import { ShopPanel } from '../ui/shop';
+import { Scoreboard } from '../ui/scoreboard';
+import { checkBuy, nextRecommended } from '../sim/shop';
+import { getItem } from '../data/items';
 
 const PLAYER_PID = 1;
 
@@ -26,6 +30,8 @@ export class GameSession {
   private keyboard: KeyboardMouse;
   private sfx = new Sfx();
   private hud!: Hud;
+  private shop!: ShopPanel;
+  private scoreboard!: Scoreboard;
   private debug!: DebugPanel;
   private loop: FixedStepLoop;
   private pending: Command[] = [];
@@ -34,14 +40,15 @@ export class GameSession {
   private fps = 60;
   private stepMs = 0;
   private minimapAt = 0;
+  private quickBuyAt = 0;
 
   constructor(
     private readonly container: HTMLElement,
-    cfg: Omit<WorldConfig, 'players'> & { heroId: string },
+    cfg: Omit<WorldConfig, 'players'> & { heroId: string; summoner?: string },
   ) {
     this.world = new World({
       ...cfg,
-      players: [{ pid: PLAYER_PID, team: 0, heroId: cfg.heroId, name: '玩家', isAI: false }],
+      players: [{ pid: PLAYER_PID, team: 0, heroId: cfg.heroId, name: '玩家', isAI: false, summoner: cfg.summoner }],
     });
     const hero = this.world.heroOf(PLAYER_PID)!;
     this.renderer = new GameRenderer(this.world, hero.id);
@@ -51,7 +58,11 @@ export class GameSession {
       this.pending = [];
       this.stepMs = this.stepMs * 0.9 + (performance.now() - t0) * 0.1;
     });
-    this.keyboard = new KeyboardMouse(this.input, { onToggleDebug: () => this.debug.toggle() });
+    this.keyboard = new KeyboardMouse(this.input, {
+      onToggleDebug: () => this.debug.toggle(),
+      onShop: () => this.shop.toggle(),
+      onScoreboard: (show) => this.scoreboard.toggle(show),
+    });
   }
 
   async start(): Promise<void> {
@@ -66,6 +77,9 @@ export class GameSession {
 
     this.hud = new Hud(this.container, this.world, hero, this.input, {
       onAttack: (a, f, t) => this.keyboard.setTouchAttack(a, f, t),
+      onShop: () => this.shop.toggle(),
+      onScoreboard: () => this.scoreboard.toggle(),
+      onQuickBuy: () => this.pending.push({ t: 'buyRecommended', pid: PLAYER_PID }),
       onToggleDebug: () => this.debug.toggle(),
       onToggleMute: () => {
         this.sfx.setMuted(!this.sfx.muted);
@@ -73,6 +87,12 @@ export class GameSession {
       },
       isMuted: () => this.sfx.muted,
     });
+    this.shop = new ShopPanel(
+      this.hud.root,
+      (item) => this.pending.push({ t: 'buy', pid: PLAYER_PID, item }),
+      (slot) => this.pending.push({ t: 'sell', pid: PLAYER_PID, slot }),
+    );
+    this.scoreboard = new Scoreboard(this.hud.root);
     this.debug = new DebugPanel(
       this.hud.root,
       (s) => {
@@ -142,6 +162,9 @@ export class GameSession {
         case 'levelUp':
           if (e.unit === heroId) this.sfx.play('levelup', 1);
           break;
+        case 'shop':
+          if (e.unit === heroId) this.sfx.play('click', 1);
+          break;
         case 'castFail':
           if (e.unit === heroId) this.sfx.play('fail', 0.6);
           break;
@@ -183,6 +206,7 @@ export class GameSession {
       if (e.t === 'gameOver' && hero) this.onGameOver(e.winner === hero.team);
     }
     this.renderer.handleEvents(events);
+    if (hero && w.config.mode === 'training') this.trackDps(events, hero.id, now);
     if (hero) this.playSounds(events, hero.id);
 
     let aim: AimRender | null = null;
@@ -194,7 +218,19 @@ export class GameSession {
       }
     }
     this.renderer.render(alpha, aim);
-    if (hero) this.hud.update(w, hero, this.fps);
+    if (hero) {
+      this.hud.update(w, hero, this.fps);
+      this.shop.update(hero);
+      this.scoreboard.update(w, hero.id);
+      if (now - this.quickBuyAt > 200) {
+        this.quickBuyAt = now;
+        const rec = w.config.mode === 'match' && hero.alive ? nextRecommended(hero) : null;
+        if (rec) {
+          const it = getItem(rec);
+          this.hud.setQuickBuy({ id: rec, name: it.name, glyph: it.glyph, color: it.color, price: checkBuy(hero, rec).price });
+        } else this.hud.setQuickBuy(null);
+      }
+    }
     if (now - this.minimapAt > 100 && hero) {
       this.minimapAt = now;
       this.hud.minimap.draw(w, hero.id, cam.viewRect(0));
@@ -209,6 +245,23 @@ export class GameSession {
       ].join('\n'),
     );
   };
+
+  /** 训练场伤害统计：最近 5 秒伤害、DPS、总伤害 */
+  private dpsLog: { t: number; v: number }[] = [];
+  private dpsTotal = 0;
+  private trackDps(events: readonly SimEvent[], heroId: number, now: number): void {
+    for (const e of events) if (e.t === 'damage' && e.src === heroId) {
+      this.dpsLog.push({ t: now, v: e.amount });
+      this.dpsTotal += e.amount;
+    }
+    this.dpsLog = this.dpsLog.filter((x) => now - x.t < 5000);
+    const recent = this.dpsLog.reduce((s, x) => s + x.v, 0);
+    const span = this.dpsLog.length ? Math.max(1, (now - this.dpsLog[0]!.t) / 1000) : 1;
+    this.hud.setDps(`5 秒伤害 ${Math.round(recent)} · DPS ${Math.round(recent / span)} · 总计 ${Math.round(this.dpsTotal)}`, () => {
+      this.dpsTotal = 0;
+      this.dpsLog = [];
+    });
+  }
 
   private onGameOver(win: boolean): void {
     const hero = this.world.heroOf(PLAYER_PID)!;

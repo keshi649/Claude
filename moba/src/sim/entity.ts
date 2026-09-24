@@ -89,6 +89,9 @@ export interface ForcedMove {
   ctx?: EffectCtx;
   hitIds: EntityId[];
   untargetable: boolean;
+  /** 击退撞墙时的眩晕时长与来源 */
+  wallStun?: number;
+  sourceId?: EntityId;
 }
 
 export interface AttackState {
@@ -164,6 +167,8 @@ export interface HeroState {
   /** 最近一次击杀时刻与多杀计数（双杀、三杀……） */
   lastKillAt: number;
   multiKill: number;
+  /** 周期被动的计时 */
+  passiveTimer: number;
 }
 
 export interface Unit {

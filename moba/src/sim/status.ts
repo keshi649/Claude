@@ -58,6 +58,7 @@ export function applyCc(
   duration: number,
   power: number,
   origin: Vec2,
+  wallStun = 0,
 ): void {
   if (!target.alive || isStructure(target) || isInvulnerable(target)) return;
   const st = target.status;
@@ -98,6 +99,8 @@ export function applyCc(
         stopDist: 0,
         hitIds: [],
         untargetable: false,
+        wallStun,
+        sourceId: src?.id ?? 0,
       };
       break;
     }

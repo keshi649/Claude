@@ -30,6 +30,7 @@ export function getUnitDef(id: string): UnitDef {
 
 /** 通用增益（与英雄无关的） */
 const COMMON_BUFFS: BuffDef[] = [
+  { id: 'sprint', name: '疾驰', kind: 'buff', aura: 0xffe25a, statsPct: { moveSpeed: 0.5 } },
   {
     id: 'restore',
     name: '恢复',

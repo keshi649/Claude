@@ -43,6 +43,9 @@ interface SkillUi {
 
 export interface HudHooks {
   onAttack: (attack: boolean, farm: boolean, tower: boolean) => void;
+  onShop: () => void;
+  onScoreboard: () => void;
+  onQuickBuy: () => void;
   onToggleDebug: () => void;
   onToggleMute: () => boolean;
   isMuted: () => boolean;
@@ -71,6 +74,7 @@ export class Hud {
   readonly cancelZone: HTMLElement;
   private held = { attack: false, farm: false, tower: false };
   private goldEl!: HTMLElement;
+  private quickBuy!: HTMLElement;
   private goldText!: HTMLElement;
   private feed!: HTMLElement;
   private deathEl!: HTMLElement;
@@ -170,9 +174,20 @@ export class Hud {
     bindTapButton(this.recallBtn, () => state.actions.push({ k: 'recall' }));
 
     // 左侧中部：金币（商店在 M3 接入）
-    this.goldEl = el('div', 'gold-badge', root);
-    this.goldEl.innerHTML = '<i></i><span>0</span>';
+    this.goldEl = el('button', 'gold-badge', root);
+    this.goldEl.innerHTML = '<i></i><span>0</span><em>商店</em>';
     this.goldText = this.goldEl.querySelector('span')!;
+    this.goldEl.addEventListener('click', () => hooks.onShop());
+    // 推荐购买：金币足够时出现，一键买下推荐出装的下一件
+    this.quickBuy = el('button', 'quick-buy', root);
+    this.quickBuy.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      hooks.onQuickBuy();
+    });
+    bar.addEventListener('click', (e) => {
+      if (e.target === gear) return;
+      hooks.onScoreboard();
+    });
     // 击杀信息
     this.feed = el('div', 'killfeed', root);
     // 死亡遮罩
@@ -253,6 +268,28 @@ export class Hud {
     });
     const txt = ratio > 0 ? (cd >= 1 ? String(Math.ceil(cd)) : cd.toFixed(1)) : '';
     this.set(`ct${key}`, txt, () => (ui.cdText.textContent = txt));
+  }
+
+  private dpsEl: HTMLElement | null = null;
+  /** 训练场伤害统计 */
+  setDps(text: string, onReset: () => void): void {
+    if (!this.dpsEl) {
+      this.dpsEl = el('div', 'dps', this.root);
+      this.dpsEl.innerHTML = '<span></span><button>重置</button>';
+      this.dpsEl.querySelector('button')!.addEventListener('click', onReset);
+    }
+    this.set('dps', text, () => (this.dpsEl!.querySelector('span')!.textContent = text));
+  }
+
+  /** 推荐购买按钮：传入下一件推荐装备（null 表示隐藏） */
+  setQuickBuy(item: { id: string; name: string; glyph: string; color: number; price: number } | null): void {
+    const key = item ? `${item.id}|${item.price}` : '';
+    this.set('qb', key, () => {
+      this.quickBuy.classList.toggle('show', !!item);
+      if (item) {
+        this.quickBuy.innerHTML = `<b style="background:radial-gradient(circle at 35% 30%, ${hex(item.color)}, #151a22 85%)">${item.glyph}</b><span>${item.name}</span><small>${item.price}</small>`;
+      }
+    });
   }
 
   update(w: World, hero: Unit, fps: number): void {

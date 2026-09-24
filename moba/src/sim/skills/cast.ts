@@ -4,7 +4,7 @@ import type { SkillStage } from '../../data/schema';
 import type { Aim } from '../commands';
 import type { Unit } from '../entity';
 import { currentStage, skillDef } from '../hero';
-import { pickAutoAimTarget, pickUnitNearPoint } from '../query';
+import { passesFilter, pickAutoAimTarget, pickUnitNearPoint } from '../query';
 import { canCast, isTargetable } from '../status';
 import { effectiveCooldown } from '../stats';
 import type { World } from '../world';
@@ -75,7 +75,7 @@ export function resolveAim(w: World, u: Unit, stage: SkillStage, aim: Aim): Reso
       let t: Unit | null = null;
       if (aim.k === 'unit') {
         const c = w.get(aim.id);
-        if (c && isTargetable(c) && Math.hypot(c.pos.x - pos.x, c.pos.y - pos.y) - c.radius <= range + 0.5) t = c;
+        if (c && passesFilter(u, c, filter) && Math.hypot(c.pos.x - pos.x, c.pos.y - pos.y) - c.radius <= range + 0.5) t = c;
       } else if (aim.k === 'point') {
         t = pickUnitNearPoint(w, u, aim, range, filter);
       } else if (aim.k === 'dir') {
@@ -205,6 +205,17 @@ export function commandCast(w: World, u: Unit, slot: 0 | 1 | 2, aim: Aim, phase?
   });
   if (!charging && stage.windup <= 0) finishWindup(w, u);
   return true;
+}
+
+/** 取消蓄力：返还法力，不进入冷却 */
+export function cancelCharge(w: World, u: Unit): void {
+  const c = u.cast;
+  if (!c || c.phase !== 'charging') return;
+  const def = skillDef(u, c.slot);
+  const lvl = u.hero!.skillLevels[c.slot];
+  u.mp = Math.min(u.stats.maxMp, u.mp + (def.cost[Math.min(lvl - 1, def.cost.length - 1)] ?? 0));
+  u.cast = null;
+  w.emit({ t: 'castFail', unit: u.id, reason: '已取消' });
 }
 
 function releaseCharge(w: World, u: Unit, aim: Aim): void {

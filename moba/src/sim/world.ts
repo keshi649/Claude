@@ -11,10 +11,12 @@ import type { Command } from './commands';
 import type { EntityId, PendingArea, Projectile, Team, Unit, UnitKind, Zone } from './entity';
 import type { SimEvent } from './events';
 import { autoLevelSkills, levelSkill, levelUp } from './hero';
+import { buyItem, nextRecommended, sellItem } from './shop';
+import { START_GOLD } from '../data/items';
 import { AStar } from './nav/astar';
 import { NavGrid } from './nav/grid';
 import { WallField } from './nav/walls';
-import { commandCast, updateCasts } from './skills/cast';
+import { cancelCharge, commandCast, updateCasts } from './skills/cast';
 import { SpatialHash } from './spatial';
 import { recomputeStats, statsAtLevel } from './stats';
 import { commandAttack, updateAttacks } from './systems/attack';
@@ -208,7 +210,7 @@ export class World {
       cooldownTotals: [1, 1, 1],
       recast: [null, null, null],
       passiveStamp: def.passive.triggers.map(() => -1),
-      gold: 0,
+      gold: this.config.mode === 'match' ? START_GOLD : 0,
       kills: 0,
       deaths: 0,
       assists: 0,
@@ -224,6 +226,7 @@ export class World {
       restoreCd: 0,
       lastKillAt: -999,
       multiKill: 0,
+      passiveTimer: 0,
     };
     this.addUnit(u);
     for (let l = 1; l < level; l++) levelUp(this, u);
@@ -396,6 +399,9 @@ export class World {
       case 'recall':
         commandRecall(this, u);
         return;
+      case 'cancelCast':
+        cancelCharge(this, u);
+        return;
       case 'restore':
         commandRestore(this, u);
         return;
@@ -405,6 +411,17 @@ export class World {
       case 'levelSkill':
         levelSkill(this, u, c.slot);
         return;
+      case 'buy':
+        buyItem(this, u, c.item);
+        return;
+      case 'sell':
+        sellItem(this, u, c.slot);
+        return;
+      case 'buyRecommended': {
+        const id = nextRecommended(u);
+        if (id) buyItem(this, u, id);
+        return;
+      }
       case 'debug':
         this.applyDebug(u, c.op, c.value);
         return;
@@ -437,6 +454,14 @@ export class World {
       case 'heal':
         u.hp = u.stats.maxHp;
         u.mp = u.stats.maxMp;
+        return;
+      case 'dummyArmor':
+        for (const d of this.list) {
+          if (d.kind !== 'dummy') continue;
+          d.baseStats.armor = value ?? 0;
+          d.baseStats.mr = value ?? 0;
+          d.statsDirty = true;
+        }
         return;
     }
   }

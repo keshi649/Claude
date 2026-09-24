@@ -13,7 +13,7 @@ export type Aim =
 
 export type AttackMode = 'auto' | 'farm' | 'tower';
 
-export type DebugOp = 'refreshCd' | 'levelUp' | 'maxLevel' | 'addGold' | 'noCooldown' | 'heal';
+export type DebugOp = 'refreshCd' | 'levelUp' | 'maxLevel' | 'addGold' | 'noCooldown' | 'heal' | 'dummyArmor';
 
 export type Command =
   /** 方向移动（摇杆 / WASD），dir 为 null 表示松开 */
@@ -26,10 +26,16 @@ export type Command =
   /** 施法。蓄力技能用 phase 区分按下 / 松开 */
   | { t: 'cast'; pid: number; slot: 0 | 1 | 2; aim: Aim; phase?: 'start' | 'release' }
   | { t: 'levelSkill'; pid: number; slot: 0 | 1 | 2 }
+  /** 取消蓄力中的技能（返还法力） */
+  | { t: 'cancelCast'; pid: number }
   /** 回城（原地引导，移动 / 受伤 / 施法打断） */
   | { t: 'recall'; pid: number }
   /** 恢复（持续回血回蓝，受伤中断） */
   | { t: 'restore'; pid: number }
   /** 召唤师技能 */
   | { t: 'summoner'; pid: number; aim: Aim }
+  | { t: 'buy'; pid: number; item: string }
+  | { t: 'sell'; pid: number; slot: number }
+  /** 一键购买推荐出装的下一件 */
+  | { t: 'buyRecommended'; pid: number }
   | { t: 'debug'; pid: number; op: DebugOp; value?: number };

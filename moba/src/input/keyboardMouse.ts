@@ -4,6 +4,8 @@ const SKILL_KEYS: Record<string, SlotId> = { KeyQ: 0, KeyE: 1, KeyR: 2, KeyF: 3 
 
 export interface KeyboardHooks {
   onToggleDebug: () => void;
+  onShop: () => void;
+  onScoreboard: (show: boolean) => void;
 }
 
 /**
@@ -30,7 +32,10 @@ export class KeyboardMouse {
     });
     on('contextmenu', (e) => e.preventDefault());
     on('mousedown', (e) => {
-      if (e.button === 2 && this.state.aiming?.source === 'mouse') this.state.aiming = null;
+      if (e.button === 2 && this.state.aiming?.source === 'mouse') {
+        this.state.aiming = null;
+        this.state.actions.push({ k: 'aimCancel' });
+      }
     });
     on('blur', () => this.releaseAll());
   }
@@ -50,6 +55,7 @@ export class KeyboardMouse {
     }
     if (code === 'Space' || code === 'Tab') e.preventDefault();
     if (code === 'Escape') {
+      if (this.state.aiming) this.state.actions.push({ k: 'aimCancel' });
       this.state.aiming = null;
       return;
     }
@@ -62,6 +68,15 @@ export class KeyboardMouse {
         return;
       }
       this.state.aiming = { slot, source: 'mouse', drag: { x: 0, y: 0 }, dragged: true, cancel: false };
+      this.state.actions.push({ k: 'aimStart', slot });
+      return;
+    }
+    if (code === 'KeyP' && !e.repeat) {
+      this.hooks.onShop();
+      return;
+    }
+    if (code === 'Tab') {
+      if (!e.repeat) this.hooks.onScoreboard(true);
       return;
     }
     if (code === 'KeyB' && !e.repeat) {
@@ -78,6 +93,10 @@ export class KeyboardMouse {
 
   private keyUp(e: KeyboardEvent): void {
     const code = e.code;
+    if (code === 'Tab') {
+      this.hooks.onScoreboard(false);
+      return;
+    }
     const slot = SKILL_KEYS[code];
     if (slot !== undefined) {
       const a = this.state.aiming;

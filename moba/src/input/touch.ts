@@ -142,6 +142,7 @@ export function bindSkillButton(
     // 轮盘半径约为按钮直径的 1.4 倍
     R = Math.max(70, r.width * 1.4);
     state.aiming = { slot, source: 'touch', drag: { x: 0, y: 0 }, dragged: false, cancel: false };
+    state.actions.push({ k: 'aimStart', slot });
     btn.classList.add('pressed');
     document.body.classList.add('aiming');
     showWheel(0, 0);
@@ -176,7 +177,10 @@ export function bindSkillButton(
     hideWheel();
     const a = state.aiming;
     state.aiming = null;
-    if (!a || a.slot !== slot || a.cancel || e.type === 'pointercancel') return;
+    if (!a || a.slot !== slot || a.cancel || e.type === 'pointercancel') {
+      state.actions.push({ k: 'aimCancel' });
+      return;
+    }
     const mag = Math.hypot(a.drag.x, a.drag.y);
     state.actions.push({
       k: 'castRelease',

@@ -78,4 +78,5 @@ export type SimEvent =
     }
   | { t: 'structureDown'; unit: EntityId; team: Team; killer: EntityId }
   | { t: 'respawn'; unit: EntityId }
+  | { t: 'shop'; unit: EntityId; item: string; sold: boolean }
   | { t: 'gameOver'; winner: Team }
