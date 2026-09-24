@@ -207,9 +207,21 @@ export class GameRenderer {
         }
         case 'death': {
           const u = w.get(e.unit);
-          if (u) this.effects.burst(u.pos.x, u.pos.y, teamColor(u.team), 20, 5, now, 1);
+          if (u) this.effects.burst(u.pos.x, u.pos.y, teamColor(u.team), u.kind === 'minion' ? 8 : 20, 5, now, 1);
           break;
         }
+        case 'structureDown': {
+          const u = w.get(e.unit);
+          if (u) {
+            this.effects.area(u.pos.x, u.pos.y, 1, 0, { k: 'circle', r: 4 }, { color: teamColor(u.team), style: 'slam' }, now);
+            this.effects.pillar(u.pos.x, u.pos.y, teamColor(u.team), 3, 900, now);
+            this.camera.shake(0.25);
+          }
+          break;
+        }
+        case 'gold':
+          if (e.unit === this.selfId && e.amount >= 5) this.effects.floatText(e.x + 0.6, e.y - 0.4, `+${e.amount}`, 0xffd23c, 18, now);
+          break;
         default:
           break;
       }
@@ -290,9 +302,12 @@ export class GameRenderer {
     for (const u of w.list) {
       const v = this.ensureView(u);
       const { x, y } = posOf(u);
-      const visible = u.alive && x > view.x0 && x < view.x1 && y > view.y0 && y < view.y1 + 4;
+      const onScreen = x > view.x0 && x < view.x1 && y > view.y0 && y < view.y1 + 4;
+      const ruin = !u.alive && isStructure(u);
+      const visible = (u.alive || ruin) && onScreen;
       v.root.visible = visible;
-      v.overlay.visible = visible && !u.innate.invulnerable;
+      v.overlay.visible = visible && u.alive && !u.innate.untargetable;
+      if (ruin) v.showRuins();
       if (!visible) continue;
       let aura: number | null = null;
       for (const b of u.buffs) {

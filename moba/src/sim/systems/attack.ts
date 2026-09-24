@@ -1,6 +1,7 @@
 import { BALANCE } from '../../data/balance';
 import { getHero } from '../../data/heroes';
-import { getBuff } from '../../data/units';
+import { getBuff, getUnitDef } from '../../data/units';
+import { TOWER_RAMP } from '../../data/structures';
 import type { AttackDef } from '../../data/schema';
 import { applyDamage } from '../damage';
 import type { Unit } from '../entity';
@@ -8,7 +9,7 @@ import type { AttackMode } from '../commands';
 import { edgeDist, pickAttackTarget, validAttackTarget } from '../query';
 import { firePassive, makeCtx, runEffects } from '../skills/effects';
 import { attackInterval } from '../stats';
-import { canAct, isTargetable, removeBuff } from '../status';
+import { canAct, isStructure, isTargetable, removeBuff } from '../status';
 import type { World } from '../world';
 
 /**
@@ -20,7 +21,7 @@ import type { World } from '../world';
 
 export function attackDefOf(u: Unit): AttackDef | null {
   if (u.kind === 'hero') return getHero(u.defId).attack;
-  return null;
+  return getUnitDef(u.defId).attack ?? null;
 }
 
 export function commandAttack(w: World, u: Unit, mode: AttackMode): void {
@@ -129,7 +130,14 @@ function fireAttack(w: World, u: Unit, t: Unit, def: AttackDef): void {
 /** 普攻命中结算：伤害 → 增益的“普攻命中”效果 → 被动 */
 export function applyAttackHit(w: World, u: Unit, t: Unit, crit: boolean): void {
   if (!t.alive) return;
-  const raw = u.stats.ad * (crit ? u.stats.critDmg : 1);
+  let raw = u.stats.ad * (crit ? u.stats.critDmg : 1);
+  // 防御塔连续命中同一英雄，伤害递增
+  if (isStructure(u)) {
+    if (t.hero && u.rampTarget === t.id) u.rampStacks = Math.min(TOWER_RAMP.maxStacks, u.rampStacks + 1);
+    else u.rampStacks = 0;
+    u.rampTarget = t.hero ? t.id : 0;
+    raw *= 1 + TOWER_RAMP.perHit * u.rampStacks;
+  }
   applyDamage(w, u, t, raw, 'physical', { crit, isAttack: true, impact: crit ? 1 : 0 });
   if (!u.alive) return;
   for (const b of [...u.buffs]) {

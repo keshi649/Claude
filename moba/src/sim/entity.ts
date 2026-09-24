@@ -161,6 +161,9 @@ export interface HeroState {
   goldEarned: number;
   /** 恢复按钮冷却 */
   restoreCd: number;
+  /** 最近一次击杀时刻与多杀计数（双杀、三杀……） */
+  lastKillAt: number;
+  multiKill: number;
 }
 
 export interface Unit {

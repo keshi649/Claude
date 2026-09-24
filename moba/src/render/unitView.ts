@@ -219,7 +219,8 @@ export class UnitView {
     this.overlay.position.set(sx, sy - (hero ? 14 : 8));
     const shield = totalShield(u);
     const recall = u.hero?.recall ?? 0;
-    const key = `${Math.ceil(u.hp)}|${Math.ceil(u.stats.maxHp)}|${Math.ceil(shield)}|${Math.floor(u.mp)}|${u.hero?.level ?? 0}|${recall.toFixed(1)}`;
+    const prot = structure && u.innate.invulnerable;
+    const key = `${Math.ceil(u.hp)}|${Math.ceil(u.stats.maxHp)}|${Math.ceil(shield)}|${Math.floor(u.mp)}|${u.hero?.level ?? 0}|${recall.toFixed(1)}|${prot}`;
     if (key === this.barKey) return;
     this.barKey = key;
 
@@ -237,6 +238,12 @@ export class UnitView {
     g.rect(x0, 0, (bw * Math.max(0, u.hp)) / total, hpH).fill(color);
     g.rect(x0, 0, (bw * Math.max(0, u.hp)) / total, hpH * 0.35).fill({ color: 0xffffff, alpha: 0.18 });
     if (shield > 0) g.rect(x0 + (bw * u.hp) / total, 0, (bw * shield) / total, hpH).fill(PALETTE.shield);
+    if (prot) {
+      // 受保护的建筑：血条变暗并显示盾牌标记
+      g.rect(x0, 0, bw, hpH).fill({ color: 0x000000, alpha: 0.45 });
+      g.poly([-8, -14, 8, -14, 8, -7, 0, -1, -8, -7]).fill(0xd8e0ea);
+      g.poly([-5, -11, 5, -11, 5, -7, 0, -3.5, -5, -7]).fill(0x4a6a8a);
+    }
     if (hero) {
       // 每 1000 生命一大格，每 200 一小格
       const step = 200;
@@ -259,6 +266,28 @@ export class UnitView {
         g.roundRect(x0, fullH + 5, bw * (1 - recall / 6), 4, 2).fill(0x7fd4ff);
       }
     }
+  }
+
+  private ruins: Graphics | null = null;
+
+  /** 建筑被摧毁：模型换成废墟 */
+  showRuins(): void {
+    if (this.ruins) return;
+    this.model.root.visible = false;
+    this.statusFx.visible = false;
+    const g = new Graphics();
+    const big = this.unit.kind === 'crystal' ? 1.6 : 1;
+    g.ellipse(0, 0, 1.6 * big, 0.7 * big).fill(0x3a3e45);
+    for (let i = 0; i < 9; i++) {
+      const a = i * 2.4;
+      const r = (0.5 + (i % 3) * 0.35) * big;
+      const x = Math.cos(a) * r;
+      const y = Math.sin(a) * r * 0.45 - 0.15;
+      g.poly([x - 0.35, y, x + 0.3, y - 0.05, x + 0.18, y - 0.45 - (i % 2) * 0.3, x - 0.22, y - 0.35]).fill(i % 2 ? 0x6a6f78 : 0x565b63);
+    }
+    g.rect(-0.3 * big, -1.1 * big, 0.35, 1.1 * big).fill(0x7c828d);
+    this.lift.addChild(g);
+    this.ruins = g;
   }
 
   destroy(): void {

@@ -6,6 +6,7 @@ import { runEffects } from '../skills/effects';
 import { canAct, isStructure, isTargetable } from '../status';
 import { currentMoveSpeed } from '../stats';
 import type { World } from '../world';
+import { laneDirection } from './minions';
 
 /**
  * 移动系统。优先级：
@@ -44,6 +45,9 @@ export function updateMovement(w: World): void {
       if (u.cast && u.cast.phase === 'recovery') u.cast = null;
     } else if (u.navGoal) {
       dir = followPath(w, u);
+    } else if (u.kind === 'minion' && u.lane) {
+      const ld = laneDirection(w, u);
+      if (ld) dir = seek(w, u, { x: u.pos.x + ld.x * 3, y: u.pos.y + ld.y * 3 }, 0) ?? ld;
     } else if (u.patrol && u.patrol.length > 0) {
       const target = u.patrol[u.patrolIdx % u.patrol.length]!;
       if (Math.hypot(target.x - u.pos.x, target.y - u.pos.y) < 0.3) u.patrolIdx++;

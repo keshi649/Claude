@@ -65,6 +65,17 @@ export function applyDamage(
 
   target.hp -= dmg;
   target.lastDamagedAt = w.time;
+  // 英雄之间的伤害：记录助攻归属与转火信息，统计输出 / 承伤
+  if (src?.hero) {
+    src.hero.damageDealt += target.hero ? total : 0;
+    if (target.team !== src.team) {
+      const ra = target.recentAttackers.find((a) => a.id === src.id);
+      if (ra) ra.t = w.time;
+      else target.recentAttackers.push({ id: src.id, t: w.time });
+      if (target.hero) w.aggro.push({ attacker: src.id, victim: target.id, t: w.time });
+    }
+  }
+  if (target.hero) target.hero.damageTaken += total;
   // 受伤打断回城与恢复
   if (target.hero) {
     if (target.hero.recall > 0) {

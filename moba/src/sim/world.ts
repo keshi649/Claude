@@ -1,9 +1,10 @@
 import { Rng } from '../core/rng';
 import { norm, type Vec2 } from '../core/vec2';
-import { DT } from '../data/balance';
+import { DT, WAVES } from '../data/balance';
 import { getHero } from '../data/heroes';
 import { buildMap, type BuiltMap } from '../data/map';
-import type { StatBlock } from '../data/schema';
+import type { StatBlock, StatKey, UnitDef } from '../data/schema';
+import type { LaneId } from '../data/map';
 import { CRYSTAL, TOWERS } from '../data/structures';
 import { DUMMY } from '../data/units';
 import type { Command } from './commands';
@@ -20,6 +21,9 @@ import { commandAttack, updateAttacks } from './systems/attack';
 import { separateUnits, updateMovement } from './systems/movement';
 import { updateProjectiles, updateZones } from './systems/projectiles';
 import { updateDummies, updateStatus } from './systems/status';
+import { updateMinions, updateWaves } from './systems/minions';
+import { updateFountains, updateProtection, updateTowers } from './systems/structures';
+import { onKill, updateEconomy } from './economy';
 import { cancelRecall, commandRecall, commandRestore, commandSummoner, updateUtility } from './systems/utility';
 
 export interface PlayerConfig {
@@ -38,8 +42,8 @@ export interface PlayerSlot extends PlayerConfig {
 
 export interface WorldConfig {
   seed: number;
-  /** training：训练场（M1：木桩 + 不可破坏的建筑） */
-  mode: 'training';
+  /** training：训练场（木桩 + 不可破坏的建筑）；match：正式对局（兵线、推塔、胜负） */
+  mode: 'training' | 'match';
   players: PlayerConfig[];
   /** 英雄初始等级 */
   startLevel?: number;
@@ -78,6 +82,13 @@ export class World {
   events: SimEvent[] = [];
   players: PlayerSlot[] = [];
   readonly debug = { noCooldown: false };
+  /** 英雄之间的攻击记录（小兵 / 塔转火用），保留约 3 秒 */
+  aggro: { attacker: EntityId; victim: EntityId; t: number }[] = [];
+  firstBloodDone = false;
+  nextWaveAt: number = WAVES.firstWaveAt;
+  waveIndex = 0;
+  /** 获胜方，null 表示对局进行中 */
+  winner: Team | null = null;
   private idSeq = 1;
   private castSeq = 1;
 
@@ -211,6 +222,8 @@ export class World {
       items: [null, null, null, null, null, null],
       goldEarned: 0,
       restoreCd: 0,
+      lastKillAt: -999,
+      multiKill: 0,
     };
     this.addUnit(u);
     for (let l = 1; l < level; l++) levelUp(this, u);
@@ -219,6 +232,19 @@ export class World {
     u.mp = u.stats.maxMp;
     this.players.push({ ...cfg, unitId: u.id });
     return u;
+  }
+
+  /** 生成小兵：属性按对局时间成长 */
+  spawnMinion(def: UnitDef, team: Team, pos: Vec2, lane: LaneId): Unit {
+    const min = this.time / 60;
+    const base = { ...def.base };
+    const g = def.growthPerMin ?? {};
+    for (const k of Object.keys(g) as StatKey[]) base[k] = base[k] * (1 + (g[k] ?? 0) * min);
+    const u = this.makeUnit('minion', team, def.id, def.name, pos, def.radius, base);
+    u.lane = { id: lane, idx: 1 };
+    u.facing = Math.atan2(this.map.lanes[team as 0 | 1][lane][1]!.y - pos.y, this.map.lanes[team as 0 | 1][lane][1]!.x - pos.x);
+    u.prevFacing = u.facing;
+    return this.addUnit(u);
   }
 
   spawnDummy(pos: Vec2, team: Team, patrol: Vec2[] | null = null): Unit {
@@ -230,21 +256,24 @@ export class World {
   }
 
   private spawnStructures(): void {
+    // 训练场里建筑只作为地图元素：不可选中、不会被破坏；正式对局中启用攻防
+    const inert = this.config.mode === 'training';
+    const tierIdx = { outer: 0, inner: 1, high: 2 } as const;
     for (const team of [0, 1] as const) {
       for (const t of this.map.towers[team]) {
         const def = TOWERS[t.tier];
         const u = this.makeUnit('tower', team, def.id, def.name, t.pos, def.radius, def.base);
         u.static = true;
-        // M1 训练场：建筑只作为地图元素，不可选中、不会被破坏（M2 启用攻防）
-        u.innate.untargetable = true;
-        u.innate.invulnerable = true;
+        u.lane = { id: t.lane, idx: tierIdx[t.tier] };
+        u.innate.untargetable = inert;
+        u.innate.invulnerable = inert;
         this.addUnit(u);
         this.nav.setCircleObstacle(u.pos, u.radius, true);
       }
       const c = this.makeUnit('crystal', team, CRYSTAL.id, CRYSTAL.name, this.map.crystal[team], CRYSTAL.radius, CRYSTAL.base);
       c.static = true;
-      c.innate.untargetable = true;
-      c.innate.invulnerable = true;
+      c.innate.untargetable = inert;
+      c.innate.invulnerable = inert;
       this.addUnit(c);
       this.nav.setCircleObstacle(c.pos, c.radius, true);
     }
@@ -284,6 +313,7 @@ export class World {
   // ————————————————————————— 推进 —————————————————————————
 
   step(commands: readonly Command[]): void {
+    if (this.winner !== null) return;
     this.tick++;
     this.time = this.tick * this.dt;
     for (const u of this.list) {
@@ -295,6 +325,14 @@ export class World {
     this.spatial.rebuild(this.list);
     for (const c of commands) this.apply(c);
 
+    if (this.aggro.length && this.tick % 15 === 0) this.aggro = this.aggro.filter((a) => this.time - a.t < 3);
+    const match = this.config.mode === 'match';
+    if (match) {
+      updateWaves(this);
+      updateProtection(this);
+      updateMinions(this);
+      updateTowers(this);
+    }
     updateCasts(this);
     updateUtility(this);
     updateAttacks(this);
@@ -305,6 +343,23 @@ export class World {
     updateZones(this);
     updateStatus(this);
     updateDummies(this);
+    if (match) {
+      updateFountains(this);
+      updateEconomy(this);
+    }
+    this.cleanup();
+  }
+
+  /** 移除死亡的小兵 / 野怪 / 召唤物（英雄等待复活，建筑保留废墟） */
+  private cleanup(): void {
+    let removed = false;
+    for (const u of this.list) {
+      if (!u.alive && (u.kind === 'minion' || u.kind === 'monster' || u.kind === 'summon')) {
+        this.units.delete(u.id);
+        removed = true;
+      }
+    }
+    if (removed) this.list = this.list.filter((u) => this.units.has(u.id));
   }
 
   private apply(c: Command): void {
@@ -386,7 +441,7 @@ export class World {
     }
   }
 
-  /** 单位死亡（M1：只标记死亡；M2 加入赏金与复活） */
+  /** 单位死亡：结算赏金 / 经验，建筑移除寻路障碍，水晶被毁则分出胜负 */
   killUnit(u: Unit, killer: Unit | null): void {
     if (!u.alive) return;
     u.alive = false;
@@ -394,7 +449,15 @@ export class World {
     u.cast = null;
     u.forced = null;
     u.queuedCast = null;
+    u.attack.orderTime = 0;
+    u.attack.windup = 0;
     this.emit({ t: 'death', unit: u.id, killer: killer?.id ?? 0 });
+    if (u.static) this.nav.setCircleObstacle(u.pos, u.radius, false);
+    if (this.config.mode === 'match') onKill(this, u, killer);
+    if (u.kind === 'crystal' && this.winner === null) {
+      this.winner = u.team === 0 ? 1 : 0;
+      this.emit({ t: 'gameOver', winner: this.winner });
+    }
   }
 
   /** 可序列化快照（联机同步 / 回放 / 确定性校验用） */

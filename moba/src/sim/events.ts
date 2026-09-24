@@ -59,3 +59,23 @@ export type SimEvent =
   | { t: 'buffAdd'; unit: EntityId; buff: string }
   | { t: 'recall'; unit: EntityId; state: 'start' | 'cancel' | 'done'; duration: number }
   | { t: 'summoner'; unit: EntityId; id: string }
+  /** 获得金币（补刀 / 击杀 / 推塔时在屏幕上弹出） */
+  | { t: 'gold'; unit: EntityId; amount: number; x: number; y: number }
+  /** 英雄被击杀（击杀播报用） */
+  | {
+      t: 'kill';
+      killer: EntityId;
+      victim: EntityId;
+      assists: EntityId[];
+      gold: number;
+      firstBlood: boolean;
+      /** 多杀数：2 = 双杀，3 = 三杀…… */
+      multi: number;
+      /** 击杀者当前连杀数 */
+      streak: number;
+      /** 终结了对方的连杀 */
+      shutdown: boolean;
+    }
+  | { t: 'structureDown'; unit: EntityId; team: Team; killer: EntityId }
+  | { t: 'respawn'; unit: EntityId }
+  | { t: 'gameOver'; winner: Team }

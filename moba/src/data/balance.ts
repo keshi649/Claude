@@ -40,4 +40,53 @@ export const BALANCE = {
   dummyResetDelay: 4,
 } as const;
 
+/** 经济、经验、复活、兵线、泉水 */
+export const ECONOMY = {
+  /** 每秒自然增长的金币 */
+  passiveGold: 3.5,
+  /** 击杀英雄基础赏金 */
+  heroBounty: 200,
+  /** 终结连杀：被击杀者每多 1 次连杀（≥3 起算）额外赏金，有上限 */
+  shutdownPerStreak: 70,
+  shutdownMax: 350,
+  /** 助攻判定窗口（秒）与助攻者分得的赏金比例（按人数平分） */
+  assistWindow: 10,
+  assistShare: 0.5,
+  assistMinGold: 40,
+  /** 推塔：全队每人金币 + 最后一击额外金币 */
+  towerTeamGold: 100,
+  towerLastHitGold: 150,
+  /** 经验分享半径（米）；多人分享时总经验额外增加的比例（每多一人） */
+  xpRadius: 12,
+  xpShareBonus: 0.15,
+  /** 击杀英雄的经验：基础 + 被击杀者等级 × 系数 */
+  heroKillXpBase: 120,
+  heroKillXpPerLevel: 30,
+  /** 多杀判定窗口（秒） */
+  multiKillWindow: 10,
+} as const;
+
+/** 升到下一级所需经验 */
+export const xpToNext = (level: number): number => 160 + 90 * (level - 1);
+
+/** 复活时间（秒）随等级增长 */
+export const respawnTime = (level: number): number => 5 + 2.4 * (level - 1);
+
+export const WAVES = {
+  firstWaveAt: 12,
+  interval: 30,
+  /** 每几波出一次炮车 */
+  siegeEvery: 3,
+  /** 同一波小兵之间的出生间隔（米，沿路线排开） */
+  spacing: 1.3,
+} as const;
+
+export const FOUNTAIN = {
+  radius: 7.5,
+  /** 己方单位每秒回复最大生命 / 法力的比例 */
+  healPct: 0.15,
+  /** 对闯入的敌方英雄每秒造成的真实伤害 */
+  damagePerSec: 1500,
+} as const;
+
 export const DT = 1 / BALANCE.tickRate;

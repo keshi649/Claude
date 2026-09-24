@@ -70,6 +70,11 @@ export class Hud {
   private cache = new Map<string, string>();
   readonly cancelZone: HTMLElement;
   private held = { attack: false, farm: false, tower: false };
+  private goldEl!: HTMLElement;
+  private goldText!: HTMLElement;
+  private feed!: HTMLElement;
+  private deathEl!: HTMLElement;
+  private deathText!: HTMLElement;
 
   constructor(parent: HTMLElement, w: World, hero: Unit, state: InputState, hooks: HudHooks) {
     const def = getHero(hero.defId);
@@ -164,6 +169,16 @@ export class Hud {
     el('span', 'key', this.recallBtn, 'B');
     bindTapButton(this.recallBtn, () => state.actions.push({ k: 'recall' }));
 
+    // 左侧中部：金币（商店在 M3 接入）
+    this.goldEl = el('div', 'gold-badge', root);
+    this.goldEl.innerHTML = '<i></i><span>0</span>';
+    this.goldText = this.goldEl.querySelector('span')!;
+    // 击杀信息
+    this.feed = el('div', 'killfeed', root);
+    // 死亡遮罩
+    this.deathEl = el('div', 'death', root);
+    this.deathText = el('div', 'death-text', this.deathEl);
+
     this.toastEl = el('div', 'toast', root);
     const h = el('div', 'help', root);
     h.innerHTML = 'WASD 移动 · 空格 普攻 · C 补刀 · Z 推塔<br>Q/E/R 技能 · F 召唤师技能（按住瞄准，松开释放，Esc 取消）<br>B 回城 · V 恢复 · Ctrl+Q/E/R 加点 · ` 调试';
@@ -196,6 +211,33 @@ export class Hud {
     this.toastEl.classList.add('show');
     clearTimeout(this.toastTimer);
     this.toastTimer = window.setTimeout(() => this.toastEl.classList.remove('show'), 900);
+  }
+
+  /** 击杀信息：击杀者头像 → 被击杀者头像 */
+  pushKill(w: World, killerId: number, victimId: number, selfTeam: number): void {
+    const k = w.get(killerId);
+    const v = w.get(victimId);
+    if (!v) return;
+    const row = el('div', `kf ${v.team === selfTeam ? 'bad' : 'good'}`, this.feed);
+    const face = (u: typeof k): string => {
+      if (!u) return '<b class="face" style="background:#555">塔</b>';
+      if (u.kind !== 'hero') return `<b class="face" style="background:#555">${u.kind === 'tower' || u.kind === 'crystal' ? '塔' : '兵'}</b>`;
+      const d = getHero(u.defId);
+      return `<b class="face" style="background:${hex(d.palette.primary)};border-color:${u.team === 0 ? '#3fb6ff' : '#ff5a3c'}">${d.name[0]}</b>`;
+    };
+    row.innerHTML = `${face(k)}<em>⚔</em>${face(v)}`;
+    setTimeout(() => row.remove(), 5000);
+    while (this.feed.children.length > 4) this.feed.firstElementChild?.remove();
+  }
+
+  /** 对局结束 */
+  showResult(win: boolean, lines: string[], onAgain: () => void): void {
+    const o = el('div', `result ${win ? 'win' : 'lose'}`, this.root);
+    el('div', 'title', o, win ? '胜利' : '失败');
+    const box = el('div', 'lines', o);
+    for (const l of lines) el('div', '', box, l);
+    const b = el('button', '', o, '再来一局');
+    b.addEventListener('click', onAgain);
   }
 
   private set(key: string, value: string, apply: () => void): void {
@@ -255,6 +297,17 @@ export class Hud {
     const sum = getSummoner(h.summoner.id);
     this.setCooldown('sum', this.summonerUi, h.summoner.cd, sum.cooldown);
     this.setCooldown('res', this.restoreUi, h.restoreCd, RESTORE.cooldown);
+    const gold = String(Math.floor(h.gold));
+    this.set('gold', gold, () => (this.goldText.textContent = gold));
+    const dead = !hero.alive && h.respawnAt > 0;
+    this.set('dead', String(dead), () => {
+      this.deathEl.classList.toggle('show', dead);
+      document.getElementById('game')?.classList.toggle('dead', dead);
+    });
+    if (dead) {
+      const left = String(Math.max(0, Math.ceil(h.respawnAt - w.time)));
+      this.set('respawn', left, () => (this.deathText.textContent = `${left} 秒后复活`));
+    }
     const recalling = h.recall > 0;
     this.set('recall', String(recalling), () => this.recallBtn.classList.toggle('active', recalling));
   }

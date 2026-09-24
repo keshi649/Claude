@@ -178,6 +178,9 @@ export class GameSession {
     for (const e of events) {
       if (e.t === 'castFail' && hero && e.unit === hero.id) this.hud.toast(e.reason);
       if (e.t === 'recall' && hero && e.unit === hero.id && e.state === 'cancel') this.hud.toast('回城被打断');
+      if (e.t === 'kill' && hero) this.hud.pushKill(w, e.killer, e.victim, hero.team);
+      if (e.t === 'structureDown' && hero) this.hud.toast(e.team === hero.team ? '我方防御塔被摧毁' : '摧毁敌方防御塔！');
+      if (e.t === 'gameOver' && hero) this.onGameOver(e.winner === hero.team);
     }
     this.renderer.handleEvents(events);
     if (hero) this.playSounds(events, hero.id);
@@ -206,6 +209,22 @@ export class GameSession {
       ].join('\n'),
     );
   };
+
+  private onGameOver(win: boolean): void {
+    const hero = this.world.heroOf(PLAYER_PID)!;
+    const h = hero.hero!;
+    const t = Math.floor(this.world.time);
+    this.sfx.play(win ? 'levelup' : 'death', 1);
+    this.hud.showResult(
+      win,
+      [
+        `对局时长 ${Math.floor(t / 60)} 分 ${t % 60} 秒`,
+        `击杀 / 死亡 / 助攻：${h.kills} / ${h.deaths} / ${h.assists}`,
+        `补刀 ${h.lastHits}　·　获得金币 ${Math.floor(h.goldEarned)}　·　等级 ${h.level}`,
+      ],
+      () => location.reload(),
+    );
+  }
 
   destroy(): void {
     cancelAnimationFrame(this.raf);
