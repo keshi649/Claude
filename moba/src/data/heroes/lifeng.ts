@@ -38,7 +38,7 @@ export const LIFENG: HeroDef = {
     hpRegen: 1,
     mpRegen: 0.5,
   },
-  attack: { interval: 1.0, windupRatio: 0.3 },
+  attack: { interval: 1.0, windupRatio: 0.2 },
   passive: {
     name: '连斩',
     desc: '技能命中敌人后 4 秒内，下一次普攻额外造成物理伤害并回复生命。',

@@ -44,6 +44,7 @@ export function isTargetable(u: Unit): boolean {
 /** 打断：取消施法、普攻前摇与主动位移 */
 export function interrupt(u: Unit): void {
   if (u.cast) u.cast = null;
+  if (u.hero) u.hero.recall = 0;
   u.queuedCast = null;
   u.attack.windup = 0;
   if (u.forced && u.forced.kind === 'dash') u.forced = null;

@@ -5,7 +5,7 @@ import { getHero } from '../data/heroes';
 import { buildMap, type BuiltMap } from '../data/map';
 import type { StatBlock } from '../data/schema';
 import { CRYSTAL, TOWERS } from '../data/structures';
-import { DUMMIES } from '../data/units';
+import { DUMMY } from '../data/units';
 import type { Command } from './commands';
 import type { EntityId, PendingArea, Projectile, Team, Unit, UnitKind, Zone } from './entity';
 import type { SimEvent } from './events';
@@ -20,6 +20,7 @@ import { commandAttack, updateAttacks } from './systems/attack';
 import { separateUnits, updateMovement } from './systems/movement';
 import { updateProjectiles, updateZones } from './systems/projectiles';
 import { updateDummies, updateStatus } from './systems/status';
+import { cancelRecall, commandRecall, commandRestore, commandSummoner, updateUtility } from './systems/utility';
 
 export interface PlayerConfig {
   pid: number;
@@ -27,6 +28,8 @@ export interface PlayerConfig {
   heroId: string;
   name: string;
   isAI: boolean;
+  /** 召唤师技能 id（默认瞬影） */
+  summoner?: string;
 }
 
 export interface PlayerSlot extends PlayerConfig {
@@ -165,6 +168,12 @@ export class World {
       patrol: null,
       patrolIdx: 0,
       queuedCast: null,
+      lane: null,
+      rampTarget: 0,
+      rampStacks: 0,
+      recentAttackers: [],
+      lockTarget: 0,
+      bornAt: this.time,
     };
     u.prevFacing = u.facing;
     recomputeStats(u);
@@ -193,6 +202,15 @@ export class World {
       deaths: 0,
       assists: 0,
       lastHits: 0,
+      streak: 0,
+      respawnAt: 0,
+      damageDealt: 0,
+      damageTaken: 0,
+      recall: 0,
+      summoner: { id: cfg.summoner ?? 'blink', cd: 0 },
+      items: [null, null, null, null, null, null],
+      goldEarned: 0,
+      restoreCd: 0,
     };
     this.addUnit(u);
     for (let l = 1; l < level; l++) levelUp(this, u);
@@ -204,7 +222,7 @@ export class World {
   }
 
   spawnDummy(pos: Vec2, team: Team, patrol: Vec2[] | null = null): Unit {
-    const def = DUMMIES.dummy!;
+    const def = DUMMY;
     const u = this.makeUnit('dummy', team, def.id, def.name, pos, def.radius, def.base);
     u.innate.immortal = true;
     u.patrol = patrol;
@@ -237,9 +255,15 @@ export class World {
     const level = this.config.startLevel ?? 1;
     for (const p of this.config.players) {
       const u = this.spawnHero(p, level);
-      // 训练场：自动学会每个技能 1 级，剩余技能点留给玩家分配
+      // 训练场：自动学会每个技能 1 级，剩余技能点留给玩家分配；出生在木桩旁边
       if (this.config.mode === 'training') {
         for (const s of [0, 1, 2] as const) levelSkill(this, u, s);
+        if (p.team === 0) {
+          u.pos = { x: 24, y: 94 };
+          u.prevPos = { ...u.pos };
+          u.facing = -Math.PI / 4;
+          u.prevFacing = u.facing;
+        }
       }
     }
     if (this.config.mode === 'training') {
@@ -272,6 +296,7 @@ export class World {
     for (const c of commands) this.apply(c);
 
     updateCasts(this);
+    updateUtility(this);
     updateAttacks(this);
     updateMovement(this);
     this.spatial.rebuild(this.list);
@@ -289,9 +314,11 @@ export class World {
       case 'move': {
         const d = c.dir ? norm(c.dir) : null;
         u.moveDir = d && (d.x !== 0 || d.y !== 0) ? d : null;
+        if (u.moveDir) cancelRecall(this, u);
         return;
       }
       case 'moveTo':
+        cancelRecall(this, u);
         u.moveDir = null;
         u.navGoal = { x: c.x, y: c.y };
         u.navPath = [];
@@ -304,10 +331,21 @@ export class World {
         u.attack.orderTime = 0;
         return;
       case 'attack':
+        cancelRecall(this, u);
         commandAttack(this, u, c.mode);
         return;
       case 'cast':
+        cancelRecall(this, u);
         commandCast(this, u, c.slot, c.aim, c.phase);
+        return;
+      case 'recall':
+        commandRecall(this, u);
+        return;
+      case 'restore':
+        commandRestore(this, u);
+        return;
+      case 'summoner':
+        commandSummoner(this, u, c.aim);
         return;
       case 'levelSkill':
         levelSkill(this, u, c.slot);
@@ -324,6 +362,8 @@ export class World {
     switch (op) {
       case 'refreshCd':
         h.cooldowns = [0, 0, 0];
+        h.summoner.cd = 0;
+        h.restoreCd = 0;
         return;
       case 'noCooldown':
         this.debug.noCooldown = !!value;

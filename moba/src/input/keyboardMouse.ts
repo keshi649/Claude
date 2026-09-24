@@ -1,14 +1,15 @@
-import type { InputState } from './state';
+import type { InputState, SlotId } from './state';
 
-const SKILL_KEYS: Record<string, 0 | 1 | 2> = { KeyQ: 0, KeyE: 1, KeyR: 2 };
+const SKILL_KEYS: Record<string, SlotId> = { KeyQ: 0, KeyE: 1, KeyR: 2, KeyF: 3 };
 
 export interface KeyboardHooks {
   onToggleDebug: () => void;
 }
 
 /**
- * 电脑操作：WASD 移动，鼠标瞄准，空格普攻，C 补刀，
- * Q/E/R 按住显示指示器、松开释放（Esc / 右键取消），Ctrl+Q/E/R 加点，` 开关调试面板。
+ * 电脑操作：WASD 移动，鼠标瞄准，空格普攻，C 补刀，Z 推塔，
+ * Q/E/R 技能、F 召唤师技能：按住显示指示器、松开释放（Esc / 右键取消），
+ * Ctrl+Q/E/R 加点，B 回城，V 恢复，` 开关调试面板。
  */
 export class KeyboardMouse {
   private readonly held = new Set<string>();
@@ -56,11 +57,19 @@ export class KeyboardMouse {
     if (slot !== undefined) {
       e.preventDefault();
       if (e.repeat) return;
-      if (e.ctrlKey || e.metaKey) {
+      if ((e.ctrlKey || e.metaKey) && slot !== 3) {
         this.state.actions.push({ k: 'levelSkill', slot });
         return;
       }
       this.state.aiming = { slot, source: 'mouse', drag: { x: 0, y: 0 }, dragged: true, cancel: false };
+      return;
+    }
+    if (code === 'KeyB' && !e.repeat) {
+      this.state.actions.push({ k: 'recall' });
+      return;
+    }
+    if (code === 'KeyV' && !e.repeat) {
+      this.state.actions.push({ k: 'restore' });
       return;
     }
     this.held.add(code);
@@ -96,14 +105,17 @@ export class KeyboardMouse {
     this.state.refreshMove();
     this.state.attackHeld = h.has('Space') || this.touchAttack;
     this.state.farmHeld = h.has('KeyC') || this.touchFarm;
+    this.state.towerHeld = h.has('KeyZ') || this.touchTower;
   }
 
   /** 触屏按钮的按住状态与键盘合并 */
   touchAttack = false;
   touchFarm = false;
-  setTouchAttack(attack: boolean, farm: boolean): void {
+  touchTower = false;
+  setTouchAttack(attack: boolean, farm: boolean, tower: boolean): void {
     this.touchAttack = attack;
     this.touchFarm = farm;
+    this.touchTower = tower;
     this.sync();
   }
 

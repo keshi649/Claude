@@ -107,6 +107,8 @@ export interface Scaling {
   maxHp?: number;
   /** 施法者额外生命系数 */
   bonusHp?: number;
+  /** 施法者最大法力系数 */
+  maxMp?: number;
   /** 目标最大生命系数 */
   targetMaxHp?: number;
   /** 目标已损生命系数 */
@@ -168,6 +170,8 @@ export type EffectTo = 'self' | 'target';
 export type Effect =
   | { t: 'damage'; dtype: DamageType; amount: Scaling; impact?: Impact }
   | { t: 'heal'; amount: Scaling; to?: EffectTo }
+  /** 回复法力 */
+  | { t: 'mana'; amount: Scaling; to?: EffectTo }
   | { t: 'shield'; amount: Scaling; duration: number; to?: EffectTo }
   /** 控制。slow 的 power 为减速比例（0.4 = 40%）；knockback 的 power 为击退距离（米） */
   | { t: 'cc'; cc: CcKind; duration: number; power?: number }
@@ -363,9 +367,22 @@ export interface HeroDef {
   skillOrder: readonly (0 | 1 | 2)[];
 }
 
-export interface DummyDef {
+/** 小兵 / 野怪 / 建筑 / 木桩等非英雄单位的配置 */
+export type UnitShape = 'square' | 'triangle' | 'hexagon' | 'bigsquare' | 'dummy' | 'tower' | 'crystal' | 'beast';
+
+export interface UnitDef {
   id: string;
   name: string;
   radius: number;
   base: StatBlock;
+  /** 每分钟属性成长比例（小兵随时间变强），如 { maxHp: 0.05 } = 每分钟 +5% */
+  growthPerMin?: StatMods;
+  attack?: AttackDef;
+  /** 最后一击的金币 */
+  gold: number;
+  /** 击杀经验（附近敌方英雄分享） */
+  xp: number;
+  shape: UnitShape;
+  /** 野怪 / Boss 的主色（程序绘制用） */
+  color?: number;
 }

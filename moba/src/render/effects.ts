@@ -1,28 +1,39 @@
-import { Container, Graphics, Text } from 'pixi.js';
+import { Container, Graphics, Sprite, Text, type Texture } from 'pixi.js';
 import type { AreaVfx, Shape } from '../data/schema';
 import type { Projectile, Zone } from '../sim/entity';
+import { TILT } from './camera';
 
 /**
- * 表现层特效：区域闪光 / 预警、位移残影、粒子、弹道、持续区域、伤害飘字。
- * 全部是程序绘制，对象池复用避免频繁分配。
+ * 表现层特效（2.5D）：
+ *   ground：地面层（米坐标、随镜头压扁）—— 技能范围闪光、预警、持续区域、刀光
+ *   air：空中层（与物体层同样的平移）—— 粒子、弹道、光柱，按世界坐标 + 高度摆放
+ *   screen：屏幕层 —— 伤害飘字
  */
 
-interface Fx {
+interface GroundFx {
   g: Graphics;
   born: number;
   life: number;
   update: (g: Graphics, t: number) => void;
 }
 
-interface Particle {
-  g: Graphics;
+interface AirItem {
+  obj: Container;
   x: number;
   y: number;
+  h: number;
   vx: number;
   vy: number;
+  vh: number;
+  gravity: number;
   born: number;
   life: number;
   size: number;
+  /** 水平面上的物体（刀光）按斜视角压扁 */
+  flat: boolean;
+  fade: boolean;
+  grow: number;
+  update?: (obj: Container, t: number) => void;
 }
 
 interface Floater {
@@ -32,13 +43,13 @@ interface Floater {
   born: number;
   life: number;
   vx: number;
+  big: boolean;
 }
 
-/** 在 Graphics 上画出形状（原点在 0,0，朝向 +x） */
+/** 在 Graphics 上画出形状（原点 0,0，朝向 +x） */
 export function drawShape(g: Graphics, shape: Shape, scale = 1): Graphics {
   switch (shape.k) {
     case 'circle':
-      return g.circle(0, 0, shape.r * scale);
     case 'ring':
       return g.circle(0, 0, shape.r * scale);
     case 'cone': {
@@ -53,102 +64,265 @@ export function drawShape(g: Graphics, shape: Shape, scale = 1): Graphics {
   }
 }
 
-export class EffectsLayer {
-  /** 地面层（在单位下方）：预警、区域 */
-  readonly ground = new Container();
-  /** 上层（在单位上方）：闪光、粒子、弹道 */
-  readonly top = new Container();
-  /** 屏幕层：飘字 */
-  readonly screen = new Container();
+const shapeR = (s: Shape): number => (s.k === 'rect' ? s.length : s.r);
 
-  private fx: Fx[] = [];
-  private particles: Particle[] = [];
-  private particlePool: Graphics[] = [];
+export class EffectsLayer {
+  readonly ground = new Container();
+  readonly air = new Container();
+  readonly screen = new Container();
+  private groundFx: GroundFx[] = [];
+  private airItems: AirItem[] = [];
+  private spritePool: Sprite[] = [];
   private floaters: Floater[] = [];
   private textPool: Text[] = [];
-  private projViews = new Map<number, Graphics>();
+  private projViews = new Map<number, Container>();
   private zoneViews = new Map<number, Graphics>();
+  zoom = 40;
 
-  /** 区域技能生效闪光 */
+  constructor(private readonly tex: { glow: Texture; dot: Texture }) {}
+
+  private addGround(x: number, y: number, rot: number, life: number, now: number, update: (g: Graphics, t: number) => void, below = false): void {
+    const g = new Graphics();
+    g.position.set(x, y);
+    g.rotation = rot;
+    if (below) this.ground.addChildAt(g, 0);
+    else this.ground.addChild(g);
+    this.groundFx.push({ g, born: now, life, update });
+  }
+
+  private sprite(color: number, add = true): Sprite {
+    const s = this.spritePool.pop() ?? new Sprite(this.tex.dot);
+    s.texture = this.tex.dot;
+    s.anchor.set(0.5);
+    s.tint = color;
+    s.alpha = 1;
+    s.blendMode = add ? 'add' : 'normal';
+    s.rotation = 0;
+    s.scale.set(1);
+    return s;
+  }
+
+  private addAir(item: Omit<AirItem, 'born'>, now: number): void {
+    this.air.addChild(item.obj);
+    this.airItems.push({ ...item, born: now });
+  }
+
+  // ————————————————————————— 技能 / 命中 —————————————————————————
+
+  /** 区域技能生效 */
   area(x: number, y: number, dirX: number, dirY: number, shape: Shape, vfx: AreaVfx | null, now: number): void {
     const color = vfx?.color ?? 0xffffff;
     const style = vfx?.style ?? 'burst';
     const rot = Math.atan2(dirY, dirX);
-    const g = new Graphics();
-    g.position.set(x, y);
-    g.rotation = rot;
-    this.top.addChild(g);
-    const life = style === 'spin' ? 320 : 260;
-    this.fx.push({
-      g,
-      born: now,
-      life,
-      update: (gr, t) => {
-        gr.clear();
+    const R = shapeR(shape);
+    if (style === 'slash') {
+      // 扇形刀光：亮色月牙 + 白色刃线扫过
+      this.addGround(x, y, rot, 300, now, (g, t) => {
+        g.clear();
         const a = 1 - t;
-        if (style === 'spin') {
-          gr.rotation = rot + t * Math.PI * 2.5;
-          drawShape(gr, shape, 0.6 + 0.4 * t).fill({ color, alpha: 0.25 * a });
-          for (let i = 0; i < 3; i++) {
-            const s = (i * Math.PI * 2) / 3;
-            const r = shapeR(shape);
-            gr.arc(0, 0, r * (0.7 + 0.3 * t), s, s + 1.2).stroke({ width: 0.25, color, alpha: 0.9 * a });
+        drawShape(g, shape, 0.9 + 0.1 * t).fill({ color, alpha: 0.28 * a });
+        if (shape.k === 'cone') {
+          const half = (shape.angle * Math.PI) / 360;
+          const sweep = Math.min(1, t * 3);
+          const a0 = -half;
+          const a1 = -half + sweep * half * 2;
+          for (let i = 0; i < 4; i++) {
+            const rr = shape.r * (0.45 + i * 0.17);
+            g.arc(0, 0, rr, a0, a1).stroke({ width: 0.25 - i * 0.03, color: i === 3 ? 0xffffff : color, alpha: a });
           }
-        } else if (style === 'slash') {
-          drawShape(gr, shape, 0.85 + 0.15 * t).fill({ color, alpha: 0.35 * a });
-          if (shape.k === 'cone') {
-            const half = (shape.angle * Math.PI) / 360;
-            for (let i = 0; i < 3; i++) {
-              const rr = shape.r * (0.55 + i * 0.2);
-              gr.arc(0, 0, rr, -half + t * 0.3, half * (0.2 + t * 0.8)).stroke({ width: 0.18, color: 0xffffff, alpha: 0.8 * a });
-            }
-          }
-        } else if (style === 'slam') {
-          const r = shapeR(shape);
-          gr.circle(0, 0, r * (0.3 + 0.9 * t)).stroke({ width: 0.35 * a + 0.05, color, alpha: a });
-          drawShape(gr, shape).fill({ color, alpha: 0.28 * a });
-        } else {
-          drawShape(gr, shape, 0.7 + 0.3 * t).fill({ color, alpha: 0.35 * a });
         }
-      },
-    });
-    const count = style === 'slam' ? 22 : 12;
-    this.burst(x, y, color, count, style === 'slam' ? 7 : 4.5, now);
+      });
+      for (let i = 0; i < 14; i++) {
+        const aa = rot + (Math.random() - 0.5) * ((shape.k === 'cone' ? shape.angle : 90) * Math.PI) / 180;
+        const d = R * (0.5 + Math.random() * 0.5);
+        this.spark(x + Math.cos(aa) * d, y + Math.sin(aa) * d, 0.9, color, now, 3);
+      }
+    } else if (style === 'slam') {
+      this.addGround(x, y, 0, 420, now, (g, t) => {
+        g.clear();
+        const a = 1 - t;
+        g.circle(0, 0, R * (0.2 + t)).stroke({ width: 0.5 * a + 0.05, color, alpha: a });
+        g.circle(0, 0, R * (0.1 + t * 0.7)).stroke({ width: 0.2 * a, color: 0xffffff, alpha: a * 0.8 });
+        drawShape(g, shape).fill({ color, alpha: 0.3 * a });
+        // 地裂
+        for (let i = 0; i < 8; i++) {
+          const aa = (i / 8) * Math.PI * 2 + 0.3;
+          g.moveTo(Math.cos(aa) * 0.4, Math.sin(aa) * 0.4)
+            .lineTo(Math.cos(aa + 0.15) * R * 0.6, Math.sin(aa + 0.15) * R * 0.6)
+            .lineTo(Math.cos(aa - 0.05) * R * 0.95, Math.sin(aa - 0.05) * R * 0.95)
+            .stroke({ width: 0.09, color: 0x2a1a10, alpha: a * 0.8 });
+        }
+      });
+      this.burst(x, y, color, 26, 7, now, 0.4);
+      this.dust(x, y, R, now);
+      this.pillar(x, y, color, 1.2, 250, now);
+    } else if (style === 'spin') {
+      this.addGround(x, y, rot, 360, now, (g, t) => {
+        g.clear();
+        const a = 1 - t;
+        g.rotation = rot + t * Math.PI * 3;
+        drawShape(g, shape, 0.7 + 0.3 * t).fill({ color, alpha: 0.22 * a });
+        for (let i = 0; i < 3; i++) {
+          const s = (i * Math.PI * 2) / 3;
+          g.arc(0, 0, R * (0.75 + 0.25 * t), s, s + 1.4).stroke({ width: 0.3, color: i === 0 ? 0xffffff : color, alpha: a });
+          g.arc(0, 0, R * (0.5 + 0.2 * t), s + 0.5, s + 1.5).stroke({ width: 0.15, color, alpha: a * 0.8 });
+        }
+      });
+      this.burst(x, y, color, 16, 5.5, now, 0.8);
+    } else {
+      this.addGround(x, y, rot, 300, now, (g, t) => {
+        g.clear();
+        drawShape(g, shape, 0.7 + 0.3 * t).fill({ color, alpha: 0.35 * (1 - t) });
+        drawShape(g, shape, 0.7 + 0.3 * t).stroke({ width: 0.1, color: 0xffffff, alpha: 0.6 * (1 - t) });
+      });
+      this.burst(x, y, color, 14, 4.5, now, 0.6);
+    }
   }
 
-  /** 延迟区域的地面预警（填充随时间推进） */
+  /** 延迟区域的地面预警（外框 + 填充随时间推进） */
   warn(x: number, y: number, dirX: number, dirY: number, shape: Shape, color: number, seconds: number, now: number): void {
-    const g = new Graphics();
-    g.position.set(x, y);
-    g.rotation = Math.atan2(dirY, dirX);
-    this.ground.addChild(g);
-    this.fx.push({
-      g,
-      born: now,
-      life: seconds * 1000,
-      update: (gr, t) => {
-        gr.clear();
-        drawShape(gr, shape).fill({ color, alpha: 0.12 });
-        drawShape(gr, shape).stroke({ width: 0.1, color, alpha: 0.8 });
-        drawShape(gr, shape, t).fill({ color, alpha: 0.25 });
-      },
-    });
+    this.addGround(x, y, Math.atan2(dirY, dirX), seconds * 1000, now, (g, t) => {
+      g.clear();
+      drawShape(g, shape).fill({ color, alpha: 0.12 });
+      drawShape(g, shape).stroke({ width: 0.1, color, alpha: 0.85 });
+      drawShape(g, shape, t).fill({ color, alpha: 0.28 });
+    }, true);
   }
 
-  /** 位移残影 */
-  afterimage(x: number, y: number, r: number, color: number, now: number): void {
+  /** 普攻刀光（近战）：水平面上的弧形拖尾 */
+  swing(x: number, y: number, facing: number, range: number, color: number, now: number): void {
     const g = new Graphics();
-    g.position.set(x, y);
-    this.ground.addChild(g);
-    this.fx.push({
-      g,
-      born: now,
-      life: 260,
-      update: (gr, t) => {
-        gr.clear();
-        gr.circle(0, 0, r * (1 - t * 0.4)).fill({ color, alpha: 0.45 * (1 - t) });
+    this.addAir(
+      {
+        obj: g,
+        x,
+        y,
+        h: 1.0,
+        vx: 0,
+        vy: 0,
+        vh: 0,
+        gravity: 0,
+        life: 180,
+        size: 1,
+        flat: true,
+        fade: false,
+        grow: 0,
+        update: (o, t) => {
+          const gg = o as Graphics;
+          gg.clear();
+          const a = 1 - t;
+          const s0 = facing - 1.1 + t * 0.4;
+          const s1 = facing - 0.2 + t * 1.3;
+          gg.arc(0, 0, range * 0.9, s0, s1).stroke({ width: 0.34 * a + 0.05, color, alpha: a * 0.9 });
+          gg.arc(0, 0, range * 0.9, s0 + 0.2, s1).stroke({ width: 0.12, color: 0xffffff, alpha: a });
+        },
       },
-    });
+      now,
+    );
+  }
+
+  /** 命中火花 */
+  hit(x: number, y: number, color: number, strong: boolean, now: number): void {
+    this.burst(x, y, color, strong ? 12 : 6, strong ? 6 : 4, now, 1.0);
+    this.spark(x, y, 1.0, 0xffffff, now, strong ? 5 : 3.2);
+  }
+
+  /** 一个亮点（瞬间放大后消失） */
+  spark(x: number, y: number, h: number, color: number, now: number, size = 3): void {
+    const s = this.sprite(color);
+    this.addAir({ obj: s, x, y, h, vx: 0, vy: 0, vh: 0, gravity: 0, life: 160, size: size * 0.12, flat: false, fade: true, grow: 1.5 }, now);
+  }
+
+  /** 粒子迸发 */
+  burst(x: number, y: number, color: number, count: number, speed: number, now: number, h = 0.8): void {
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const sp = speed * (0.35 + Math.random() * 0.65);
+      const s = this.sprite(color);
+      this.addAir(
+        {
+          obj: s,
+          x,
+          y,
+          h,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          vh: 1.5 + Math.random() * 3,
+          gravity: 9,
+          life: 300 + Math.random() * 300,
+          size: 0.1 + Math.random() * 0.14,
+          flat: false,
+          fade: true,
+          grow: -0.4,
+        },
+        now,
+      );
+    }
+  }
+
+  /** 尘土（非发光） */
+  dust(x: number, y: number, r: number, now: number): void {
+    for (let i = 0; i < 12; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = this.sprite(0x9a8a70, false);
+      s.alpha = 0.6;
+      this.addAir(
+        {
+          obj: s,
+          x: x + Math.cos(a) * r * 0.6,
+          y: y + Math.sin(a) * r * 0.6,
+          h: 0.2,
+          vx: Math.cos(a) * 2,
+          vy: Math.sin(a) * 2,
+          vh: 0.8,
+          gravity: 0,
+          life: 600,
+          size: 0.35 + Math.random() * 0.3,
+          flat: false,
+          fade: true,
+          grow: 1.2,
+        },
+        now,
+      );
+    }
+  }
+
+  /** 光柱（升级、回城完成、重击） */
+  pillar(x: number, y: number, color: number, width: number, life: number, now: number): void {
+    const s = new Sprite(this.tex.glow);
+    s.anchor.set(0.5, 1);
+    s.tint = color;
+    s.blendMode = 'add';
+    this.addAir(
+      {
+        obj: s,
+        x,
+        y,
+        h: 0,
+        vx: 0,
+        vy: 0,
+        vh: 0,
+        gravity: 0,
+        life,
+        size: 1,
+        flat: false,
+        fade: true,
+        grow: 0,
+        update: (o, t) => {
+          const sp = o as Sprite;
+          sp.width = width * (1 - t * 0.5);
+          sp.height = 4 * (0.6 + t * 0.6);
+        },
+      },
+      now,
+    );
+  }
+
+  /** 冲刺残影 */
+  afterimage(x: number, y: number, r: number, color: number, now: number): void {
+    const s = this.sprite(color);
+    s.texture = this.tex.glow;
+    this.addAir({ obj: s, x, y, h: 0.9, vx: 0, vy: 0, vh: 0, gravity: 0, life: 260, size: r * 2.2, flat: false, fade: true, grow: -0.3 }, now);
   }
 
   /** 瞬移：起点与终点的光圈 */
@@ -157,75 +331,42 @@ export class EffectsLayer {
       [fromX, fromY],
       [toX, toY],
     ] as const) {
-      const g = new Graphics();
-      g.position.set(x, y);
-      this.top.addChild(g);
-      this.fx.push({
-        g,
-        born: now,
-        life: 300,
-        update: (gr, t) => {
-          gr.clear();
-          gr.circle(0, 0, 0.4 + t * 1.2).stroke({ width: 0.15, color: 0xbfe8ff, alpha: 1 - t });
-        },
+      this.addGround(x, y, 0, 320, now, (g, t) => {
+        g.clear();
+        g.circle(0, 0, 0.4 + t * 1.4).stroke({ width: 0.15, color: 0xbfe8ff, alpha: 1 - t });
       });
-      this.burst(x, y, 0xbfe8ff, 8, 3, now);
+      this.burst(x, y, 0xbfe8ff, 10, 3, now, 0.9);
+      this.pillar(x, y, 0xbfe8ff, 1.3, 260, now);
     }
   }
 
-  /** 普攻挥砍弧线（近战） */
-  swing(x: number, y: number, facing: number, range: number, color: number, now: number): void {
-    const g = new Graphics();
-    g.position.set(x, y);
-    g.rotation = facing;
-    this.top.addChild(g);
-    this.fx.push({
-      g,
-      born: now,
-      life: 160,
-      update: (gr, t) => {
-        gr.clear();
-        gr.arc(0, 0, range * 0.85, -0.9 + t * 0.6, 0.2 + t * 0.9).stroke({ width: 0.22, color, alpha: 1 - t });
-      },
-    });
-  }
-
-  /** 命中火花 */
-  hit(x: number, y: number, color: number, strong: boolean, now: number): void {
-    this.burst(x, y, color, strong ? 10 : 5, strong ? 6 : 4, now);
-  }
-
-  burst(x: number, y: number, color: number, count: number, speed: number, now: number): void {
-    for (let i = 0; i < count; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const s = speed * (0.4 + Math.random() * 0.6);
-      const g = this.particlePool.pop() ?? new Graphics();
-      const size = 0.08 + Math.random() * 0.12;
+  levelUp(x: number, y: number, now: number): void {
+    this.addGround(x, y, 0, 700, now, (g, t) => {
       g.clear();
-      g.circle(0, 0, 1).fill(color);
-      g.scale.set(size);
-      g.alpha = 1;
-      g.position.set(x, y);
-      this.top.addChild(g);
-      this.particles.push({ g, x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, born: now, life: 250 + Math.random() * 250, size });
-    }
+      g.circle(0, 0, 0.8 + t * 1.6).stroke({ width: 0.14, color: 0xffd23c, alpha: 1 - t });
+    });
+    this.pillar(x, y, 0xffd23c, 1.6, 650, now);
+    this.burst(x, y, 0xffd23c, 18, 3, now, 1.2);
   }
 
-  /** 伤害 / 治疗飘字（屏幕坐标由调用方每帧换算，这里存世界坐标） */
-  floatText(x: number, y: number, text: string, color: number, size: number, now: number): void {
-    const t = this.textPool.pop() ?? new Text({ text: '', style: { fontFamily: 'sans-serif', fontWeight: 'bold', fill: 0xffffff, stroke: { color: 0x000000, width: 3 } } });
+  /** 伤害 / 治疗飘字（世界坐标，屏幕层显示） */
+  floatText(x: number, y: number, text: string, color: number, size: number, now: number, big = false): void {
+    const t =
+      this.textPool.pop() ??
+      new Text({ text: '', style: { fontFamily: 'Impact, "Arial Black", sans-serif', fontWeight: 'bold', fill: 0xffffff, stroke: { color: 0x1a0a00, width: 4 } } });
     t.text = text;
     t.style.fontSize = size;
     t.style.fill = color;
     t.anchor.set(0.5);
     t.alpha = 1;
     this.screen.addChild(t);
-    this.floaters.push({ t, x: x + (Math.random() - 0.5) * 0.6, y, born: now, life: 800, vx: (Math.random() - 0.5) * 0.8 });
+    this.floaters.push({ t, x: x + (Math.random() - 0.5) * 0.7, y, born: now, life: big ? 950 : 750, vx: (Math.random() - 0.5) * 0.8, big });
   }
 
-  /** 每帧更新；toScreen 用于把飘字的世界坐标换算到屏幕 */
-  update(now: number, dtSec: number, toScreen: (x: number, y: number) => { x: number; y: number }): void {
-    this.fx = this.fx.filter((f) => {
+  // ————————————————————————— 每帧 —————————————————————————
+
+  update(now: number, dtSec: number, toScreen: (x: number, y: number, h: number) => { x: number; y: number }): void {
+    this.groundFx = this.groundFx.filter((f) => {
       const t = (now - f.born) / f.life;
       if (t >= 1) {
         f.g.destroy();
@@ -234,19 +375,35 @@ export class EffectsLayer {
       f.update(f.g, Math.max(0, t));
       return true;
     });
-    this.particles = this.particles.filter((p) => {
+    const z = this.zoom;
+    this.airItems = this.airItems.filter((p) => {
       const t = (now - p.born) / p.life;
       if (t >= 1) {
-        p.g.removeFromParent();
-        this.particlePool.push(p.g);
+        p.obj.removeFromParent();
+        if (p.obj instanceof Sprite && p.obj.texture === this.tex.dot) this.spritePool.push(p.obj);
+        else if (p.obj instanceof Sprite && !p.update) this.spritePool.push(p.obj);
+        else p.obj.destroy();
         return false;
       }
       p.x += p.vx * dtSec;
       p.y += p.vy * dtSec;
-      p.vx *= 0.9;
-      p.vy *= 0.9;
-      p.g.position.set(p.x, p.y);
-      p.g.alpha = 1 - t;
+      p.vh -= p.gravity * dtSec;
+      p.h = Math.max(0, p.h + p.vh * dtSec);
+      p.vx *= Math.exp(-dtSec * 3);
+      p.vy *= Math.exp(-dtSec * 3);
+      p.obj.position.set(p.x * z, (p.y * TILT - p.h) * z);
+      p.obj.zIndex = p.y;
+      if (p.update) {
+        p.obj.scale.set(z, p.flat ? z * TILT : z);
+        p.update(p.obj, t);
+        if (p.fade) p.obj.alpha = 1 - t;
+      } else {
+        const s = p.size * (1 + p.grow * t) * z;
+        const sp = p.obj as Sprite;
+        sp.width = s;
+        sp.height = s;
+        if (p.fade) sp.alpha = (1 - t) * (sp.blendMode === 'add' ? 1 : 0.6);
+      }
       return true;
     });
     this.floaters = this.floaters.filter((f) => {
@@ -256,74 +413,89 @@ export class EffectsLayer {
         this.textPool.push(f.t);
         return false;
       }
-      const s = toScreen(f.x + f.vx * t, f.y);
-      // 先弹起再缓慢上飘
-      const rise = t < 0.15 ? t / 0.15 * 26 : 26 + (t - 0.15) * 30;
-      f.t.position.set(s.x, s.y - 30 - rise);
-      f.t.scale.set(t < 0.1 ? 1.4 - t * 4 : 1);
+      const s = toScreen(f.x + f.vx * t, f.y, 2.2);
+      const rise = t < 0.15 ? (t / 0.15) * 24 : 24 + (t - 0.15) * 34;
+      f.t.position.set(s.x, s.y - rise);
+      const pop = f.big ? 1.8 : 1.35;
+      f.t.scale.set(t < 0.12 ? pop - (t / 0.12) * (pop - 1) : 1);
       f.t.alpha = t > 0.7 ? 1 - (t - 0.7) / 0.3 : 1;
       return true;
     });
   }
 
-  /** 同步弹道视图 */
+  /** 同步弹道视图（空中层） */
   syncProjectiles(list: readonly Projectile[], alpha: number): void {
+    const z = this.zoom;
     const alive = new Set<number>();
     for (const p of list) {
       alive.add(p.id);
-      let g = this.projViews.get(p.id);
-      if (!g) {
-        g = new Graphics();
-        const c = p.vfx.color;
-        const s = p.vfx.size ?? (p.isAttack ? 0.22 : p.width);
+      let c = this.projViews.get(p.id);
+      if (!c) {
+        c = new Container();
+        const col = p.vfx.color;
+        const s = p.vfx.size ?? (p.isAttack ? 0.2 : p.width);
+        const glow = new Sprite(this.tex.glow);
+        glow.anchor.set(0.5);
+        glow.width = glow.height = s * 6;
+        glow.tint = col;
+        glow.blendMode = 'add';
+        const g = new Graphics();
         switch (p.vfx.style ?? 'orb') {
           case 'arrow':
-            g.poly([s * 2.2, 0, -s * 1.5, -s * 0.5, -s * 1.5, s * 0.5]).fill(c);
-            g.moveTo(-s * 3, 0).lineTo(-s * 1.2, 0).stroke({ width: s * 0.35, color: c, alpha: 0.6 });
+            g.poly([s * 2.4, 0, -s * 1.4, -s * 0.5, -s * 1.4, s * 0.5]).fill(col);
+            g.moveTo(-s * 4, 0).lineTo(-s * 1.2, 0).stroke({ width: s * 0.4, color: col, alpha: 0.6 });
             break;
           case 'blade':
-            g.poly([s * 1.6, 0, 0, -s, -s * 0.8, 0, 0, s]).fill(c);
+            g.poly([s * 1.8, 0, 0, -s, -s * 0.9, 0, 0, s]).fill(col);
+            g.poly([s * 1.8, 0, 0, -s * 0.4, -s * 0.4, 0]).fill({ color: 0xffffff, alpha: 0.6 });
             break;
           case 'bolt':
-            g.rect(-s * 2, -s * 0.3, s * 4, s * 0.6).fill(c);
+            g.roundRect(-s * 2.5, -s * 0.35, s * 5, s * 0.7, s * 0.3).fill(col);
+            g.roundRect(-s * 1.5, -s * 0.15, s * 3.5, s * 0.3, s * 0.15).fill(0xffffff);
             break;
           default:
-            g.circle(0, 0, s * 1.5).fill({ color: c, alpha: 0.3 });
-            g.circle(0, 0, s).fill(c);
-            g.circle(0, 0, s * 0.5).fill(0xffffff);
+            g.circle(0, 0, s).fill(col);
+            g.circle(-s * 0.25, -s * 0.25, s * 0.45).fill({ color: 0xffffff, alpha: 0.8 });
         }
-        this.projViews.set(p.id, g);
-        this.top.addChild(g);
+        c.addChild(glow, g);
+        this.projViews.set(p.id, c);
+        this.air.addChild(c);
       }
-      g.position.set(p.prevPos.x + (p.pos.x - p.prevPos.x) * alpha, p.prevPos.y + (p.pos.y - p.prevPos.y) * alpha);
-      g.rotation = Math.atan2(p.dirY, p.dirX);
+      const x = p.prevPos.x + (p.pos.x - p.prevPos.x) * alpha;
+      const y = p.prevPos.y + (p.pos.y - p.prevPos.y) * alpha;
+      const h = p.isAttack ? 1.1 : 0.9;
+      c.position.set(x * z, (y * TILT - h) * z);
+      c.scale.set(z);
+      c.zIndex = y;
+      c.rotation = Math.atan2(p.dirY * TILT, p.dirX);
     }
-    for (const [id, g] of this.projViews) {
+    for (const [id, c] of this.projViews) {
       if (!alive.has(id)) {
-        g.destroy();
+        c.destroy({ children: true });
         this.projViews.delete(id);
       }
     }
   }
 
-  /** 同步持续区域视图 */
+  /** 同步持续区域（地面层） */
   syncZones(list: readonly Zone[], now: number): void {
     const alive = new Set<number>();
-    for (const z of list) {
-      alive.add(z.id);
-      let g = this.zoneViews.get(z.id);
+    for (const zn of list) {
+      alive.add(zn.id);
+      let g = this.zoneViews.get(zn.id);
       if (!g) {
         g = new Graphics();
-        this.zoneViews.set(z.id, g);
-        this.ground.addChild(g);
+        this.zoneViews.set(zn.id, g);
+        this.ground.addChildAt(g, 0);
       }
-      const color = z.vfx?.color ?? 0xffffff;
-      const pulse = 0.18 + 0.06 * Math.sin(now / 120);
+      const color = zn.vfx?.color ?? 0xffffff;
+      const pulse = 0.18 + 0.07 * Math.sin(now / 120);
       g.clear();
-      drawShape(g, z.shape).fill({ color, alpha: pulse });
-      drawShape(g, z.shape).stroke({ width: 0.12, color, alpha: 0.75 });
-      g.position.set(z.pos.x, z.pos.y);
-      g.rotation = Math.atan2(z.dir.y, z.dir.x);
+      drawShape(g, zn.shape).fill({ color, alpha: pulse });
+      drawShape(g, zn.shape).stroke({ width: 0.14, color, alpha: 0.85 });
+      drawShape(g, zn.shape, 0.6 + 0.4 * ((now / 700) % 1)).stroke({ width: 0.06, color: 0xffffff, alpha: 0.4 });
+      g.position.set(zn.pos.x, zn.pos.y);
+      g.rotation = Math.atan2(zn.dir.y, zn.dir.x);
     }
     for (const [id, g] of this.zoneViews) {
       if (!alive.has(id)) {
@@ -332,8 +504,4 @@ export class EffectsLayer {
       }
     }
   }
-}
-
-function shapeR(shape: Shape): number {
-  return shape.k === 'rect' ? shape.length : shape.r;
 }

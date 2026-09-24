@@ -95,18 +95,24 @@ export class WallField {
    * 把半径 r 的圆推出所有墙体（原地修改 pos）。
    * 多轮迭代以处理两堵墙夹角处的情况。返回是否发生了碰撞。
    */
+  /** 最近一次 resolve 是否碰到了墙段的圆头端点（而非平直墙面） */
+  private capContact = false;
+
   resolve(pos: Vec2, r: number): boolean {
     let collided = false;
+    this.capContact = false;
     for (let iter = 0; iter < 3; iter++) {
       let moved = false;
       this.forNear(pos.x, pos.y, r, (s) => {
         const R = s.r + r;
         const c = closest(pos.x, pos.y, s);
+        const atEnd = (Math.abs(c.x - s.ax) < 1e-9 && Math.abs(c.y - s.ay) < 1e-9) || (Math.abs(c.x - s.bx) < 1e-9 && Math.abs(c.y - s.by) < 1e-9);
         const dx = pos.x - c.x;
         const dy = pos.y - c.y;
         const d2 = dx * dx + dy * dy;
         if (d2 >= R * R) return;
         const d = Math.sqrt(d2);
+        if (atEnd) this.capContact = true;
         if (d > 1e-6) {
           pos.x = c.x + (dx / d) * R;
           pos.y = c.y + (dy / d) * R;
@@ -146,10 +152,37 @@ export class WallField {
     const sx = dx / steps;
     const sy = dy / steps;
     let hit = false;
+    const stepLen = distance / steps;
+    const ux = dx / distance;
+    const uy = dy / distance;
     for (let i = 0; i < steps; i++) {
+      const bx = pos.x;
+      const by = pos.y;
       pos.x += sx;
       pos.y += sy;
-      if (this.resolve(pos, r)) hit = true;
+      if (this.resolve(pos, r)) {
+        hit = true;
+        // 正面顶住墙的圆头端点（前进量不足三成）：沿切线方向滑开，避免卡住；平直墙面不做处理
+        const mx = pos.x - bx;
+        const my = pos.y - by;
+        if (this.capContact && mx * ux + my * uy < stepLen * 0.3) {
+          const nx = pos.x - (bx + sx);
+          const ny = pos.y - (by + sy);
+          const nl = Math.hypot(nx, ny);
+          if (nl > 1e-6) {
+            // 切线取与前进方向夹角较小的一侧；完全正对时固定取左手侧，保证确定性
+            let tx = -ny / nl;
+            let ty = nx / nl;
+            if (tx * ux + ty * uy < 0) {
+              tx = -tx;
+              ty = -ty;
+            }
+            pos.x += tx * stepLen * 0.7;
+            pos.y += ty * stepLen * 0.7;
+            this.resolve(pos, r);
+          }
+        }
+      }
     }
     return hit;
   }

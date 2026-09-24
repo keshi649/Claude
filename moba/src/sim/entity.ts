@@ -1,6 +1,7 @@
 import type { Vec2 } from '../core/vec2';
 import type { Affects, Effect, ProjectileVfx, Shape, AreaVfx, StatBlock } from '../data/schema';
-import type { Aim } from './commands';
+import type { Aim, AttackMode } from './commands';
+import type { LaneId } from '../data/map';
 
 /**
  * 逻辑层实体定义。全部是可序列化的纯数据（不引用配置对象，只存 id），
@@ -101,7 +102,7 @@ export interface AttackState {
   orderTarget: EntityId;
   /** 攻击指令剩余保持时间 */
   orderTime: number;
-  orderMode: 'auto' | 'farm';
+  orderMode: AttackMode;
 }
 
 export interface CastState {
@@ -143,6 +144,23 @@ export interface HeroState {
   deaths: number;
   assists: number;
   lastHits: number;
+  /** 连续击杀数（死亡清零） */
+  streak: number;
+  /** 复活时刻（秒），存活时为 0 */
+  respawnAt: number;
+  /** 造成的英雄伤害 / 承受伤害 / 治疗（结算与 MVP 用） */
+  damageDealt: number;
+  damageTaken: number;
+  /** 回城引导剩余秒数，0 表示没有在回城 */
+  recall: number;
+  /** 召唤师技能 */
+  summoner: { id: string; cd: number };
+  /** 装备栏（6 格，存装备 id） */
+  items: (string | null)[];
+  /** 本局获得的总金币 */
+  goldEarned: number;
+  /** 恢复按钮冷却 */
+  restoreCd: number;
 }
 
 export interface Unit {
@@ -197,6 +215,17 @@ export interface Unit {
   patrolIdx: number;
   /** 排队中的施法（输入缓冲） */
   queuedCast: { slot: 0 | 1 | 2; aim: Aim; phase?: 'start' | 'release'; until: number } | null;
+  /** 小兵沿路线前进：路线 id 与当前路点序号 */
+  lane: { id: LaneId; idx: number } | null;
+  /** 防御塔连击：当前目标与层数 */
+  rampTarget: EntityId;
+  rampStacks: number;
+  /** 最近伤害过自己的敌方英雄（助攻判定） */
+  recentAttackers: { id: EntityId; t: number }[];
+  /** 小兵 / 塔锁定目标（转火用） */
+  lockTarget: EntityId;
+  /** 生成时刻（秒） */
+  bornAt: number;
 }
 
 export interface Projectile {

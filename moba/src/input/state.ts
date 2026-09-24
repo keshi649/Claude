@@ -4,8 +4,11 @@ import type { Vec2 } from '../core/vec2';
  * 抽象输入状态：键鼠和触屏都写入这里，再由 commandMapper 编译成逻辑命令。
  * 与具体设备无关，也不直接接触逻辑层。
  */
+/** 技能槽：0/1/2 为英雄技能，3 为召唤师技能 */
+export type SlotId = 0 | 1 | 2 | 3;
+
 export interface AimingState {
-  slot: 0 | 1 | 2;
+  slot: SlotId;
   source: 'touch' | 'mouse';
   /** 触屏：拖动向量（归一化方向），长度 0~1 表示拖动幅度 */
   drag: Vec2;
@@ -16,10 +19,12 @@ export interface AimingState {
 }
 
 export type InputAction =
-  | { k: 'castRelease'; slot: 0 | 1 | 2; aim: AimSnapshot }
+  | { k: 'castRelease'; slot: SlotId; aim: AimSnapshot }
   | { k: 'castStart'; slot: 0 | 1 | 2 }
   | { k: 'levelSkill'; slot: 0 | 1 | 2 }
-  | { k: 'moveTo'; x: number; y: number };
+  | { k: 'moveTo'; x: number; y: number }
+  | { k: 'recall' }
+  | { k: 'restore' };
 
 /** 释放瞬间锁定的瞄准信息 */
 export type AimSnapshot =
@@ -35,6 +40,7 @@ export class InputState {
   stickMove: Vec2 | null = null;
   attackHeld = false;
   farmHeld = false;
+  towerHeld = false;
   aiming: AimingState | null = null;
   /** 鼠标的世界坐标（电脑端瞄准） */
   mouseWorld: Vec2 | null = null;

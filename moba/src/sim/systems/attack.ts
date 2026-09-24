@@ -4,6 +4,7 @@ import { getBuff } from '../../data/units';
 import type { AttackDef } from '../../data/schema';
 import { applyDamage } from '../damage';
 import type { Unit } from '../entity';
+import type { AttackMode } from '../commands';
 import { edgeDist, pickAttackTarget, validAttackTarget } from '../query';
 import { firePassive, makeCtx, runEffects } from '../skills/effects';
 import { attackInterval } from '../stats';
@@ -22,7 +23,7 @@ export function attackDefOf(u: Unit): AttackDef | null {
   return null;
 }
 
-export function commandAttack(w: World, u: Unit, mode: 'auto' | 'farm'): void {
+export function commandAttack(w: World, u: Unit, mode: AttackMode): void {
   if (!u.alive || !attackDefOf(u)) return;
   const a = u.attack;
   let t = w.get(a.orderTarget);

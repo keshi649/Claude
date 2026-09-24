@@ -1,4 +1,4 @@
-import { Application, Container } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, type TilingSprite } from 'pixi.js';
 import { lerpAngle } from '../core/vec2';
 import { getHero } from '../data/heroes';
 import { CC_NAMES, type SkillStage } from '../data/schema';
@@ -6,13 +6,15 @@ import { getBuff } from '../data/units';
 import type { AimPreview } from '../input/aim';
 import type { Unit } from '../sim/entity';
 import type { SimEvent } from '../sim/events';
+import { isStructure } from '../sim/status';
 import type { World } from '../sim/world';
-import { Camera } from './camera';
+import { Camera, TILT } from './camera';
 import { DebugDraw, type DebugDrawOptions } from './debugDraw';
 import { EffectsLayer } from './effects';
 import { Indicator } from './indicators';
-import { paintMap } from './mapPainter';
-import { PALETTE } from './palette';
+import { paintMap, type Prop } from './mapPainter';
+import { PALETTE, teamColor } from './palette';
+import { createTextures, type GameTextures } from './textures';
 import { UnitView } from './unitView';
 
 export interface AimRender {
@@ -21,21 +23,36 @@ export interface AimRender {
   cancel: boolean;
 }
 
+interface PropSprite {
+  s: Sprite;
+  p: Prop;
+}
+
 /**
- * 渲染层总控：只读取逻辑状态与事件，不回写逻辑。
- * 位置按 alpha 在上一帧与当前帧之间插值；顿帧 / 闪白 / 震屏都只在这里实现。
+ * 渲染总控（2.5D 斜视角）：
+ *   groundRoot  地面层：按 (zoom, zoom × TILT) 缩放，内容用世界米坐标绘制
+ *   objectRoot  物体层：只平移；树、单位、建筑按纵深（世界 y）排序，前面的挡住后面的
+ *   air         空中层：粒子、弹道、光柱
+ *   overlay     屏幕层：血条、塔的攻击连线、飘字
+ * 只读取逻辑状态与事件；顿帧 / 闪白 / 震屏都只在表现层实现。
  */
 export class GameRenderer {
   readonly app = new Application();
   camera!: Camera;
-  private worldLayer = new Container();
-  private unitLayer = new Container();
+  private tex!: GameTextures;
+  private groundRoot = new Container();
+  private objectRoot = new Container();
   private overlayLayer = new Container();
-  private effects = new EffectsLayer();
+  private lines = new Graphics();
+  private rings = new Graphics();
+  private effects!: EffectsLayer;
   private indicator = new Indicator();
   private debugDraw = new DebugDraw();
   private views = new Map<number, UnitView>();
+  private props: PropSprite[] = [];
+  private water: TilingSprite | null = null;
   private lastNow = 0;
+  private lastZoom = 0;
   private dashTrailAt = new Map<number, number>();
   debugOptions: DebugDrawOptions = { colliders: false, paths: false };
 
@@ -48,30 +65,34 @@ export class GameRenderer {
     await this.app.init({
       resizeTo: parent,
       antialias: true,
-      background: 0x0b120b,
-      resolution: Math.min(window.devicePixelRatio || 1, 2),
+      background: 0x16230f,
+      // 手机上限 1.5 倍分辨率，节省 GPU 填充率；电脑上限 2 倍
+      resolution: Math.min(window.devicePixelRatio || 1, matchMedia('(pointer: coarse)').matches ? 1.5 : 2),
       autoDensity: true,
       powerPreference: 'high-performance',
     });
     parent.appendChild(this.app.canvas);
     this.camera = new Camera(this.world.map.size);
+    this.tex = createTextures();
+    this.effects = new EffectsLayer(this.tex);
 
-    const map = paintMap(this.world.map);
-    this.worldLayer.addChild(
-      map.ground,
-      map.bushes,
-      this.effects.ground,
-      this.indicator.g,
-      map.walls,
-      this.unitLayer,
-      this.effects.top,
-      this.debugDraw.g,
-    );
-    this.app.stage.addChild(this.worldLayer, this.overlayLayer, this.effects.screen);
+    const map = paintMap(this.world.map, this.tex);
+    this.water = map.water;
+    this.groundRoot.addChild(map.ground, this.rings, this.effects.ground, this.indicator.g, this.debugDraw.g);
+    this.objectRoot.sortableChildren = true;
+    this.effects.air.sortableChildren = true;
+    for (const p of map.props) {
+      const s = new Sprite(p.tex);
+      s.anchor.set(0.5, p.anchorY);
+      s.zIndex = p.y;
+      this.objectRoot.addChild(s);
+      this.props.push({ s, p });
+    }
+    this.app.stage.addChild(this.groundRoot, this.objectRoot, this.effects.air, this.overlayLayer, this.lines, this.effects.screen);
 
-    const self = this.world.get(this.selfId);
     for (const u of this.world.list) this.ensureView(u);
     this.resize();
+    const self = this.world.get(this.selfId);
     if (self) this.camera.snap(self.pos);
     this.lastNow = performance.now();
   }
@@ -84,11 +105,9 @@ export class GameRenderer {
     let v = this.views.get(u.id);
     if (!v) {
       const self = this.world.get(this.selfId);
-      v = new UnitView(u, u.id === this.selfId, self?.team ?? 0);
+      v = new UnitView(u, u.id === this.selfId, self?.team ?? 0, this.tex.glow);
       this.views.set(u.id, v);
-      // 建筑在下、英雄在上
-      if (u.kind === 'tower' || u.kind === 'crystal') this.unitLayer.addChildAt(v.root, 0);
-      else this.unitLayer.addChild(v.root);
+      this.objectRoot.addChild(v.root);
       this.overlayLayer.addChild(v.overlay);
       v.rx = u.pos.x;
       v.ry = u.pos.y;
@@ -106,12 +125,17 @@ export class GameRenderer {
           const tv = this.views.get(e.target);
           const involvesSelf = e.src === this.selfId || e.target === this.selfId;
           if (tv) {
-            tv.flashUntil = now + 110;
-            if (e.impact >= 1 || e.crit) this.freeze(tv, now + (e.impact >= 2 ? 90 : 55));
+            tv.hit(now);
+            if (e.impact >= 1 || e.crit) this.freeze(tv, now + (e.impact >= 2 ? 95 : 60));
           }
           const sv = this.views.get(e.src);
-          if (sv && e.impact >= 1 && e.src === this.selfId) this.freeze(sv, now + (e.impact >= 2 ? 70 : 40));
-          if (involvesSelf && (e.impact >= 2 || (e.crit && e.src === this.selfId))) this.camera.shake(e.impact >= 2 ? 0.16 : 0.08);
+          if (sv && (e.impact >= 1 || e.crit) && e.src === this.selfId) this.freeze(sv, now + (e.impact >= 2 ? 75 : 45));
+          if (involvesSelf && (e.impact >= 2 || (e.crit && e.src === this.selfId))) this.camera.shake(e.impact >= 2 ? 0.2 : 0.09);
+          // 近战普攻命中时画刀光
+          const src = w.get(e.src);
+          if (e.isAttack && src && src.kind === 'hero' && !getHero(src.defId).attack.projectile) {
+            this.effects.swing(src.pos.x, src.pos.y, src.facing, src.stats.range + src.radius, getHero(src.defId).palette.secondary, now);
+          }
           const color =
             e.target === this.selfId
               ? PALETTE.dmgTaken
@@ -122,19 +146,27 @@ export class GameRenderer {
                   : e.dtype === 'true'
                     ? PALETTE.dmgTrue
                     : PALETTE.dmgPhysical;
-          const size = e.crit ? 26 : involvesSelf ? (e.impact >= 1 ? 21 : 18) : 14;
-          this.effects.floatText(e.x, e.y, `${Math.round(e.amount)}${e.crit ? '!' : ''}`, color, size, now);
-          this.effects.hit(e.x, e.y, e.crit ? PALETTE.dmgCrit : 0xffe0b0, e.impact >= 1 || e.crit, now);
+          const size = e.crit ? 30 : involvesSelf ? (e.impact >= 1 ? 24 : 20) : 15;
+          this.effects.floatText(e.x, e.y, `${Math.round(e.amount)}`, color, size, now, e.crit || e.impact >= 2);
+          this.effects.hit(e.x, e.y, e.crit ? PALETTE.dmgCrit : e.dtype === 'magic' ? PALETTE.dmgMagic : 0xffd9a0, e.impact >= 1 || e.crit, now);
           break;
         }
         case 'heal':
-          if (e.amount >= 5) this.effects.floatText(e.x, e.y, `+${Math.round(e.amount)}`, PALETTE.heal, 16, now);
+          if (e.amount >= 8) this.effects.floatText(e.x, e.y, `+${Math.round(e.amount)}`, PALETTE.heal, 17, now);
           break;
         case 'attackStart': {
-          const u = w.get(e.unit);
-          if (u && u.kind === 'hero' && !getHero(u.defId).attack.projectile) {
-            const def = getHero(u.defId);
-            this.effects.swing(u.pos.x, u.pos.y, u.facing, u.stats.range + u.radius, def.palette.secondary, now);
+          const v = this.views.get(e.unit);
+          if (v) {
+            v.attackStart = now;
+            v.attackDur = e.windup * 1000 + 220;
+          }
+          break;
+        }
+        case 'castStart': {
+          const v = this.views.get(e.unit);
+          if (v) {
+            v.castStart = now;
+            v.castDur = Math.max(260, e.windup * 1000 + 180);
           }
           break;
         }
@@ -145,27 +177,37 @@ export class GameRenderer {
         case 'dash':
           this.dashTrailAt.set(e.unit, 0);
           break;
-        case 'blink':
+        case 'blink': {
           this.effects.blink(e.fromX, e.fromY, e.toX, e.toY, now);
-          {
-            const v = this.views.get(e.unit);
-            if (v) {
-              v.rx = e.toX;
-              v.ry = e.toY;
-            }
+          const v = this.views.get(e.unit);
+          if (v) {
+            v.rx = e.toX;
+            v.ry = e.toY;
+            v.freezeUntil = 0;
           }
           break;
+        }
         case 'cc': {
           const u = w.get(e.target);
-          if (u && e.cc !== 'slow') this.effects.floatText(u.pos.x, u.pos.y - 0.6, CC_NAMES[e.cc], 0xffe25a, 15, now);
+          if (u && e.cc !== 'slow') this.effects.floatText(u.pos.x, u.pos.y - 0.4, CC_NAMES[e.cc], 0xffe25a, 16, now);
           break;
         }
         case 'levelUp': {
           const u = w.get(e.unit);
           if (u) {
-            this.effects.floatText(u.pos.x, u.pos.y - 0.8, '升级！', 0xffd23c, 20, now);
-            this.effects.burst(u.pos.x, u.pos.y, 0xffd23c, 16, 4, now);
+            this.effects.levelUp(u.pos.x, u.pos.y, now);
+            if (u.id === this.selfId) this.effects.floatText(u.pos.x, u.pos.y - 0.6, '升级！', 0xffd23c, 22, now, true);
           }
+          break;
+        }
+        case 'recall': {
+          const u = w.get(e.unit);
+          if (u && e.state === 'done') this.effects.pillar(u.pos.x, u.pos.y, teamColor(u.team), 2, 700, now);
+          break;
+        }
+        case 'death': {
+          const u = w.get(e.unit);
+          if (u) this.effects.burst(u.pos.x, u.pos.y, teamColor(u.team), 20, 5, now, 1);
           break;
         }
         default:
@@ -188,59 +230,97 @@ export class GameRenderer {
     this.lastNow = now;
     const w = this.world;
     const cam = this.camera;
+    const z = cam.zoom;
 
-    // 插值后的玩家位置作为镜头目标
+    // 自己的英雄：沿当前速度外推，消除一个逻辑帧的输入延迟；其它单位在两帧之间插值
     const self = w.get(this.selfId);
-    if (self) {
-      const sx = self.prevPos.x + (self.pos.x - self.prevPos.x) * alpha;
-      const sy = self.prevPos.y + (self.pos.y - self.prevPos.y) * alpha;
-      cam.follow({ x: sx, y: sy }, dtSec);
+    const posOf = (u: Unit): { x: number; y: number } => {
+      if (u.id === this.selfId && u.alive && (u.moveDir || u.forced)) {
+        return { x: u.pos.x + (u.pos.x - u.prevPos.x) * alpha, y: u.pos.y + (u.pos.y - u.prevPos.y) * alpha };
+      }
+      return { x: u.prevPos.x + (u.pos.x - u.prevPos.x) * alpha, y: u.prevPos.y + (u.pos.y - u.prevPos.y) * alpha };
+    };
+    if (self) cam.follow(posOf(self), dtSec);
+
+    const ox = cam.originX();
+    const oy = cam.originY();
+    this.groundRoot.scale.set(z, z * TILT);
+    this.groundRoot.position.set(ox, oy);
+    this.objectRoot.position.set(ox, oy);
+    this.effects.air.position.set(ox, oy);
+    this.effects.zoom = z;
+    if (this.water) {
+      this.water.tilePosition.x += dtSec * 14;
+      this.water.tilePosition.y += dtSec * 14;
     }
-    this.worldLayer.scale.set(cam.zoom);
-    this.worldLayer.position.set(
-      cam.screenW / 2 - (cam.x + cam.offsetX) * cam.zoom,
-      cam.screenH / 2 - (cam.y + cam.offsetY) * cam.zoom,
-    );
 
-    // 可见范围（外扩 3 米）用于裁剪
-    const hw = cam.screenW / cam.zoom / 2 + 3;
-    const hh = cam.screenH / cam.zoom / 2 + 3;
-    const view = { x0: cam.x - hw, y0: cam.y - hh, x1: cam.x + hw, y1: cam.y + hh };
+    const view = cam.viewRect(4);
+    // 道具：缩放变化时重新摆放；每帧做可见性裁剪与遮挡半透明
+    const zoomChanged = z !== this.lastZoom;
+    this.lastZoom = z;
+    let hx = -999;
+    let hy = -999;
+    if (self && self.alive) {
+      const sp = posOf(self);
+      hx = sp.x;
+      hy = sp.y;
+    }
+    for (const { s, p } of this.props) {
+      if (zoomChanged) {
+        s.position.set(p.x * z, p.y * z * TILT);
+        const k = (p.size * z) / p.tex.width;
+        s.scale.set(p.flip ? -k : k, k);
+      }
+      const vis = p.x > view.x0 - 2 && p.x < view.x1 + 2 && p.y > view.y0 && p.y < view.y1 + 6;
+      s.visible = vis;
+      if (!vis) continue;
+      // 挡在自己英雄前面的树 / 草变半透明
+      const occl = p.kind !== 'rock' && p.y > hy - 0.3 && p.y < hy + (p.kind === 'grass' ? 1.2 : 3.4) && Math.abs(p.x - hx) < p.r + 0.5;
+      const target = occl ? (p.kind === 'grass' ? 0.55 : 0.4) : 1;
+      s.alpha += (target - s.alpha) * Math.min(1, dtSec * 10);
+    }
 
+    // 单位
+    for (const [id, v] of this.views) {
+      if (!w.units.has(id)) {
+        v.destroy();
+        this.views.delete(id);
+      }
+    }
     for (const u of w.list) {
       const v = this.ensureView(u);
-      const x = u.prevPos.x + (u.pos.x - u.prevPos.x) * alpha;
-      const y = u.prevPos.y + (u.pos.y - u.prevPos.y) * alpha;
-      const visible = u.alive && x > view.x0 && x < view.x1 && y > view.y0 && y < view.y1;
+      const { x, y } = posOf(u);
+      const visible = u.alive && x > view.x0 && x < view.x1 && y > view.y0 && y < view.y1 + 4;
       v.root.visible = visible;
-      // 无敌的建筑（M1 训练场）不显示血条，避免误以为可以攻击
       v.overlay.visible = visible && !u.innate.invulnerable;
       if (!visible) continue;
-      v.update(x, y, lerpAngle(u.prevFacing, u.facing, alpha), now);
+      let aura: number | null = null;
       for (const b of u.buffs) {
-        const aura = getBuff(b.id).aura;
-        if (aura !== undefined) {
-          v.setAura(aura, now);
+        const a = getBuff(b.id).aura;
+        if (a !== undefined) {
+          aura = a;
           break;
         }
       }
-      const s = cam.worldToScreen(v.rx, v.ry);
-      v.updateOverlay(s.x, s.y, cam.zoom);
+      v.update(x, y, lerpAngle(u.prevFacing, u.facing, alpha), now, dtSec, z, aura);
+      const lift = u.status.airborne > 0 && u.status.airborneTotal > 0 ? Math.sin(Math.PI * (1 - u.status.airborne / u.status.airborneTotal)) * 1.4 : 0;
+      const s = cam.worldToScreen(v.rx, v.ry, v.model.height + lift + 0.15);
+      v.updateOverlay(s.x, s.y);
 
-      // 冲刺残影
       if (u.forced && u.forced.kind === 'dash') {
         const last = this.dashTrailAt.get(u.id) ?? 0;
-        if (now - last > 30) {
+        if (now - last > 28) {
           this.dashTrailAt.set(u.id, now);
-          const color = u.kind === 'hero' ? getHero(u.defId).palette.primary : 0xffffff;
+          const color = u.kind === 'hero' ? getHero(u.defId).palette.secondary : 0xffffff;
           this.effects.afterimage(v.rx, v.ry, u.radius, color, now);
         }
       }
     }
 
+    this.drawTowerHints(self ?? null);
     this.effects.syncProjectiles(w.projectiles, alpha);
     this.effects.syncZones(w.zones, now);
-    this.effects.update(now, dtSec, (x, y) => cam.worldToScreen(x, y));
+    this.effects.update(now, dtSec, (x, y, h) => cam.worldToScreen(x, y, h));
 
     if (aim && self) {
       const v = this.views.get(self.id)!;
@@ -249,6 +329,39 @@ export class GameRenderer {
 
     if (this.debugOptions.colliders || this.debugOptions.paths) this.debugDraw.draw(w, this.debugOptions, view);
     else this.debugDraw.g.clear();
+  }
+
+  /** 防御塔：自己靠近时显示攻击范围圈；塔与当前攻击目标之间画连线 */
+  private drawTowerHints(self: Unit | null): void {
+    const w = this.world;
+    const cam = this.camera;
+    this.rings.clear();
+    this.lines.clear();
+    for (const u of w.list) {
+      if (!isStructure(u) || !u.alive || u.innate.untargetable) continue;
+      const range = u.stats.range + 0.6;
+      if (self && self.alive && u.team !== self.team) {
+        const d = Math.hypot(self.pos.x - u.pos.x, self.pos.y - u.pos.y);
+        if (d < range + 5) {
+          const inside = d < range;
+          this.rings.circle(u.pos.x, u.pos.y, range).stroke({ width: 0.12, color: inside ? 0xff3a2a : 0xffa04a, alpha: inside ? 0.9 : 0.5 });
+          if (inside) this.rings.circle(u.pos.x, u.pos.y, range).fill({ color: 0xff3a2a, alpha: 0.06 });
+        }
+      }
+      const tid = u.attack.swingTarget || u.attack.orderTarget;
+      const t = tid ? w.get(tid) : undefined;
+      if (t && t.alive && (u.attack.windup > 0 || u.attack.orderTime > 0) && Math.hypot(t.pos.x - u.pos.x, t.pos.y - u.pos.y) <= range + t.radius) {
+        const v = this.views.get(u.id);
+        const tv = this.views.get(t.id);
+        if (!v || !tv) continue;
+        const a = cam.worldToScreen(u.pos.x, u.pos.y, u.kind === 'tower' ? 4.1 : 3.1);
+        const b = cam.worldToScreen(tv.rx, tv.ry, 1.0);
+        const danger = self && t.id === self.id;
+        const col = danger ? 0xff3a2a : teamColor(u.team);
+        this.lines.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: danger ? 4 : 2.5, color: col, alpha: 0.85 });
+        this.lines.moveTo(a.x, a.y).lineTo(b.x, b.y).stroke({ width: 1, color: 0xffffff, alpha: 0.7 });
+      }
+    }
   }
 
   destroy(): void {

@@ -2,7 +2,8 @@ import { BALANCE } from '../data/balance';
 import type { Affects, Shape } from '../data/schema';
 import type { Vec2 } from '../core/vec2';
 import { isEnemy, type Team, type Unit } from './entity';
-import { isStructure, isTargetable } from './status';
+import { isInvulnerable, isStructure, isTargetable } from './status';
+import type { AttackMode } from './commands';
 import type { World } from './world';
 
 /**
@@ -100,9 +101,12 @@ function attackTier(u: Unit): number {
   return 1;
 }
 
-export function validAttackTarget(attacker: Unit, t: Unit | undefined, mode: 'auto' | 'farm'): t is Unit {
+export function validAttackTarget(attacker: Unit, t: Unit | undefined, mode: AttackMode): t is Unit {
   if (!t || !isTargetable(t) || !isEnemy(attacker, t)) return false;
+  // 无敌的建筑（前一座塔还在）不作为普攻目标
+  if (isStructure(t) && isInvulnerable(t)) return false;
   if (mode === 'farm') return t.kind === 'minion' || t.kind === 'monster';
+  if (mode === 'tower') return isStructure(t);
   return true;
 }
 
@@ -111,7 +115,7 @@ export function validAttackTarget(attacker: Unit, t: Unit | undefined, mode: 'au
  *   auto：在“射程 + 索敌距离”内，英雄优先，其次小兵野怪，最后建筑；同级取最近
  *   farm：只选小兵和野怪，优先射程内血量最低的（补刀）
  */
-export function pickAttackTarget(w: World, u: Unit, mode: 'auto' | 'farm'): Unit | null {
+export function pickAttackTarget(w: World, u: Unit, mode: AttackMode): Unit | null {
   const search = u.stats.range + BALANCE.acquireBonus;
   w.spatial.query(u.pos.x, u.pos.y, search, tmp);
   let best: Unit | null = null;

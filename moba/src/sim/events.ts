@@ -56,4 +56,6 @@ export type SimEvent =
   | { t: 'death'; unit: EntityId; killer: EntityId }
   | { t: 'levelUp'; unit: EntityId; level: number }
   | { t: 'skillUp'; unit: EntityId; slot: number; level: number }
-  | { t: 'buffAdd'; unit: EntityId; buff: string };
+  | { t: 'buffAdd'; unit: EntityId; buff: string }
+  | { t: 'recall'; unit: EntityId; state: 'start' | 'cancel' | 'done'; duration: number }
+  | { t: 'summoner'; unit: EntityId; id: string }

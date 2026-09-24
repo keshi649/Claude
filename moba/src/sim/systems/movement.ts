@@ -170,6 +170,18 @@ export function separateUnits(w: World): void {
       const share = heavy ? 1 : 0.5 * 0.6;
       u.pos.x += nx * overlap * share;
       u.pos.y += ny * overlap * share;
+      // 正面顶住建筑 / 木桩时沿切线绕开，不会卡死
+      if (heavy && u.moveDir && u.moveDir.x * nx + u.moveDir.y * ny < -0.85) {
+        let tx = -ny;
+        let ty = nx;
+        if (tx * u.moveDir.x + ty * u.moveDir.y < 0) {
+          tx = -tx;
+          ty = -ty;
+        }
+        const push = Math.min(overlap, 0.12) + 0.04;
+        u.pos.x += tx * push;
+        u.pos.y += ty * push;
+      }
     }
     w.walls.resolve(u.pos, u.radius);
   }

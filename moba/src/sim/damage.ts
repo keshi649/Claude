@@ -65,6 +65,14 @@ export function applyDamage(
 
   target.hp -= dmg;
   target.lastDamagedAt = w.time;
+  // 受伤打断回城与恢复
+  if (target.hero) {
+    if (target.hero.recall > 0) {
+      target.hero.recall = 0;
+      w.emit({ t: 'recall', unit: target.id, state: 'cancel', duration: 0 });
+    }
+    if (target.buffs.length) target.buffs = target.buffs.filter((b) => b.id !== 'restore');
+  }
   if (target.innate.immortal && target.hp < 1) target.hp = 1;
 
   w.emit({

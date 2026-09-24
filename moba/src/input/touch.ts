@@ -1,4 +1,4 @@
-import type { InputState } from './state';
+import type { InputState, SlotId } from './state';
 
 /**
  * 触屏控件的指针逻辑（DOM 元素由界面层创建）。
@@ -8,16 +8,27 @@ import type { InputState } from './state';
 
 /** 浮动摇杆：在区域内任意位置按下即以该点为中心 */
 export function bindJoystick(zone: HTMLElement, base: HTMLElement, knob: HTMLElement, state: InputState): () => void {
-  const R = 60;
   let pid = -1;
   let cx = 0;
   let cy = 0;
-  const restX = (): number => zone.clientWidth * 0.32;
-  const restY = (): number => zone.clientHeight * 0.62;
+  // 摇杆半径随界面缩放（--ui 变量由界面层设置）
+  const scale = (): number => Number(getComputedStyle(document.documentElement).getPropertyValue('--ui')) || 1;
+  const radius = (): number => 66 * scale();
+  let R = radius();
+  const restX = (): number => 150 * scale();
+  const restY = (): number => zone.clientHeight - 140 * scale();
 
   const place = (x: number, y: number, kx: number, ky: number): void => {
+    R = radius();
+    const kr = 30 * scale();
+    base.style.width = base.style.height = `${R * 2}px`;
+    base.style.setProperty('--half', `${R}px`);
+    knob.style.width = knob.style.height = `${kr * 2}px`;
     base.style.transform = `translate(${x - R}px, ${y - R}px)`;
-    knob.style.transform = `translate(${x + kx - 28}px, ${y + ky - 28}px)`;
+    knob.style.transform = `translate(${x + kx - kr}px, ${y + ky - kr}px)`;
+    // 箭头指示方向
+    if (kx !== 0 || ky !== 0) base.style.setProperty('--dir', `${Math.atan2(ky, kx) + Math.PI / 2}rad`);
+    base.classList.toggle('dir', kx !== 0 || ky !== 0);
   };
   const rest = (): void => {
     place(restX(), restY(), 0, 0);
@@ -92,15 +103,33 @@ export function bindHoldButton(btn: HTMLElement, onChange: (held: boolean) => vo
 }
 
 /**
- * 技能按钮：按下出现指示器，拖动瞄准，松手释放；拖到取消区松手则取消；
- * 点按不拖动 = 自动朝最近的敌方英雄释放。
+ * 技能按钮（轮盘施法）：按下时以按钮为圆心出现轮盘，拖动摇杆点瞄准，松手释放；
+ * 拖到取消区松手则取消；点按不拖动 = 自动朝最近的敌方英雄释放。
  */
-export function bindSkillButton(btn: HTMLElement, slot: 0 | 1 | 2, state: InputState, cancelZone: HTMLElement): void {
-  const DRAG_MAX = 90;
-  const TAP = 14;
+export function bindSkillButton(
+  btn: HTMLElement,
+  slot: SlotId,
+  state: InputState,
+  cancelZone: HTMLElement,
+  wheel: { ring: HTMLElement; knob: HTMLElement },
+): void {
+  const TAP = 12;
   let pid = -1;
   let ox = 0;
   let oy = 0;
+  let R = 90;
+
+  const showWheel = (dx: number, dy: number): void => {
+    wheel.ring.style.display = 'block';
+    wheel.knob.style.display = 'block';
+    wheel.ring.style.transform = `translate(${ox - R}px, ${oy - R}px)`;
+    wheel.ring.style.width = wheel.ring.style.height = `${R * 2}px`;
+    wheel.knob.style.transform = `translate(${ox + dx - 26}px, ${oy + dy - 26}px)`;
+  };
+  const hideWheel = (): void => {
+    wheel.ring.style.display = 'none';
+    wheel.knob.style.display = 'none';
+  };
 
   btn.addEventListener('pointerdown', (e) => {
     e.preventDefault();
@@ -110,23 +139,32 @@ export function bindSkillButton(btn: HTMLElement, slot: 0 | 1 | 2, state: InputS
     const r = btn.getBoundingClientRect();
     ox = r.left + r.width / 2;
     oy = r.top + r.height / 2;
+    // 轮盘半径约为按钮直径的 1.4 倍
+    R = Math.max(70, r.width * 1.4);
     state.aiming = { slot, source: 'touch', drag: { x: 0, y: 0 }, dragged: false, cancel: false };
     btn.classList.add('pressed');
     document.body.classList.add('aiming');
+    showWheel(0, 0);
   });
   btn.addEventListener('pointermove', (e) => {
     if (e.pointerId !== pid || !state.aiming || state.aiming.slot !== slot) return;
     e.preventDefault();
-    const dx = e.clientX - ox;
-    const dy = e.clientY - oy;
+    let dx = e.clientX - ox;
+    let dy = e.clientY - oy;
     const d = Math.hypot(dx, dy);
     const a = state.aiming;
     if (d > TAP) a.dragged = true;
-    const mag = Math.min(1, d / DRAG_MAX);
+    const mag = Math.min(1, d / R);
     a.drag = d > 0 ? { x: (dx / d) * mag, y: (dy / d) * mag } : { x: 0, y: 0 };
     const cr = cancelZone.getBoundingClientRect();
     a.cancel = e.clientX >= cr.left && e.clientX <= cr.right && e.clientY >= cr.top && e.clientY <= cr.bottom;
     cancelZone.classList.toggle('hot', a.cancel);
+    if (d > R) {
+      dx = (dx / d) * R;
+      dy = (dy / d) * R;
+    }
+    showWheel(dx, dy);
+    wheel.ring.classList.toggle('cancel', a.cancel);
   });
   const up = (e: PointerEvent): void => {
     if (e.pointerId !== pid) return;
@@ -134,6 +172,8 @@ export function bindSkillButton(btn: HTMLElement, slot: 0 | 1 | 2, state: InputS
     btn.classList.remove('pressed');
     document.body.classList.remove('aiming');
     cancelZone.classList.remove('hot');
+    wheel.ring.classList.remove('cancel');
+    hideWheel();
     const a = state.aiming;
     state.aiming = null;
     if (!a || a.slot !== slot || a.cancel || e.type === 'pointercancel') return;
@@ -146,4 +186,17 @@ export function bindSkillButton(btn: HTMLElement, slot: 0 | 1 | 2, state: InputS
   };
   btn.addEventListener('pointerup', up);
   btn.addEventListener('pointercancel', up);
+}
+
+/** 点击型按钮（回城 / 恢复） */
+export function bindTapButton(btn: HTMLElement, fn: () => void): void {
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    btn.classList.add('pressed');
+    fn();
+  });
+  const up = (): void => btn.classList.remove('pressed');
+  btn.addEventListener('pointerup', up);
+  btn.addEventListener('pointercancel', up);
+  btn.addEventListener('pointerleave', up);
 }

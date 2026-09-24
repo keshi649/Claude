@@ -42,6 +42,7 @@ export function evalScaling(s: Scaling, ctx: EffectCtx, caster: Unit | undefined
     if (s.ap) v += s.ap * caster.stats.ap;
     if (s.maxHp) v += s.maxHp * caster.stats.maxHp;
     if (s.bonusHp) v += s.bonusHp * Math.max(0, caster.stats.maxHp - caster.baseStats.maxHp);
+    if (s.maxMp) v += s.maxMp * caster.stats.maxMp;
   }
   if (target) {
     if (s.targetMaxHp) v += s.targetMaxHp * target.stats.maxHp;
@@ -106,6 +107,11 @@ function runEffect(w: World, e: Effect, ctx: EffectCtx): void {
     case 'heal': {
       const t = pickTo(w, e.to, ctx);
       if (t) heal(w, t, evalScaling(e.amount, ctx, caster, t));
+      return;
+    }
+    case 'mana': {
+      const t = pickTo(w, e.to, ctx);
+      if (t && t.alive) t.mp = Math.min(t.stats.maxMp, t.mp + evalScaling(e.amount, ctx, caster, t));
       return;
     }
     case 'shield': {

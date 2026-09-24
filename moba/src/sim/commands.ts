@@ -11,6 +11,8 @@ export type Aim =
   | { k: 'point'; x: number; y: number }
   | { k: 'unit'; id: EntityId };
 
+export type AttackMode = 'auto' | 'farm' | 'tower';
+
 export type DebugOp = 'refreshCd' | 'levelUp' | 'maxLevel' | 'addGold' | 'noCooldown' | 'heal';
 
 export type Command =
@@ -19,9 +21,15 @@ export type Command =
   /** 寻路移动到某点（AI、调试寻路） */
   | { t: 'moveTo'; pid: number; x: number; y: number }
   | { t: 'stop'; pid: number }
-  /** 普攻：auto 默认优先英雄；farm 只打小兵和野怪（补刀键） */
-  | { t: 'attack'; pid: number; mode: 'auto' | 'farm' }
+  /** 普攻：auto 默认优先英雄；farm 只打小兵和野怪（补刀键）；tower 只打建筑（推塔键） */
+  | { t: 'attack'; pid: number; mode: AttackMode }
   /** 施法。蓄力技能用 phase 区分按下 / 松开 */
   | { t: 'cast'; pid: number; slot: 0 | 1 | 2; aim: Aim; phase?: 'start' | 'release' }
   | { t: 'levelSkill'; pid: number; slot: 0 | 1 | 2 }
+  /** 回城（原地引导，移动 / 受伤 / 施法打断） */
+  | { t: 'recall'; pid: number }
+  /** 恢复（持续回血回蓝，受伤中断） */
+  | { t: 'restore'; pid: number }
+  /** 召唤师技能 */
+  | { t: 'summoner'; pid: number; aim: Aim }
   | { t: 'debug'; pid: number; op: DebugOp; value?: number };

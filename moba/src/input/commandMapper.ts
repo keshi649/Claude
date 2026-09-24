@@ -3,7 +3,15 @@ import type { Unit } from '../sim/entity';
 import { currentStage } from '../sim/hero';
 import type { World } from '../sim/world';
 import { previewAim, type AimPreview } from './aim';
-import type { AimSnapshot, InputState } from './state';
+import type { AimSnapshot, InputState, SlotId } from './state';
+import { getSummoner } from '../data/summoners';
+import type { SkillStage } from '../data/schema';
+
+/** 某个槽位当前要释放的技能段（槽 3 为召唤师技能） */
+export function stageOf(hero: Unit, slot: SlotId): SkillStage {
+  if (slot === 3) return getSummoner(hero.hero!.summoner.id).stage;
+  return currentStage(hero, slot).stage;
+}
 
 /**
  * 输入状态 → 逻辑命令。移动只在方向变化时发送（便于将来联机节省带宽），
@@ -26,6 +34,7 @@ export class CommandMapper {
     }
     if (state.attackHeld) out.push({ t: 'attack', pid, mode: 'auto' });
     else if (state.farmHeld) out.push({ t: 'attack', pid, mode: 'farm' });
+    else if (state.towerHeld) out.push({ t: 'attack', pid, mode: 'tower' });
 
     for (const a of state.takeActions()) {
       switch (a.k) {
@@ -35,13 +44,20 @@ export class CommandMapper {
         case 'moveTo':
           out.push({ t: 'moveTo', pid, x: a.x, y: a.y });
           break;
+        case 'recall':
+          out.push({ t: 'recall', pid });
+          break;
+        case 'restore':
+          out.push({ t: 'restore', pid });
+          break;
         case 'castStart':
           out.push({ t: 'cast', pid, slot: a.slot, aim: { k: 'auto' }, phase: 'start' });
           break;
         case 'castRelease': {
           if (!hero) break;
           const p = this.preview(w, hero, a.slot, a.aim);
-          out.push({ t: 'cast', pid, slot: a.slot, aim: p.aim });
+          if (a.slot === 3) out.push({ t: 'summoner', pid, aim: p.aim });
+          else out.push({ t: 'cast', pid, slot: a.slot, aim: p.aim });
           break;
         }
       }
@@ -49,8 +65,8 @@ export class CommandMapper {
     return out;
   }
 
-  preview(w: World, hero: Unit, slot: 0 | 1 | 2, snap: AimSnapshot): AimPreview {
-    return previewAim(w, hero, currentStage(hero, slot).stage, snap);
+  preview(w: World, hero: Unit, slot: SlotId, snap: AimSnapshot): AimPreview {
+    return previewAim(w, hero, stageOf(hero, slot), snap);
   }
 }
 
