@@ -16,7 +16,12 @@ export type SfxName =
   | 'fail'
   | 'recall'
   | 'shoot'
-  | 'death';
+  | 'death'
+  | 'announce'
+  | 'announceBad'
+  | 'multikill'
+  | 'victory'
+  | 'defeat';
 
 const MUTE_KEY = 'jinghe.mute';
 
@@ -160,6 +165,35 @@ export class Sfx {
         break;
       case 'death':
         this.tone(t, 0.6, 300, 60, 0.4 * v, 'sawtooth');
+        break;
+      case 'announce':
+        // 己方击杀：明亮的上行两音 + 金属闪光
+        this.tone(t, 0.22, 659, 659, 0.22 * v, 'triangle');
+        this.tone(t + 0.1, 0.45, 988, 988, 0.24 * v, 'triangle');
+        this.noise(t + 0.1, 0.35, 7000, 4000, 2, 0.08 * v, 'highpass');
+        break;
+      case 'announceBad':
+        // 敌方击杀：低沉的下行两音
+        this.tone(t, 0.25, 392, 392, 0.2 * v, 'triangle');
+        this.tone(t + 0.14, 0.5, 294, 280, 0.22 * v, 'triangle');
+        break;
+      case 'multikill':
+        // 多杀：快速上行琶音 + 低音冲击
+        [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(t + i * 0.05, 0.4, f, f, 0.18 * v, 'triangle'));
+        this.tone(t, 0.5, 110, 45, 0.6 * v, 'sine');
+        this.noise(t + 0.2, 0.6, 8000, 3000, 1.5, 0.1 * v, 'highpass');
+        break;
+      case 'victory':
+        [
+          [523, 659, 784],
+          [587, 740, 880],
+          [659, 831, 988, 1319],
+        ].forEach((chord, i) => chord.forEach((f) => this.tone(t + i * 0.28, i === 2 ? 1.6 : 0.35, f, f, 0.14 * v, 'triangle')));
+        this.tone(t, 0.8, 130, 65, 0.5 * v, 'sine');
+        break;
+      case 'defeat':
+        [440, 415, 392, 330].forEach((f, i) => this.tone(t + i * 0.3, i === 3 ? 1.4 : 0.4, f, f * 0.99, 0.18 * v, 'triangle'));
+        this.tone(t + 0.9, 1.2, 98, 60, 0.4 * v, 'sine');
         break;
     }
   }

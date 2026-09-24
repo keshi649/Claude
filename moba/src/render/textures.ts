@@ -317,14 +317,7 @@ export function createTextures(): GameTextures {
     }, 400 + v),
   );
 
-  const glow = makeCanvas(128, 128, (ctx) => {
-    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
-    g.addColorStop(0, 'rgba(255,255,255,1)');
-    g.addColorStop(0.35, 'rgba(255,255,255,0.45)');
-    g.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, 128, 128);
-  }, 1);
+  const glow = createGlowTexture();
 
   const dot = makeCanvas(32, 32, (ctx) => {
     const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
@@ -336,4 +329,16 @@ export function createTextures(): GameTextures {
   }, 2);
 
   return { grass, dirt, stone, water, forestFloor, trees, pines, rocks, grassClumps, glow, dot };
+}
+
+/** 柔和的白色光晕（模型发光部件、特效共用） */
+export function createGlowTexture(): Texture {
+  return makeCanvas(128, 128, (ctx) => {
+    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.35, 'rgba(255,255,255,0.45)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 128);
+  }, 1);
 }

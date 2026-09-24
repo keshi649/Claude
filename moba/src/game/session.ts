@@ -11,14 +11,44 @@ import type { SimEvent } from '../sim/events';
 import { World, type WorldConfig } from '../sim/world';
 import { DebugPanel } from '../ui/debugPanel';
 import { Hud } from '../ui/hud';
-import { AIDirector, makeLineup } from '../sim/ai/director';
+import { AIDirector, makeLineup, type Lineup } from '../sim/ai/director';
 import type { Difficulty } from '../sim/ai/difficulty';
 import { ShopPanel } from '../ui/shop';
 import { Scoreboard } from '../ui/scoreboard';
 import { checkBuy, nextRecommended } from '../sim/shop';
 import { getItem } from '../data/items';
+import { summarize, type MatchSummary } from '../sim/summary';
+import { Announcer } from '../ui/announcer';
 
 const PLAYER_PID = 1;
+
+/** 5v5 阵容：玩家在蓝方，友军 AI 普通难度，敌方 AI 用所选难度 */
+export function sessionLineup(o: { seed: number; heroId: string; summoner?: string; difficulty?: Difficulty }): Lineup {
+  return makeLineup({
+    seed: o.seed,
+    playerHero: o.heroId,
+    playerSummoner: o.summoner,
+    allyDifficulty: 'normal',
+    enemyDifficulty: o.difficulty ?? 'normal',
+  });
+}
+
+export interface SessionOptions extends Omit<WorldConfig, 'players'> {
+  heroId: string;
+  summoner?: string;
+  /** 敌方 AI 难度 */
+  difficulty?: Difficulty;
+  /** 正式对局里只有玩家一人（调试用） */
+  solo?: boolean;
+  /** 预先生成好的 5v5 阵容（加载界面要先显示阵容）；不传则按种子生成 */
+  lineup?: Lineup;
+  /** 全局共用的音效（避免每局重复创建 AudioContext） */
+  sfx: Sfx;
+  /** 对局结束、看完“胜利 / 失败”后调用 */
+  onEnd?: (summary: MatchSummary) => void;
+  /** 玩家在设置里退出对局 */
+  onQuit?: () => void;
+}
 
 /**
  * 一局游戏：把逻辑（World）、渲染、输入、界面、音效串起来。
@@ -30,8 +60,12 @@ export class GameSession {
   private input = new InputState();
   private mapper = new CommandMapper(PLAYER_PID);
   private keyboard: KeyboardMouse;
-  private sfx = new Sfx();
+  private readonly sfx: Sfx;
   private hud!: Hud;
+  private announcer!: Announcer;
+  private gameEl: HTMLElement | null = null;
+  private vignette: HTMLElement | null = null;
+  private ended = false;
   private shop!: ShopPanel;
   private scoreboard!: Scoreboard;
   private debug!: DebugPanel;
@@ -48,22 +82,19 @@ export class GameSession {
 
   constructor(
     private readonly container: HTMLElement,
-    cfg: Omit<WorldConfig, 'players'> & { heroId: string; summoner?: string; difficulty?: Difficulty; solo?: boolean },
+    private readonly cfg: SessionOptions,
   ) {
+    this.sfx = cfg.sfx;
     if (cfg.mode === 'match' && !cfg.solo) {
       // 5v5：玩家 + 4 个 AI 队友 对 5 个 AI 敌人
-      const lineup = makeLineup({
-        seed: cfg.seed,
-        playerHero: cfg.heroId,
-        playerSummoner: cfg.summoner,
-        allyDifficulty: 'normal',
-        enemyDifficulty: cfg.difficulty ?? 'normal',
-      });
-      this.world = new World({ ...cfg, players: lineup.players });
+      const lineup = cfg.lineup ?? sessionLineup(cfg);
+      this.world = new World({ seed: cfg.seed, mode: cfg.mode, startLevel: cfg.startLevel, players: lineup.players });
       this.ai = new AIDirector(this.world, lineup.difficulties, lineup.positions);
     } else {
       this.world = new World({
-        ...cfg,
+        seed: cfg.seed,
+        mode: cfg.mode,
+        startLevel: cfg.startLevel,
         players: [{ pid: PLAYER_PID, team: 0, heroId: cfg.heroId, name: '玩家', isAI: false, summoner: cfg.summoner }],
       });
     }
@@ -88,10 +119,12 @@ export class GameSession {
     const gameEl = document.createElement('div');
     gameEl.id = 'game';
     this.container.appendChild(gameEl);
+    this.gameEl = gameEl;
     await this.renderer.init(gameEl);
     const vignette = document.createElement('div');
     vignette.id = 'vignette';
     this.container.appendChild(vignette);
+    this.vignette = vignette;
 
     this.hud = new Hud(this.container, this.world, hero, this.input, {
       onAttack: (a, f, t) => this.keyboard.setTouchAttack(a, f, t),
@@ -104,7 +137,9 @@ export class GameSession {
         return this.sfx.muted;
       },
       isMuted: () => this.sfx.muted,
+      onQuit: () => this.cfg.onQuit?.(),
     });
+    this.announcer = new Announcer(this.hud.root, (n, v) => this.sfx.play(n, v));
     this.shop = new ShopPanel(
       this.hud.root,
       (item) => this.pending.push({ t: 'buy', pid: PLAYER_PID, item }),
@@ -220,17 +255,21 @@ export class GameSession {
     for (const e of events) {
       if (e.t === 'castFail' && hero && e.unit === hero.id) this.hud.toast(e.reason);
       if (e.t === 'recall' && hero && e.unit === hero.id && e.state === 'cancel') this.hud.toast('回城被打断');
-      if (e.t === 'kill' && hero) this.hud.pushKill(w, e.killer, e.victim, hero.team);
+      if (e.t === 'kill' && hero) {
+        this.hud.pushKill(w, e.killer, e.victim, hero.team);
+        this.announcer.onKill(w, e, hero.team, hero.id);
+      }
       if (e.t === 'structureDown' && hero) this.hud.toast(e.team === hero.team ? '我方防御塔被摧毁' : '摧毁敌方防御塔！');
       if (e.t === 'gameOver' && hero) this.onGameOver(e.winner === hero.team);
       if (e.t === 'campSpawn' && (e.kind === 'turtle' || e.kind === 'dragon')) this.hud.toast(e.kind === 'turtle' ? '玄甲巨龟出现在上河道' : '霆角龙王出现在下河道');
       if (e.t === 'bossKilled' && hero) {
         const name = e.boss === 'turtle' ? '玄甲巨龟' : '霆角龙王';
         const mine = e.team === hero.team;
-        this.hud.toast(`${mine ? '我方' : '敌方'}击败了${name}${e.boss === 'turtle' ? '，全队获得金币与经验' : '，霆角先锋出击'}`);
+        this.announcer.pushText(`${mine ? '我方' : '敌方'}击败${name}`, e.boss === 'turtle' ? '全队获得金币与经验' : '霆角先锋出击', mine);
       }
     }
     this.renderer.handleEvents(events);
+    this.announcer.tick(now);
     if (hero && w.config.mode === 'training') this.trackDps(events, hero.id, now);
     if (hero) this.playSounds(events, hero.id);
 
@@ -289,26 +328,20 @@ export class GameSession {
   }
 
   private onGameOver(win: boolean): void {
-    const hero = this.world.heroOf(PLAYER_PID)!;
-    const h = hero.hero!;
-    const t = Math.floor(this.world.time);
-    this.sfx.play(win ? 'levelup' : 'death', 1);
-    this.hud.showResult(
-      win,
-      [
-        `对局时长 ${Math.floor(t / 60)} 分 ${t % 60} 秒`,
-        `击杀 / 死亡 / 助攻：${h.kills} / ${h.deaths} / ${h.assists}`,
-        `补刀 ${h.lastHits}　·　获得金币 ${Math.floor(h.goldEarned)}　·　等级 ${h.level}`,
-      ],
-      () => location.reload(),
-    );
+    if (this.ended) return;
+    this.ended = true;
+    this.sfx.play(win ? 'victory' : 'defeat', 1);
+    const summary = summarize(this.world);
+    this.hud.showEnd(win, () => this.cfg.onEnd?.(summary));
   }
 
   destroy(): void {
     cancelAnimationFrame(this.raf);
     window.removeEventListener('resize', this.onResize);
     this.keyboard.destroy();
-    this.hud.destroy();
+    this.hud?.destroy();
     this.renderer.destroy();
+    this.gameEl?.remove();
+    this.vignette?.remove();
   }
 }

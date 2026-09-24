@@ -115,7 +115,10 @@ function runEffect(w: World, e: Effect, ctx: EffectCtx): void {
     }
     case 'heal': {
       const t = pickTo(w, e.to, ctx);
-      if (t) heal(w, t, evalScaling(e.amount, ctx, caster, t));
+      if (!t) return;
+      const before = t.hp;
+      heal(w, t, evalScaling(e.amount, ctx, caster, t));
+      if (caster?.hero && t !== caster && t.hero) caster.hero.support += t.hp - before;
       return;
     }
     case 'mana': {
@@ -125,7 +128,10 @@ function runEffect(w: World, e: Effect, ctx: EffectCtx): void {
     }
     case 'shield': {
       const t = pickTo(w, e.to, ctx);
-      if (t) addShield(w, t, evalScaling(e.amount, ctx, caster, t), e.duration, ctx.casterId);
+      if (!t) return;
+      const amount = evalScaling(e.amount, ctx, caster, t);
+      addShield(w, t, amount, e.duration, ctx.casterId);
+      if (caster?.hero && t !== caster && t.hero) caster.hero.support += amount;
       return;
     }
     case 'cc': {

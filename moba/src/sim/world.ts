@@ -7,6 +7,7 @@ import type { StatBlock, StatKey, UnitDef } from '../data/schema';
 import type { LaneId } from '../data/map';
 import { CRYSTAL, TOWERS } from '../data/structures';
 import { DUMMY } from '../data/units';
+import { MINIONS } from '../data/minions';
 import type { Command } from './commands';
 import { NEUTRAL, type EntityId, type PendingArea, type Projectile, type Team, type Unit, type UnitKind, type Zone } from './entity';
 import { createCamps, updateCamps, updateMonsters, type CampState } from './systems/jungle';
@@ -233,6 +234,8 @@ export class World {
       respawnAt: 0,
       damageDealt: 0,
       damageTaken: 0,
+      towerDamage: 0,
+      support: 0,
       recall: 0,
       summoner: { id: cfg.summoner ?? 'blink', cd: 0 },
       items: [null, null, null, null, null, null],
@@ -509,6 +512,25 @@ export class World {
           d.statsDirty = true;
         }
         return;
+      case 'stress':
+        this.spawnStress(value ?? 120);
+        return;
+    }
+  }
+
+  /** 压力测试：在三路的己方塔前为双方各刷一批近战 / 远程小兵（共 n 个），让它们对推 */
+  spawnStress(n: number): void {
+    const per = Math.max(1, Math.round(n / 6));
+    for (const team of [0, 1] as const) {
+      for (const lane of ['top', 'mid', 'bot'] as const) {
+        const path = this.map.lanes[team][lane];
+        const a = path[Math.min(2, path.length - 1)]!;
+        for (let i = 0; i < per; i++) {
+          const pos = { x: a.x + ((i % 4) - 1.5) * 1.1, y: a.y + (Math.floor(i / 4) - 1) * 1.1 };
+          const p = this.nav.walkableAt(pos) ? pos : { ...a };
+          this.spawnMinion(i % 3 === 2 ? MINIONS.ranged : MINIONS.melee, team, p, lane);
+        }
+      }
     }
   }
 

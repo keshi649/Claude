@@ -154,6 +154,10 @@ export interface HeroState {
   /** 造成的英雄伤害 / 承受伤害 / 治疗（结算与 MVP 用） */
   damageDealt: number;
   damageTaken: number;
+  /** 对建筑造成的伤害（推塔贡献） */
+  towerDamage: number;
+  /** 给队友的治疗量 + 护盾量（辅助贡献） */
+  support: number;
   /** 回城引导剩余秒数，0 表示没有在回城 */
   recall: number;
   /** 召唤师技能 */

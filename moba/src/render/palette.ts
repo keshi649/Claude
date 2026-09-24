@@ -37,3 +37,13 @@ export const PALETTE = {
 export function teamColor(team: number): number {
   return PALETTE.team[team as 0 | 1 | 2] ?? 0xffffff;
 }
+
+/** 各定位英雄的发色（模型与头像共用） */
+export const HAIR: Record<string, number> = {
+  tank: 0x5a4030,
+  fighter: 0x2a1a14,
+  assassin: 0x1a1a2a,
+  mage: 0xe8e0f0,
+  marksman: 0xd8a040,
+  support: 0x7a4a8a,
+};

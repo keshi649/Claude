@@ -33,6 +33,8 @@ export class UnitView {
   readonly model: Model;
   readonly overlay = new Container();
   private readonly bar = new Graphics();
+  private statusDrawn = true;
+  private groundDrawn = true;
   private readonly levelText: Text | null = null;
   private readonly nameText: Text | null = null;
   private barKey = '';
@@ -172,8 +174,11 @@ export class UnitView {
     }
 
     // 头顶状态
+    // 头顶 / 脚下特效只在有内容（或上一帧有内容需要擦掉）时重画，大量小兵时省掉每帧的几何重建
     const fx = this.statusFx;
-    fx.clear();
+    const needStatus = st.stun > 0 || st.airborne > 0 || st.silence > 0;
+    if (needStatus || this.statusDrawn) fx.clear();
+    this.statusDrawn = needStatus;
     const top = -this.model.height - 0.25;
     if (st.stun > 0 || st.airborne > 0) {
       for (let i = 0; i < 3; i++) {
@@ -188,6 +193,10 @@ export class UnitView {
 
     // 地面特效：减速圈、护盾圈、增益光环、回城法阵
     const g = this.groundFx;
+    const recalling = !!u.hero && u.hero.recall > 0;
+    const needGround = st.slows.length > 0 || u.shields.length > 0 || aura !== null || (this.isSelf && u.kind === 'hero') || recalling;
+    if (!needGround && !this.groundDrawn) return;
+    this.groundDrawn = needGround;
     g.clear();
     const r = u.radius;
     if (st.slows.length > 0) g.circle(0, 0, r + 0.3).stroke({ width: 0.07, color: 0x7fd4ff, alpha: 0.8 });

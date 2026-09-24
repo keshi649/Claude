@@ -1,5 +1,7 @@
 import { getHero } from '../data/heroes';
 import { getSummoner, RESTORE } from '../data/summoners';
+import { applyUiScale, canFullscreen, el, hex, toggleFullscreen } from './dom';
+import { faceHtml } from './portrait';
 import { bindHoldButton, bindJoystick, bindSkillButton, bindTapButton } from '../input/touch';
 import type { InputState, SlotId } from '../input/state';
 import type { Unit } from '../sim/entity';
@@ -7,15 +9,6 @@ import { canLevelSkill, currentStage, skillDef } from '../sim/hero';
 import type { World } from '../sim/world';
 import { Minimap } from './minimap';
 
-const hex = (c: number): string => `#${c.toString(16).padStart(6, '0')}`;
-
-function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls: string, parent?: HTMLElement, text?: string): HTMLElementTagNameMap[K] {
-  const e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text !== undefined) e.textContent = text;
-  parent?.appendChild(e);
-  return e;
-}
 
 /** 按钮上的矢量图标（内联 SVG，程序绘制） */
 const ICONS = {
@@ -49,6 +42,7 @@ export interface HudHooks {
   onToggleDebug: () => void;
   onToggleMute: () => boolean;
   isMuted: () => boolean;
+  onQuit: () => void;
 }
 
 /**
@@ -79,14 +73,17 @@ export class Hud {
   private feed!: HTMLElement;
   private deathEl!: HTMLElement;
   private deathText!: HTMLElement;
+  /** 销毁时要解除的全局监听 */
+  private offs: (() => void)[] = [];
 
   constructor(parent: HTMLElement, w: World, hero: Unit, state: InputState, hooks: HudHooks) {
     const def = getHero(hero.defId);
     const root = el('div', '', parent);
     root.id = 'hud';
     this.root = root;
-    this.applyScale();
-    window.addEventListener('resize', () => this.applyScale());
+    applyUiScale();
+    window.addEventListener('resize', applyUiScale);
+    this.offs.push(() => window.removeEventListener('resize', applyUiScale));
 
     // 左上：小地图
     this.minimap = new Minimap(root, w.map);
@@ -106,12 +103,16 @@ export class Hud {
       const m = hooks.onToggleMute();
       muteBtn.textContent = m ? '🔇 音效：关' : '🔊 音效：开';
     });
-    if (typeof document.documentElement.requestFullscreen === 'function' && document.fullscreenEnabled !== false) {
+    if (canFullscreen()) {
       const fs = el('button', '', settings, '⛶ 全屏');
       fs.addEventListener('click', () => void toggleFullscreen());
     }
     const dbg = el('button', '', settings, '🛠 调试面板（`）');
     dbg.addEventListener('click', () => hooks.onToggleDebug());
+    const quit = el('button', '', settings, '🏳 退出对局');
+    quit.addEventListener('click', () => {
+      if (confirm('确定退出对局，返回主页？')) hooks.onQuit();
+    });
     const help = el('div', 'help-text', settings);
     help.innerHTML =
       '手机：左下摇杆移动；按住技能拖动瞄准，松手释放，拖到“取消施法”取消；点按技能自动瞄准最近的敌方英雄。<br>' +
@@ -121,7 +122,7 @@ export class Hud {
     const joy = el('div', 'joy-zone', root);
     const base = el('div', 'joy-base', joy);
     const knob = el('div', 'joy-knob', joy);
-    bindJoystick(joy, base, knob, state);
+    this.offs.push(bindJoystick(joy, base, knob, state));
 
     // 技能轮盘元素
     const wheel = { ring: el('div', 'wheel-ring', root), knob: el('div', 'wheel-knob', root) };
@@ -200,12 +201,6 @@ export class Hud {
     el('div', 'rotate-hint', root, '请把手机横过来游玩 ↻');
   }
 
-  /** 按屏幕尺寸计算界面缩放（手机横屏约 0.6，1080p 约 1.2） */
-  private applyScale(): void {
-    const s = Math.max(0.56, Math.min(1.25, Math.min(window.innerHeight / 650, window.innerWidth / 1150)));
-    document.documentElement.style.setProperty('--ui', s.toFixed(3));
-  }
-
   private makeSkillButton(parent: HTMLElement, cls: string, glyph: string, key: string, maxLevel: number): SkillUi {
     const b = el('button', cls, parent);
     const ring = el('div', 'ring', b);
@@ -237,22 +232,27 @@ export class Hud {
     const face = (u: typeof k): string => {
       if (!u) return '<b class="face" style="background:#555">塔</b>';
       if (u.kind !== 'hero') return `<b class="face" style="background:#555">${u.kind === 'tower' || u.kind === 'crystal' ? '塔' : '兵'}</b>`;
-      const d = getHero(u.defId);
-      return `<b class="face" style="background:${hex(d.palette.primary)};border-color:${u.team === 0 ? '#3fb6ff' : '#ff5a3c'}">${d.name[0]}</b>`;
+      return faceHtml(u.defId, u.team);
     };
     row.innerHTML = `${face(k)}<em>⚔</em>${face(v)}`;
     setTimeout(() => row.remove(), 5000);
     while (this.feed.children.length > 4) this.feed.firstElementChild?.remove();
   }
 
-  /** 对局结束 */
-  showResult(win: boolean, lines: string[], onAgain: () => void): void {
+  /** 对局结束：全屏“胜利 / 失败”，点击或数秒后进入结算 */
+  showEnd(win: boolean, onContinue: () => void): void {
     const o = el('div', `result ${win ? 'win' : 'lose'}`, this.root);
     el('div', 'title', o, win ? '胜利' : '失败');
-    const box = el('div', 'lines', o);
-    for (const l of lines) el('div', '', box, l);
-    const b = el('button', '', o, '再来一局');
-    b.addEventListener('click', onAgain);
+    el('div', 'lines', o, win ? '敌方水晶已被摧毁' : '我方水晶已被摧毁');
+    el('div', 'hint', o, '点击继续');
+    let done = false;
+    const go = (): void => {
+      if (done) return;
+      done = true;
+      onContinue();
+    };
+    o.addEventListener('pointerdown', go);
+    window.setTimeout(go, 4500);
   }
 
   private set(key: string, value: string, apply: () => void): void {
@@ -350,20 +350,7 @@ export class Hud {
   }
 
   destroy(): void {
+    for (const f of this.offs) f();
     this.root.remove();
-  }
-}
-
-async function toggleFullscreen(): Promise<void> {
-  try {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen();
-      return;
-    }
-    await document.documentElement.requestFullscreen({ navigationUI: 'hide' });
-    const o = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
-    await o.lock?.('landscape').catch(() => undefined);
-  } catch {
-    // 浏览器不支持时静默忽略
   }
 }

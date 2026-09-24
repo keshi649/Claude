@@ -70,6 +70,13 @@ export class DebugPanel {
     gold.textContent = '金币 +2000';
     gold.addEventListener('click', () => this.onOp('addGold', 2000));
     row.appendChild(gold);
+    const stress = document.createElement('button');
+    stress.textContent = '压力测试 +120 小兵';
+    stress.addEventListener('click', () => {
+      this.onOp('stress', 120);
+      stress.blur();
+    });
+    row.appendChild(stress);
     el.appendChild(row);
 
     // 木桩防御（训练场）

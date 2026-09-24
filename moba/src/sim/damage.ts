@@ -73,6 +73,7 @@ export function applyDamage(
   // 英雄之间的伤害：记录助攻归属与转火信息，统计输出 / 承伤
   if (src?.hero) {
     src.hero.damageDealt += target.hero ? total : 0;
+    if (target.kind === 'tower' || target.kind === 'crystal') src.hero.towerDamage += total;
     if (target.team !== src.team) {
       const ra = target.recentAttackers.find((a) => a.id === src.id);
       if (ra) ra.t = w.time;

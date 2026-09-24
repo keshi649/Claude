@@ -13,7 +13,7 @@ export type Aim =
 
 export type AttackMode = 'auto' | 'farm' | 'tower';
 
-export type DebugOp = 'refreshCd' | 'levelUp' | 'maxLevel' | 'addGold' | 'noCooldown' | 'heal' | 'dummyArmor';
+export type DebugOp = 'refreshCd' | 'levelUp' | 'maxLevel' | 'addGold' | 'noCooldown' | 'heal' | 'dummyArmor' | 'stress';
 
 export type Command =
   /** 方向移动（摇杆 / WASD），dir 为 null 表示松开 */

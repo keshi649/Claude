@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite, type Texture } from 'pixi.js';
 import type { Emblem, HeroDef, UnitDef } from '../data/schema';
-import { PALETTE } from './palette';
+import { HAIR, PALETTE } from './palette';
 
 /**
  * 程序绘制的立体模型（直立坐标系，单位米，原点在脚底，y 向上为负）。
@@ -130,12 +130,13 @@ function buildHumanoid(spec: HumanoidSpec): Model {
     armBG.roundRect(-w + 0.06, 0.21, w * 2 - 0.12, (big ? 0.8 : 0.55) - 0.12, 0.1).fill(P);
     armBG.circle(0, 0.15 + (big ? 0.4 : 0.27), 0.08).fill(S2);
   }
+  armB.addChild(armBG);
   if (spec.weapon === 'dagger') {
+    // 副手短刃（Graphics 不能再挂子节点，挂在手臂容器上）
     const d = new Graphics();
     drawWeapon(d, 'dagger', S2);
-    armBG.addChild(d);
+    armB.addChild(d);
   }
-  armB.addChild(armBG);
 
   // 披风
   const cape = new Graphics();
@@ -264,14 +265,7 @@ function buildHumanoid(spec: HumanoidSpec): Model {
 
 const easeOut = (t: number): number => 1 - (1 - t) * (1 - t);
 
-const HAIR: Record<string, number> = {
-  tank: 0x5a4030,
-  fighter: 0x2a1a14,
-  assassin: 0x1a1a2a,
-  mage: 0xe8e0f0,
-  marksman: 0xd8a040,
-  support: 0x7a4a8a,
-};
+
 
 export function heroModel(def: HeroDef, glowTex: Texture): Model {
   return buildHumanoid({
