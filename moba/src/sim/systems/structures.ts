@@ -5,6 +5,7 @@ import { isEnemy } from '../entity';
 import { edgeDist } from '../query';
 import { isStructure, isTargetable } from '../status';
 import type { World } from '../world';
+import { visibleTo } from '../vision';
 import { findAggressor } from './minions';
 
 /**
@@ -50,7 +51,7 @@ export function updateTowers(w: World): void {
       let best: Unit | null = null;
       let bestKey = Infinity;
       for (const c of near) {
-        if (c.team === 2 || !isEnemy(s, c) || !isTargetable(c) || isStructure(c) || !inRange(s, c)) continue;
+        if (c.team === 2 || !isEnemy(s, c) || !isTargetable(c) || isStructure(c) || !inRange(s, c) || !visibleTo(c, s.team)) continue;
         const tier = c.kind === 'hero' ? 1 : 0;
         const key = tier * 1000 + edgeDist(s, c);
         if (key < bestKey) {

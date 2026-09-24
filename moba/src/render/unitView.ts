@@ -4,7 +4,7 @@ import { getUnitDef } from '../data/units';
 import { totalShield } from '../sim/damage';
 import type { Unit } from '../sim/entity';
 import { TILT } from './camera';
-import { crystalModel, dummyModel, heroModel, minionModel, towerModel, type AnimState, type Model } from './models';
+import { crystalModel, dummyModel, heroModel, minionModel, monsterModel, towerModel, type AnimState, type Model } from './models';
 import { PALETTE, teamColor } from './palette';
 
 /** 受击闪白用的共享滤镜（提亮） */
@@ -63,6 +63,7 @@ export class UnitView {
     this.groundPart.scale.y = TILT;
     const shadow = new Graphics();
     const sr = u.kind === 'tower' ? 1.7 : u.kind === 'crystal' ? 2.6 : r * 1.1;
+    // 中立单位的血条是黄色
     shadow.ellipse(0.15, 0.1, sr, sr * 0.9).fill({ color: 0x000000, alpha: 0.32 });
     this.groundPart.addChild(shadow);
     if (u.kind === 'hero') {
@@ -87,6 +88,10 @@ export class UnitView {
         break;
       case 'dummy':
         this.model = dummyModel();
+        break;
+      case 'monster':
+      case 'summon':
+        this.model = monsterModel(getUnitDef(u.defId), u.team, glowTex);
         break;
       default:
         this.model = minionModel(getUnitDef(u.defId), u.team, glowTex);
@@ -224,7 +229,8 @@ export class UnitView {
     if (key === this.barKey) return;
     this.barKey = key;
 
-    const w = hero ? 78 : structure ? 90 : 44;
+    const big = u.radius >= 1.5;
+    const w = hero ? 78 : structure || big ? 90 : u.kind === 'monster' ? 52 : 44;
     const hpH = hero ? 9 : structure ? 8 : 5;
     const g = this.bar;
     g.clear();
@@ -232,7 +238,7 @@ export class UnitView {
     const x0 = -w / 2 + lvW / 2;
     const bw = w - lvW;
     const total = Math.max(u.stats.maxHp, u.hp + shield);
-    const color = this.isSelf ? PALETTE.hpSelf : u.team === this.viewerTeam ? PALETTE.hpAlly : PALETTE.hpEnemy;
+    const color = this.isSelf ? PALETTE.hpSelf : u.team === 2 ? 0xe8c64a : u.team === this.viewerTeam ? PALETTE.hpAlly : PALETTE.hpEnemy;
     const fullH = hpH + (hero ? 4 : 0);
     g.roundRect(x0 - 1.5, -1.5, bw + 3, fullH + 3, 2).fill({ color: 0x0c0f14, alpha: 0.9 });
     g.rect(x0, 0, (bw * Math.max(0, u.hp)) / total, hpH).fill(color);

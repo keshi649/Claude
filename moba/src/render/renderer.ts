@@ -1,4 +1,6 @@
-import { Application, Container, Graphics, Sprite, type TilingSprite } from 'pixi.js';
+import { Application, Container, Graphics, Sprite, Texture, type TilingSprite } from 'pixi.js';
+import { SIGHT, sightOf, visibleTo } from '../sim/vision';
+import type { Team } from '../sim/entity';
 import { lerpAngle } from '../core/vec2';
 import { getHero } from '../data/heroes';
 import { CC_NAMES, type SkillStage } from '../data/schema';
@@ -43,6 +45,11 @@ export class GameRenderer {
   private groundRoot = new Container();
   private objectRoot = new Container();
   private overlayLayer = new Container();
+  /** 战争迷雾：低分辨率画布（每格 0.5 米），作为贴图铺在地面层之上 */
+  private fogRoot = new Container();
+  private fogCanvas: HTMLCanvasElement | null = null;
+  private fogTex: Texture | null = null;
+  private fogAt = 0;
   private lines = new Graphics();
   private rings = new Graphics();
   private effects!: EffectsLayer;
@@ -88,7 +95,16 @@ export class GameRenderer {
       this.objectRoot.addChild(s);
       this.props.push({ s, p });
     }
-    this.app.stage.addChild(this.groundRoot, this.objectRoot, this.effects.air, this.overlayLayer, this.lines, this.effects.screen);
+    if (this.world.config.mode === 'match') {
+      const S = this.world.map.size;
+      this.fogCanvas = document.createElement('canvas');
+      this.fogCanvas.width = this.fogCanvas.height = S * 2;
+      this.fogTex = Texture.from(this.fogCanvas);
+      const fs = new Sprite(this.fogTex);
+      fs.scale.set(0.5);
+      this.fogRoot.addChild(fs);
+    }
+    this.app.stage.addChild(this.groundRoot, this.objectRoot, this.effects.air, this.fogRoot, this.overlayLayer, this.lines, this.effects.screen);
 
     for (const u of this.world.list) this.ensureView(u);
     this.resize();
@@ -230,6 +246,43 @@ export class GameRenderer {
     }
   }
 
+  get fogCanvasForMinimap(): HTMLCanvasElement | null {
+    return this.fogCanvas;
+  }
+
+  private get selfTeam(): Team {
+    return this.world.get(this.selfId)?.team ?? 0;
+  }
+
+  /** 迷雾：整张图压暗，再按本队视野源挖出透明圆（边缘柔和） */
+  private paintFog(): void {
+    const c = this.fogCanvas!.getContext('2d')!;
+    const S = this.world.map.size;
+    const k = 2;
+    c.globalCompositeOperation = 'source-over';
+    c.clearRect(0, 0, S * k, S * k);
+    c.fillStyle = 'rgba(5, 10, 20, 0.55)';
+    c.fillRect(0, 0, S * k, S * k);
+    c.globalCompositeOperation = 'destination-out';
+    const hole = (x: number, y: number, r: number): void => {
+      const g = c.createRadialGradient(x * k, y * k, r * k * 0.75, x * k, y * k, r * k);
+      g.addColorStop(0, 'rgba(0,0,0,1)');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = g;
+      c.beginPath();
+      c.arc(x * k, y * k, r * k, 0, Math.PI * 2);
+      c.fill();
+    };
+    const team = this.selfTeam;
+    if (team === 0 || team === 1) hole(this.world.map.fountain[team].x, this.world.map.fountain[team].y, SIGHT.fountain);
+    for (const u of this.world.list) {
+      if (!u.alive || u.team !== team) continue;
+      const r = sightOf(u);
+      if (r > 0) hole(u.pos.x, u.pos.y, r);
+    }
+    this.fogTex!.source.update();
+  }
+
   private freeze(v: UnitView, until: number): void {
     if (performance.now() >= v.freezeUntil) {
       v.frozenX = v.rx;
@@ -260,6 +313,12 @@ export class GameRenderer {
     const oy = cam.originY();
     this.groundRoot.scale.set(z, z * TILT);
     this.groundRoot.position.set(ox, oy);
+    this.fogRoot.scale.set(z, z * TILT);
+    this.fogRoot.position.set(ox, oy);
+    if (this.fogCanvas && now - this.fogAt > 90) {
+      this.fogAt = now;
+      this.paintFog();
+    }
     this.objectRoot.position.set(ox, oy);
     this.effects.air.position.set(ox, oy);
     this.effects.zoom = z;
@@ -306,7 +365,9 @@ export class GameRenderer {
       const { x, y } = posOf(u);
       const onScreen = x > view.x0 && x < view.x1 && y > view.y0 && y < view.y1 + 4;
       const ruin = !u.alive && isStructure(u);
-      const visible = (u.alive || ruin) && onScreen;
+      const visible = (u.alive || ruin) && onScreen && visibleTo(u, this.selfTeam);
+      // 自己人藏在草丛里时半透明
+      v.root.alpha = u.bush > 0 && u.team === this.selfTeam ? 0.55 : 1;
       v.root.visible = visible;
       v.overlay.visible = visible && u.alive && !u.innate.untargetable;
       if (ruin) v.showRuins();

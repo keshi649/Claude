@@ -17,6 +17,8 @@ it('单人沿中路推塔，能摧毁敌方水晶获胜', () => {
     const cmds: Command[] = [];
     const h = hero.hero!;
     while (h.skillPoints > 0 && cmds.length < 3) cmds.push({ t: 'levelSkill', pid: 1, slot: (h.level >= 4 ? 2 : i % 2) as 0 | 1 | 2 });
+    // 像真人一样用“推荐购买”买装备
+    if (i % 30 === 0) cmds.push({ t: 'buyRecommended', pid: 1 });
     if (hero.alive) {
       const targets = w.list
         .filter((u) => u.team === 1 && u.alive && (u.kind === 'crystal' || (u.kind === 'tower' && u.lane?.id === 'mid')))
@@ -38,7 +40,13 @@ it('单人沿中路推塔，能摧毁敌方水晶获胜', () => {
         key = 'wait' + t.id;
         const k = (t.stats.range + 4) / Math.SQRT2;
         if (lastCmd !== key) cmds.push({ t: 'moveTo', pid: 1, x: t.pos.x - k, y: t.pos.y + k });
-        cmds.push({ t: 'attack', pid: 1, mode: 'farm' });
+        // 只打敌方小兵（不去招惹野怪），有兵时放技能清线
+        const enemyMinion = w.list.some((m) => m.kind === 'minion' && m.team === 1 && m.alive && Math.hypot(m.pos.x - hero.pos.x, m.pos.y - hero.pos.y) < 5);
+        if (enemyMinion) {
+          cmds.push({ t: 'attack', pid: 1, mode: 'auto' });
+          if (i % 30 === 0) cmds.push({ t: 'cast', pid: 1, slot: 1, aim: { k: 'auto' } });
+          if (i % 45 === 0) cmds.push({ t: 'cast', pid: 1, slot: 0, aim: { k: 'auto' } });
+        }
       }
       lastCmd = key;
     }

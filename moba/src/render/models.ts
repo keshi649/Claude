@@ -455,3 +455,185 @@ export function dummyModel(): Model & { wobble: (k: number) => void } {
     },
   };
 }
+
+// ————————————————————————— 野怪 / Boss / 先锋 —————————————————————————
+
+interface BeastSpec {
+  scale: number;
+  color: number;
+  /** 身体长、高（米，缩放前） */
+  bodyL: number;
+  bodyH: number;
+  legH: number;
+  head: number;
+  kind: 'lizard' | 'wolf' | 'owl' | 'deer' | 'golem' | 'turtle' | 'dragon' | 'vanguard';
+  glow?: number;
+  glowTex: Texture;
+}
+
+function buildBeast(sp: BeastSpec): Model {
+  const root = new Container();
+  const rig = new Container();
+  rig.scale.set(sp.scale);
+  root.addChild(rig);
+  const C = sp.color;
+  const dark = darker(C, 0.6);
+  const light = darker(C, 1.35);
+  const L = sp.bodyL;
+  const H = sp.bodyH;
+  const legY = -sp.legH;
+  const legs: Container[] = [];
+
+  const mkLeg = (x: number, back: boolean): Container => {
+    const c = new Container();
+    c.position.set(x, legY);
+    const g = new Graphics();
+    const w = sp.kind === 'turtle' || sp.kind === 'golem' ? 0.22 : 0.12;
+    g.roundRect(-w / 2, 0, w, sp.legH, w / 2).fill(back ? dark : darker(C, 0.8));
+    c.addChild(g);
+    legs.push(c);
+    return c;
+  };
+
+  const body = new Container();
+  const bg = new Graphics();
+  const glow = new Sprite(sp.glowTex);
+  glow.anchor.set(0.5);
+  glow.blendMode = 'add';
+  glow.visible = sp.glow !== undefined;
+  if (sp.glow !== undefined) glow.tint = sp.glow;
+
+  if (sp.kind === 'owl') {
+    // 圆滚滚的鸟：身体 + 大眼 + 翅膀 + 耳羽，悬浮
+    bg.ellipse(0, -0.7, 0.42, 0.5).fill(C);
+    bg.ellipse(0.05, -0.62, 0.28, 0.34).fill(light);
+    bg.poly([-0.3, -1.05, -0.2, -1.35, -0.08, -1.08]).fill(dark);
+    bg.poly([0.3, -1.05, 0.2, -1.35, 0.08, -1.08]).fill(dark);
+    bg.circle(-0.12, -0.9, 0.12).fill(0xffffff);
+    bg.circle(0.14, -0.9, 0.12).fill(0xffffff);
+    bg.circle(-0.1, -0.9, 0.06).fill(0xffa020);
+    bg.circle(0.16, -0.9, 0.06).fill(0xffa020);
+    bg.poly([0.02, -0.82, 0.08, -0.72, -0.04, -0.72]).fill(0xe0a030);
+    body.addChild(bg);
+  } else if (sp.kind === 'golem') {
+    // 岩石巨像：块状身体 + 熔岩裂纹
+    bg.roundRect(-0.7, -2.1, 1.4, 1.3, 0.25).fill(dark);
+    bg.roundRect(-0.62, -2.05, 1.24, 1.1, 0.2).fill(C);
+    bg.moveTo(-0.3, -1.9).lineTo(0, -1.5).lineTo(-0.15, -1.2).stroke({ width: 0.06, color: 0xffc040 });
+    bg.moveTo(0.35, -1.8).lineTo(0.15, -1.4).stroke({ width: 0.05, color: 0xffc040 });
+    bg.roundRect(-0.35, -2.55, 0.7, 0.5, 0.15).fill(dark);
+    bg.circle(-0.12, -2.32, 0.07).fill(0xffe060);
+    bg.circle(0.14, -2.32, 0.07).fill(0xffe060);
+    bg.circle(-0.85, -1.55, 0.3).fill(dark);
+    bg.circle(0.85, -1.55, 0.3).fill(dark);
+    body.addChild(bg);
+  } else if (sp.kind === 'turtle') {
+    // 玄甲巨龟：六边形纹路的龟壳
+    bg.ellipse(0, -1.1, L * 0.55, H * 0.75).fill(dark);
+    bg.ellipse(0, -1.2, L * 0.5, H * 0.7).fill(C);
+    for (let i = -1; i <= 1; i++) {
+      for (let j = 0; j < 2; j++) {
+        const cx = i * 0.75 + (j ? 0.37 : 0);
+        const cy = -1.55 + j * 0.55;
+        const pts: number[] = [];
+        for (let k = 0; k < 6; k++) pts.push(cx + Math.cos((k * Math.PI) / 3) * 0.32, cy + Math.sin((k * Math.PI) / 3) * 0.24);
+        bg.poly(pts).stroke({ width: 0.06, color: light });
+      }
+    }
+    bg.ellipse(L * 0.55, -0.85, 0.42, 0.32).fill(darker(C, 0.9));
+    bg.circle(L * 0.64, -0.9, 0.06).fill(0xffe060);
+    body.addChild(bg);
+  } else {
+    // 四足兽：蜥蜴 / 狼 / 鹿 / 龙 / 先锋
+    const bodyY = legY - H * 0.35;
+    bg.ellipse(0, bodyY, L / 2, H / 2).fill(C);
+    bg.ellipse(0, bodyY + H * 0.18, L / 2.4, H / 3.2).fill(light);
+    // 尾巴
+    const tail = sp.kind === 'wolf' ? 0.5 : sp.kind === 'lizard' ? 0.9 : sp.kind === 'dragon' ? 1.4 : 0.3;
+    bg.poly([-L / 2 + 0.05, bodyY - 0.1, -L / 2 - tail, bodyY - (sp.kind === 'wolf' ? 0.35 : 0.05), -L / 2 + 0.05, bodyY + 0.12]).fill(dark);
+    // 头
+    const hx = L / 2 + sp.head * 0.3;
+    const hy = bodyY - H * 0.35;
+    bg.ellipse(hx, hy, sp.head, sp.head * 0.75).fill(C);
+    bg.poly([hx + sp.head * 0.6, hy - sp.head * 0.2, hx + sp.head * 1.6, hy + sp.head * 0.15, hx + sp.head * 0.6, hy + sp.head * 0.45]).fill(darker(C, 0.85));
+    bg.circle(hx + sp.head * 0.35, hy - sp.head * 0.2, sp.head * 0.16).fill(sp.kind === 'deer' ? 0x2a2a3a : 0xffd040);
+    if (sp.kind === 'wolf') {
+      bg.poly([hx - sp.head * 0.3, hy - sp.head * 0.5, hx - sp.head * 0.1, hy - sp.head * 1.3, hx + sp.head * 0.15, hy - sp.head * 0.6]).fill(dark);
+      if (sp.scale > 1.1) bg.ellipse(L * 0.25, bodyY - H * 0.25, L * 0.25, H * 0.45).fill(darker(C, 0.75));
+    }
+    if (sp.kind === 'lizard') for (let i = 0; i < 4; i++) bg.poly([-L / 3 + i * 0.28, bodyY - H / 2 + 0.02, -L / 3 + i * 0.28 + 0.1, bodyY - H / 2 - 0.18, -L / 3 + i * 0.28 + 0.2, bodyY - H / 2 + 0.02]).fill(0x4a7a3a);
+    if (sp.kind === 'deer') {
+      for (const s of [-1, 1]) {
+        bg.moveTo(hx - 0.05 * s, hy - sp.head * 0.6)
+          .lineTo(hx - 0.25 * s, hy - sp.head * 1.9)
+          .moveTo(hx - 0.15 * s, hy - sp.head * 1.3)
+          .lineTo(hx + 0.2, hy - sp.head * 1.8)
+          .stroke({ width: 0.06, color: 0xa0e0ff });
+      }
+    }
+    if (sp.kind === 'dragon' || sp.kind === 'vanguard') {
+      bg.poly([hx - sp.head * 0.2, hy - sp.head * 0.6, hx - sp.head * 0.7, hy - sp.head * 1.6, hx + sp.head * 0.1, hy - sp.head * 0.7]).fill(0xe0d8ff);
+    }
+    if (sp.kind === 'dragon') {
+      bg.poly([-0.2, bodyY - H * 0.4, -1.2, bodyY - H * 1.9, 0.9, bodyY - H * 0.6]).fill({ color: darker(C, 1.2), alpha: 0.9 });
+      bg.poly([-0.2, bodyY - H * 0.4, -0.5, bodyY - H * 1.6, 0.9, bodyY - H * 0.6]).fill({ color: dark, alpha: 0.7 });
+    }
+    body.addChild(bg);
+  }
+  const bodyTop = sp.kind === 'owl' ? 1.3 : sp.kind === 'golem' ? 2.6 : sp.kind === 'turtle' ? 2.1 : sp.legH + H + sp.head;
+  glow.width = glow.height = Math.max(L, 1.2) * 2;
+  glow.position.set(0, -bodyTop * 0.55);
+
+  if (sp.kind !== 'owl' && sp.kind !== 'golem') {
+    rig.addChild(mkLeg(-L * 0.3, true), mkLeg(L * 0.3, true));
+  }
+  if (sp.kind === 'golem') {
+    rig.addChild(mkLeg(-0.3, true), mkLeg(0.3, false));
+    legs.forEach((l) => (l.y = -0.8));
+  }
+  rig.addChild(glow, body);
+  if (sp.kind !== 'owl' && sp.kind !== 'golem') rig.addChild(mkLeg(-L * 0.22, false), mkLeg(L * 0.38, false));
+
+  let phase = 0;
+  return {
+    root,
+    height: bodyTop * sp.scale + 0.2,
+    update(a: AnimState): void {
+      rig.scale.x = (Math.cos(a.facing) >= 0 ? 1 : -1) * sp.scale;
+      const moving = a.speed > 0.4;
+      if (moving) phase += a.dt * (5 + a.speed * 2);
+      legs.forEach((l, i) => (l.rotation = moving ? Math.sin(phase + (i % 2 ? Math.PI : 0)) * 0.5 : 0));
+      const bob = sp.kind === 'owl' ? Math.sin(a.now / 250) * 0.08 - 0.15 : moving ? -Math.abs(Math.sin(phase)) * 0.05 : Math.sin(a.now / 600) * 0.02;
+      body.y = bob;
+      // 攻击：向前扑
+      body.x = a.attackT !== null ? Math.sin(Math.min(1, a.attackT) * Math.PI) * 0.35 : 0;
+      glow.alpha = sp.glow !== undefined ? 0.45 + Math.sin(a.now / 300) * 0.15 : 0;
+    },
+  };
+}
+
+export function monsterModel(def: UnitDef, team: number, glowTex: Texture): Model {
+  const c = def.color ?? 0x888888;
+  switch (def.id) {
+    case 'lizard_king':
+      return buildBeast({ kind: 'lizard', scale: 1.25, color: c, bodyL: 1.4, bodyH: 0.5, legH: 0.3, head: 0.3, glowTex });
+    case 'lizard':
+      return buildBeast({ kind: 'lizard', scale: 0.8, color: c, bodyL: 1.2, bodyH: 0.45, legH: 0.25, head: 0.26, glowTex });
+    case 'wolf_alpha':
+      return buildBeast({ kind: 'wolf', scale: 1.25, color: c, bodyL: 1.3, bodyH: 0.6, legH: 0.55, head: 0.3, glowTex });
+    case 'wolf':
+      return buildBeast({ kind: 'wolf', scale: 0.85, color: c, bodyL: 1.2, bodyH: 0.55, legH: 0.5, head: 0.28, glowTex });
+    case 'owl':
+      return buildBeast({ kind: 'owl', scale: 0.9, color: c, bodyL: 0.8, bodyH: 1, legH: 0, head: 0.3, glowTex });
+    case 'blue_deer':
+      return buildBeast({ kind: 'deer', scale: 1.3, color: c, bodyL: 1.5, bodyH: 0.7, legH: 0.85, head: 0.32, glow: 0x60b0ff, glowTex });
+    case 'red_golem':
+      return buildBeast({ kind: 'golem', scale: 1.15, color: c, bodyL: 1.4, bodyH: 1.3, legH: 0.8, head: 0.4, glow: 0xff6a20, glowTex });
+    case 'turtle':
+      return buildBeast({ kind: 'turtle', scale: 1.3, color: c, bodyL: 3.2, bodyH: 1.6, legH: 0.5, head: 0.4, glow: 0x6ad0a0, glowTex });
+    case 'dragon':
+      return buildBeast({ kind: 'dragon', scale: 1.5, color: c, bodyL: 2.6, bodyH: 1.1, legH: 0.8, head: 0.5, glow: 0x9a8aff, glowTex });
+    default:
+      return buildBeast({ kind: 'vanguard', scale: 1.1, color: c, bodyL: 1.7, bodyH: 0.9, legH: 0.7, head: 0.4, glow: PALETTE.team[team as 0 | 1] ?? 0x9a8aff, glowTex });
+  }
+}

@@ -93,6 +93,7 @@ export function updateAttacks(w: World): void {
 
 function fireAttack(w: World, u: Unit, t: Unit, def: AttackDef): void {
   const crit = w.rng.next() < u.stats.crit;
+  u.revealUntil = w.time + 1.2;
   if (def.projectile) {
     const dx = t.pos.x - u.pos.x;
     const dy = t.pos.y - u.pos.y;
@@ -138,6 +139,8 @@ export function applyAttackHit(w: World, u: Unit, t: Unit, crit: boolean): void 
     u.rampTarget = t.hero ? t.id : 0;
     raw *= 1 + TOWER_RAMP.perHit * u.rampStacks;
   }
+  // 攻城单位对建筑的额外伤害
+  if (isStructure(t) && u.kind !== 'hero') raw *= getUnitDef(u.defId).structureDmg ?? 1;
   applyDamage(w, u, t, raw, 'physical', { crit, isAttack: true, impact: crit ? 1 : 0 });
   if (!u.alive) return;
   for (const b of [...u.buffs]) {

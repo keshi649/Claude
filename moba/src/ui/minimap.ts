@@ -2,6 +2,7 @@ import { getHero } from '../data/heroes';
 import { LANE_HALF_WIDTH, RIVER_HALF_WIDTH, type BuiltMap } from '../data/map';
 import type { Vec2 } from '../core/vec2';
 import type { World } from '../sim/world';
+import { visibleTo } from '../sim/vision';
 
 const css = (c: number): string => `#${c.toString(16).padStart(6, '0')}`;
 const TEAM = ['#3fb6ff', '#ff5a3c'];
@@ -74,12 +75,15 @@ export class Minimap {
     return { x: ((clientX - r.left) / r.width) * this.map.size, y: ((clientY - r.top) / r.height) * this.map.size };
   }
 
-  draw(w: World, selfId: number, view: { x0: number; y0: number; x1: number; y1: number }): void {
+  draw(w: World, selfId: number, view: { x0: number; y0: number; x1: number; y1: number }, fog: HTMLCanvasElement | null): void {
     this.ensureSize();
     const c = this.ctx;
     const S = this.sizePx / this.map.size;
     const dpr = this.sizePx / Math.max(1, this.el.clientWidth);
     c.drawImage(this.terrain, 0, 0);
+    if (fog) c.drawImage(fog, 0, 0, this.sizePx, this.sizePx);
+    const team = w.get(selfId)?.team ?? 0;
+    const seen = (u: (typeof w.list)[number]): boolean => visibleTo(u, team);
 
     // 建筑
     for (const u of w.list) {
@@ -103,7 +107,7 @@ export class Minimap {
     }
     // 小兵 / 木桩
     for (const u of w.list) {
-      if (!u.alive || (u.kind !== 'minion' && u.kind !== 'dummy' && u.kind !== 'monster')) continue;
+      if (!u.alive || (u.kind !== 'minion' && u.kind !== 'dummy' && u.kind !== 'monster' && u.kind !== 'summon') || !seen(u)) continue;
       c.fillStyle = u.kind === 'dummy' ? '#c8a878' : u.kind === 'monster' ? '#e8c64a' : TEAM[u.team]!;
       c.beginPath();
       c.arc(u.pos.x * S, u.pos.y * S, 1.8 * dpr, 0, Math.PI * 2);
@@ -111,7 +115,7 @@ export class Minimap {
     }
     // 英雄头像
     for (const u of w.list) {
-      if (u.kind !== 'hero' || !u.alive) continue;
+      if (u.kind !== 'hero' || !u.alive || !seen(u)) continue;
       const def = getHero(u.defId);
       const x = u.pos.x * S;
       const y = u.pos.y * S;
@@ -128,6 +132,19 @@ export class Minimap {
       c.textAlign = 'center';
       c.textBaseline = 'middle';
       c.fillText(def.name[0]!, x, y + 0.5 * dpr);
+    }
+    // 野怪营地与 Boss：视野内活着的营地画黄点 / 紫色图标
+    for (const camp of w.camps) {
+      // 只显示本队视野里能看到的营地
+      if (!camp.ids.some((id) => { const m = w.get(id); return !!m && m.alive && seen(m); })) continue;
+      const boss = camp.kind === 'turtle' || camp.kind === 'dragon';
+      c.fillStyle = boss ? '#b08ae0' : '#e8c64a';
+      c.strokeStyle = '#0b0f14';
+      c.lineWidth = dpr;
+      c.beginPath();
+      c.arc(camp.pos.x * S, camp.pos.y * S, (boss ? 5 : 3) * dpr, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
     }
     // 镜头视野框
     c.strokeStyle = 'rgba(255,255,255,0.8)';

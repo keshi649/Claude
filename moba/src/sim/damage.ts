@@ -67,6 +67,9 @@ export function applyDamage(
 
   target.hp -= dmg;
   target.lastDamagedAt = w.time;
+  if (src) target.lastAttacker = src.id;
+  // 在草丛里造成伤害会暴露自己
+  if (src) src.revealUntil = w.time + 1.2;
   // 英雄之间的伤害：记录助攻归属与转火信息，统计输出 / 承伤
   if (src?.hero) {
     src.hero.damageDealt += target.hero ? total : 0;

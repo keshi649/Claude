@@ -8,7 +8,9 @@ import type { LaneId } from '../data/map';
 import { CRYSTAL, TOWERS } from '../data/structures';
 import { DUMMY } from '../data/units';
 import type { Command } from './commands';
-import type { EntityId, PendingArea, Projectile, Team, Unit, UnitKind, Zone } from './entity';
+import { NEUTRAL, type EntityId, type PendingArea, type Projectile, type Team, type Unit, type UnitKind, type Zone } from './entity';
+import { createCamps, updateCamps, updateMonsters, type CampState } from './systems/jungle';
+import { BushGrid, updateVision } from './vision';
 import type { SimEvent } from './events';
 import { autoLevelSkills, levelSkill, levelUp } from './hero';
 import { buyItem, nextRecommended, sellItem } from './shop';
@@ -52,12 +54,12 @@ export interface WorldConfig {
 }
 
 /** 静态地图数据只构建一次，多局 / 多个 World 共享（导航网格按局复制动态层） */
-let staticCache: { map: BuiltMap; walls: WallField; nav: NavGrid } | null = null;
-function staticMap(): { map: BuiltMap; walls: WallField; nav: NavGrid } {
+let staticCache: { map: BuiltMap; walls: WallField; nav: NavGrid; bushes: BushGrid } | null = null;
+function staticMap(): { map: BuiltMap; walls: WallField; nav: NavGrid; bushes: BushGrid } {
   if (!staticCache) {
     const map = buildMap();
     const walls = new WallField(map.walls, map.size);
-    staticCache = { map, walls, nav: new NavGrid(walls) };
+    staticCache = { map, walls, nav: new NavGrid(walls), bushes: new BushGrid(map) };
   }
   return staticCache;
 }
@@ -76,6 +78,7 @@ export class World {
   readonly nav: NavGrid;
   readonly astar: AStar;
   readonly spatial: SpatialHash;
+  readonly bushes: BushGrid;
   readonly units = new Map<EntityId, Unit>();
   list: Unit[] = [];
   projectiles: Projectile[] = [];
@@ -91,6 +94,8 @@ export class World {
   waveIndex = 0;
   /** 获胜方，null 表示对局进行中 */
   winner: Team | null = null;
+  /** 野怪营地与 Boss */
+  camps: CampState[] = [];
   private idSeq = 1;
   private castSeq = 1;
 
@@ -99,10 +104,12 @@ export class World {
     const st = staticMap();
     this.map = st.map;
     this.walls = st.walls;
+    this.bushes = st.bushes;
     this.nav = st.nav.clone();
     this.astar = new AStar(this.nav);
     this.spatial = new SpatialHash(this.map.size);
     this.setup();
+    updateVision(this);
   }
 
   // ————————————————————————— 基础 API —————————————————————————
@@ -187,6 +194,13 @@ export class World {
       recentAttackers: [],
       lockTarget: 0,
       bornAt: this.time,
+      lastAttacker: 0,
+      resetting: false,
+      skillTimer: 0,
+      skillWindup: 0,
+      visibleMask: 3,
+      revealUntil: 0,
+      bush: 0,
     };
     u.prevFacing = u.facing;
     recomputeStats(u);
@@ -250,6 +264,30 @@ export class World {
     return this.addUnit(u);
   }
 
+  /** 生成野怪 / Boss（中立阵营） */
+  spawnMonster(def: UnitDef, pos: Vec2): Unit {
+    const u = this.makeUnit('monster', NEUTRAL, def.id, def.name, pos, def.radius, this.scaledBase(def));
+    u.facing = Math.PI / 2;
+    u.prevFacing = u.facing;
+    return this.addUnit(u);
+  }
+
+  /** 生成召唤物（霆角先锋）：沿指定路线推进 */
+  spawnSummon(def: UnitDef, team: Team, pos: Vec2, lane: LaneId): Unit {
+    const u = this.makeUnit('summon', team, def.id, def.name, pos, def.radius, this.scaledBase(def));
+    u.lane = { id: lane, idx: 1 };
+    return this.addUnit(u);
+  }
+
+  /** 按对局时间成长后的属性 */
+  private scaledBase(def: UnitDef): StatBlock {
+    const min = this.time / 60;
+    const base = { ...def.base };
+    const g = def.growthPerMin ?? {};
+    for (const k of Object.keys(g) as StatKey[]) base[k] = base[k] * (1 + (g[k] ?? 0) * min);
+    return base;
+  }
+
   spawnDummy(pos: Vec2, team: Team, patrol: Vec2[] | null = null): Unit {
     const def = DUMMY;
     const u = this.makeUnit('dummy', team, def.id, def.name, pos, def.radius, def.base);
@@ -284,6 +322,7 @@ export class World {
 
   private setup(): void {
     this.spawnStructures();
+    if (this.config.mode === 'match') this.camps = createCamps(this);
     const level = this.config.startLevel ?? 1;
     for (const p of this.config.players) {
       const u = this.spawnHero(p, level);
@@ -324,16 +363,19 @@ export class World {
       u.prevPos.y = u.pos.y;
       u.prevFacing = u.facing;
     }
-    // 先建空间索引，命令里的索敌 / 自动瞄准才能查到最新位置
+    // 先建空间索引与视野，命令里的索敌 / 自动瞄准才能查到最新位置
     this.spatial.rebuild(this.list);
+    if (this.tick % 3 === 1) updateVision(this);
     for (const c of commands) this.apply(c);
 
     if (this.aggro.length && this.tick % 15 === 0) this.aggro = this.aggro.filter((a) => this.time - a.t < 3);
     const match = this.config.mode === 'match';
     if (match) {
       updateWaves(this);
+      updateCamps(this);
       updateProtection(this);
       updateMinions(this);
+      updateMonsters(this);
       updateTowers(this);
     }
     updateCasts(this);

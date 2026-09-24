@@ -234,6 +234,19 @@ export interface Unit {
   lockTarget: EntityId;
   /** 生成时刻（秒） */
   bornAt: number;
+  /** 最近一次伤害自己的单位 */
+  lastAttacker: EntityId;
+  /** 野怪：正在脱战回营 */
+  resetting: boolean;
+  /** 野怪 / Boss 技能计时与前摇 */
+  skillTimer: number;
+  skillWindup: number;
+  /** 视野：对哪些队伍可见（第 0 位蓝方，第 1 位红方） */
+  visibleMask: number;
+  /** 在草丛里攻击 / 施法后暴露到此刻 */
+  revealUntil: number;
+  /** 所在草丛编号（0 表示不在草丛里） */
+  bush: number;
 }
 
 export interface Projectile {

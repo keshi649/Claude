@@ -2,6 +2,7 @@ import { statBlock, type BuffDef, type UnitDef } from './schema';
 import { HERO_LIST } from './heroes';
 import { MINIONS } from './minions';
 import { CRYSTAL, TOWERS } from './structures';
+import { JUNGLE_BUFFS, MONSTERS } from './monsters';
 
 /** 训练木桩 */
 export const DUMMY: UnitDef = {
@@ -16,7 +17,7 @@ export const DUMMY: UnitDef = {
 
 /** 非英雄单位注册表 */
 export const UNIT_DEFS: Record<string, UnitDef> = {};
-for (const d of [DUMMY, CRYSTAL, ...Object.values(TOWERS), ...Object.values(MINIONS)]) UNIT_DEFS[d.id] = d;
+for (const d of [DUMMY, CRYSTAL, ...Object.values(TOWERS), ...Object.values(MINIONS), ...Object.values(MONSTERS)]) UNIT_DEFS[d.id] = d;
 
 export function registerUnitDefs(defs: readonly UnitDef[]): void {
   for (const d of defs) UNIT_DEFS[d.id] = d;
@@ -49,7 +50,7 @@ const COMMON_BUFFS: BuffDef[] = [
 
 /** 全局增益注册表：通用增益 + 各英雄专属增益 */
 export const BUFFS: Record<string, BuffDef> = {};
-for (const b of COMMON_BUFFS) BUFFS[b.id] = b;
+for (const b of [...COMMON_BUFFS, ...JUNGLE_BUFFS]) BUFFS[b.id] = b;
 for (const h of HERO_LIST) for (const b of h.buffs ?? []) BUFFS[b.id] = b;
 
 export function getBuff(id: string): BuffDef {

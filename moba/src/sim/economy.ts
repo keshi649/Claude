@@ -2,7 +2,9 @@ import { ECONOMY, respawnTime, xpToNext } from '../data/balance';
 import { getUnitDef } from '../data/units';
 import type { Team, Unit } from './entity';
 import { levelUp } from './hero';
-import { isStructure } from './status';
+import { addBuff, isStructure } from './status';
+import { MONSTERS, TURTLE_REWARD } from '../data/monsters';
+import { LANES } from '../data/map';
 import type { World } from './world';
 
 /**
@@ -77,6 +79,7 @@ export function onKill(w: World, victim: Unit, killer: Unit | null): void {
   }
   // 小兵 / 野怪：最后一击的英雄得金币，附近敌方英雄分享经验
   const def = getUnitDef(victim.defId);
+  if (victim.kind === 'monster' && killer && killer.team !== 2) monsterRewards(w, victim, killer);
   if (killer?.hero && killer.team !== victim.team) {
     grantGold(w, killer, def.gold);
     killer.hero.lastHits++;
@@ -87,6 +90,27 @@ export function onKill(w: World, victim: Unit, killer: Unit | null): void {
   } else {
     shareXp(w, enemyTeam, victim.pos.x, victim.pos.y, def.xp);
   }
+}
+
+/** 野怪 / Boss 的特殊奖励：增益、全队金币经验、召唤先锋 */
+function monsterRewards(w: World, victim: Unit, killer: Unit): void {
+  const def = getUnitDef(victim.defId);
+  const team = killer.team as 0 | 1;
+  if (def.buffOnKill && killer.hero) addBuff(w, killer, def.buffOnKill.id, killer.id, def.buffOnKill.duration, 1, killer.hero.level);
+  if (def.reward === 'teamGoldXp') {
+    for (const u of w.list) {
+      if (!u.hero || u.team !== team) continue;
+      grantGold(w, u, TURTLE_REWARD.gold);
+      grantXp(w, u, TURTLE_REWARD.xp);
+    }
+  }
+  if (def.reward === 'vanguard') {
+    for (const lane of LANES) {
+      const path = w.map.lanes[team][lane];
+      w.spawnSummon(MONSTERS.vanguard!, team, { ...path[1]! }, lane);
+    }
+  }
+  if (def.reward) w.emit({ t: 'bossKilled', boss: def.id, team, killer: killer.id });
 }
 
 function onHeroKilled(w: World, victim: Unit, killer: Unit | null): void {

@@ -7,6 +7,7 @@ import { isEnemy } from '../entity';
 import { edgeDist } from '../query';
 import { canAct, isInvulnerable, isStructure, isTargetable } from '../status';
 import type { World } from '../world';
+import { visibleTo } from '../vision';
 
 /**
  * 兵线：
@@ -84,7 +85,7 @@ function acquire(w: World, u: Unit): Unit | null {
   let best: Unit | null = null;
   let bestKey = Infinity;
   for (const t of near) {
-    if (t.team === 2 || !isEnemy(u, t) || !isTargetable(t)) continue;
+    if (t.team === 2 || !isEnemy(u, t) || !isTargetable(t) || !visibleTo(t, u.team)) continue;
     if (isStructure(t) && isInvulnerable(t)) continue;
     const tier = t.kind === 'minion' || t.kind === 'summon' ? 0 : t.kind === 'hero' ? 1 : isStructure(t) ? 2 : 3;
     if (tier === 3) continue;
@@ -99,7 +100,7 @@ function acquire(w: World, u: Unit): Unit | null {
 
 export function updateMinions(w: World): void {
   for (const u of w.list) {
-    if (u.kind !== 'minion' || !u.alive || !canAct(u)) continue;
+    if ((u.kind !== 'minion' && u.kind !== 'summon') || !u.lane || !u.alive || !canAct(u)) continue;
     let t = w.get(u.lockTarget);
     if (t && (!t.alive || !isTargetable(t) || edgeDist(u, t) > LEASH || (isStructure(t) && isInvulnerable(t)))) t = undefined;
     // 每 5 帧重新评估一次（按 id 错开，分摊开销）

@@ -45,7 +45,7 @@ export function updateMovement(w: World): void {
       if (u.cast && u.cast.phase === 'recovery') u.cast = null;
     } else if (u.navGoal) {
       dir = followPath(w, u);
-    } else if (u.kind === 'minion' && u.lane) {
+    } else if ((u.kind === 'minion' || u.kind === 'summon') && u.lane) {
       const ld = laneDirection(w, u);
       if (ld) dir = seek(w, u, { x: u.pos.x + ld.x * 3, y: u.pos.y + ld.y * 3 }, 0) ?? ld;
     } else if (u.patrol && u.patrol.length > 0) {

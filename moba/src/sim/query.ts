@@ -4,6 +4,7 @@ import type { Vec2 } from '../core/vec2';
 import { isEnemy, type Team, type Unit } from './entity';
 import { isInvulnerable, isStructure, isTargetable } from './status';
 import type { AttackMode } from './commands';
+import { visibleTo } from './vision';
 import type { World } from './world';
 
 /**
@@ -102,7 +103,7 @@ function attackTier(u: Unit): number {
 }
 
 export function validAttackTarget(attacker: Unit, t: Unit | undefined, mode: AttackMode): t is Unit {
-  if (!t || !isTargetable(t) || !isEnemy(attacker, t)) return false;
+  if (!t || !isTargetable(t) || !isEnemy(attacker, t) || !visibleTo(t, attacker.team)) return false;
   // 无敌的建筑（前一座塔还在）不作为普攻目标
   if (isStructure(t) && isInvulnerable(t)) return false;
   if (mode === 'farm') return t.kind === 'minion' || t.kind === 'monster';
@@ -145,6 +146,8 @@ export function pickAttackTarget(w: World, u: Unit, mode: AttackMode): Unit | nu
 /** 指向性目标筛选 */
 export function passesFilter(u: Unit, t: Unit, filter: UnitFilter): boolean {
   if (t === u || !isTargetable(t) || isStructure(t)) return false;
+  // 看不见的敌人不能被指向
+  if (isEnemy(u, t) && !visibleTo(t, u.team)) return false;
   switch (filter) {
     case 'enemy':
       return isEnemy(u, t);

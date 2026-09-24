@@ -405,4 +405,16 @@ export interface UnitDef {
   shape: UnitShape;
   /** 野怪 / Boss 的主色（程序绘制用） */
   color?: number;
+  /** 野怪：离开营地多远会脱战回营（米） */
+  leash?: number;
+  /** 野怪 / Boss 的周期技能：每 every 秒对周围释放一次 */
+  skill?: { name: string; every: number; windup: number; effects: Effect[] };
+  /** 击杀后给最后一击的英雄的增益 */
+  buffOnKill?: { id: string; duration: number };
+  /** Boss 的特殊奖励 */
+  reward?: 'teamGoldXp' | 'vanguard';
+  /** 视野半径（米） */
+  sight?: number;
+  /** 对建筑的伤害倍率（先锋等攻城单位） */
+  structureDmg?: number;
 }

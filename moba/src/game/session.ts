@@ -204,6 +204,12 @@ export class GameSession {
       if (e.t === 'kill' && hero) this.hud.pushKill(w, e.killer, e.victim, hero.team);
       if (e.t === 'structureDown' && hero) this.hud.toast(e.team === hero.team ? '我方防御塔被摧毁' : '摧毁敌方防御塔！');
       if (e.t === 'gameOver' && hero) this.onGameOver(e.winner === hero.team);
+      if (e.t === 'campSpawn' && (e.kind === 'turtle' || e.kind === 'dragon')) this.hud.toast(e.kind === 'turtle' ? '玄甲巨龟出现在上河道' : '霆角龙王出现在下河道');
+      if (e.t === 'bossKilled' && hero) {
+        const name = e.boss === 'turtle' ? '玄甲巨龟' : '霆角龙王';
+        const mine = e.team === hero.team;
+        this.hud.toast(`${mine ? '我方' : '敌方'}击败了${name}${e.boss === 'turtle' ? '，全队获得金币与经验' : '，霆角先锋出击'}`);
+      }
     }
     this.renderer.handleEvents(events);
     if (hero && w.config.mode === 'training') this.trackDps(events, hero.id, now);
@@ -233,7 +239,7 @@ export class GameSession {
     }
     if (now - this.minimapAt > 100 && hero) {
       this.minimapAt = now;
-      this.hud.minimap.draw(w, hero.id, cam.viewRect(0));
+      this.hud.minimap.draw(w, hero.id, cam.viewRect(0), this.renderer.fogCanvasForMinimap);
     }
     this.debug.setStats(
       [

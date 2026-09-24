@@ -80,3 +80,6 @@ export type SimEvent =
   | { t: 'respawn'; unit: EntityId }
   | { t: 'shop'; unit: EntityId; item: string; sold: boolean }
   | { t: 'gameOver'; winner: Team }
+  | { t: 'campSpawn'; kind: string; x: number; y: number }
+  /** Boss 被击杀（播报用） */
+  | { t: 'bossKilled'; boss: string; team: Team; killer: EntityId }

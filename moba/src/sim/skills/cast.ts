@@ -158,6 +158,7 @@ export function commandCast(w: World, u: Unit, slot: 0 | 1 | 2, aim: Aim, phase?
 
   // —— 提交施法 ——
   u.mp -= cost;
+  u.revealUntil = w.time + 1.2;
   u.attack.windup = 0;
   u.queuedCast = null;
   u.facing = Math.atan2(resolved.dir.y, resolved.dir.x);
