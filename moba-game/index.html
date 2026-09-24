@@ -513,7 +513,8 @@ body.narrow #title .inner{flex-wrap:wrap;align-content:center}
     <div class="menu">
       <div class="opts">
       <div class="og">操作</div>
-      <div class="opt"><div>滑动屏幕移动视角<small>在空白战场上拖动平移镜头，轻触敌人锁定</small></div><button class="sw2" id="optDrag" aria-label="滑动屏幕移动视角开关"></button></div>
+      <div class="opt"><div>滑动屏幕移动视角<small>在空白战场上滑动，往哪滑就看哪边；轻触敌人锁定</small></div><button class="sw2" id="optDrag" aria-label="滑动屏幕移动视角开关"></button></div>
+      <div class="opt touch-only"><div>滑屏改为拖动地图<small>开启后画面跟着手指走（方向与上面相反）</small></div><button class="sw2" id="optDragMap" aria-label="滑屏拖动地图开关"></button></div>
       <div class="opt"><div>镜头视野较远<small>看得更远，单位显示略小</small></div><button class="sw2" id="optFar" aria-label="镜头视野开关"></button></div>
       <div class="opt"><div>自动升级技能<small>关闭时点击技能旁的 + 手动加点</small></div><button class="sw2" id="optSkill" aria-label="自动升级技能开关"></button></div>
       <div class="opt"><div>自动购买装备<small>金币足够时按推荐出装自动购买</small></div><button class="sw2" id="optAuto" aria-label="自动购买开关"></button></div>
@@ -558,7 +559,7 @@ body.narrow #title .inner{flex-wrap:wrap;align-content:center}
         <li>右下角大按钮普通攻击，旁边两个小按钮分别是<b>补刀</b>（只打小兵野怪）和<b>推塔</b>（只打塔）</li>
         <li>技能键<b>轻点</b>自动瞄准最近的敌人，<b>按住拖动</b>出现轮盘手动瞄准，拖到「取消施法」处松开可取消</li>
         <li>升级后技能键旁会出现闪烁的 <b>+</b>，点击即可学习 / 升级该技能（暂停菜单可改为自动升级）</li>
-        <li><b>在空白战场上滑动</b>可以平移视角（松手有惯性），移动、攻击或施法时自动回到英雄，也可点「回到英雄」；拖动小地图同样可以观察战场</li>
+        <li><b>在空白战场上滑动</b>可以移动视角，往哪滑就看哪边（松手有惯性）；移动、攻击或施法时自动回到英雄，也可点「回到英雄」；拖动小地图同样可以观察战场</li>
         <li>轻触画面上的敌人可以锁定目标；点左侧金币打开商店，或点推荐装备一键购买</li>
         <li>小地图右侧「进 / 撤 / 集」给 AI 队友发信号：进攻、撤退、集合</li>
       </ul>
@@ -4661,7 +4662,7 @@ function paintItem(canvas, id) {
 }
 function iconURL(motif, color, size = 64) { const c = document.createElement('canvas'); c.width = c.height = size; paintIcon(c, motif, color); return c.toDataURL(); }
 // ---------------- 设置 ----------------
-const SETTINGS = { sfx: true, voice: true, autoBuy: true, autoSkill: false, fps: false, tips: true, dragCam: true, farView: false, vibe: true };
+const SETTINGS = { sfx: true, voice: true, autoBuy: true, autoSkill: false, fps: false, tips: true, dragCam: true, dragMap: false, farView: false, vibe: true };
 function loadSettings() { try { const s = JSON.parse(localStorage.getItem('xgzf-settings') || '{}'); Object.assign(SETTINGS, s); } catch (e) {} }
 function saveSettings() { try { localStorage.setItem('xgzf-settings', JSON.stringify(SETTINGS)); } catch (e) {} }
 const MENU = { hero: 'yunxi', spell: 'flash', diff: 'normal' };
@@ -4716,7 +4717,7 @@ const TIPS = [
   [66, () => '敌方防御塔会先打小兵；<b>没有小兵掩护</b>时别走进塔下的红圈'],
   [100, () => IS_TOUCH ? '血量低时点「<b>归</b>」回城，泉水能快速回满状态' : '血量低时按 <b>B</b> 回城，泉水能快速回满状态'],
   [140, () => '装备会按推荐自动购买，点左侧<b>金币</b>可打开商店自己挑选'],
-  [170, () => IS_TOUCH ? '在空白战场上<b>滑动</b>可以移动视角，一动英雄就会自动回来' : '按住鼠标<b>中键</b>拖动可以移动视角，按 <b>Y</b> 回到英雄'],
+  [170, () => IS_TOUCH ? '在空白战场上<b>滑动</b>可以移动视角，往哪滑就看哪边，一动英雄就会自动回来' : '按住鼠标<b>中键</b>拖动可以移动视角，按 <b>Y</b> 回到英雄'],
   [200, () => IS_TOUCH ? '小地图旁的「<b>进 / 撤 / 集</b>」可以指挥 AI 队友' : '按 <b>Z / X / G</b> 让 AI 队友 进攻 / 撤退 / 集合'],
 ];
 function tip(html) {
@@ -4930,8 +4931,8 @@ addEventListener('keyup', (e) => onKey(e, false));
 addEventListener('blur', () => { INPUT.keys = {}; INPUT.atkHeld = false; INPUT.joyX = INPUT.joyY = 0; });
 cv.addEventListener('mousemove', (e) => { [INPUT.mx, INPUT.my] = gp(e); INPUT.lastMouseMove = performance.now(); });
 cv.addEventListener('contextmenu', (e) => e.preventDefault());
-// 滑动屏幕移动视角：手指按在空白战场上拖动即可平移镜头（松手后带惯性），轻触敌人则锁定目标。
-// 电脑上用鼠标中键拖动。移动 / 攻击 / 施法或 5 秒无操作后镜头自动回到英雄。
+// 滑动屏幕移动视角：手指按在空白战场上滑动，往哪滑就看哪边（松手后带惯性），轻触敌人则锁定目标。
+// 电脑上用鼠标中键拖动（抓住地图拖）。移动 / 攻击 / 施法或 5 秒无操作后镜头自动回到英雄。
 const PAN = { id: null, sx: 0, sy: 0, lx: 0, ly: 0, t0: 0, lt: 0, drag: false, mouse: false, vx: 0, vy: 0 };
 function panBy(dx, dy) { cam.px += dx; cam.py += dy; cam.panT = performance.now(); }
 function recenter() { cam.px = cam.py = cam.vx = cam.vy = 0; cam.free = false; }
@@ -4951,7 +4952,9 @@ cv.addEventListener('pointermove', (e) => {
   const [x, y] = gp(e), now = performance.now();
   if (!PAN.drag && Math.hypot(x - PAN.sx, y - PAN.sy) > 12 && SETTINGS.dragCam) { PAN.drag = true; PAN.lx = x; PAN.ly = y; }
   if (PAN.drag) {
-    const wx = -(x - PAN.lx) / cam.zoom, wy = -(y - PAN.ly) / (cam.zoom * TILT), dtm = Math.max(8, now - PAN.lt);
+    // 触屏：往哪滑镜头就往哪看（同王者的镜头拖动）；鼠标中键或开启「拖动地图」时画面跟着手指走
+    const k = PAN.mouse || SETTINGS.dragMap ? -1 : 1.3;
+    const wx = k * (x - PAN.lx) / cam.zoom, wy = k * (y - PAN.ly) / (cam.zoom * TILT), dtm = Math.max(8, now - PAN.lt);
     panBy(wx, wy); PAN.vx = lerp(PAN.vx, wx / dtm * 1000, 0.6); PAN.vy = lerp(PAN.vy, wy / dtm * 1000, 0.6); PAN.lt = now;
   }
   PAN.lx = x; PAN.ly = y;
@@ -5302,7 +5305,7 @@ function syncOptions() {
   $('optSfx').classList.toggle('on', SETTINGS.sfx); $('optVoice').classList.toggle('on', SETTINGS.voice); $('optAuto').classList.toggle('on', SETTINGS.autoBuy);
   $('optBot').classList.toggle('on', !!(G && G.autoPlay)); $('optFps').classList.toggle('on', SETTINGS.fps); $('fps').hidden = !SETTINGS.fps;
   $('optTips').classList.toggle('on', SETTINGS.tips); $('optSkill').classList.toggle('on', SETTINGS.autoSkill);
-  $('optDrag').classList.toggle('on', SETTINGS.dragCam); $('optFar').classList.toggle('on', SETTINGS.farView); $('optVibe').classList.toggle('on', SETTINGS.vibe);
+  $('optDrag').classList.toggle('on', SETTINGS.dragCam); $('optDragMap').classList.toggle('on', SETTINGS.dragMap); $('optFar').classList.toggle('on', SETTINGS.farView); $('optVibe').classList.toggle('on', SETTINGS.vibe);
   Sound.sfxOn = SETTINGS.sfx; Sound.voiceOn = SETTINGS.voice;
 }
 function setAuto(on) {
@@ -5322,6 +5325,7 @@ $('optFps').addEventListener('click', () => { SETTINGS.fps = !SETTINGS.fps; save
 $('optTips').addEventListener('click', () => { SETTINGS.tips = !SETTINGS.tips; saveSettings(); syncOptions(); });
 $('optSkill').addEventListener('click', () => { SETTINGS.autoSkill = !SETTINGS.autoSkill; saveSettings(); syncOptions(); });
 $('optDrag').addEventListener('click', () => { SETTINGS.dragCam = !SETTINGS.dragCam; saveSettings(); syncOptions(); });
+$('optDragMap').addEventListener('click', () => { SETTINGS.dragMap = !SETTINGS.dragMap; saveSettings(); syncOptions(); });
 $('optFar').addEventListener('click', () => { SETTINGS.farView = !SETTINGS.farView; saveSettings(); syncOptions(); resize(); });
 $('optVibe').addEventListener('click', () => { SETTINGS.vibe = !SETTINGS.vibe; saveSettings(); syncOptions(); buzz(30); });
 $('btnCam').addEventListener('click', () => { recenter(); Sound.play('click'); });
