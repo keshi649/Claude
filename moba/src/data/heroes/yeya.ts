@@ -144,5 +144,5 @@ export const YEYA: HeroDef = {
     },
   ],
   skillOrder: [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-  build: ['beast_claw', 'sage_boots', 'mountain_blade', 'piercing_bow', 'eternal_shield'],
+  build: ['beast_claw', 'sage_boots', 'mountain_blade', 'guard_jade', 'piercing_bow'],
 };

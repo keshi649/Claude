@@ -1,7 +1,8 @@
 /**
  * 无界面模拟：10 个 AI 快速对打多局，输出胜率、平均时长、各英雄 KDA，用来调数值。
  *
- * 用法：npm run sim -- --games 20 --blue normal --red normal --seed 1 --max 25
+ * 用法：npm run sim -- --games 20 --blue normal --red normal --seed 1 --max 25 [--mirror] [--verbose]
+ *   --mirror：每个种子打两局，第二局双方阵容互换阵营，用来区分“阵营优势”和“阵容强弱”
  */
 import { getHero } from '../src/data/heroes';
 import { AIDirector, makeLineup } from '../src/sim/ai/director';
@@ -19,6 +20,7 @@ const red = arg('red', 'normal') as Difficulty;
 const seed0 = Number(arg('seed', '1'));
 const maxMin = Number(arg('max', '25'));
 const verbose = process.argv.includes('--verbose');
+const mirror = process.argv.includes('--mirror');
 
 interface HeroStat {
   games: number;
@@ -39,8 +41,10 @@ export interface GameResult {
   world: World;
 }
 
-export function playOne(seed: number, blueD: Difficulty, redD: Difficulty, maxMinutes: number): GameResult {
+export function playOne(seed: number, blueD: Difficulty, redD: Difficulty, maxMinutes: number, swap = false): GameResult {
   const lineup = makeLineup({ seed, allyDifficulty: blueD, enemyDifficulty: redD });
+  // 镜像局：阵容与难度不变，只互换阵营
+  if (swap) for (const p of lineup.players) p.team = p.team === 0 ? 1 : 0;
   const w = new World({ seed, mode: 'match', players: lineup.players });
   const ai = new AIDirector(w, lineup.difficulties, lineup.positions);
   const maxTicks = maxMinutes * 60 * 30;
@@ -52,8 +56,8 @@ export function playOne(seed: number, blueD: Difficulty, redD: Difficulty, maxMi
 }
 
 for (let g = 0; g < games; g++) {
-  const seed = seed0 + g;
-  const r = playOne(seed, blue, red, maxMin);
+  const seed = seed0 + (mirror ? Math.floor(g / 2) : g);
+  const r = playOne(seed, blue, red, maxMin, mirror && g % 2 === 1);
   results.push({ winner: r.winner, minutes: r.minutes });
   for (const u of r.world.list) {
     if (!u.hero) continue;

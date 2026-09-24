@@ -173,6 +173,8 @@ export interface HeroState {
   multiKill: number;
   /** 周期被动的计时 */
   passiveTimer: number;
+  /** 装备被动的剩余冷却（秒），键为装备 id；周期被动也用它计时 */
+  itemCd: Record<string, number>;
 }
 
 export interface Unit {

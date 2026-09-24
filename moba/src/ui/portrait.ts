@@ -46,6 +46,15 @@ export function portrait(heroId: string): string {
     c.stroke();
   }
   c.restore();
+  // 背景里的专属字纹（取被动图标字），让同定位的英雄也一眼能分开
+  c.save();
+  c.globalAlpha = 0.2;
+  c.fillStyle = '#fff';
+  c.font = `900 ${S * 0.42}px sans-serif`;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(def.passive.icon.glyph, S * 0.8, S * 0.22);
+  c.restore();
 
   const cx = S / 2;
   const headY = S * 0.47;

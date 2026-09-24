@@ -1,6 +1,6 @@
 import { Rng } from '../../core/rng';
 import type { LaneId } from '../../data/map';
-import { HERO_LIST } from '../../data/heroes';
+import { HERO_LIST, getHero } from '../../data/heroes';
 import type { Command } from '../commands';
 import type { Team, Unit } from '../entity';
 import { isInvulnerable } from '../status';
@@ -8,7 +8,7 @@ import type { PlayerConfig, World } from '../world';
 import { AIBrain, type TeamPlan } from './brain';
 import { DIFFICULTY, type Difficulty } from './difficulty';
 import { TeamKnowledge } from './perception';
-import { assignPositions, type Position } from './roles';
+import { ALL_POSITIONS, PREF, type Position } from './roles';
 
 /**
  * AI 总控：每队一份认知（TeamKnowledge）与队伍计划（打 Boss、后期抱团推进），
@@ -201,8 +201,10 @@ export interface Lineup {
 }
 
 /**
- * 生成 5v5 阵容：同队英雄不重复（敌我可以重复），自动分路；
- * 打野带猎击，辅助 / 坦克带愈合，其余带瞬影。
+ * 生成 5v5 阵容（对标手游人机：每队都是正常的分路阵容）：
+ * 先把玩家放到其英雄最擅长的位置，其余位置按“打野 → 中路 → 发育路 → 游走 → 对抗路”依次
+ * 从最擅长该位置（偏好分 ≥ 8，对抗路 ≥ 6）的英雄里随机挑选；同队英雄不重复（敌我可以重复）。
+ * 打野带猎击，游走带愈合，其余带瞬影（玩家用自己选的召唤师技能）。
  */
 export function makeLineup(o: LineupOptions): Lineup {
   const rng = new Rng((o.seed * 2654435761) >>> 0);
@@ -210,24 +212,37 @@ export function makeLineup(o: LineupOptions): Lineup {
   const positions = new Map<number, Position>();
   const difficulties: Record<number, Difficulty> = {};
   let pid = 1;
+  const FILL: Position[] = ['jungle', 'mid', 'bot', 'roam', 'top'];
   for (const team of [0, 1] as const) {
-    const pool = HERO_LIST.map((h) => h.id);
-    const picks: string[] = [];
-    if (team === 0 && o.playerHero) picks.push(o.playerHero);
-    while (picks.length < 5) {
-      const rest = pool.filter((id) => !picks.includes(id));
-      picks.push(rng.pick(rest));
+    const byPos = new Map<Position, string>();
+    const withPlayer = team === 0 && !!o.playerHero;
+    let playerPos: Position | null = null;
+    if (withPlayer) {
+      const role = getHero(o.playerHero!).role;
+      playerPos = ALL_POSITIONS.reduce((a, b) => (PREF[role][b] > PREF[role][a] ? b : a));
+      byPos.set(playerPos, o.playerHero!);
     }
-    const pos = assignPositions(picks);
-    picks.forEach((heroId, i) => {
-      const isPlayer = team === 0 && i === 0 && !!o.playerHero;
-      const p = pos[i]!;
+    for (const pos of FILL) {
+      if (byPos.has(pos)) continue;
+      const used = new Set(byPos.values());
+      const free = HERO_LIST.filter((h) => !used.has(h.id));
+      // 对抗路战士、坦克都可以；其余位置只挑最擅长的定位，没有再放宽
+      const need = pos === 'top' ? 6 : 8;
+      const best = free.filter((h) => PREF[h.role][pos] >= need);
+      const ok = free.filter((h) => PREF[h.role][pos] >= 6);
+      byPos.set(pos, rng.pick(best.length ? best : ok.length ? ok : free).id);
+    }
+    // 玩家排第一个（pid 1），其余按固定位置顺序
+    const order = playerPos ? [playerPos, ...ALL_POSITIONS.filter((p) => p !== playerPos)] : ALL_POSITIONS;
+    for (const p of order) {
+      const heroId = byPos.get(p)!;
+      const isPlayer = p === playerPos;
       const summoner = isPlayer ? (o.playerSummoner ?? (p === 'jungle' ? 'smite' : 'blink')) : p === 'jungle' ? 'smite' : p === 'roam' ? 'heal' : 'blink';
       players.push({ pid, team, heroId, name: isPlayer ? '玩家' : `${team === 0 ? '蓝' : '红'}方 AI`, isAI: !isPlayer, summoner });
       positions.set(pid, p);
       difficulties[pid] = team === 0 ? o.allyDifficulty : o.enemyDifficulty;
       pid++;
-    });
+    }
   }
   return { players, positions, difficulties };
 }

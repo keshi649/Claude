@@ -28,7 +28,7 @@ function run(w: World, n: number, f: (i: number) => Command[] = () => []): void 
   for (let i = 0; i < n; i++) w.step(f(i));
 }
 
-describe('六名英雄的技能都能正常释放并生效', () => {
+describe('所有英雄的技能都能正常释放并生效', () => {
   for (const def of HERO_LIST) {
     for (const slot of [0, 1, 2] as const) {
       it(`${def.name} · ${def.skills[slot].name}`, () => {
@@ -154,5 +154,60 @@ describe('技能机制', () => {
     const x0 = hero.pos.x;
     w.step([{ t: 'summoner', pid: PID, aim: { k: 'dir', x: 1, y: 0 } }]);
     expect(hero.pos.x - x0).toBeGreaterThan(3);
+  });
+});
+
+describe('新英雄的核心机制', () => {
+  it('铁索 · 缚魂钩：把命中的敌人拉到身前并眩晕', () => {
+    const w = training('tiesuo');
+    const { hero, dummy } = soloDummy(w, 7);
+    w.step([]);
+    const d0 = Math.hypot(dummy.pos.x - hero.pos.x, dummy.pos.y - hero.pos.y);
+    run(w, 30, (i) => (i === 0 ? [{ t: 'cast', pid: PID, slot: 0, aim: { k: 'dir', x: 1, y: 0 } }] : []));
+    const d1 = Math.hypot(dummy.pos.x - hero.pos.x, dummy.pos.y - hero.pos.y);
+    expect(d0).toBeGreaterThan(6);
+    expect(d1).toBeLessThan(2.2);
+  });
+
+  it('灼羽 · 余烬：技能命中英雄（木桩视为英雄）后持续灼烧', () => {
+    const w = training('zhuoyu');
+    const { dummy } = soloDummy(w, 4);
+    w.step([]);
+    run(w, 40, (i) => (i === 0 ? [{ t: 'cast', pid: PID, slot: 0, aim: { k: 'dir', x: 1, y: 0 } }] : []));
+    expect(dummy.buffs.some((b) => b.id === 'zhuoyu_burn')).toBe(true);
+    const hp = dummy.hp;
+    run(w, 35);
+    expect(dummy.hp).toBeLessThan(hp);
+  });
+
+  it('雷牙 · 猎杀：击杀英雄刷新雷闪冷却', () => {
+    const w = new World({
+      seed: 3,
+      mode: 'match',
+      players: [
+        { pid: 1, team: 0, heroId: 'leiya', name: 'a', isAI: false },
+        { pid: 2, team: 1, heroId: 'qingling', name: 'b', isAI: true },
+      ],
+    });
+    const me = w.heroOf(1)!;
+    const foe = w.heroOf(2)!;
+    me.hero!.cooldowns[0] = 8;
+    w.killUnit(foe, me);
+    expect(me.hero!.cooldowns[0]).toBe(0);
+  });
+
+  it('苍隼 · 鹰眼：远距离普攻伤害更高', () => {
+    const hitAt = (dist: number): number => {
+      const w = training('cangsun');
+      const { hero, dummy } = soloDummy(w, dist);
+      w.step([]);
+      let dmg = 0;
+      for (let i = 0; i < 60 && dmg === 0; i++) {
+        w.step([{ t: 'attack', pid: PID, mode: 'auto' }]);
+        for (const e of w.drainEvents()) if (e.t === 'damage' && e.target === dummy.id && e.src === hero.id) dmg += e.amount;
+      }
+      return dmg;
+    };
+    expect(hitAt(6.3)).toBeGreaterThan(hitAt(3) * 1.15);
   });
 });

@@ -210,5 +210,5 @@ export const LIFENG: HeroDef = {
     },
   ],
   skillOrder: [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-  build: ['mountain_blade', 'guard_boots', 'eternal_shield', 'meteor_bow'],
+  build: ['mountain_blade', 'guard_boots', 'frost_gauntlet', 'guard_jade', 'eternal_shield'],
 };

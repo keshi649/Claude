@@ -51,6 +51,20 @@ describe('阵容与分路', () => {
     expect(l.players.filter((p) => !p.isAI)).toHaveLength(1);
   });
 
+  it('人机阵容合理：每队打野、中路、发育路、游走都由擅长该位置的英雄担任', () => {
+    for (let seed = 1; seed <= 30; seed++) {
+      const l = makeLineup({ seed, playerHero: seed % 2 ? 'qingling' : undefined, allyDifficulty: 'normal', enemyDifficulty: 'normal' });
+      for (const team of [0, 1]) {
+        const byPos = new Map(l.players.filter((p) => p.team === team).map((p) => [l.positions.get(p.pid)!, getHero(p.heroId).role]));
+        expect(['assassin', 'fighter', 'tank']).toContain(byPos.get('jungle'));
+        expect(byPos.get('mid')).toBe('mage');
+        expect(byPos.get('bot')).toBe('marksman');
+        expect(['support', 'tank']).toContain(byPos.get('roam'));
+      }
+      if (seed % 2) expect(l.positions.get(1)).toBe('bot');
+    }
+  });
+
   it('按定位分路：射手走发育路、法师走中路、辅助游走', () => {
     const pos = assignPositions(['qingling', 'lanxi', 'zhiying', 'lifeng', 'yeya']);
     expect(pos).toEqual(['bot', 'mid', 'roam', 'top', 'jungle']);
@@ -266,11 +280,11 @@ describe('完整 AI 对局', () => {
     expect(monsters).toBeGreaterThan(5);
     const cs = w.list.filter((u) => u.hero).reduce((s, u) => s + u.hero!.lastHits, 0);
     expect(cs).toBeGreaterThan(100);
-    // 每个 AI 都买了装备、升了级
-    for (const u of w.list) {
-      if (!u.hero) continue;
-      expect(u.hero.items.length).toBeGreaterThan(0);
-      expect(u.hero.level).toBeGreaterThanOrEqual(6);
+    // 每个 AI 都买了装备、升了级（游走位经验少一些）
+    for (const p of w.players) {
+      const u = w.get(p.unitId)!;
+      expect(u.hero!.items.length).toBeGreaterThan(0);
+      expect(u.hero!.level).toBeGreaterThanOrEqual(ai.brainOf(u.id)?.position === 'roam' ? 4 : 6);
     }
   });
 });

@@ -19,7 +19,7 @@ export const ZHIYING: HeroDef = {
   palette: { primary: 0x8a5ab0, secondary: 0xffe28a },
   emblem: 'lantern',
   radius: 0.55,
-  base: statBlock({ maxHp: 3100, maxMp: 680, ad: 140, armor: 100, mr: 70, moveSpeed: 3.8, hpRegen: 12, mpRegen: 9, range: 5 }),
+  base: statBlock({ maxHp: 3300, maxMp: 680, ad: 150, armor: 110, mr: 75, moveSpeed: 3.8, hpRegen: 12, mpRegen: 9, range: 5 }),
   growth: { maxHp: 220, maxMp: 45, ad: 8, armor: 16, mr: 9, attackSpeed: 0.015, hpRegen: 1, mpRegen: 0.6 },
   attack: { interval: 1.1, windupRatio: 0.28, projectile: { speed: 15, vfx: { color: 0xffe28a, style: 'orb', size: 0.2 } } },
   passive: {
@@ -36,7 +36,7 @@ export const ZHIYING: HeroDef = {
             shape: { k: 'circle', r: 6 },
             at: 'caster',
             affects: 'alliesAndSelf',
-            onHit: [{ t: 'if', cond: { k: 'targetKind', kinds: ['hero'] }, then: [{ t: 'heal', to: 'target', amount: { base: byLevel(8, 3), ap: 0.02 } }] }],
+            onHit: [{ t: 'if', cond: { k: 'targetKind', kinds: ['hero'] }, then: [{ t: 'heal', to: 'target', amount: { base: byLevel(10, 4), ap: 0.025 } }] }],
           },
         ],
       },
@@ -67,11 +67,11 @@ export const ZHIYING: HeroDef = {
           t: 'if',
           cond: { k: 'targetIsAlly' },
           then: [
-            { t: 'shield', to: 'target', amount: { base: bySkill(140, 40), ap: 0.5 }, duration: 2.5 },
+            { t: 'shield', to: 'target', amount: { base: bySkill(170, 45), ap: 0.55 }, duration: 2.5 },
             { t: 'buff', buff: 'zhiying_haste', duration: 2, to: 'target' },
           ],
           else: [
-            { t: 'damage', dtype: 'magic', amount: { base: bySkill(150, 35), ap: 0.6 }, impact: 1 },
+            { t: 'damage', dtype: 'magic', amount: { base: bySkill(170, 40), ap: 0.65 }, impact: 1 },
             { t: 'cc', cc: 'slow', duration: 1.5, power: 0.4 },
           ],
         },
@@ -104,7 +104,7 @@ export const ZHIYING: HeroDef = {
               t: 'if',
               cond: { k: 'targetIsAlly' },
               then: [{ t: 'if', cond: { k: 'targetKind', kinds: ['hero'] }, then: [{ t: 'heal', to: 'target', amount: { base: bySkill(110, 30), ap: 0.45 } }] }],
-              else: [{ t: 'damage', dtype: 'magic', amount: { base: bySkill(130, 30), ap: 0.5 }, impact: 1 }],
+              else: [{ t: 'damage', dtype: 'magic', amount: { base: bySkill(150, 35), ap: 0.55 }, impact: 1 }],
             },
           ],
         },
@@ -157,5 +157,5 @@ export const ZHIYING: HeroDef = {
     },
   ],
   skillOrder: [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1],
-  build: ['guard_boots', 'tide_scepter', 'eternal_shield', 'star_tome'],
+  build: ['guard_boots', 'lantern_charm', 'tide_scepter', 'eternal_shield'],
 };

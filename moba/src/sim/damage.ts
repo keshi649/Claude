@@ -2,6 +2,7 @@ import { BALANCE, STRUCTURE_PROTECT } from '../data/balance';
 import type { DamageType, Impact, StatBlock } from '../data/schema';
 import type { Unit } from './entity';
 import { isInvulnerable } from './status';
+import { firePassive } from './skills/effects';
 import type { World } from './world';
 
 /** 有效防御 = 防御 × (1 − 百分比穿透) − 固定穿透，最低为 0 */
@@ -94,6 +95,12 @@ export function applyDamage(
     if (target.buffs.length) target.buffs = target.buffs.filter((b) => b.id !== 'restore');
   }
   if (target.innate.immortal && target.hp < 1) target.hp = 1;
+  // 装备被动：受到致命伤害时尝试免死（护命类）；否则触发“受到伤害”被动
+  if (target.hero) {
+    if (target.hp <= 0) {
+      if (firePassive(w, target, 'lethal', src)) target.hp = Math.max(1, target.hp);
+    } else firePassive(w, target, 'damaged', src);
+  }
 
   w.emit({
     t: 'damage',

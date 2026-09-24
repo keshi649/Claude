@@ -137,5 +137,5 @@ export const DUOSHAN: HeroDef = {
     },
   ],
   skillOrder: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-  build: ['guard_boots', 'eternal_shield', 'tide_scepter', 'oath_cloak'],
+  build: ['guard_boots', 'frost_gauntlet', 'eternal_shield', 'tide_scepter', 'oath_cloak'],
 };

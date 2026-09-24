@@ -16,7 +16,7 @@ export const POSITION_NAMES: Record<Position, string> = {
   roam: '游走',
 };
 
-const PREF: Record<Role, Record<Position, number>> = {
+export const PREF: Record<Role, Record<Position, number>> = {
   tank: { top: 6, mid: 1, bot: 1, jungle: 4, roam: 9 },
   fighter: { top: 10, mid: 3, bot: 2, jungle: 7, roam: 3 },
   assassin: { top: 3, mid: 6, bot: 1, jungle: 10, roam: 2 },
@@ -25,7 +25,8 @@ const PREF: Record<Role, Record<Position, number>> = {
   support: { top: 2, mid: 2, bot: 3, jungle: 1, roam: 10 },
 };
 
-const ALL: Position[] = ['top', 'mid', 'bot', 'jungle', 'roam'];
+export const ALL_POSITIONS: Position[] = ['top', 'mid', 'bot', 'jungle', 'roam'];
+const ALL = ALL_POSITIONS;
 
 function permutations<T>(arr: T[]): T[][] {
   if (arr.length <= 1) return [arr.slice()];

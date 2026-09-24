@@ -147,5 +147,5 @@ export const QINGLING: HeroDef = {
     },
   ],
   skillOrder: [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
-  build: ['swift_boots', 'meteor_bow', 'piercing_bow', 'mountain_blade'],
+  build: ['swift_boots', 'meteor_bow', 'piercing_bow', 'guard_jade', 'mountain_blade'],
 };

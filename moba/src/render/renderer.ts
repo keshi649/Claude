@@ -3,6 +3,7 @@ import { SIGHT, sightOf, visibleTo } from '../sim/vision';
 import type { Team } from '../sim/entity';
 import { lerpAngle } from '../core/vec2';
 import { getHero } from '../data/heroes';
+import { getItem } from '../data/items';
 import { CC_NAMES, type SkillStage } from '../data/schema';
 import { getBuff } from '../data/units';
 import type { AimPreview } from '../input/aim';
@@ -256,6 +257,21 @@ export class GameRenderer {
             const self = w.get(this.selfId);
             const d = self ? Math.hypot(self.pos.x - u.pos.x, self.pos.y - u.pos.y) : 0;
             if (d < 26 || u.kind === 'crystal') this.camera.shake(u.kind === 'crystal' ? 0.5 : 0.32, true);
+          }
+          break;
+        }
+        case 'itemProc': {
+          // 有冷却的装备被动（天罚、坚壁、护命、霜纹……）触发时在头顶显示被动名
+          const it = getItem(e.item);
+          const u = w.get(e.unit);
+          if (!u || !it.passive?.cooldown || it.passive.cooldown < 2) break;
+          const mine = e.unit === this.selfId;
+          if (!mine && Math.hypot(u.pos.x - (w.get(this.selfId)?.pos.x ?? 0), u.pos.y - (w.get(this.selfId)?.pos.y ?? 0)) > 14) break;
+          const big = e.item === 'guard_jade';
+          this.effects.floatText(u.pos.x, u.pos.y - 1.4, it.passive.name, it.color, big ? 26 : mine ? 18 : 14, now, big);
+          if (big) {
+            this.effects.pillar(u.pos.x, u.pos.y, 0xffe28a, 1.8, 700, now);
+            this.effects.burst(u.pos.x, u.pos.y, 0xffe28a, 16, 3, now, 1.2);
           }
           break;
         }

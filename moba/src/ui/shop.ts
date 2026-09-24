@@ -193,6 +193,8 @@ export class ShopPanel {
     const stats = (Object.entries(it.stats) as [StatKey, number][]).map(([k, v]) => `<div>${statLine(k, v)}</div>`).join('');
     const tree = it.components.length ? `<div class="tree">合成：${it.components.map((c) => getItem(c).name).join(' + ')} + ${it.cost}</div>` : '';
     return `<div class="dh">${itemIcon(it, 52)}<div><div class="dn">${it.name}</div><div class="dp">总价 ${totalCost(it.id)}</div></div></div>
-      <div class="ds">${stats}</div>${it.desc ? `<div class="dd">${it.desc}</div>` : ''}${tree}`;
+      <div class="ds">${stats}</div>${it.desc ? `<div class="dd">${it.desc}</div>` : ''}${
+        it.passive ? `<div class="dpas"><b>唯一被动 · ${it.passive.name}</b>${it.passive.desc}</div>` : ''
+      }${tree}`;
   }
 }

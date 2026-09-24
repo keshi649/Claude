@@ -20,6 +20,7 @@ import { AStar } from './nav/astar';
 import { NavGrid } from './nav/grid';
 import { WallField } from './nav/walls';
 import { cancelCharge, commandCast, updateCasts } from './skills/cast';
+import { firePassive } from './skills/effects';
 import { SpatialHash } from './spatial';
 import { recomputeStats, statsAtLevel } from './stats';
 import { commandAttack, commandAttackUnit, updateAttacks } from './systems/attack';
@@ -244,6 +245,7 @@ export class World {
       lastKillAt: -999,
       multiKill: 0,
       passiveTimer: 0,
+      itemCd: {},
     };
     this.addUnit(u);
     for (let l = 1; l < level; l++) levelUp(this, u);
@@ -545,6 +547,7 @@ export class World {
     u.attack.orderTime = 0;
     u.attack.windup = 0;
     this.emit({ t: 'death', unit: u.id, killer: killer?.id ?? 0 });
+    if (killer?.hero && killer.alive && killer.team !== u.team) firePassive(this, killer, 'kill', u);
     if (u.static) this.nav.setCircleObstacle(u.pos, u.radius, false);
     if (this.config.mode === 'match') onKill(this, u, killer);
     if (u.kind === 'crystal' && this.winner === null) {

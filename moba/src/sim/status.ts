@@ -104,6 +104,31 @@ export function applyCc(
       };
       break;
     }
+    case 'pull': {
+      // 拉向施法者（没有施法者时拉向效果原点），停在其身前
+      const to = src && src.alive ? src.pos : origin;
+      const dx = to.x - target.pos.x;
+      const dy = to.y - target.pos.y;
+      const dist = Math.hypot(dx, dy);
+      const gap = (src ? src.radius : 0) + target.radius + 0.25;
+      const len = Math.min(power, dist - gap);
+      if (len <= 0.05) break;
+      interrupt(target);
+      target.forced = {
+        kind: 'knockback',
+        dirX: dx / dist,
+        dirY: dy / dist,
+        speed: len / Math.max(duration, 0.05),
+        remaining: len,
+        targetId: 0,
+        stopDist: 0,
+        hitIds: [],
+        untargetable: false,
+        wallStun: 0,
+        sourceId: src?.id ?? 0,
+      };
+      break;
+    }
   }
   w.emit({ t: 'cc', target: target.id, cc, duration });
 }

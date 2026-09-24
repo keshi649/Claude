@@ -2,7 +2,8 @@ import { BALANCE } from '../../data/balance';
 import { getBuff } from '../../data/units';
 import { getHero } from '../../data/heroes';
 import { heal } from '../damage';
-import { makeCtx, runEffects } from '../skills/effects';
+import { getItem } from '../../data/items';
+import { evalCond, makeCtx, runEffects, uniqueItems } from '../skills/effects';
 import { recomputeStats } from '../stats';
 import { canAct } from '../status';
 import type { World } from '../world';
@@ -44,6 +45,23 @@ export function updateStatus(w: World): void {
       }
       u.buffs = u.buffs.filter((b) => b.remaining > 0);
       if (changed) u.statsDirty = true;
+    }
+
+    // 装备被动：冷却推进；周期被动（按冷却计时）
+    if (u.hero) {
+      const h = u.hero;
+      for (const k in h.itemCd) if (h.itemCd[k]! > 0) h.itemCd[k] = Math.max(0, h.itemCd[k]! - dt);
+      for (const id of uniqueItems(h.items)) {
+        const p = getItem(id).passive;
+        if (!p || (h.itemCd[id] ?? 0) > 0) continue;
+        for (const tr of p.triggers) {
+          if (tr.on !== 'interval' || !tr.every) continue;
+          const ctx = makeCtx(u, { rank: h.level });
+          h.itemCd[id] = tr.every;
+          if (tr.cond && !evalCond(w, tr.cond, ctx)) continue;
+          runEffects(w, tr.effects, ctx);
+        }
+      }
     }
 
     // 周期被动（例如“每秒为身边友军回复”）

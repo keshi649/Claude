@@ -78,6 +78,8 @@ export type SimEvent =
       /** 终结了对方的连杀 */
       shutdown: boolean;
     }
+  /** 装备被动触发（表现层显示装备名、特效） */
+  | { t: 'itemProc'; unit: EntityId; item: string; target: EntityId }
   | { t: 'structureDown'; unit: EntityId; team: Team; killer: EntityId }
   | { t: 'respawn'; unit: EntityId }
   | { t: 'shop'; unit: EntityId; item: string; sold: boolean }

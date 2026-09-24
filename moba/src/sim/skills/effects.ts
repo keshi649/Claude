@@ -1,6 +1,7 @@
 import { norm, type Vec2 } from '../../core/vec2';
 import type { Affects, AreaVfx, Cond, Effect, Scaling, Shape, TriggerOn } from '../../data/schema';
 import { getHero } from '../../data/heroes';
+import { getItem } from '../../data/items';
 import { addShield, applyDamage, heal } from '../damage';
 import type { EffectCtx, Unit } from '../entity';
 import { isHeroLike, unitsInShape } from '../query';
@@ -67,6 +68,10 @@ export function evalCond(w: World, c: Cond, ctx: EffectCtx): boolean {
     }
     case 'targetHpBelow':
       return !!target && target.hp / target.stats.maxHp < c.pct;
+    case 'casterHpBelow': {
+      const caster = w.get(ctx.casterId);
+      return !!caster && caster.hp / caster.stats.maxHp < c.pct;
+    }
     case 'chargeAtLeast':
       return ctx.charge >= c.ratio;
     case 'casterHasBuff': {
@@ -388,20 +393,48 @@ function doBlink(w: World, caster: Unit, to: 'point' | 'behindTarget', maxDist: 
 /**
  * 触发英雄被动。oncePerCast 的触发器在同一次施法（castId）内只触发一次。
  */
-export function firePassive(w: World, unit: Unit, on: TriggerOn, target: Unit | null, srcCtx?: EffectCtx): void {
-  if (!unit.hero) return;
+/**
+ * 触发被动：英雄自身被动 + 身上装备的唯一被动（同名装备只算一件，有冷却的触发后进入冷却）。
+ * 返回是否有被动真正生效（“致命伤害”时用来判断是否免死）。
+ */
+export function firePassive(w: World, unit: Unit, on: TriggerOn, target: Unit | null, srcCtx?: EffectCtx): boolean {
+  const h = unit.hero;
+  if (!h) return false;
+  let fired = false;
   const def = getHero(unit.defId);
   def.passive.triggers.forEach((tr, i) => {
     if (tr.on !== on) return;
     if (tr.heroOnly && (!target || !isHeroLike(target))) return;
+    const ctx = makeCtx(unit, { targetId: target?.id ?? 0, rank: h.level, slot: -1, isSkill: false });
+    if (tr.cond && !evalCond(w, tr.cond, ctx)) return;
     if (tr.oncePerCast && srcCtx) {
-      if (unit.hero!.passiveStamp[i] === srcCtx.castId) return;
-      unit.hero!.passiveStamp[i] = srcCtx.castId;
+      if (h.passiveStamp[i] === srcCtx.castId) return;
+      h.passiveStamp[i] = srcCtx.castId;
     }
-    runEffects(
-      w,
-      tr.effects,
-      makeCtx(unit, { targetId: target?.id ?? 0, rank: unit.hero!.level, slot: -1, isSkill: false }),
-    );
+    runEffects(w, tr.effects, ctx);
+    fired = true;
   });
+  for (const id of uniqueItems(h.items)) {
+    const p = getItem(id).passive;
+    if (!p || (h.itemCd[id] ?? 0) > 0) continue;
+    for (const tr of p.triggers) {
+      if (tr.on !== on) continue;
+      if (tr.heroOnly && (!target || !isHeroLike(target))) continue;
+      const ctx = makeCtx(unit, { targetId: target?.id ?? 0, rank: h.level, slot: -1, isSkill: false });
+      if (tr.cond && !evalCond(w, tr.cond, ctx)) continue;
+      if (p.cooldown) h.itemCd[id] = p.cooldown;
+      runEffects(w, tr.effects, ctx);
+      w.emit({ t: 'itemProc', unit: unit.id, item: id, target: target?.id ?? 0 });
+      fired = true;
+      break;
+    }
+  }
+  return fired;
+}
+
+/** 装备栏里去重后的装备 id（唯一被动） */
+export function uniqueItems(items: readonly (string | null)[]): string[] {
+  const out: string[] = [];
+  for (const id of items) if (id && !out.includes(id)) out.push(id);
+  return out;
 }

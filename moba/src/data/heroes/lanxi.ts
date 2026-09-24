@@ -19,7 +19,7 @@ export const LANXI: HeroDef = {
   palette: { primary: 0x2a5aa8, secondary: 0x7fe0ff },
   emblem: 'star',
   radius: 0.55,
-  base: statBlock({ maxHp: 2800, maxMp: 720, ad: 150, armor: 85, mr: 60, moveSpeed: 3.75, hpRegen: 9, mpRegen: 9, range: 5.5 }),
+  base: statBlock({ maxHp: 2900, maxMp: 720, ad: 150, armor: 90, mr: 60, moveSpeed: 3.75, hpRegen: 9, mpRegen: 9, range: 5.5 }),
   growth: { maxHp: 190, maxMp: 55, ad: 8, armor: 14, mr: 8, attackSpeed: 0.015, hpRegen: 0.8, mpRegen: 0.7 },
   attack: { interval: 1.1, windupRatio: 0.28, projectile: { speed: 16, vfx: { color: 0x7fe0ff, style: 'orb', size: 0.22 } } },
   passive: {
@@ -67,7 +67,7 @@ export const LANXI: HeroDef = {
           delay: 0.6,
           vfx: { color: 0x5ac8ff, style: 'burst' },
           onHit: [
-            { t: 'damage', dtype: 'magic', amount: { base: bySkill(200, 45), ap: 0.65 }, impact: 1 },
+            { t: 'damage', dtype: 'magic', amount: { base: bySkill(215, 48), ap: 0.7 }, impact: 1 },
             {
               t: 'if',
               cond: { k: 'distFromOrigin', lt: 1.1 },

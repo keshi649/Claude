@@ -87,6 +87,31 @@ function drawWeapon(g: Graphics, kind: HumanoidSpec['weapon'], sec: number): voi
       g.roundRect(0.16, -0.35, 0.2, 0.28, 0.05).fill(0xffe28a);
       g.roundRect(0.16, -0.35, 0.2, 0.28, 0.05).stroke({ width: 0.03, color: sec });
       break;
+    case 'hook':
+      // 锁链钩：长柄 + 弯钩 + 垂下的铁链
+      g.rect(-0.035, -0.1, 0.07, 1.3).fill(0x4a3a2a);
+      g.arc(0.12, 1.22, 0.16, Math.PI * 0.95, Math.PI * 2.2).stroke({ width: 0.07, color: 0xc8d0da });
+      g.poly([0.27, 1.2, 0.36, 1.08, 0.3, 1.26]).fill(0xe8eef5);
+      for (let i = 0; i < 4; i++) g.circle(-0.1, 0.2 + i * 0.13, 0.045).stroke({ width: 0.025, color: sec });
+      break;
+    case 'claw':
+      // 雷爪：护腕 + 三道弯刃
+      g.roundRect(-0.09, 0.3, 0.18, 0.2, 0.04).fill(0x3a3a48);
+      for (const dx of [-0.08, 0, 0.08]) g.poly([dx - 0.03, 0.5, dx + 0.03, 0.5, dx + 0.07, 0.85, dx + 0.02, 0.8]).fill(0xe0e8ff);
+      g.rect(-0.1, 0.46, 0.2, 0.04).fill(sec);
+      break;
+    case 'orb':
+      // 火球：手中托着的燃烧法球（光晕在模型里单独加）
+      g.circle(0, 0.55, 0.19).fill(sec);
+      g.circle(-0.05, 0.5, 0.09).fill(0xfff2c0);
+      break;
+    case 'crossbow':
+      // 弩：弩臂 + 弩身 + 箭
+      g.rect(-0.04, 0.2, 0.08, 0.75).fill(0x5a3a22);
+      g.moveTo(-0.38, 0.72).quadraticCurveTo(0, 0.55, 0.38, 0.72).stroke({ width: 0.06, color: 0x7a5230 });
+      g.moveTo(-0.38, 0.72).lineTo(0, 0.82).lineTo(0.38, 0.72).stroke({ width: 0.015, color: 0xeeeeee });
+      g.poly([-0.02, 0.95, 0.02, 0.95, 0, 1.12]).fill(sec);
+      break;
     case 'sword_shield':
       g.rect(-0.03, 0.38, 0.06, 0.08).fill(0x3a2a1a);
       g.poly([-0.05, 0.46, 0.05, 0.46, 0.04, 0.95, 0, 1.05, -0.04, 0.95]).fill(0xdfe6ee);
@@ -191,20 +216,21 @@ function buildHumanoid(spec: HumanoidSpec): Model {
 
   // 法杖顶端的光
   let orbGlow: Sprite | null = null;
-  if (spec.glowTex && (spec.weapon === 'star' || spec.weapon === 'staff' || spec.weapon === 'lantern')) {
+  if (spec.glowTex && (spec.weapon === 'star' || spec.weapon === 'staff' || spec.weapon === 'lantern' || spec.weapon === 'orb')) {
     orbGlow = new Sprite(spec.glowTex);
     orbGlow.anchor.set(0.5);
     orbGlow.width = orbGlow.height = 0.7;
     orbGlow.tint = S2;
     orbGlow.blendMode = 'add';
-    orbGlow.position.set(spec.weapon === 'lantern' ? 0.26 : 0, spec.weapon === 'lantern' ? -0.21 : -0.42);
+    orbGlow.position.set(spec.weapon === 'lantern' ? 0.26 : 0, spec.weapon === 'lantern' ? -0.21 : spec.weapon === 'orb' ? 0.55 : -0.42);
     armF.addChild(orbGlow);
   }
 
   rig.addChild(cape, armB, legB, legF, torso, head, armF);
 
   let runPhase = 0;
-  const restF = spec.weapon === 'bow' ? -1.3 : spec.weapon === 'star' || spec.weapon === 'staff' || spec.weapon === 'lantern' ? -0.35 : -0.5;
+  const ranged = spec.weapon === 'bow' || spec.weapon === 'crossbow' || spec.weapon === 'star' || spec.weapon === 'staff' || spec.weapon === 'lantern' || spec.weapon === 'orb';
+  const restF = spec.weapon === 'bow' || spec.weapon === 'crossbow' ? -1.3 : spec.weapon === 'orb' ? -0.9 : ranged ? -0.35 : -0.5;
 
   return {
     root,
@@ -235,7 +261,7 @@ function buildHumanoid(spec: HumanoidSpec): Model {
       let armRot = moving ? restF - sw * 0.35 : restF + Math.sin(a.now / 500) * 0.05;
       if (a.attackT !== null) {
         const t = a.attackT;
-        if (spec.weapon === 'bow' || spec.weapon === 'star' || spec.weapon === 'staff' || spec.weapon === 'lantern') {
+        if (ranged) {
           // 远程：抬手指向前方，出手时后坐
           armRot = t < 0.6 ? -1.55 : -1.55 + Math.sin(((t - 0.6) / 0.4) * Math.PI) * 0.35;
         } else if (t < 0.55) {

@@ -33,6 +33,9 @@ export function getUnitDef(id: string): UnitDef {
 const COMMON_BUFFS: BuffDef[] = [
   { id: 'sprint', name: '疾驰', kind: 'buff', aura: 0xffe25a, statsPct: { moveSpeed: 0.5 } },
   { id: 'base_haste', name: '泉水加速', kind: 'buff', aura: 0x7fd4ff, statsPct: { moveSpeed: 0.6 } },
+  // 装备被动
+  { id: 'meteor_haste', name: '流星', kind: 'buff', maxStacks: 5, stats: { attackSpeed: 0.06 } },
+  { id: 'jade_guard', name: '护命', kind: 'buff', aura: 0xf0d070, flags: { invulnerable: true } },
   {
     id: 'restore',
     name: '恢复',

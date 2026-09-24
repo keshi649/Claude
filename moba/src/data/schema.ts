@@ -124,7 +124,8 @@ export interface Scaling {
 /** 效果作用对象的阵营筛选 */
 export type Affects = 'enemies' | 'allies' | 'alliesAndSelf' | 'all';
 
-export type CcKind = 'stun' | 'airborne' | 'silence' | 'slow' | 'knockback';
+/** pull：把目标拉向施法者，power 为最大牵引距离（米），停在施法者身前 */
+export type CcKind = 'stun' | 'airborne' | 'silence' | 'slow' | 'knockback' | 'pull';
 
 export const CC_NAMES: Record<CcKind, string> = {
   stun: '眩晕',
@@ -132,6 +133,7 @@ export const CC_NAMES: Record<CcKind, string> = {
   silence: '沉默',
   slow: '减速',
   knockback: '击退',
+  pull: '牵引',
 };
 
 export type Cond =
@@ -150,6 +152,8 @@ export type Cond =
   | { k: 'targetKind'; kinds: ('hero' | 'minion' | 'monster' | 'dummy')[] }
   /** 施法者身上某增益的层数 ≥ n */
   | { k: 'casterBuffStacks'; buff: string; gte: number }
+  /** 施法者（被动拥有者）生命比例低于 pct */
+  | { k: 'casterHpBelow'; pct: number }
   | { k: 'not'; c: Cond };
 
 // ————————————————————————— 视觉描述（表现层解释） —————————————————————————
@@ -327,7 +331,11 @@ export interface BuffDef {
   aura?: number;
 }
 
-export type TriggerOn = 'skillHit' | 'attackHit' | 'damaged' | 'kill' | 'interval';
+/**
+ * 被动触发时机：技能命中 / 普攻命中 / 受到伤害 / 击杀 / 周期 /
+ * lethal = 受到致命伤害时（触发成功则免于死亡，用于“护命”类装备）
+ */
+export type TriggerOn = 'skillHit' | 'attackHit' | 'damaged' | 'kill' | 'interval' | 'lethal';
 
 export interface PassiveTrigger {
   on: TriggerOn;
@@ -337,6 +345,8 @@ export interface PassiveTrigger {
   oncePerCast?: boolean;
   /** interval 触发器的周期（秒） */
   every?: number;
+  /** 触发条件（不满足时既不生效也不进入冷却） */
+  cond?: Cond;
   effects: Effect[];
 }
 
@@ -358,7 +368,7 @@ export interface AttackDef {
   projectile?: { speed: number; vfx: ProjectileVfx };
 }
 
-export type Emblem = 'shield' | 'blade' | 'dagger' | 'star' | 'bow' | 'lantern';
+export type Emblem = 'shield' | 'blade' | 'dagger' | 'star' | 'bow' | 'lantern' | 'hook' | 'claw' | 'orb' | 'crossbow';
 
 export interface HeroDef {
   id: string;
