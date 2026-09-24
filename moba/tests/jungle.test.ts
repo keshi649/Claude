@@ -128,3 +128,54 @@ describe('视野与草丛', () => {
     expect(visibleTo(red, 0)).toBe(false);
   });
 });
+
+describe('野区对标重做：Boss 进化与河道之灵', () => {
+  it('10 分钟后玄甲巨龟以进化形态（苍岩古龟）重生，击杀后全队获得古龟庇佑', () => {
+    const w = match([
+      { pid: 1, team: 0, heroId: 'lifeng', name: 'A', isAI: false },
+      { pid: 2, team: 0, heroId: 'lanxi', name: 'B', isAI: true },
+    ]);
+    const camp = w.camps.find((c) => c.kind === 'turtle')!;
+    w.tick = 30 * 601;
+    camp.spawnAt = 1;
+    w.step([]);
+    const boss = w.get(camp.ids[0]!)!;
+    expect(boss.defId).toBe('ancient_turtle');
+    const a = w.heroOf(1)!;
+    const b = w.heroOf(2)!;
+    const g0 = b.hero!.gold;
+    w.killUnit(boss, a);
+    expect(a.buffs.some((x) => x.id === 'ancient_blessing')).toBe(true);
+    expect(b.buffs.some((x) => x.id === 'ancient_blessing')).toBe(true);
+    expect(b.hero!.gold - g0).toBeGreaterThanOrEqual(200);
+  });
+
+  it('10 分钟前仍是普通形态', () => {
+    const w = match();
+    run(w, 30 * 121);
+    expect(w.list.some((u) => u.defId === 'turtle' && u.alive)).toBe(true);
+    expect(w.list.some((u) => u.defId === 'ancient_turtle')).toBe(false);
+  });
+
+  it('河道之灵 90 秒出现在河道对角线上，不反击；击杀者获得金币与加速', () => {
+    const w = match();
+    run(w, 30 * 91);
+    const sprites = w.list.filter((u) => u.defId === 'river_sprite' && u.alive);
+    expect(sprites).toHaveLength(2);
+    for (const s of sprites) {
+      expect(Math.abs(s.pos.x - s.pos.y)).toBeLessThan(0.5);
+      expect(w.nav.walkableAt(s.pos)).toBe(true);
+    }
+    const hero = w.heroOf(1)!;
+    const s = sprites[0]!;
+    place(hero, s.pos.x - 1.5, s.pos.y);
+    const hp0 = hero.hp;
+    applyDamage(w, hero, s, 100, 'true');
+    run(w, 60);
+    expect(hero.hp).toBeGreaterThanOrEqual(hp0);
+    const g0 = hero.hero!.gold;
+    w.killUnit(s, hero);
+    expect(hero.hero!.gold - g0).toBeGreaterThanOrEqual(90);
+    expect(hero.buffs.some((b) => b.id === 'river_haste')).toBe(true);
+  });
+});

@@ -423,6 +423,10 @@ export interface UnitDef {
   buffOnKill?: { id: string; duration: number };
   /** Boss 的特殊奖励 */
   reward?: 'teamGoldXp' | 'vanguard';
+  /** 全队奖励的金币 / 经验（teamGoldXp 用，缺省用 TURTLE_REWARD） */
+  teamReward?: { gold: number; xp: number };
+  /** 击杀后给击杀方全队存活英雄的增益（进化 Boss） */
+  teamBuffOnKill?: { id: string; duration: number };
   /** 视野半径（米） */
   sight?: number;
   /** 对建筑的伤害倍率（先锋等攻城单位） */

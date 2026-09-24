@@ -12,7 +12,7 @@ import { applyAttackHit } from './attack';
 const near: Unit[] = [];
 
 export function updateProjectiles(w: World): void {
-  for (const p of w.projectiles) {
+  for (const p of w.ordered(w.projectiles)) {
     if (p.dead) continue;
     p.prevPos.x = p.pos.x;
     p.prevPos.y = p.pos.y;

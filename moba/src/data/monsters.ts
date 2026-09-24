@@ -47,6 +47,29 @@ export const MONSTERS: Record<string, UnitDef> = {
         onHit: [{ t: 'damage', dtype: 'magic', amount: { base: [320], targetMaxHp: 0.05 }, impact: 2 }, { t: 'cc', cc: 'knockback', duration: 0.25, power: 2 }] },
     ] } }),
 
+  // —— 进化 Boss（对标手游 10 分钟后的强化版暴君 / 主宰）——
+  ancient_turtle: M({ id: 'ancient_turtle', name: '苍岩古龟', radius: 2.2, shape: 'beast', color: 0x5a4a38, leash: 7,
+    base: statBlock({ maxHp: 17000, ad: 320, armor: 190, mr: 160, moveSpeed: 2.6, range: 3 }), growthPerMin: { maxHp: 0.04, ad: 0.03 },
+    attack: { interval: 1.4, windupRatio: 0.35 }, gold: 200, xp: 300, reward: 'teamGoldXp', teamReward: { gold: 200, xp: 350 },
+    teamBuffOnKill: { id: 'ancient_blessing', duration: 90 },
+    skill: { name: '岩崩', every: 6, windup: 0.6, effects: [
+      { t: 'area', shape: { k: 'circle', r: 5 }, at: 'caster', vfx: { color: 0xffa040, style: 'slam' },
+        onHit: [{ t: 'damage', dtype: 'magic', amount: { base: [380], targetMaxHp: 0.05 }, impact: 2 }, { t: 'cc', cc: 'stun', duration: 0.6 }] },
+    ] } }),
+  storm_dragon: M({ id: 'storm_dragon', name: '暴雷龙王', radius: 2.5, shape: 'beast', color: 0x2a3a7a, leash: 7,
+    base: statBlock({ maxHp: 21000, ad: 390, armor: 200, mr: 180, moveSpeed: 2.6, range: 3.4 }), growthPerMin: { maxHp: 0.04, ad: 0.03 },
+    attack: { interval: 1.4, windupRatio: 0.35 }, gold: 250, xp: 350, reward: 'vanguard',
+    teamBuffOnKill: { id: 'storm_blessing', duration: 90 },
+    skill: { name: '暴雷', every: 5, windup: 0.7, effects: [
+      { t: 'area', shape: { k: 'cone', r: 8, angle: 90 }, at: 'caster', vfx: { color: 0x60f0ff, style: 'slash' },
+        onHit: [{ t: 'damage', dtype: 'magic', amount: { base: [440], targetMaxHp: 0.06 }, impact: 2 }, { t: 'cc', cc: 'knockback', duration: 0.25, power: 2.5 }] },
+    ] } }),
+
+  // —— 河道之灵：不反击，击杀者获得金币与短暂加速 ——
+  river_sprite: M({ id: 'river_sprite', name: '河道之灵', radius: 0.6, shape: 'beast', color: 0x60c8ff, leash: 5,
+    base: statBlock({ maxHp: 1400, ad: 0, armor: 40, mr: 40, moveSpeed: 3, range: 1 }), growthPerMin: { maxHp: 0.06 },
+    gold: 90, xp: 60, buffOnKill: { id: 'river_haste', duration: 10 } }),
+
   // —— 霆角先锋：击杀霆角龙王后为己方每条路召唤一个，沿路线推进，对建筑伤害很高 ——
   vanguard: M({ id: 'vanguard', name: '霆角先锋', radius: 0.9, shape: 'beast', color: 0x8a7ae0, sight: 7, structureDmg: 2.5,
     base: statBlock({ maxHp: 4500, ad: 220, armor: 120, mr: 120, moveSpeed: 3.4, range: 2.2 }), growthPerMin: { maxHp: 0.05, ad: 0.04 },
@@ -67,10 +90,14 @@ export const CAMPS: Record<CampKind, CampDef> = {
   redBuff: { members: [{ def: 'red_golem', dx: 0, dy: 0 }], firstSpawn: 20, respawn: 90 },
 };
 
+/** Boss：首次刷新、重生间隔；到 evolveAt 秒后重生的是进化版（evolved） */
 export const BOSSES = {
-  turtle: { def: 'turtle', firstSpawn: 120, respawn: 180 },
-  dragon: { def: 'dragon', firstSpawn: 240, respawn: 200 },
+  turtle: { def: 'turtle', evolved: 'ancient_turtle', evolveAt: 600, firstSpawn: 120, respawn: 180 },
+  dragon: { def: 'dragon', evolved: 'storm_dragon', evolveAt: 720, firstSpawn: 240, respawn: 200 },
 } as const;
+
+/** 河道之灵：首次刷新与重生间隔 */
+export const RIVER_SPRITE_CAMP = { def: 'river_sprite', firstSpawn: 90, respawn: 120 } as const;
 
 /** 玄甲巨龟：击杀方全队每人获得的金币与经验 */
 export const TURTLE_REWARD = { gold: 150, xp: 250 } as const;
@@ -88,5 +115,17 @@ export const JUNGLE_BUFFS: BuffDef[] = [
       { t: 'buff', buff: 'burn', duration: 3, to: 'target' },
     ],
   },
+  // 进化 Boss 的全队增益、河道之灵的加速
+  { id: 'ancient_blessing', name: '古龟庇佑', kind: 'buff', aura: 0xffa040, statsPct: { ad: 0.1, ap: 0.1 }, stats: { armor: 20, mr: 20 } },
+  {
+    id: 'storm_blessing',
+    name: '雷霆之力',
+    kind: 'buff',
+    aura: 0x60f0ff,
+    stats: { hpRegen: 25, mpRegen: 8 },
+    statsPct: { moveSpeed: 0.08 },
+    onAttackHit: [{ t: 'damage', dtype: 'magic', amount: { base: byLevel(30, 6) }, impact: 0 }],
+  },
+  { id: 'river_haste', name: '河灵之速', kind: 'buff', aura: 0x60c8ff, statsPct: { moveSpeed: 0.25 } },
   { id: 'burn', name: '灼烧', kind: 'debuff', aura: 0xff6a30, interval: { every: 1, effects: [{ t: 'damage', dtype: 'true', amount: { base: byLevel(18, 4) }, impact: 0 }] } },
 ];

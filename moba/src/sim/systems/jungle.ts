@@ -1,6 +1,6 @@
 import type { Vec2 } from '../../core/vec2';
 import type { CampKind } from '../../data/map';
-import { BOSSES, CAMPS } from '../../data/monsters';
+import { BOSSES, CAMPS, RIVER_SPRITE_CAMP } from '../../data/monsters';
 import { getUnitDef } from '../../data/units';
 import type { EntityId, Unit } from '../entity';
 import { makeCtx, runEffects } from '../skills/effects';
@@ -15,7 +15,7 @@ import type { World } from '../world';
  */
 
 export interface CampState {
-  kind: CampKind | 'turtle' | 'dragon';
+  kind: CampKind | 'turtle' | 'dragon' | 'riverSprite';
   pos: Vec2;
   members: { def: string; dx: number; dy: number }[];
   ids: EntityId[];
@@ -36,6 +36,10 @@ export function createCamps(w: World): CampState[] {
     const b = BOSSES[k];
     out.push({ kind: k, pos: w.map.bossPits[k], members: [{ def: b.def, dx: 0, dy: 0 }], ids: [], respawn: b.respawn, spawnAt: b.firstSpawn });
   }
+  for (const pos of w.map.riverSprites) {
+    const r = RIVER_SPRITE_CAMP;
+    out.push({ kind: 'riverSprite', pos, members: [{ def: r.def, dx: 0, dy: 0 }], ids: [], respawn: r.respawn, spawnAt: r.firstSpawn });
+  }
   return out;
 }
 
@@ -47,12 +51,17 @@ export function updateCamps(w: World): void {
       continue;
     }
     if (w.time >= c.spawnAt) {
+      // Boss 到时间后以进化形态重生
+      if (c.kind === 'turtle' || c.kind === 'dragon') {
+        const b = BOSSES[c.kind];
+        c.members = [{ def: w.time >= b.evolveAt ? b.evolved : b.def, dx: 0, dy: 0 }];
+      }
       for (const m of c.members) {
         const u = w.spawnMonster(getUnitDef(m.def), { x: c.pos.x + m.dx, y: c.pos.y + m.dy });
         c.ids.push(u.id);
       }
       c.spawnAt = 0;
-      w.emit({ t: 'campSpawn', kind: c.kind, x: c.pos.x, y: c.pos.y });
+      w.emit({ t: 'campSpawn', kind: c.kind, def: c.members[0]!.def, x: c.pos.x, y: c.pos.y });
     }
   }
 }

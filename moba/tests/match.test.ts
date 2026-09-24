@@ -305,3 +305,23 @@ describe('建筑保护与泉水加速（对标手游）', () => {
     expect(hero.buffs.some((b) => b.id === 'base_haste')).toBe(false);
   });
 });
+
+describe('结算公平性', () => {
+  it('完全对称的小兵单挑：不会因为实体表顺序永远是蓝方赢', () => {
+    let blue = 0;
+    let red = 0;
+    for (let k = 0; k < 8; k++) {
+      const w = new World({ seed: 1, mode: 'match', players: [] });
+      // 错开开局帧，让致命一击落在不同奇偶的帧上
+      for (let i = 0; i < k; i++) w.step([]);
+      const b = w.spawnMinion(MINIONS.melee, 0, { x: 57, y: 63 }, 'mid');
+      const r = w.spawnMinion(MINIONS.melee, 1, { x: 63, y: 57 }, 'mid');
+      for (let i = 0; i < 30 * 40 && b.alive && r.alive; i++) w.step([]);
+      if (b.alive && !r.alive) blue++;
+      if (r.alive && !b.alive) red++;
+    }
+    expect(blue + red).toBeGreaterThan(0);
+    expect(blue).toBeGreaterThan(0);
+    expect(red).toBeGreaterThan(0);
+  });
+});

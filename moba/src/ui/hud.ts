@@ -1,5 +1,6 @@
 import { getHero } from '../data/heroes';
 import { getSummoner, RESTORE } from '../data/summoners';
+import { getBuff } from '../data/units';
 import { applyUiScale, canFullscreen, el, hex, toggleFullscreen } from './dom';
 import { faceHtml } from './portrait';
 import { bindHoldButton, bindJoystick, bindSkillButton, bindTapButton } from '../input/touch';
@@ -74,6 +75,7 @@ export class Hud {
   private deathEl!: HTMLElement;
   private deathText!: HTMLElement;
   private deathWho!: HTMLElement;
+  private buffBar!: HTMLElement;
   /** 销毁时要解除的全局监听 */
   private offs: (() => void)[] = [];
 
@@ -190,6 +192,8 @@ export class Hud {
       if (e.target === gear) return;
       hooks.onScoreboard();
     });
+    // 右上：身上的增益 / 减益（图标 + 剩余秒数），以及草丛隐身提示
+    this.buffBar = el('div', 'buffbar', root);
     // 击杀信息
     this.feed = el('div', 'killfeed', root);
     // 死亡遮罩
@@ -241,6 +245,31 @@ export class Hud {
     row.innerHTML = `${face(k)}<em>⚔</em>${face(v)}`;
     setTimeout(() => row.remove(), 5000);
     while (this.feed.children.length > 4) this.feed.firstElementChild?.remove();
+  }
+
+  /** 增益栏：只在内容变化时重建 */
+  private updateBuffs(w: World, hero: Unit): void {
+    const items: { glyph: string; color: number; left: number; bad: boolean; name: string }[] = [];
+    const hidden = hero.alive && hero.bush > 0;
+    for (const b of hero.buffs) {
+      const d = getBuff(b.id);
+      if (d.kind === 'mark' || b.remaining > 900) continue;
+      items.push({ glyph: d.name[0]!, color: d.aura ?? 0x8899aa, left: b.remaining, bad: d.kind === 'debuff', name: d.name + (b.stacks > 1 ? `×${b.stacks}` : '') });
+    }
+    const revealed = hidden && w.time <= hero.revealUntil;
+    const key = `${hidden ? (revealed ? 'r' : 'h') : ''}|` + items.map((i) => `${i.name}:${Math.ceil(i.left)}`).join(',');
+    this.set('buffs', key, () => {
+      const chip = hidden ? `<span class="bush-chip${revealed ? ' revealed' : ''}">${revealed ? '草丛中 · 已暴露' : '草丛中 · 敌人看不见你'}</span>` : '';
+      this.buffBar.innerHTML =
+        chip +
+        items
+          .slice(0, 8)
+          .map(
+            (i) =>
+              `<span class="bf${i.bad ? ' bad' : ''}" title="${i.name}"><b style="background:radial-gradient(circle at 35% 30%, ${hex(i.color)}, #10141c 85%)">${i.glyph}</b><small>${Math.ceil(i.left)}</small></span>`,
+          )
+          .join('');
+    });
   }
 
   /** 阵亡信息：被谁击败、谁参与了助攻 */
@@ -363,6 +392,7 @@ export class Hud {
       const left = String(Math.max(0, Math.ceil(h.respawnAt - w.time)));
       this.set('respawn', left, () => (this.deathText.textContent = `${left} 秒后复活`));
     }
+    this.updateBuffs(w, hero);
     const recalling = h.recall > 0;
     this.set('recall', String(recalling), () => this.recallBtn.classList.toggle('active', recalling));
   }

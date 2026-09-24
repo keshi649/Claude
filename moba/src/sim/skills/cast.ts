@@ -272,7 +272,7 @@ function finishWindup(w: World, u: Unit): void {
 /** 每帧：冷却、二段窗口、施法阶段推进、排队施法 */
 export function updateCasts(w: World): void {
   const dt = w.dt;
-  for (const u of w.list) {
+  for (const u of w.ordered(w.list)) {
     const h = u.hero;
     if (!h || !u.alive) continue;
     for (let s = 0 as 0 | 1 | 2; s < 3; s = (s + 1) as 0 | 1 | 2) {

@@ -19,19 +19,19 @@ export const TIESUO: HeroDef = {
   palette: { primary: 0x4a5a3a, secondary: 0xc8e070 },
   emblem: 'hook',
   radius: 0.65,
-  base: statBlock({ maxHp: 3850, maxMp: 500, ad: 165, armor: 145, mr: 85, moveSpeed: 3.75, hpRegen: 14, mpRegen: 7, range: 2.0 }),
+  base: statBlock({ maxHp: 3700, maxMp: 500, ad: 160, armor: 135, mr: 80, moveSpeed: 3.75, hpRegen: 14, mpRegen: 7, range: 2.0 }),
   growth: { maxHp: 260, maxMp: 35, ad: 9, armor: 20, mr: 10, attackSpeed: 0.015, hpRegen: 1.2, mpRegen: 0.5 },
   attack: { interval: 1.1, windupRatio: 0.22 },
   passive: {
     name: '守望',
-    desc: '技能命中敌方英雄时获得 110 +（8% 最大生命）的护盾，持续 3 秒（每次施法最多触发一次）。',
+    desc: '技能命中敌方英雄时获得 95 +（7% 最大生命）的护盾，持续 3 秒（每次施法最多触发一次）。',
     icon: { glyph: '守', color: 0xc8e070 },
     triggers: [
       {
         on: 'skillHit',
         heroOnly: true,
         oncePerCast: true,
-        effects: [{ t: 'shield', amount: { base: byLevel(110, 14), maxHp: 0.08 }, duration: 3, to: 'self' }],
+        effects: [{ t: 'shield', amount: { base: byLevel(95, 12), maxHp: 0.07 }, duration: 3, to: 'self' }],
       },
     ],
   },

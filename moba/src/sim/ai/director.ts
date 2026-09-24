@@ -115,7 +115,7 @@ export class AIDirector {
       if (target) {
         const boss = w.get(target)!;
         plan.objective = target;
-        const need = boss.defId === 'dragon' ? 4 : 3;
+        const need = boss.defId.includes('dragon') ? 4 : 3;
         const alive = mine.filter((u) => u.alive && u.hp / u.stats.maxHp > 0.5);
         alive.sort((a, b) => Math.hypot(a.pos.x - boss.pos.x, a.pos.y - boss.pos.y) - Math.hypot(b.pos.x - boss.pos.x, b.pos.y - boss.pos.y));
         for (const u of alive.slice(0, need)) plan.members.add(u.id);

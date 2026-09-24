@@ -56,7 +56,7 @@ export function commandAttackUnit(w: World, u: Unit, id: number): void {
 
 export function updateAttacks(w: World): void {
   const dt = w.dt;
-  for (const u of w.list) {
+  for (const u of w.ordered(w.list)) {
     if (!u.alive) continue;
     const def = attackDefOf(u);
     if (!def) continue;

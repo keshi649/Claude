@@ -132,6 +132,15 @@ export class World {
     this.events.push(ev);
   }
 
+  /**
+   * 本帧的结算顺序：奇数帧正序、偶数帧倒序。
+   * 实体表里蓝方总是排在前面，如果总按同一顺序结算，“同一帧互相致命”时蓝方永远先出手，
+   * 兵线对拼会系统性偏向蓝方；交替顺序消除这种偏差（仍然完全确定）。
+   */
+  ordered<T>(list: readonly T[]): readonly T[] {
+    return this.tick % 2 === 1 ? list : list.slice().reverse();
+  }
+
   /** 取出并清空累计的事件（表现层每帧调用） */
   drainEvents(): SimEvent[] {
     const ev = this.events;

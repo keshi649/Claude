@@ -142,16 +142,35 @@ export class Minimap {
       c.textBaseline = 'middle';
       c.fillText(def.name[0]!, x, y + 0.5 * dpr);
     }
-    // 野怪营地与 Boss：视野内活着的营地画黄点 / 紫色图标
+    // 野怪营地与 Boss：视野内活着的营地画图标；己方野区与中立目标在重生前 90 秒显示倒计时
     for (const camp of w.camps) {
+      const boss = camp.kind === 'turtle' || camp.kind === 'dragon';
+      const sprite = camp.kind === 'riverSprite';
+      const known = boss || sprite || (team === 0 ? camp.pos.y > camp.pos.x : camp.pos.y < camp.pos.x);
+      const x = camp.pos.x * S;
+      const y = camp.pos.y * S;
+      if (camp.spawnAt > 0) {
+        const left = camp.spawnAt - w.time;
+        if (!known || left > 90) continue;
+        const t = Math.ceil(left);
+        c.font = `bold ${(boss ? 9 : 8) * dpr}px sans-serif`;
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.lineWidth = 2.5 * dpr;
+        c.strokeStyle = '#0b0f14';
+        const txt = t >= 60 ? `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}` : String(t);
+        c.strokeText(txt, x, y);
+        c.fillStyle = boss ? '#d8b8ff' : sprite ? '#9fe0ff' : '#ffe27a';
+        c.fillText(txt, x, y);
+        continue;
+      }
       // 只显示本队视野里能看到的营地
       if (!camp.ids.some((id) => { const m = w.get(id); return !!m && m.alive && seen(m); })) continue;
-      const boss = camp.kind === 'turtle' || camp.kind === 'dragon';
-      c.fillStyle = boss ? '#b08ae0' : '#e8c64a';
+      c.fillStyle = boss ? '#b08ae0' : sprite ? '#60c8ff' : '#e8c64a';
       c.strokeStyle = '#0b0f14';
       c.lineWidth = dpr;
       c.beginPath();
-      c.arc(camp.pos.x * S, camp.pos.y * S, (boss ? 5 : 3) * dpr, 0, Math.PI * 2);
+      c.arc(x, y, (boss ? 5 : 3) * dpr, 0, Math.PI * 2);
       c.fill();
       c.stroke();
     }

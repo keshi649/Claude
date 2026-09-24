@@ -17,6 +17,8 @@ import { ShopPanel } from '../ui/shop';
 import { Scoreboard } from '../ui/scoreboard';
 import { checkBuy, nextRecommended } from '../sim/shop';
 import { getItem } from '../data/items';
+import { BOSSES } from '../data/monsters';
+import { getUnitDef } from '../data/units';
 import { summarize, type MatchSummary } from '../sim/summary';
 import { Announcer } from '../ui/announcer';
 
@@ -271,16 +273,29 @@ export class GameSession {
         this.announcer.pushText(mine ? '我方防御塔被摧毁' : '摧毁敌方防御塔', mine ? '守住下一座塔' : '全队获得金币', !mine);
       }
       if (e.t === 'gameOver' && hero) this.onGameOver(e.winner === hero.team);
-      if (e.t === 'campSpawn' && (e.kind === 'turtle' || e.kind === 'dragon')) this.hud.toast(e.kind === 'turtle' ? '玄甲巨龟出现在上河道' : '霆角龙王出现在下河道');
+      if (e.t === 'campSpawn' && (e.kind === 'turtle' || e.kind === 'dragon')) {
+        const name = getUnitDef(e.def).name;
+        const where = e.kind === 'turtle' ? '上河道' : '下河道';
+        // 进化形态用大播报，普通形态用提示
+        if (e.def === 'ancient_turtle' || e.def === 'storm_dragon') this.announcer.pushText(`${name}降临${where}`, '击败它，全队获得强力增益', true);
+        else this.hud.toast(`${name}出现在${where}`);
+      }
       if (e.t === 'bossKilled' && hero) {
-        const name = e.boss === 'turtle' ? '玄甲巨龟' : '霆角龙王';
+        const name = getUnitDef(e.boss).name;
         const mine = e.team === hero.team;
-        this.announcer.pushText(`${mine ? '我方' : '敌方'}击败${name}`, e.boss === 'turtle' ? '全队获得金币与经验' : '霆角先锋出击', mine);
+        const sub: Record<string, string> = {
+          turtle: '全队获得金币与经验',
+          ancient_turtle: '全队获得金币经验与古龟庇佑',
+          dragon: '霆角先锋出击',
+          storm_dragon: '霆角先锋出击，全队获得雷霆之力',
+        };
+        this.announcer.pushText(`${mine ? '我方' : '敌方'}击败${name}`, sub[e.boss] ?? '', mine);
       }
     }
     this.renderer.handleEvents(events);
     this.announcer.tick(now);
     if (hero) this.structureAlerts(hero.team, now);
+    this.bossWarnings();
     this.vignette?.classList.toggle('danger', this.renderer.selfLocked);
     if (hero && w.config.mode === 'training') this.trackDps(events, hero.id, now);
     if (hero) this.playSounds(events, hero.id);
@@ -337,6 +352,23 @@ export class GameSession {
       this.dpsTotal = 0;
       this.dpsLog = [];
     });
+  }
+
+  /** Boss 刷新前 30 秒提示（每次刷新只提示一次） */
+  private warned = new Set<string>();
+  private bossWarnings(): void {
+    const w = this.world;
+    for (const c of w.camps) {
+      if ((c.kind !== 'turtle' && c.kind !== 'dragon') || c.spawnAt <= 0) continue;
+      const left = c.spawnAt - w.time;
+      const key = `${c.kind}:${c.spawnAt}`;
+      if (left > 0 && left <= 30 && !this.warned.has(key)) {
+        this.warned.add(key);
+        const b = BOSSES[c.kind];
+        const name = getUnitDef(c.spawnAt >= b.evolveAt ? b.evolved : b.def).name;
+        this.hud.toast(`${name}将在 30 秒后出现`);
+      }
+    }
   }
 
   /** 己方建筑被攻击时提示（同一座建筑 20 秒内只提示一次） */

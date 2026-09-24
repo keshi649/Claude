@@ -432,3 +432,14 @@ i.mvp.lose { background: linear-gradient(#eef2f8, #8a94a8); }
 .item { width: calc(22 * var(--m) * 1px); height: calc(22 * var(--m) * 1px); border-radius: 4px; display: grid; place-items: center;
   font-size: calc(11 * var(--m) * 1px); font-weight: 800; border: 1px solid rgba(230,200,130,.5); color: #fff; }
 .res-buttons { display: flex; gap: calc(16 * var(--m) * 1px); justify-content: center; align-items: center; padding-bottom: 4px; }
+
+/* ———— 增益栏与草丛提示（右上，比分条下方） ———— */
+.buffbar { position: absolute; right: calc(10px + env(safe-area-inset-right)); top: calc(56 * var(--ui) * 1px + env(safe-area-inset-top));
+  display: flex; gap: calc(4 * var(--ui) * 1px); align-items: center; pointer-events: none; }
+.buffbar .bf { display: flex; flex-direction: column; align-items: center; }
+.buffbar .bf b { width: calc(26 * var(--ui) * 1px); height: calc(26 * var(--ui) * 1px); border-radius: 50%; display: grid; place-items: center;
+  font-size: calc(12 * var(--ui) * 1px); color: #fff; border: 1.5px solid rgba(230,200,130,.8); text-shadow: 0 1px 2px #000; }
+.buffbar .bf.bad b { border-color: #ff5a3c; }
+.buffbar .bf small { font-size: calc(10 * var(--ui) * 1px); color: #fff; text-shadow: 0 1px 2px #000; line-height: 1.1; }
+.bush-chip { font-size: calc(12 * var(--ui) * 1px); padding: 3px 10px; border-radius: 999px; background: rgba(30,90,40,.8); border: 1px solid #6dff7a; color: #d8ffd8; margin-right: 4px; }
+.bush-chip.revealed { background: rgba(110,60,20,.85); border-color: #ffb040; color: #ffe0b0; }

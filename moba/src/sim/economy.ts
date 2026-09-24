@@ -105,11 +105,16 @@ function monsterRewards(w: World, victim: Unit, killer: Unit): void {
   const team = killer.team as 0 | 1;
   if (def.buffOnKill && killer.hero) addBuff(w, killer, def.buffOnKill.id, killer.id, def.buffOnKill.duration, 1, killer.hero.level);
   if (def.reward === 'teamGoldXp') {
+    const r = def.teamReward ?? TURTLE_REWARD;
     for (const u of w.list) {
       if (!u.hero || u.team !== team) continue;
-      grantGold(w, u, TURTLE_REWARD.gold);
-      grantXp(w, u, TURTLE_REWARD.xp);
+      grantGold(w, u, r.gold);
+      grantXp(w, u, r.xp);
     }
+  }
+  // 进化 Boss：击杀方全队存活英雄获得增益
+  if (def.teamBuffOnKill) {
+    for (const u of w.list) if (u.hero && u.alive && u.team === team) addBuff(w, u, def.teamBuffOnKill.id, u.id, def.teamBuffOnKill.duration, 1, u.hero.level);
   }
   if (def.reward === 'vanguard') {
     for (const lane of LANES) {

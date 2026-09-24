@@ -466,6 +466,7 @@ export class GameRenderer {
 
     this.drawTowerHints(self ?? null);
     this.drawAiLabels();
+    this.drawCampTimers(view);
     this.effects.syncProjectiles(w.projectiles, alpha);
     this.effects.syncZones(w.zones, now);
     this.effects.update(now, dtSec, (x, y, h) => cam.worldToScreen(x, y, h));
@@ -477,6 +478,38 @@ export class GameRenderer {
 
     if (this.debugOptions.colliders || this.debugOptions.paths || this.debugOptions.vision) this.debugDraw.draw(w, this.debugOptions, view);
     else this.debugDraw.g.clear();
+  }
+
+  /** 空营地的重生倒计时（己方野区与中立目标，重生前 90 秒内显示在营地上） */
+  private campTimers: Text[] = [];
+  private drawCampTimers(view: { x0: number; y0: number; x1: number; y1: number }): void {
+    const w = this.world;
+    const team = this.selfTeam;
+    w.camps.forEach((c, i) => {
+      let t = this.campTimers[i];
+      const neutral = c.kind === 'turtle' || c.kind === 'dragon' || c.kind === 'riverSprite';
+      const own = team === 0 ? c.pos.y > c.pos.x : c.pos.y < c.pos.x;
+      const left = c.spawnAt > 0 ? c.spawnAt - w.time : Infinity;
+      const inView = c.pos.x > view.x0 && c.pos.x < view.x1 && c.pos.y > view.y0 && c.pos.y < view.y1;
+      const show = (neutral || own) && left <= 90 && left > 0 && inView;
+      if (!show) {
+        if (t) t.visible = false;
+        return;
+      }
+      if (!t) {
+        t = new Text({ text: '', style: { fontFamily: 'sans-serif', fontSize: 18, fontWeight: 'bold', fill: 0xffe27a, stroke: { color: 0x000000, width: 4 } } });
+        t.anchor.set(0.5);
+        this.campTimers[i] = t;
+        this.overlayLayer.addChild(t);
+      }
+      const s = Math.ceil(left);
+      const txt = s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : `${s}`;
+      if (t.text !== txt) t.text = txt;
+      t.style.fill = c.kind === 'turtle' || c.kind === 'dragon' ? 0xd8b8ff : c.kind === 'riverSprite' ? 0x9fe0ff : 0xffe27a;
+      const p = this.camera.worldToScreen(c.pos.x, c.pos.y, 0.4);
+      t.position.set(p.x, p.y);
+      t.visible = true;
+    });
   }
 
   private drawAiLabels(): void {

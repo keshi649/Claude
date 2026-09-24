@@ -138,6 +138,9 @@ export const BOSS_PITS = {
   dragon: p(90, 90),
 } as const;
 
+/** 河道之灵的两个刷新点（河道对角线上，到双方基地距离相等） */
+export const RIVER_SPRITES: readonly Vec2[] = [p(46, 46), p(74, 74)];
+
 /** Boss 巢穴的围墙：各在巢穴两侧留出入口 */
 const BOSS_WALLS: CapsuleLine[] = [
   // 巢穴靠地图角落一侧的弧形岩壁（自身关于 y=x 对称）
@@ -167,6 +170,7 @@ export interface BuiltMap {
   spawn: Record<TeamSide, Vec2>;
   camps: Record<TeamSide, CampSpot[]>;
   bossPits: typeof BOSS_PITS;
+  riverSprites: readonly Vec2[];
 }
 
 function fullLane(half: Vec2[]): Vec2[] {
@@ -208,5 +212,6 @@ export function buildMap(): BuiltMap {
       1: h.camps.map((c) => ({ ...c, pos: mirror(c.pos) })),
     },
     bossPits: BOSS_PITS,
+    riverSprites: RIVER_SPRITES,
   };
 }

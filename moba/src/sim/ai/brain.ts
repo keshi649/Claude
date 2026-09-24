@@ -539,7 +539,14 @@ export class AIBrain {
 
   private ownCamps(w: World, u: Unit): { pos: Vec2; ids: EntityId[] }[] {
     const team: Team = u.team;
-    return w.camps.filter((c) => c.kind !== 'turtle' && c.kind !== 'dragon' && c.ids.length > 0 && (team === 0 ? c.pos.y > c.pos.x : c.pos.y < c.pos.x));
+    // 本方野区 + 附近的河道之灵
+    return w.camps.filter(
+      (c) =>
+        c.kind !== 'turtle' &&
+        c.kind !== 'dragon' &&
+        c.ids.length > 0 &&
+        (c.kind === 'riverSprite' ? dist(c.pos, u.pos) < 22 : team === 0 ? c.pos.y > c.pos.x : c.pos.y < c.pos.x),
+    );
   }
 
   private doJungle(w: World, u: Unit, K: TeamKnowledge, enemies: Unit[], allies: Unit[], react: boolean, out: Command[]): void {
