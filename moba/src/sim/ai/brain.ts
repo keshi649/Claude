@@ -21,7 +21,7 @@ import { laneOf, type Position } from './roles';
  *   执行层：每帧按当前目标生成命令；放技能 / 换目标 / 躲技能只在反应帧进行
  * 只能通过 TeamKnowledge 获得敌方信息（不开图）。输出与玩家完全相同的 Command。
  */
-export type Goal = 'laning' | 'jungle' | 'roam' | 'fight' | 'retreat' | 'recall' | 'defend' | 'gank' | 'objective' | 'group';
+export type Goal = 'laning' | 'jungle' | 'roam' | 'fight' | 'retreat' | 'recall' | 'defend' | 'gank' | 'objective' | 'group' | 'rally';
 
 export const GOAL_NAMES: Record<Goal, string> = {
   laning: '对线',
@@ -34,7 +34,16 @@ export const GOAL_NAMES: Record<Goal, string> = {
   gank: '抓人',
   objective: '打龙',
   group: '推进',
+  rally: '响应信号',
 };
+
+/** 玩家的信号 / 正在交战的位置（AI 队友据此支援） */
+export interface Rally {
+  kind: 'attack' | 'gather';
+  x: number;
+  y: number;
+  until: number;
+}
 
 export interface TeamPlan {
   /** 集体目标（Boss 单位 id），0 表示没有 */
@@ -46,6 +55,10 @@ export interface TeamPlan {
   push: boolean;
   /** 正被敌方多人进攻的己方建筑（全队回防），0 表示没有 */
   defendAt: EntityId;
+  /** 玩家发出的进攻 / 集合信号，或玩家正在交战的位置（队友支援） */
+  rally: Rally | null;
+  /** 玩家发出的撤退信号 */
+  retreatSignal: { x: number; y: number; until: number } | null;
 }
 
 const dist = (a: Vec2, b: Vec2): number => Math.hypot(a.x - b.x, a.y - b.y);
@@ -98,6 +111,7 @@ export class AIBrain {
   private lastRecallAt = -99;
   private nextBuyAt = 0;
   private defendTarget: EntityId = 0;
+  private rally: Rally | null = null;
 
   constructor(
     readonly pid: number,
@@ -203,6 +217,9 @@ export class AIBrain {
       case 'roam':
         this.doRoam(w, u, K, enemies, allies, react, out);
         break;
+      case 'rally':
+        this.doRally(w, u, K, enemies, allies, react, out);
+        break;
       case 'group':
         this.doLane(w, u, K, plan.groupLane ?? 'mid', enemies, allies, react, out, plan.push ? 'push' : 'group');
         break;
@@ -294,6 +311,18 @@ export class AIBrain {
         this.goalTarget = best.id;
       }
     }
+    // 响应玩家信号：撤退、进攻 / 集合、支援玩家的战斗
+    const rs = plan.retreatSignal;
+    if (rs && w.time < rs.until && dist(rs, u.pos) < 35) s.retreat = Math.max(s.retreat ?? 0, 0.92);
+    const rl = plan.rally;
+    this.rally = null;
+    if (rl && w.time < rl.until && hp > 0.4 && !atFountain && dist(rl, u.pos) < (rl.kind === 'gather' ? 80 : 45)) {
+      s.rally = rl.kind === 'attack' ? 0.8 : 0.76;
+      this.rally = rl;
+      // 到了进攻点附近：更敢开团
+      if (rl.kind === 'attack' && dist(rl, u.pos) < 14 && enemies.length > 0) s.fight = Math.max(s.fight ?? 0, ratio >= this.diff.engageRatio * 0.7 ? 0.85 : 0);
+    }
+
     // 默认目标
     if (this.position === 'jungle') s.jungle = this.ownCamps(w, u).length > 0 ? 0.45 : 0.2;
     else if (this.position === 'roam') s.roam = 0.45;
@@ -607,6 +636,25 @@ export class AIBrain {
       return;
     }
     this.moveTo(w, out, tower.pos);
+  }
+
+  /** 响应信号：赶到信号点；到了以后有敌人就打，没有就清附近的兵 */
+  private doRally(w: World, u: Unit, K: TeamKnowledge, enemies: Unit[], allies: Unit[], react: boolean, out: Command[]): void {
+    const r = this.rally;
+    if (!r || w.time >= r.until) {
+      this.goal = 'laning';
+      return;
+    }
+    if (enemies.length > 0 && dist(r, u.pos) < 16) {
+      this.doFight(w, u, K, enemies, allies, react, out);
+      return;
+    }
+    if (dist(r, u.pos) > 5) {
+      this.moveTo(w, out, r);
+      return;
+    }
+    const c = this.creeps(w, u, 8)[0];
+    if (c && !this.enemyTowerThreat(w, u, c.pos)) this.attack(out, c);
   }
 
   private doRoam(w: World, u: Unit, K: TeamKnowledge, enemies: Unit[], allies: Unit[], react: boolean, out: Command[]): void {

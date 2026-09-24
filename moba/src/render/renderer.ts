@@ -297,6 +297,13 @@ export class GameRenderer {
     return this.fogCanvas;
   }
 
+  /** 信号的地面标记：扩散的圆环 + 图形 + 文字 */
+  ping(x: number, y: number, kind: 'attack' | 'retreat' | 'gather'): void {
+    const color = kind === 'attack' ? 0xff5a3c : kind === 'retreat' ? 0xffd23c : 0x3fb6ff;
+    this.effects.signal(x, y, kind, color, performance.now());
+    this.effects.floatText(x, y - 1, kind === 'attack' ? '进攻' : kind === 'retreat' ? '撤退' : '集合', color, 20, performance.now(), true);
+  }
+
   private get selfTeam(): Team {
     return this.world.get(this.selfId)?.team ?? 0;
   }

@@ -288,3 +288,78 @@ describe('完整 AI 对局', () => {
     }
   });
 });
+
+describe('信号系统（对标手游）', () => {
+  function setup(): { w: World; ai: AIDirector; me: Unit; mates: Unit[] } {
+    const { w, ai } = aiMatch(12, 'lifeng');
+    for (let i = 0; i < 30 * 30; i++) {
+      w.step(ai.think(w));
+      w.drainEvents();
+    }
+    const me = w.heroOf(1)!;
+    const mates = w.list.filter((u) => u.hero && u.team === 0 && u !== me);
+    return { w, ai, me, mates };
+  }
+
+  it('玩家发“集合”：附近的 AI 队友响应并赶往信号点', () => {
+    const { w, ai, me, mates } = setup();
+    const spot = { x: 40, y: 80 };
+    place(me, spot.x, spot.y);
+    mates.forEach((m, i) => place(m, 50 + i * 3, 75));
+    const d0 = mates.map((m) => Math.hypot(m.pos.x - spot.x, m.pos.y - spot.y));
+    w.step([{ t: 'signal', pid: 1, kind: 'gather', x: spot.x, y: spot.y }]);
+    for (let i = 0; i < 30 * 4; i++) {
+      place(me, spot.x, spot.y);
+      w.step(ai.think(w));
+    }
+    const rallied = mates.filter((m) => ai.brainOf(m.id)!.goal === 'rally').length;
+    expect(rallied).toBeGreaterThanOrEqual(3);
+    const closer = mates.filter((m, i) => Math.hypot(m.pos.x - spot.x, m.pos.y - spot.y) < d0[i]! - 4).length;
+    expect(closer).toBeGreaterThanOrEqual(3);
+  });
+
+  it('玩家发“撤退”：身边的 AI 队友撤退', () => {
+    const { w, ai, me, mates } = setup();
+    place(me, 60, 60);
+    mates.forEach((m, i) => place(m, 58 + i, 62));
+    w.step([{ t: 'signal', pid: 1, kind: 'retreat', x: 60, y: 60 }]);
+    for (let i = 0; i < 30; i++) w.step(ai.think(w));
+    expect(mates.filter((m) => ai.brainOf(m.id)!.goal === 'retreat').length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('玩家对敌方英雄出手：附近的 AI 队友过来支援', () => {
+    const { w, ai, me, mates } = setup();
+    const foe = w.list.find((u) => u.hero && u.team === 1)!;
+    place(me, 60, 60);
+    place(foe, 62, 58);
+    mates.forEach((m, i) => place(m, 50 + i * 2, 72));
+    for (let i = 0; i < 30 * 2; i++) {
+      place(foe, 62, 58);
+      foe.hp = foe.stats.maxHp;
+      w.step([...ai.think(w), { t: 'attackUnit', pid: 1, id: foe.id }]);
+    }
+    expect(ai.plans[0].rally?.kind).toBe('attack');
+    expect(mates.filter((m) => ['rally', 'fight'].includes(ai.brainOf(m.id)!.goal)).length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('同一个人 2 秒内只能发一次信号；信号只属于本队', () => {
+    const { w } = aiMatch(3, 'lifeng');
+    w.step([{ t: 'signal', pid: 1, kind: 'attack', x: 1, y: 1 }]);
+    w.step([{ t: 'signal', pid: 1, kind: 'gather', x: 1, y: 1 }]);
+    expect(w.signals.filter((s) => s.from === w.heroOf(1)!.id)).toHaveLength(1);
+    expect(w.signals[0]!.team).toBe(0);
+  });
+
+  it('AI 队友会用信号告诉玩家队伍计划（例如回防）', () => {
+    const { w, ai } = setup();
+    const t = w.list.find((u) => u.kind === 'tower' && u.team === 0 && u.lane?.id === 'mid' && u.lane.idx === 0)!;
+    const raiders = w.list.filter((u) => u.hero && u.team === 1 && u.alive).slice(0, 2);
+    let said = false;
+    for (let i = 0; i < 40 && !said; i++) {
+      raiders.forEach((u, j) => place(u, t.pos.x + 3 + j, t.pos.y - 3));
+      w.step(ai.think(w));
+      said = w.drainEvents().some((e) => e.t === 'signal' && e.team === 0 && e.topic === 'defend');
+    }
+    expect(said).toBe(true);
+  });
+});

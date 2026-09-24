@@ -8,7 +8,7 @@ import type { LaneId } from '../data/map';
 import { CRYSTAL, TOWERS } from '../data/structures';
 import { DUMMY } from '../data/units';
 import { MINIONS } from '../data/minions';
-import type { Command } from './commands';
+import type { Command, SignalKind, SignalTopic } from './commands';
 import { NEUTRAL, type EntityId, type PendingArea, type Projectile, type Team, type Unit, type UnitKind, type Zone } from './entity';
 import { createCamps, updateCamps, updateMonsters, type CampState } from './systems/jungle';
 import { BushGrid, updateVision } from './vision';
@@ -44,6 +44,16 @@ export interface PlayerConfig {
 
 export interface PlayerSlot extends PlayerConfig {
   unitId: EntityId;
+}
+
+export interface Signal {
+  team: 0 | 1;
+  from: EntityId;
+  kind: SignalKind;
+  x: number;
+  y: number;
+  t: number;
+  topic: SignalTopic | null;
 }
 
 export interface WorldConfig {
@@ -91,6 +101,8 @@ export class World {
   readonly debug = { noCooldown: false };
   /** 英雄之间的攻击记录（小兵 / 塔转火用），保留约 3 秒 */
   aggro: { attacker: EntityId; victim: EntityId; t: number }[] = [];
+  /** 最近的信号（队内可见，AI 队友据此行动），15 秒后过期 */
+  signals: Signal[] = [];
   firstBloodDone = false;
   nextWaveAt: number = WAVES.firstWaveAt;
   waveIndex = 0;
@@ -383,6 +395,7 @@ export class World {
     for (const c of commands) this.apply(c);
 
     if (this.aggro.length && this.tick % 15 === 0) this.aggro = this.aggro.filter((a) => this.time - a.t < 3);
+    if (this.signals.length && this.tick % 15 === 0) this.signals = this.signals.filter((s) => this.time - s.t < 15);
     const match = this.config.mode === 'match';
     if (match) {
       updateWaves(this);
@@ -429,6 +442,14 @@ export class World {
         const d = c.dir ? norm(c.dir) : null;
         u.moveDir = d && (d.x !== 0 || d.y !== 0) ? d : null;
         if (u.moveDir) cancelRecall(this, u);
+        return;
+      }
+      case 'signal': {
+        // 同一个人 2 秒内只能发一次，防止刷屏
+        if (this.signals.some((s) => s.from === u.id && this.time - s.t < 2)) return;
+        const sig: Signal = { team: u.team as 0 | 1, from: u.id, kind: c.kind, x: c.x, y: c.y, t: this.time, topic: c.topic ?? null };
+        this.signals.push(sig);
+        this.emit({ t: 'signal', team: sig.team, from: u.id, kind: c.kind, x: c.x, y: c.y, topic: sig.topic });
         return;
       }
       case 'moveTo':

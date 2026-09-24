@@ -6,6 +6,8 @@ export interface KeyboardHooks {
   onToggleDebug: () => void;
   onShop: () => void;
   onScoreboard: (show: boolean) => void;
+  /** 发信号：1 进攻、2 撤退、3 集合 */
+  onSignal?: (kind: 'attack' | 'retreat' | 'gather') => void;
 }
 
 /**
@@ -69,6 +71,10 @@ export class KeyboardMouse {
       }
       this.state.aiming = { slot, source: 'mouse', drag: { x: 0, y: 0 }, dragged: true, cancel: false };
       this.state.actions.push({ k: 'aimStart', slot });
+      return;
+    }
+    if ((code === 'Digit1' || code === 'Digit2' || code === 'Digit3') && !e.repeat) {
+      this.hooks.onSignal?.(code === 'Digit1' ? 'attack' : code === 'Digit2' ? 'retreat' : 'gather');
       return;
     }
     if (code === 'KeyP' && !e.repeat) {

@@ -443,3 +443,19 @@ i.mvp.lose { background: linear-gradient(#eef2f8, #8a94a8); }
 .buffbar .bf small { font-size: calc(10 * var(--ui) * 1px); color: #fff; text-shadow: 0 1px 2px #000; line-height: 1.1; }
 .bush-chip { font-size: calc(12 * var(--ui) * 1px); padding: 3px 10px; border-radius: 999px; background: rgba(30,90,40,.8); border: 1px solid #6dff7a; color: #d8ffd8; margin-right: 4px; }
 .bush-chip.revealed { background: rgba(110,60,20,.85); border-color: #ffb040; color: #ffe0b0; }
+
+/* ———— 信号按钮（小地图右侧）与队伍聊天 ———— */
+.signals { position: absolute; left: calc(8px + 196 * var(--ui) * 1px + env(safe-area-inset-left)); top: calc(8px + env(safe-area-inset-top));
+  display: flex; flex-direction: column; gap: calc(6 * var(--ui) * 1px); }
+.signals .sig { pointer-events: auto; width: calc(40 * var(--ui) * 1px); height: calc(40 * var(--ui) * 1px); border-radius: 50%; cursor: pointer;
+  font-size: calc(12 * var(--ui) * 1px); font-weight: 800; color: #fff; border: 2px solid rgba(255,255,255,.5); padding: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,.5); text-shadow: 0 1px 2px #000; }
+.signals .sig.atk { background: radial-gradient(circle at 40% 35%, #ff7a5a, #7a1a10 80%); }
+.signals .sig.ret { background: radial-gradient(circle at 40% 35%, #ffd86a, #7a5410 80%); }
+.signals .sig.gat { background: radial-gradient(circle at 40% 35%, #6ac8ff, #103a7a 80%); }
+.signals .sig:active { transform: scale(.92); }
+.chat { position: absolute; left: calc(10px + env(safe-area-inset-left)); top: calc(340 * var(--ui) * 1px + env(safe-area-inset-top));
+  display: flex; flex-direction: column; gap: 3px; pointer-events: none; max-width: calc(300 * var(--ui) * 1px); }
+.chat-row { font-size: calc(13 * var(--ui) * 1px); background: rgba(8,12,20,.6); padding: 3px 10px; border-radius: 8px; color: #fff;
+  text-shadow: 0 1px 2px #000; animation: fadein .25s; transition: opacity .6s; }
+.chat-row.out { opacity: 0; }

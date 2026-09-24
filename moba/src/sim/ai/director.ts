@@ -19,8 +19,8 @@ export class AIDirector {
   readonly brains: AIBrain[] = [];
   readonly knowledge: [TeamKnowledge, TeamKnowledge] = [new TeamKnowledge(0), new TeamKnowledge(1)];
   readonly plans: [TeamPlan, TeamPlan] = [
-    { objective: 0, members: new Set(), groupLane: null, push: false, defendAt: 0 },
-    { objective: 0, members: new Set(), groupLane: null, push: false, defendAt: 0 },
+    { objective: 0, members: new Set(), groupLane: null, push: false, defendAt: 0, rally: null, retreatSignal: null },
+    { objective: 0, members: new Set(), groupLane: null, push: false, defendAt: 0, rally: null, retreatSignal: null },
   ];
   private readonly rng: Rng;
 
@@ -36,8 +36,9 @@ export class AIDirector {
   think(w: World): Command[] {
     if (w.winner !== null) return [];
     for (const k of this.knowledge) k.update(w);
-    if (w.tick % 30 === 0) for (const t of [0, 1] as const) this.plan(w, t);
     const out: Command[] = [];
+    if (w.tick % 30 === 0) for (const t of [0, 1] as const) this.plan(w, t, out);
+    if (w.tick % 6 === 0) for (const t of [0, 1] as const) this.readSignals(w, t);
     for (const b of this.brains) {
       const u = w.get(b.unitId);
       if (!u) continue;
@@ -50,8 +51,67 @@ export class AIDirector {
     return this.brains.find((b) => b.unitId === unitId);
   }
 
+  /**
+   * 读取玩家（非 AI）发出的信号与玩家的交战状态，转成队伍计划里的集合点 / 撤退点。
+   * AI 自己发的信号只是说给玩家听的，不驱动 AI。
+   */
+  private readSignals(w: World, team: Team): void {
+    const plan = this.plans[team as 0 | 1];
+    const humans = new Set(w.players.filter((p) => !p.isAI && p.team === team).map((p) => p.unitId));
+    if (humans.size === 0) return;
+    for (const s of w.signals) {
+      if (s.team !== team || !humans.has(s.from)) continue;
+      if (s.kind === 'retreat') {
+        if (!plan.retreatSignal || s.t + 5 > plan.retreatSignal.until) plan.retreatSignal = { x: s.x, y: s.y, until: s.t + 5 };
+        if (plan.rally && plan.rally.until <= s.t + 15) plan.rally = null;
+      } else {
+        const until = s.t + (s.kind === 'gather' ? 15 : 10);
+        if (!plan.rally || until > plan.rally.until) plan.rally = { kind: s.kind, x: s.x, y: s.y, until };
+      }
+    }
+    // 支援：玩家刚对敌方英雄出手，附近的 AI 队友过来帮忙
+    for (const a of w.aggro) {
+      if (!humans.has(a.attacker) || w.time - a.t > 1) continue;
+      const me = w.get(a.attacker);
+      if (!me || !me.alive || (plan.rally && plan.rally.until > w.time + 2.5)) continue;
+      plan.rally = { kind: 'attack', x: me.pos.x, y: me.pos.y, until: w.time + 3 };
+    }
+    if (plan.rally && w.time >= plan.rally.until) plan.rally = null;
+    if (plan.retreatSignal && w.time >= plan.retreatSignal.until) plan.retreatSignal = null;
+  }
+
+  /** AI 以信号的形式把队伍计划告诉玩家（只在计划变化时说一次） */
+  private announce(w: World, team: Team, out: Command[], kind: 'attack' | 'gather', x: number, y: number, topic: 'turtle' | 'dragon' | 'push' | 'defend'): void {
+    const speaker = this.brains
+      .map((b) => w.get(b.unitId))
+      .filter((u): u is Unit => !!u && u.alive && u.team === team)
+      .sort((a, b) => Math.hypot(a.pos.x - x, a.pos.y - y) - Math.hypot(b.pos.x - x, b.pos.y - y))[0];
+    if (!speaker) return;
+    const pid = w.players.find((p) => p.unitId === speaker.id)!.pid;
+    out.push({ t: 'signal', pid, kind, x, y, topic });
+  }
+
+  /** 更新队伍计划；计划有变化时由 AI 发信号告诉玩家（打龙 / 推塔 / 回防） */
+  private plan(w: World, team: Team, out: Command[]): void {
+    const plan = this.plans[team as 0 | 1];
+    const prev = { objective: plan.objective, push: plan.push, defendAt: plan.defendAt };
+    this.planInner(w, team);
+    const hasHuman = w.players.some((p) => !p.isAI && p.team === team);
+    if (!hasHuman) return;
+    if (plan.defendAt && plan.defendAt !== prev.defendAt) {
+      const t = w.get(plan.defendAt)!;
+      this.announce(w, team, out, 'gather', t.pos.x, t.pos.y, 'defend');
+    } else if (plan.objective && plan.objective !== prev.objective) {
+      const b = w.get(plan.objective)!;
+      this.announce(w, team, out, 'gather', b.pos.x, b.pos.y, b.defId.includes('dragon') ? 'dragon' : 'turtle');
+    } else if (plan.push && !prev.push && plan.groupLane) {
+      const t = this.frontTower(w, team, plan.groupLane) ?? w.list.find((c) => c.kind === 'crystal' && c.team !== team && c.alive);
+      if (t) this.announce(w, team, out, 'attack', t.pos.x, t.pos.y, 'push');
+    }
+  }
+
   /** 队伍计划：什么时候去打 Boss、后期往哪一路抱团 */
-  private plan(w: World, team: Team): void {
+  private planInner(w: World, team: Team): void {
     const plan = this.plans[team as 0 | 1];
     const mine = w.list.filter((u) => u.hero && u.team === team);
     const theirs = w.list.filter((u) => u.hero && u.team !== team);

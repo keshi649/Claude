@@ -57,6 +57,11 @@ export class Camera {
     }
   }
 
+  /** 镜头中心的世界坐标 */
+  center(): { x: number; y: number } {
+    return { x: this.x, y: this.y };
+  }
+
   /** 震屏（单位：米）；long 为更长的余震（建筑爆炸） */
   shake(amp: number, long = false): void {
     this.shakeAmp = this.shakeTime > 0 ? Math.max(this.shakeAmp, amp) : amp;

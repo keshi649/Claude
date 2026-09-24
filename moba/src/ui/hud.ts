@@ -44,6 +44,7 @@ export interface HudHooks {
   onToggleMute: () => boolean;
   isMuted: () => boolean;
   onQuit: () => void;
+  onSignal: (kind: 'attack' | 'retreat' | 'gather') => void;
 }
 
 /**
@@ -76,6 +77,7 @@ export class Hud {
   private deathText!: HTMLElement;
   private deathWho!: HTMLElement;
   private buffBar!: HTMLElement;
+  private chatEl!: HTMLElement;
   /** 销毁时要解除的全局监听 */
   private offs: (() => void)[] = [];
 
@@ -192,6 +194,22 @@ export class Hud {
       if (e.target === gear) return;
       hooks.onScoreboard();
     });
+    // 小地图右侧：信号按钮（进攻 / 撤退 / 集合）
+    const sig = el('div', 'signals', root);
+    for (const [kind, label, cls] of [
+      ['attack', '进攻', 'atk'],
+      ['retreat', '撤退', 'ret'],
+      ['gather', '集合', 'gat'],
+    ] as const) {
+      const b = el('button', `sig ${cls}`, sig, label);
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        hooks.onSignal(kind);
+      });
+    }
+    // 左侧：队伍聊天 / 信号记录
+    this.chatEl = el('div', 'chat', root);
     // 右上：身上的增益 / 减益（图标 + 剩余秒数），以及草丛隐身提示
     this.buffBar = el('div', 'buffbar', root);
     // 击杀信息
@@ -245,6 +263,15 @@ export class Hud {
     row.innerHTML = `${face(k)}<em>⚔</em>${face(v)}`;
     setTimeout(() => row.remove(), 5000);
     while (this.feed.children.length > 4) this.feed.firstElementChild?.remove();
+  }
+
+  /** 队伍聊天：最多 4 条，6 秒后淡出 */
+  chat(who: string, text: string, color: string): void {
+    const row = el('div', 'chat-row', this.chatEl);
+    row.innerHTML = `<b style="color:${color}">${who}</b>：${text}`;
+    window.setTimeout(() => row.classList.add('out'), 6000);
+    window.setTimeout(() => row.remove(), 6600);
+    while (this.chatEl.children.length > 4) this.chatEl.firstElementChild?.remove();
   }
 
   /** 增益栏：只在内容变化时重建 */

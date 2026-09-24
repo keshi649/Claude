@@ -349,6 +349,27 @@ export class EffectsLayer {
     this.burst(x, y, 0xffd23c, 18, 3, now, 1.2);
   }
 
+  /** 信号标记（地面）：三圈扩散的圆环 + 进攻交叉剑 / 撤退箭头 / 集合旗帜 */
+  signal(x: number, y: number, kind: 'attack' | 'retreat' | 'gather', color: number, now: number): void {
+    this.addGround(x, y, 0, 3000, now, (g, t) => {
+      g.clear();
+      for (let i = 0; i < 3; i++) {
+        const k = (t * 3 + i / 3) % 1;
+        g.circle(0, 0, 0.6 + k * 2.6).stroke({ width: 0.12, color, alpha: (1 - k) * (1 - t * 0.6) });
+      }
+      const a = 1 - Math.max(0, t - 0.7) / 0.3;
+      if (kind === 'attack') {
+        g.moveTo(-0.6, -0.6).lineTo(0.6, 0.6).stroke({ width: 0.2, color, alpha: a });
+        g.moveTo(0.6, -0.6).lineTo(-0.6, 0.6).stroke({ width: 0.2, color, alpha: a });
+      } else if (kind === 'retreat') {
+        g.poly([-0.7, 0, 0, -0.6, 0, -0.25, 0.7, -0.25, 0.7, 0.25, 0, 0.25, 0, 0.6]).fill({ color, alpha: a });
+      } else {
+        g.rect(-0.05, -0.8, 0.1, 1.2).fill({ color: 0xffffff, alpha: a });
+        g.poly([0.05, -0.8, 0.75, -0.55, 0.05, -0.3]).fill({ color, alpha: a });
+      }
+    });
+  }
+
   /** 建筑的无兵保护护盾：被英雄打时闪一下半透明的蓝色护罩 */
   shieldFlash(x: number, y: number, now: number): void {
     this.addGround(x, y, 0, 380, now, (g, t) => {

@@ -23,7 +23,8 @@ export type SfxName =
   | 'victory'
   | 'defeat'
   | 'explosion'
-  | 'warning';
+  | 'warning'
+  | 'ping';
 
 const MUTE_KEY = 'jinghe.mute';
 
@@ -199,6 +200,11 @@ export class Sfx {
         this.tone(t, 0.5, 160, 50, 0.4 * v, 'triangle');
         this.noise(t, 1.2, 1400, 90, 0.7, 0.9 * v, 'lowpass');
         this.noise(t + 0.08, 0.9, 3500, 900, 1.2, 0.35 * v, 'bandpass');
+        break;
+      case 'ping':
+        // 信号：清脆的两声
+        this.tone(t, 0.12, 1320, 1320, 0.14 * v, 'sine');
+        this.tone(t + 0.09, 0.2, 1760, 1760, 0.12 * v, 'sine');
         break;
       case 'warning':
         // 己方建筑被攻击：两声急促提示

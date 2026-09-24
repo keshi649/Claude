@@ -1,3 +1,4 @@
+import type { SignalKind, SignalTopic } from './commands';
 import type { AreaVfx, CcKind, DamageType, Impact, IndicatorSpec, Shape } from '../data/schema';
 import type { EntityId, Team } from './entity';
 
@@ -78,6 +79,8 @@ export type SimEvent =
       /** 终结了对方的连杀 */
       shutdown: boolean;
     }
+  /** 信号（只给同队显示） */
+  | { t: 'signal'; team: Team; from: EntityId; kind: SignalKind; x: number; y: number; topic: SignalTopic | null }
   /** 装备被动触发（表现层显示装备名、特效） */
   | { t: 'itemProc'; unit: EntityId; item: string; target: EntityId }
   | { t: 'structureDown'; unit: EntityId; team: Team; killer: EntityId }

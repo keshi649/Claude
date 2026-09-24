@@ -15,6 +15,11 @@ export type AttackMode = 'auto' | 'farm' | 'tower';
 
 export type DebugOp = 'refreshCd' | 'levelUp' | 'maxLevel' | 'addGold' | 'noCooldown' | 'heal' | 'dummyArmor' | 'stress';
 
+/** 信号（对标手游的“发起进攻 / 开始撤退 / 请求集合”） */
+export type SignalKind = 'attack' | 'retreat' | 'gather';
+/** 信号附带的语境（AI 发信号时说明原因，界面据此显示不同的话） */
+export type SignalTopic = 'turtle' | 'dragon' | 'push' | 'defend' | 'help';
+
 export type Command =
   /** 方向移动（摇杆 / WASD），dir 为 null 表示松开 */
   | { t: 'move'; pid: number; dir: { x: number; y: number } | null }
@@ -40,4 +45,6 @@ export type Command =
   | { t: 'sell'; pid: number; slot: number }
   /** 一键购买推荐出装的下一件 */
   | { t: 'buyRecommended'; pid: number }
-  | { t: 'debug'; pid: number; op: DebugOp; value?: number };
+  | { t: 'debug'; pid: number; op: DebugOp; value?: number }
+  /** 发信号：只有队友能看到；AI 队友会响应 */
+  | { t: 'signal'; pid: number; kind: SignalKind; x: number; y: number; topic?: SignalTopic };

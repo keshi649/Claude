@@ -69,6 +69,11 @@ export class Minimap {
     c.strokeRect(0.5, 0.5, this.sizePx - 1, this.sizePx - 1);
   }
 
+  private pings: { x: number; y: number; color: string; t: number }[] = [];
+  ping(x: number, y: number, color: string): void {
+    this.pings.push({ x, y, color, t: performance.now() });
+  }
+
   /** 把小地图上的屏幕坐标换成世界坐标（点击小地图用） */
   toWorld(clientX: number, clientY: number): Vec2 {
     const r = this.el.getBoundingClientRect();
@@ -173,6 +178,23 @@ export class Minimap {
       c.arc(x, y, (boss ? 5 : 3) * dpr, 0, Math.PI * 2);
       c.fill();
       c.stroke();
+    }
+    // 信号标记：4 秒内闪烁的圆圈
+    const now = performance.now();
+    this.pings = this.pings.filter((p) => now - p.t < 4000);
+    for (const p of this.pings) {
+      const k = ((now - p.t) % 800) / 800;
+      c.strokeStyle = p.color;
+      c.globalAlpha = 1 - k;
+      c.lineWidth = 2 * dpr;
+      c.beginPath();
+      c.arc(p.x * S, p.y * S, (3 + k * 10) * dpr, 0, Math.PI * 2);
+      c.stroke();
+      c.globalAlpha = 1;
+      c.fillStyle = p.color;
+      c.beginPath();
+      c.arc(p.x * S, p.y * S, 3 * dpr, 0, Math.PI * 2);
+      c.fill();
     }
     // 镜头视野框
     c.strokeStyle = 'rgba(255,255,255,0.8)';

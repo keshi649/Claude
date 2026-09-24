@@ -8,6 +8,7 @@ import { InputState } from '../input/state';
 import { GameRenderer, type AimRender } from '../render/renderer';
 import type { Command } from '../sim/commands';
 import type { SimEvent } from '../sim/events';
+import type { Unit } from '../sim/entity';
 import { World, type WorldConfig } from '../sim/world';
 import { DebugPanel } from '../ui/debugPanel';
 import { Hud } from '../ui/hud';
@@ -23,6 +24,10 @@ import { summarize, type MatchSummary } from '../sim/summary';
 import { Announcer } from '../ui/announcer';
 
 const PLAYER_PID = 1;
+
+const SIGNAL_TEXT = { attack: '发起进攻！', retreat: '开始撤退！', gather: '请求集合！' } as const;
+const SIGNAL_TOPIC_TEXT = { turtle: '集合打龟！', dragon: '集合打龙！', push: '人数优势，一起推塔！', defend: '回防！守住防御塔', help: '需要支援！' } as const;
+const SIGNAL_COLOR = { attack: '#ff5a3c', retreat: '#ffd23c', gather: '#3fb6ff' } as const;
 
 /** 5v5 阵容：玩家在蓝方，友军 AI 普通难度，敌方 AI 用所选难度 */
 export function sessionLineup(o: { seed: number; heroId: string; summoner?: string; difficulty?: Difficulty }): Lineup {
@@ -113,6 +118,7 @@ export class GameSession {
       onToggleDebug: () => this.debug.toggle(),
       onShop: () => this.shop.toggle(),
       onScoreboard: (show) => this.scoreboard.toggle(show),
+      onSignal: (kind) => this.sendSignal(kind),
     });
   }
 
@@ -140,6 +146,7 @@ export class GameSession {
       },
       isMuted: () => this.sfx.muted,
       onQuit: () => this.cfg.onQuit?.(),
+      onSignal: (kind) => this.sendSignal(kind),
     });
     this.announcer = new Announcer(this.hud.root, (n, v) => this.sfx.play(n, v));
     this.shop = new ShopPanel(
@@ -267,12 +274,14 @@ export class GameSession {
         this.hud.pushKill(w, e.killer, e.victim, hero.team);
         this.announcer.onKill(w, e, hero.team, hero.id);
         if (e.victim === hero.id) this.hud.setDeathInfo(w, e.killer, e.assists);
+        this.teamChatOnKill(e, hero);
       }
       if (e.t === 'structureDown' && hero && w.get(e.unit)?.kind === 'tower') {
         const mine = e.team === hero.team;
         this.announcer.pushText(mine ? '我方防御塔被摧毁' : '摧毁敌方防御塔', mine ? '守住下一座塔' : '全队获得金币', !mine);
       }
       if (e.t === 'gameOver' && hero) this.onGameOver(e.winner === hero.team);
+      if (e.t === 'signal' && hero && e.team === hero.team) this.showSignal(e, hero.id);
       if (e.t === 'campSpawn' && (e.kind === 'turtle' || e.kind === 'dragon')) {
         const name = getUnitDef(e.def).name;
         const where = e.kind === 'turtle' ? '上河道' : '下河道';
@@ -352,6 +361,47 @@ export class GameSession {
       this.dpsTotal = 0;
       this.dpsLog = [];
     });
+  }
+
+  /** AI 队友的快捷聊天（对标手游人机队友的“干得漂亮”“一起推塔”），8 秒内最多一句 */
+  private chatAt = -1e9;
+  private teamChatOnKill(e: Extract<SimEvent, { t: 'kill' }>, hero: Unit): void {
+    const w = this.world;
+    const victim = w.get(e.victim);
+    if (!victim?.hero || victim.team === hero.team) return;
+    const ace = w.list.filter((u) => u.hero && u.team === victim.team).every((u) => !u.alive);
+    let lines: readonly string[] | null = null;
+    if (ace) lines = ['团灭了，趁机推塔！', '漂亮！一起推进', '全灭！拆他们的塔'];
+    else if (e.firstBlood) lines = e.killer === hero.id ? ['好样的！一血到手', '漂亮的一血！'] : ['一血到手！', '开局不错'];
+    else if (e.killer === hero.id && e.multi >= 2) lines = ['太强了！', '带我飞！', '这波操作漂亮'];
+    if (!lines) return;
+    const now = performance.now();
+    if (now - this.chatAt < 8000) return;
+    const mates = w.players.filter((p) => p.isAI && p.team === hero.team).map((p) => w.get(p.unitId)).filter((u): u is Unit => !!u?.alive);
+    if (mates.length === 0) return;
+    this.chatAt = now;
+    const who = mates[Math.floor(Math.random() * mates.length)]!;
+    this.hud.chat(getHero(who.defId).name, lines[Math.floor(Math.random() * lines.length)]!, '#7fd4ff');
+  }
+
+  /** 在自己英雄的位置发信号（阵亡时在镜头中心） */
+  private sendSignal(kind: 'attack' | 'retreat' | 'gather'): void {
+    const hero = this.world.heroOf(PLAYER_PID);
+    if (!hero) return;
+    const p = hero.alive ? hero.pos : this.renderer.camera.center();
+    this.pending.push({ t: 'signal', pid: PLAYER_PID, kind, x: p.x, y: p.y });
+  }
+
+  /** 显示队友的信号：聊天栏文字、地面标记、小地图标记、提示音 */
+  private showSignal(e: Extract<SimEvent, { t: 'signal' }>, selfId: number): void {
+    const u = this.world.get(e.from);
+    if (!u) return;
+    const text = e.topic ? SIGNAL_TOPIC_TEXT[e.topic] : SIGNAL_TEXT[e.kind];
+    const who = u.id === selfId ? '你' : `${getHero(u.defId).name}`;
+    this.hud.chat(who, text, u.id === selfId ? '#6dff7a' : '#7fd4ff');
+    this.renderer.ping(e.x, e.y, e.kind);
+    this.hud.minimap.ping(e.x, e.y, SIGNAL_COLOR[e.kind]);
+    this.sfx.play('ping', 0.8);
   }
 
   /** Boss 刷新前 30 秒提示（每次刷新只提示一次） */
