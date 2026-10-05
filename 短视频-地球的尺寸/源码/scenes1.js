@@ -199,7 +199,7 @@ SCENES.title = function (t) {
   }
   text('人类如何用影子量出世界', 960, 712, { f: 'zhm', size: 40, color: COL.ivory, alpha: 0.9 * E.sine(seg(lt, 2.0, 2.9)), align: 'center', ls: 10 });
   const ba = E.sine(seg(lt, 2.5, 3.4));
-  text('知洲  出品', 960, 772, { f: 'zhm', size: 26, color: COL.gold, alpha: 0.85 * ba, align: 'center', ls: 4 });
+  text('甜菜  出品', 960, 772, { f: 'zhm', size: 26, color: COL.gold, alpha: 0.85 * ba, align: 'center', ls: 4 });
   line(800, 763, 880, 763, COL.gold, 1, 0.6 * ba); line(1040, 763, 1120, 763, COL.gold, 1, 0.6 * ba);
 };
 

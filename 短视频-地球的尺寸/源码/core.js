@@ -453,6 +453,6 @@ function watermark(t, alpha = 1) {
   g.save(); g.globalAlpha *= alpha * 0.8;
   g.strokeStyle = 'rgba(207,74,62,0.9)'; g.lineWidth = 1.5; rrect(1748, 1012, 20, 20, 3); g.stroke();
   dot(1758, 1022, 3.2, COL.red, 0.95);
-  text('知洲', 1778, 1031, { f: 'zhm', size: 24, color: COL.ivory, alpha: 0.75, ls: 2 });
+  text('甜菜', 1778, 1031, { f: 'zhm', size: 24, color: COL.ivory, alpha: 0.75, ls: 2 });
   g.restore();
 }

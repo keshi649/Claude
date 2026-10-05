@@ -480,7 +480,7 @@ SCENES.credits = function (t) {
   const a = E.sine(seg(t, s.t0, s.t0 + 1.0));
   text('DE  MAGNITUDINE  TERRAE', 960, 380, { f: 'cap', size: 26, color: COL.ivory, alpha: 0.6 * a, align: 'center', ls: 10 });
   goldText('地球的尺寸', 960, 500, 96, { f: 'zhk', align: 'center', alpha: a, ls: 14 });
-  text('知洲', 960, 580, { f: 'zhm', size: 30, color: COL.gold, alpha: 0.85 * a, align: 'center', ls: 8 });
+  text('甜菜', 960, 580, { f: 'zhm', size: 30, color: COL.gold, alpha: 0.85 * a, align: 'center', ls: 8 });
   const r = E.sine(seg(t, s.t0 + 0.6, s.t0 + 1.6));
   const refs = [
     '参考：克莱奥梅德斯《天体的圆周运动》 · 《新唐书·天文志》 · Snellius, Eratosthenes Batavus (1617)',
