@@ -1,6 +1,7 @@
 """《原始人为什么不近视？》声音：配音 + 8-bit 配乐 + 游戏音效，全部按 timeline.json 对齐。
 配乐与音效用 numpy 合成（方波、三角波、噪声，仿红白机音色）；配音来自 voice.py 生成的 voice/*.mp3。
-用法：python3 audio.py out.wav
+用法：python3 audio.py out.wav               配音 + 配乐 + 音效
+      python3 audio.py out.wav --no-voice    去掉配音的版本：只有配乐和音效，音乐也不再为旁白压低
 """
 import json
 import os
@@ -624,11 +625,12 @@ def duck_env():
     return np.convolve(g, ker, mode='same')
 
 
-def main(out):
+def main(out, with_voice=True):
     build_music()
     build_sfx()
-    build_voice()
-    d = duck_env()
+    if with_voice:
+        build_voice()
+    d = duck_env() if with_voice else 1.0   # 没有旁白就不用给它让位
     mix = music * d * .55 + sfx * .8 + voice * 1.0
     # 轻微的总线压缩 + 限幅
     peak = np.max(np.abs(mix))
@@ -639,4 +641,5 @@ def main(out):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else 'out/audio.wav')
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    main(args[0] if args else 'out/audio.wav', with_voice='--no-voice' not in sys.argv)

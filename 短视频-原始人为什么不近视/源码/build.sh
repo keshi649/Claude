@@ -1,5 +1,5 @@
 #!/bin/bash
-# 一键重新生成《原始人为什么不近视？》：下载字体 → 合成配音 → 并行渲染画面 → 合成声音 → 合成 MP4 → 按 30MB 切段
+# 一键重新生成《原始人为什么不近视？》：下载字体 → 合成配音 → 并行渲染画面 → 合成声音 → 合成 MP4 → 另出一份无配音版
 # 依赖：node + playwright（自带 Chromium）、ffmpeg（含 libx264）、python3 + numpy + scipy + edge-tts
 set -e
 cd "$(dirname "$0")"
@@ -33,3 +33,8 @@ NAME=原始人为什么不近视
 ffmpeg -y -loglevel error -i out/video_noaudio.mp4 -i out/audio.wav -c:v libx264 -preset slow -tune animation -crf ${CRF:-20} \
   -pix_fmt yuv420p -af loudnorm=I=-14:TP=-1.5:LRA=11 -ar 44100 -c:a aac -b:a 160k -movflags +faststart -shortest out/$NAME.mp4
 echo "完成：$(pwd)/out/$NAME.mp4（$(du -h out/$NAME.mp4 | cut -f1)）"
+# 无配音版：画面原样复制（不重新编码），声音只有配乐和音效
+python3 audio.py out/audio_novoice.wav --no-voice
+ffmpeg -y -loglevel error -i out/$NAME.mp4 -i out/audio_novoice.wav -map 0:v -map 1:a -c:v copy \
+  -af loudnorm=I=-14:TP=-1.5:LRA=11 -ar 44100 -c:a aac -b:a 160k -movflags +faststart -shortest out/${NAME}_无配音.mp4
+echo "完成：$(pwd)/out/${NAME}_无配音.mp4（$(du -h out/${NAME}_无配音.mp4 | cut -f1)）"
