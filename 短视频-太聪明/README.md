@@ -11,6 +11,7 @@
 | 文件 | 说明 |
 |---|---|
 | `太聪明.mp4` | 成片：1920×1080，30fps，H.264 + AAC，4 分 24 秒，响度 −14 LUFS，没有水印。**不在仓库里**：成片带着原曲音频，仓库是公开的；按下面的步骤重新生成 |
+| `太聪明_第1段.mp4` … `第3段.mp4` | 成片平分的三段（每段约 88 秒，两遍编码压到 26 MiB 以内，方便发送），同样不在仓库里 |
 | `封面.jpg` | 封面（取自书的台阶那一段） |
 | `脚本.md` | 歌词时间轴的来历、逐句分镜、声音说明 |
 | `源码/` | 生成视频用的全部代码 |
@@ -45,6 +46,19 @@ NODE_PATH=$(npm root -g) ./build.sh      # 输出到 源码/out/太聪明.mp4
 ```bash
 pip install librosa soundfile torch torchaudio transformers demucs
 python3 analyze.py
+```
+
+成片太大发不出去时，平分成三段（每段约 88 秒，每段 26 MiB 左右）：
+
+```bash
+P=87.867
+for i in 0 1 2; do
+  for pass in 1 2; do
+    ffmpeg -y -ss $(python3 -c "print($i*$P)") -i out/太聪明.mp4 -t $P -c:v libx264 -preset slow -b:v 2300k \
+      -pass $pass -passlogfile out/p$i -pix_fmt yuv420p -c:a aac -b:a 160k -movflags +faststart \
+      $([ $pass = 1 ] && echo "-an -f mp4 /dev/null" || echo "out/太聪明_第$((i+1))段.mp4")
+  done
+done
 ```
 
 预览某几个时间点的单帧（成片时间，等于歌曲时间加 2 秒）：
