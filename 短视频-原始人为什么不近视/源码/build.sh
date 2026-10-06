@@ -1,5 +1,5 @@
 #!/bin/bash
-# 一键重新生成《原始人为什么不近视？》：下载字体 → 合成配音 → 并行渲染画面 → 合成声音 → 合成 MP4 → 另出一份无配音版
+# 一键重新生成《原始人为什么不近视？》：下载字体 → 合成配音 → 并行渲染画面 → 合成声音 → 合成 MP4 → 另出无配音版、只有音效版
 # 依赖：node + playwright（自带 Chromium）、ffmpeg（含 libx264）、python3 + numpy + scipy + edge-tts
 set -e
 cd "$(dirname "$0")"
@@ -38,3 +38,11 @@ python3 audio.py out/audio_novoice.wav --no-voice
 ffmpeg -y -loglevel error -i out/$NAME.mp4 -i out/audio_novoice.wav -map 0:v -map 1:a -c:v copy \
   -af loudnorm=I=-14:TP=-1.5:LRA=11 -ar 44100 -c:a aac -b:a 160k -movflags +faststart -shortest out/${NAME}_无配音.mp4
 echo "完成：$(pwd)/out/${NAME}_无配音.mp4（$(du -h out/${NAME}_无配音.mp4 | cut -f1)）"
+# 只有音效的版本：不做响度标准化（那会把音效放得很大），而是补上无配音版在标准化时得到的增益，
+# 这样每个音效的音量都和无配音版一样
+lufs() { ffmpeg -hide_banner -i "$1" -af ebur128=framelog=quiet -f null - 2>&1 | awk '$1=="I:"{v=$2} END{print v}'; }
+GAIN=$(python3 -c "print(round($(lufs out/${NAME}_无配音.mp4) - ($(lufs out/audio_novoice.wav)), 2))")
+python3 audio.py out/audio_sfx.wav --no-voice --no-music --gain-db=$GAIN
+ffmpeg -y -loglevel error -i out/$NAME.mp4 -i out/audio_sfx.wav -map 0:v -map 1:a -c:v copy \
+  -c:a aac -b:a 160k -movflags +faststart -shortest out/${NAME}_无配音无配乐.mp4
+echo "完成：$(pwd)/out/${NAME}_无配音无配乐.mp4（$(du -h out/${NAME}_无配音无配乐.mp4 | cut -f1)）"

@@ -1,7 +1,9 @@
 """《原始人为什么不近视？》声音：配音 + 8-bit 配乐 + 游戏音效，全部按 timeline.json 对齐。
 配乐与音效用 numpy 合成（方波、三角波、噪声，仿红白机音色）；配音来自 voice.py 生成的 voice/*.mp3。
-用法：python3 audio.py out.wav               配音 + 配乐 + 音效
-      python3 audio.py out.wav --no-voice    去掉配音的版本：只有配乐和音效，音乐也不再为旁白压低
+用法：python3 audio.py out.wav                         配音 + 配乐 + 音效
+      python3 audio.py out.wav --no-voice              去掉配音：只有配乐和音效，音乐也不再为旁白压低
+      python3 audio.py out.wav --no-voice --no-music --gain-db=7.4
+                                                       只有音效；--gain-db 直接定成品音量（见 limit）
 """
 import json
 import os
@@ -10,6 +12,7 @@ import sys
 
 import numpy as np
 from scipy.io import wavfile
+from scipy.ndimage import minimum_filter1d, uniform_filter1d
 from scipy.signal import butter, resample_poly, sosfilt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -625,21 +628,36 @@ def duck_env():
     return np.convolve(g, ker, mode='same')
 
 
-def main(out, with_voice=True):
-    build_music()
+def limit(x, ceil_db=-1.5, hold=.015):
+    """离线的前视限幅：峰值压到 ceil_db 以下，增益在峰值前后各 hold 秒内平滑过渡，不产生延迟。"""
+    ceil = 10 ** (ceil_db / 20)
+    g = np.minimum(1.0, ceil / np.maximum(np.max(np.abs(x), axis=0), 1e-9))
+    k = int(hold * SR)
+    g = uniform_filter1d(minimum_filter1d(g, size=2 * k + 1), size=k + 1)   # 平均窗不超过最小值窗的半径，所以不会冒顶
+    print(f'限幅：最多压低 {-20 * np.log10(g.min()):.1f} dB，受影响的采样 {np.mean(g < .999) * 100:.2f}%')
+    return x * g
+
+
+def main(out, with_voice=True, with_music=True, gain_db=None):
+    build_music()        # 不要配乐也照样生成：它和音效共用一个随机数序列，跳过会让音效变样
     build_sfx()
     if with_voice:
         build_voice()
     d = duck_env() if with_voice else 1.0   # 没有旁白就不用给它让位
-    mix = music * d * .55 + sfx * .8 + voice * 1.0
-    # 轻微的总线压缩 + 限幅
-    peak = np.max(np.abs(mix))
-    if peak > .98:
-        mix = mix / peak * .98
+    mix = music * d * (.55 if with_music else 0) + sfx * .8 + voice * 1.0
+    if gain_db is not None:
+        # 只有音效的版本不做响度标准化（那会把音效放得很大），而是加上与无配音版相同的增益，
+        # 让每个音效的音量和无配音版里一样；超出的瞬间峰值用 limit 压住
+        mix = limit(mix * 10 ** (gain_db / 20))
+    else:
+        peak = np.max(np.abs(mix))
+        if peak > .98:
+            mix = mix / peak * .98
     wavfile.write(out, SR, (mix.T * 32767).astype(np.int16))
     print('写出', out, f'{DUR:.2f}s')
 
 
 if __name__ == '__main__':
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
-    main(args[0] if args else 'out/audio.wav', with_voice='--no-voice' not in sys.argv)
+    gain = next((float(a.split('=', 1)[1]) for a in sys.argv if a.startswith('--gain-db=')), None)
+    main(args[0] if args else 'out/audio.wav', with_voice='--no-voice' not in sys.argv, with_music='--no-music' not in sys.argv, gain_db=gain)
