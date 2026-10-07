@@ -17,6 +17,7 @@ fetch_npm @fontsource/fusion-pixel-12px-proportional-sc files/fusion-pixel-12px-
 fetch_npm @fontpkg/smiley-sans SmileySans-Oblique.ttf \
   fonts/SmileySans-Oblique.ttf b447d7e781f08bc95c4c9f23ba71ed2b8ebb639aa7184485c71c4ca5afcd25c4
 python3 script.py                     # 字幕稿 → timeline.js / timeline.json
+python3 subs.py out                   # 时间轴 → out/字幕.srt、字幕文案.txt
 FPS=30
 TOTAL=$(python3 -c "import json;print(int(json.load(open('timeline.json'))['duration']*$FPS))")
 N=${WORKERS:-4}; CH=$((TOTAL/N))
