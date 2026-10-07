@@ -1,8 +1,9 @@
-"""从 timeline.json 导出两份字幕文件。
+"""从 timeline.json 导出字幕文件和配音台词。
 
   字幕.srt        带时间码的字幕，和成片里烧进画面的字幕一字不差、两行分法也一样。可以导入剪映等剪辑软件，
                   或者上传成平台的字幕。成片里已经有字幕，所以文件名故意和视频不同，免得播放器自动叠加一份
   字幕文案.txt    按段落排好的全部字幕，左边是出现时间；画面上的标题、对白气泡和片尾字用〔 〕标出来，穿插在中间
+  配音台词.txt    只有角色说的话（对白气泡），按出现顺序一行一句，方便配音
 
 用法：python3 subs.py [输出目录]      默认输出到 out/；先运行 script.py 生成 timeline.json
 """
@@ -77,7 +78,10 @@ def export(out_dir):
         out.append(f'{clock(t)}  {text}')
     with open(os.path.join(out_dir, '字幕文案.txt'), 'w', encoding='utf-8') as f:
         f.write('\n'.join(out) + '\n')
-    print(f'{len(subs)} 条字幕 → {out_dir}/字幕.srt、字幕文案.txt')
+    said = sorted((start[k] + dt, text) for k, dt, who, text in ON_SCREEN if who not in ('标题', '片尾'))
+    with open(os.path.join(out_dir, '配音台词.txt'), 'w', encoding='utf-8') as f:
+        f.write('\n'.join(text for _, text in said) + '\n')
+    print(f'{len(subs)} 条字幕、{len(said)} 句台词 → {out_dir}/字幕.srt、字幕文案.txt、配音台词.txt')
 
 
 if __name__ == '__main__':
