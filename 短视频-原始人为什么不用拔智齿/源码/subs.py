@@ -30,6 +30,8 @@ ON_SCREEN = [
     ('e1', 1.2, '原始人', '嚼嚼？'),
     ('card', 0.0, '片尾', TITLE + ' 他们的下巴，是嚼大的。 甜菜 出品'),
 ]
+# 角色说的话（对白气泡）：配音版只给这些配音
+DIALOGUE = [x for x in ON_SCREEN if x[2] not in ('标题', '片尾')]
 
 
 def plain(text):
@@ -78,7 +80,7 @@ def export(out_dir):
         out.append(f'{clock(t)}  {text}')
     with open(os.path.join(out_dir, '字幕文案.txt'), 'w', encoding='utf-8') as f:
         f.write('\n'.join(out) + '\n')
-    said = sorted((start[k] + dt, text) for k, dt, who, text in ON_SCREEN if who not in ('标题', '片尾'))
+    said = sorted((start[k] + dt, text) for k, dt, who, text in DIALOGUE)
     with open(os.path.join(out_dir, '配音台词.txt'), 'w', encoding='utf-8') as f:
         f.write('\n'.join(text for _, text in said) + '\n')
     print(f'{len(subs)} 条字幕、{len(said)} 句台词 → {out_dir}/字幕.srt、字幕文案.txt、配音台词.txt')

@@ -1,14 +1,17 @@
-"""《原始人为什么不用拔智齿？》声音：只有音效和环境声——没有配音，也没有配乐。
-全部按 timeline.json 对齐，用 numpy 合成；最后把响度定在约 −18 LUFS（和上一集"只有音效"版一致），峰值压在 −1.5 dBFS 以下。
-用法：python3 audio.py out.wav
+"""《原始人为什么不用拔智齿？》声音：音效和环境声，没有配乐。
+全部按 timeline.json 对齐，用 numpy 合成；音效床的响度定在约 −18 LUFS（和上一集"只有音效"版一致），峰值压在 −1.5 dBFS 以下。
+用法：python3 audio.py out.wav            只有音效，没有配音
+      python3 audio.py out.wav --voice    角色配音版：对白气泡里的 7 句台词换成 voice.py 合成的角色配音，字幕不配音；
+                                          台词响起时，音效和环境声自动压低一点
 """
 import json
 import os
+import subprocess
 import sys
 
 import numpy as np
 from scipy.io import wavfile
-from scipy.ndimage import minimum_filter1d, uniform_filter1d
+from scipy.ndimage import maximum_filter1d, minimum_filter1d, uniform_filter1d
 from scipy.signal import butter, lfilter, resample_poly, sosfilt
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -226,7 +229,9 @@ def glitch(d=.4):
 
 
 def speech_beeps(t0, text, m, cps=16, gain=.55):
-    """对话气泡逐字打出的"哔哔"声（和 core.js 的 speech() 一样每秒 16 个字）"""
+    """对话气泡逐字打出的"哔哔"声（和 core.js 的 speech() 一样每秒 16 个字）。配音版里由角色配音代替"""
+    if VOICED:
+        return
     for i, ch in enumerate(text):
         if ch in '，。…！？：、 ':
             continue
@@ -476,14 +481,55 @@ def limit(x, ceil_db=-1.5, hold=.015):
     return x * g, -20 * np.log10(g.min()), np.mean(g < .999) * 100
 
 
-def main(out):
+# ================= 角色配音（--voice） =================
+VOICED = False
+VOICE_LUFS = -15.0   # 每句台词的响度，比音效床（约 −18 LUFS）高一截
+DUCK = .45           # 台词响起时，音效和环境声压到 55%（约 −5 dB）
+
+
+def load_voice(lid):
+    """读 voice/<lid>.mp3：切掉前后的静音，两头各淡入淡出 10ms"""
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', os.path.join(HERE, 'voice', lid + '.mp3'),
+                          '-ac', '1', '-ar', str(SR), '-f', 'f32le', '-'], capture_output=True, check=True).stdout
+    x = hp(np.frombuffer(raw, np.float32).astype(np.float64), 80)
+    on = np.flatnonzero(np.abs(x) > np.abs(x).max() * .01)
+    x = x[max(0, on[0] - int(.02 * SR)):on[-1] + int(.08 * SR)].copy()
+    f = int(.01 * SR)
+    x[:f] *= np.linspace(0, 1, f)
+    x[-f:] *= np.linspace(1, 0, f)
+    return x
+
+
+def add_voices(bed):
+    """每句台词在气泡弹出后 0.12 秒开口；音效床提前约 0.1 秒压下去，说完再慢慢回来"""
+    from subs import DIALOGUE
+    vox, env = np.zeros((2, N)), np.zeros(N)
+    for k, dt, who, text in DIALOGUE:
+        x = load_voice(k)
+        x *= 10 ** ((VOICE_LUFS - lufs(np.vstack([x, x]))) / 20)
+        t = S(k) + dt + .12
+        place(vox, x, t)
+        i = int(round(t * SR))
+        env[i:i + len(x)] = 1
+    w = int(.12 * SR)
+    env = uniform_filter1d(maximum_filter1d(env, size=2 * w + 1), size=w)
+    return bed * (1 - DUCK * env) + vox
+
+
+def main(out, voiced=False):
+    global VOICED
+    VOICED = voiced
     build()
     mix = sfx + amb
     gain = TARGET_LUFS - lufs(mix)
-    mix, red, share = limit(mix * 10 ** (gain / 20))
+    mix = mix * 10 ** (gain / 20)
+    if voiced:
+        mix = add_voices(mix)
+    mix, red, share = limit(mix)
     wavfile.write(out, SR, (mix.T * 32767).astype(np.int16))
     print(f'写出 {out}  {DUR:.2f}s  增益 {gain:+.1f} dB  限幅最多 {red:.1f} dB（{share:.2f}% 采样）  积分响度 {lufs(mix):.1f} LUFS')
 
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else 'out/audio.wav')
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    main(args[0] if args else 'out/audio.wav', '--voice' in sys.argv)

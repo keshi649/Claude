@@ -1,7 +1,8 @@
 #!/bin/bash
-# 一键重新生成《原始人为什么不用拔智齿？》：下载字体 → 字幕时间轴 → 并行渲染画面 → 合成音效 → 合成 MP4
-# 本片没有配音、没有配乐：字幕解释画面，声音只有音效和环境声（audio.py 里已定好响度，这里不再标准化）
-# 依赖：node + playwright（自带 Chromium）、ffmpeg（含 libx264）、python3 + numpy + scipy
+# 一键重新生成《原始人为什么不用拔智齿？》：下载字体 → 字幕时间轴 → 并行渲染画面 → 合成音效 → 合成 MP4 → 角色配音版
+# 成片没有配音、没有配乐：字幕解释画面，声音只有音效和环境声（audio.py 里已定好响度，这里不再标准化）
+# 角色配音版只给对白气泡里的 7 句台词配音，字幕不配音
+# 依赖：node + playwright（自带 Chromium）、ffmpeg（含 libx264）、python3 + numpy + scipy + edge-tts（合成台词要联网）
 set -e
 cd "$(dirname "$0")"
 mkdir -p fonts out
@@ -32,6 +33,13 @@ for p in "${pids[@]}"; do wait $p; done
 : > out/list.txt; for i in $(seq 0 $((N-1))); do echo "file 'part$i.mp4'" >> out/list.txt; done
 ffmpeg -y -loglevel error -f concat -safe 0 -i out/list.txt -c copy out/video_noaudio.mp4
 NAME=原始人为什么不用拔智齿
+# -aac_pns 0：关掉 AAC 的噪声替代。它会把倒带声这类噪声换成随机噪声，解码后的峰值可能冒过 0 dBFS
 ffmpeg -y -loglevel error -i out/video_noaudio.mp4 -i out/audio.wav -c:v libx264 -preset slow -tune animation -crf ${CRF:-20} \
-  -pix_fmt yuv420p -c:a aac -b:a 160k -movflags +faststart -shortest out/$NAME.mp4
+  -pix_fmt yuv420p -c:a aac -b:a 160k -aac_pns 0 -movflags +faststart -shortest out/$NAME.mp4
 echo "完成：$(pwd)/out/$NAME.mp4（$(du -h out/$NAME.mp4 | cut -f1)）"
+# 角色配音版：画面直接沿用上面的成片，只换声音
+python3 voice.py                      # 台词 → voice/*.mp3
+python3 audio.py out/audio_voice.wav --voice
+ffmpeg -y -loglevel error -i out/$NAME.mp4 -i out/audio_voice.wav -map 0:v -map 1:a -c:v copy \
+  -c:a aac -b:a 160k -aac_pns 0 -movflags +faststart -shortest out/${NAME}_角色配音.mp4
+echo "完成：$(pwd)/out/${NAME}_角色配音.mp4（$(du -h out/${NAME}_角色配音.mp4 | cut -f1)）"
