@@ -6,6 +6,7 @@
 
 用法：python3 narration.py            合成缺失或改过的试读（缓存在 voice/），写出 timeline.js / timeline.json
       python3 narration.py --force    全部重新合成
+      python3 narration.py --voice cv3   旁白配音版：时间轴按 narrate_cosy.py 合成的配音（voice_cv3/）来排
 
 每一幕：(幕名, 开场留白秒数, [条目…], 收尾留白秒数)
 条目：
@@ -20,6 +21,7 @@ import re
 import ssl
 import subprocess
 import sys
+from difflib import SequenceMatcher
 
 import numpy as np
 import edge_tts
@@ -116,9 +118,9 @@ def fresh(path, text, v):
     return m['text'] == text and m['voice'] == v and os.path.exists(path + '.mp3')
 
 
-def speech_span(path):
+def speech_span(file):
     """语音文件里真正发声的起止（秒）：超过峰值 1% 的第一个和最后一个采样"""
-    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', path + '.mp3', '-ac', '1', '-ar', '24000', '-f', 'f32le', '-'],
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', file, '-ac', '1', '-ar', '24000', '-f', 'f32le', '-'],
                          capture_output=True, check=True).stdout
     x = np.abs(np.frombuffer(raw, np.float32))
     on = np.flatnonzero(x > x.max() * .01)
@@ -143,7 +145,19 @@ def char_times(s, words, end):
     return t
 
 
-def build(force=False):
+def cv3_words(s, chars):
+    """配音的逐字时间 → 原文每个汉字的时间（[起点, 时长, 字]），数字之类对不上的字由 char_times 取后一个字的时间"""
+    idx = [i for i, c in enumerate(s) if '\u4e00' <= c <= '\u9fff']
+    sm = SequenceMatcher(a=[s[i] for i in idx], b=[c for c, _, _ in chars], autojunk=False)
+    words = []
+    for a, b, n in sm.get_matching_blocks():
+        for k in range(n):
+            c, t0, t1 = chars[b + k]
+            words.append([t0, t1 - t0, s[idx[a + k]]])
+    return words
+
+
+def build(force=False, voice=None):
     os.makedirs(VDIR, exist_ok=True)
     jobs = [(os.path.join(VDIR, 'n_' + it[1]), spoken(it[3])) for _, _, items, _ in SCENES for it in items if it[0] == 'N']
 
@@ -160,23 +174,37 @@ def build(force=False):
                         await asyncio.sleep(2 ** attempt)
                 else:
                     raise RuntimeError('合成失败：' + path)
-    asyncio.run(run())
+    if not voice:
+        asyncio.run(run())
 
+    # 配音版：旁白念得比字幕版慢一点，对话框打字快一点、停得短一点，开头的盖章才能赶在 3.5 秒内
+    cps, hold = (18.0, .45) if voice else (TYPE_CPS, DIALOG_HOLD)
     t, scenes, lines = 0.0, [], []
-    for name, lead, items, tail in SCENES:
+    for si, (name, lead, items, tail) in enumerate(SCENES):
         s0 = t
-        t += lead
+        t += .05 if voice and si == 0 else lead
         for it in items:
             kind, lid, gap = it[0], it[1], it[2]
-            t += gap
+            t += min(gap, .1) if voice and kind == 'D' else gap
             if kind == 'N':
                 path = os.path.join(VDIR, 'n_' + lid)
-                with open(path + '.json', encoding='utf-8') as f:
-                    words = json.load(f)['words']
-                v0, v1 = speech_span(path)
-                v0 = min(v0, words[0][0]) if words else v0
+                if not voice:
+                    with open(path + '.json', encoding='utf-8') as f:
+                        words = json.load(f)['words']
                 raw = it[3]
                 s = spoken(raw)
+                extra = {}
+                if voice:      # 旁白配音版：用真实配音的逐字时间
+                    vf = os.path.join(HERE, 'voice_cv3', 'n_' + lid)
+                    with open(vf + '.json', encoding='utf-8') as f:
+                        chars = json.load(f)['chars']
+                    words = cv3_words(s, chars)
+                    v0, v1 = speech_span(vf + '.wav')
+                    v0, v1 = min(v0, chars[0][1]), max(v1, chars[-1][2])
+                    extra = dict(audio=os.path.relpath(vf + '.wav', HERE), a0=round(v0, 3))
+                else:
+                    v0, v1 = speech_span(path + '.mp3')
+                    v0 = min(v0, words[0][0]) if words else v0
                 ct = char_times(s, words, v1)
                 chunks, marks, k = [], [], 0
                 for part in raw.split('|'):
@@ -189,13 +217,13 @@ def build(force=False):
                     chunks.append([round(t + ct[k0] - v0, 3), part.replace('^', '').rstrip(STRIP)])
                 opt = it[4] if len(it) > 4 else {}
                 lines.append(dict(id=lid, kind='N', scene=name, t0=round(t, 3), t1=round(t + v1 - v0, 3),
-                                  text=re.sub(r'[{}|^/]', '', raw), chunks=[] if opt.get('nocap') else chunks, marks=marks))
+                                  text=re.sub(r'[{}|^/]', '', raw), chunks=[] if opt.get('nocap') else chunks, marks=marks, **extra))
                 t += v1 - v0
             else:
                 n = len(it[4])
                 lines.append(dict(id=lid, kind='D', scene=name, who=it[3], text=it[4], t0=round(t, 3),
-                                  typed=round(t + n / TYPE_CPS, 3), t1=round(t + n / TYPE_CPS + DIALOG_HOLD, 3)))
-                t += n / TYPE_CPS + DIALOG_HOLD
+                                  typed=round(t + n / cps, 3), t1=round(t + n / cps + hold, 3)))
+                t += n / cps + hold
         t += tail
         scenes.append(dict(name=name, t0=round(s0, 3), t1=round(t, 3)))
     data = dict(duration=round(t, 2), scenes=scenes, lines=lines)
@@ -210,4 +238,4 @@ def build(force=False):
 
 
 if __name__ == '__main__':
-    build(force='--force' in sys.argv)
+    build(force='--force' in sys.argv, voice=sys.argv[sys.argv.index('--voice') + 1] if '--voice' in sys.argv else None)

@@ -89,6 +89,8 @@ function endCard(g, t) {
   prich(g, '每天夜里，大自然都替他们{降温}。', 520, 740, 46, C.white, C.gold, { align: 'center' });
   g.fillStyle = 'rgba(255,255,255,.14)'; g.fillRect(170, 790, 700, 4);
   ptext(g, '甜菜  出品', 520, 860, 36, C.amber, { align: 'center' });
-  ptext(g, '画面、字幕、音效：Claude 用代码生成', 520, 905, 24, '#9C93C0', { align: 'center' });
+  // 配音版的配音也是 AI 合成的，一并写明
+  const voiced = TL.lines.some(l => l.audio);
+  ptext(g, voiced ? '画面、字幕、音效：Claude 用代码生成 · 配音：CosyVoice 3 合成' : '画面、字幕、音效：Claude 用代码生成', 520, 905, 24, '#9C93C0', { align: 'center' });
   g.restore();
 }

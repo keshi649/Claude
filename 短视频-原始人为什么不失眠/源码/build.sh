@@ -16,7 +16,8 @@ fetch_npm @fontsource/fusion-pixel-12px-proportional-sc files/fusion-pixel-12px-
   fonts/FusionPixel12.woff2 043eae5e616b0d1e75dc746d3d687b4413f9f1c70c1a09bc4ebb705ef1cc8e32
 fetch_npm @fontpkg/smiley-sans SmileySans-Oblique.ttf \
   fonts/SmileySans-Oblique.ttf b447d7e781f08bc95c4c9f23ba71ed2b8ebb639aa7184485c71c4ca5afcd25c4
-python3 narration.py                  # 旁白稿 → timeline.js / timeline.json（试读语音缓存在 voice/，不进成片）
+# VOICE=cv3 ./build.sh：旁白配音版（配音先用 narrate_cosy.py 合成到 voice_cv3/），时间轴按真实配音排，成片名后面加"_旁白配音"
+if [ -n "$VOICE" ]; then python3 narration.py --voice "$VOICE"; else python3 narration.py; fi   # 旁白稿 → timeline.js / timeline.json
 python3 export.py out                 # 旁白文案 → out/旁白文案.txt
 FPS=30
 TOTAL=$(python3 -c "import json;print(int(json.load(open('timeline.json'))['duration']*$FPS))")
@@ -27,11 +28,11 @@ for i in $(seq 0 $((N-1))); do
   node render.cjs video $a $b out/part$i.mp4 $FPS > out/log$i.txt 2>&1 &
   pids+=($!)
 done
-python3 audio.py out/audio.wav
+python3 audio.py out/audio.wav ${VOICE:+--voice}
 for p in "${pids[@]}"; do wait $p; done
 : > out/list.txt; for i in $(seq 0 $((N-1))); do echo "file 'part$i.mp4'" >> out/list.txt; done
 ffmpeg -y -loglevel error -f concat -safe 0 -i out/list.txt -c copy out/video_noaudio.mp4
-NAME=原始人为什么不失眠
+NAME=原始人为什么不失眠${VOICE:+_旁白配音}
 # -aac_pns 0：关掉 AAC 的噪声替代，免得倒带、水声这类噪声在解码后冒出 0 dBFS
 ffmpeg -y -loglevel error -i out/video_noaudio.mp4 -i out/audio.wav -c:v libx264 -preset slow -tune animation -crf ${CRF:-20} \
   -pix_fmt yuv420p -c:a aac -b:a 160k -aac_pns 0 -movflags +faststart -shortest out/$NAME.mp4

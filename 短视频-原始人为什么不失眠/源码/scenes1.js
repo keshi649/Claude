@@ -64,7 +64,8 @@ function hook(g, t) {
   if (window.COVER) { coverArt(g, t); return; }
   if (t < S('h3') - .12) { hookNight(g, t); return; }
   if (t < S('h4') - .12) { hookBand(g, t); return; }
-  if (t < S('h5') - .12) { hookNoWord(g, t); return; }
+  if (t < CH('h4', 2) - .12) { hookNoWord(g, t); return; }
+  if (t < S('h5') - .12) { hookDict(g, t); return; }
   hookClue(g, t);
 }
 /* 1. 篝火边：原始人睡得正香；"你"拿着手机进来，说出最常见的答案，盖章推翻 */
@@ -162,21 +163,27 @@ function hookNoWord(g, t) {
     source(g, 'Yetish 等，Current Biology 2015', 880, 585);
     g.restore();
   }
-  // 部落话词典：查无此词
-  const pd = E.out(clamp((t - CH('h4', 2) + .1) / .3));
-  if (pd > 0) {
-    g.save(); g.globalAlpha *= pd; g.translate(0, (1 - pd) * 50);
-    pbox(g, 160, 640, 680, 400, { k: 6, fill: '#FFF4DF' });
-    g.fillStyle = '#8C6440'; g.fillRect(172, 652, 656, 70);
-    ptext(g, '部落话 · 词典', 500, 702, 36, C.white, { align: 'center' });
-    [['太阳', 0], ['打猎', .25], ['睡觉', .5]].forEach(([w, d], i) => {
-      if (t < CH('h4', 2) + d) return;
-      ptext(g, w, 230, 790 + i * 64, 40, C.ink); checkMark(g, 420, 768 + i * 64, 5);
-    });
-    if (t > CH('h4', 2) + .8) { ptext(g, '失眠', 230, 982, 40, C.ink); ptext(g, '？', 420, 982, 40, C.red); }
-    g.restore();
-    stamp(g, 640, 960, '查无此词', clamp((t - CH('h4', 3) - .2) / .25), { px: 52, rot: -.12 });
-  }
+}
+/* 3b. 特写：桌上摊开的"部落话词典"，查不到"失眠"（单独一个镜头，开头前 20 秒多切一次） */
+function hookDict(g, t) {
+  // 木桌面
+  g.fillStyle = '#7A4E2E'; g.fillRect(0, 0, W, H);
+  for (let y = 0; y < H; y += 90) { g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(0, y, W, 6); g.fillStyle = 'rgba(255,220,170,.06)'; g.fillRect(0, y + 6, W, 30); }
+  const pd = E.out(clamp((t - CH('h4', 2) + .12) / .3));
+  g.save(); g.globalAlpha *= pd; g.translate(0, (1 - pd) * 60);
+  // 摊开的书
+  pbox(g, 110, 330, 790, 820, { k: 8, fill: '#FFF4DF', edge: '#3A2414', rim: '#C9A86A' });
+  g.fillStyle = 'rgba(140,100,64,.25)'; g.fillRect(500, 350, 10, 780);
+  g.fillStyle = '#8C6440'; g.fillRect(134, 354, 742, 96);
+  ptext(g, '部落话 · 词典', 505, 418, 48, C.white, { align: 'center' });
+  [['太阳', 0], ['打猎', .25], ['睡觉', .5]].forEach(([w, d], i) => {
+    if (t < CH('h4', 2) + d) return;
+    ptext(g, w, 200, 560 + i * 120, 64, C.ink); checkMark(g, 420, 520 + i * 120, 8);
+  });
+  if (t > CH('h4', 2) + .8) { ptext(g, '失眠', 200, 920, 64, C.ink); ptext(g, '？', 420, 920, 64, C.red); }
+  source(g, 'Yetish 等，Current Biology 2015', 880, 1110);
+  g.restore();
+  stamp(g, 640, 900, '查无此词', clamp((t - CH('h4', 3) - .2) / .25), { px: 72, rot: -.12 });
   dialogBox(g, t, 'd2', PORTRAIT.elder, { extra: S('h5') - EN('d2') - .3 });
 }
 /* 4. 线索：夜里的一根温度计，水银一路往下掉 */

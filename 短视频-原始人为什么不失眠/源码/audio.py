@@ -1,7 +1,8 @@
 """《原始人为什么不失眠？》声音：只有音效和环境声——没有旁白配音、没有角色配音，也没有配乐。
 对话框和第一集一样配"哔哔"打字音。全部按 timeline.json 对齐，用 numpy 合成；
 响度定在约 −18 LUFS（和前几集"只有音效"版一致），峰值压在 −1.5 dBTP 以下。
-用法：python3 audio.py out.wav
+用法：python3 audio.py out.wav            只有音效版
+      python3 audio.py out.wav --voice    旁白配音版：把 voice_cv3/ 的配音按时间轴放上去，说话时音效让一让
 """
 import json
 import os
@@ -726,14 +727,70 @@ def limit(x, ceil_db=-1.5, hold=.015):
 
 
 
-def main(out):
+# ================= 旁白配音（只在 --voice 时用） =================
+VOICE_LUFS = -16.0     # 配音单独的响度
+BED_LUFS = -23.0       # 配音版里音效和环境声的响度（比只有音效版低，给人声让位）
+DUCK = .5              # 说话时音效再压低一半（约 −6 dB）
+MIX_LUFS = -16.0       # 配音版成片的响度
+
+
+def load_voice(file):
+    """读配音（任何格式，用 ffmpeg 解码成 44.1 kHz 单声道），去掉 80 Hz 以下的低频"""
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', file, '-ac', '1', '-ar', str(SR), '-f', 'f32le', '-'],
+                         capture_output=True, check=True).stdout
+    return hp(np.frombuffer(raw, np.float32).astype(np.float64), 80, 2)
+
+
+def compress(x, ratio=3.0, above=6.0, win=.02, smooth=.03):
+    """人声压缩：比这句平均响度高出 above dB 的部分按 ratio 压下去，让字与字之间更平，限幅器少干活"""
+    p = uniform_filter1d(x * x, size=max(1, int(win * SR))) + 1e-12
+    lv = 10 * np.log10(p)
+    th = 10 * np.log10(np.mean(x * x) + 1e-12) + above
+    g = np.where(lv > th, (th - lv) * (1 - 1 / ratio), 0.0)
+    g = uniform_filter1d(minimum_filter1d(g, size=max(1, int(.01 * SR))), size=max(1, int(smooth * SR)))
+    return x * 10 ** (g / 20)
+
+
+def voice_track():
+    """把每句配音放到时间轴上；返回 (双声道人声, 说话的时段 0..1)"""
+    v = np.zeros(N)
+    gate = np.zeros(N)
+    for l in TLD['lines']:
+        if l['kind'] != 'N' or 'audio' not in l:
+            continue
+        x = load_voice(os.path.join(HERE, l['audio']))
+        a0 = max(0.0, l['a0'] - .05)
+        x = x[int(a0 * SR):int((l['a0'] + (l['t1'] - l['t0']) + .3) * SR)].copy()
+        fade = int(.03 * SR)
+        x[:fade] *= np.linspace(0, 1, fade)
+        x[-fade:] *= np.linspace(1, 0, fade)
+        x = compress(x)
+        # 每句先调到差不多的响度，句与句之间不忽大忽小
+        x *= 10 ** ((VOICE_LUFS - lufs(np.vstack([x, x]))) / 20)
+        i = int((l['t0'] - .05) * SR)
+        n = max(0, min(len(x), N - i))
+        v[i:i + n] += x[:n]
+        gate[max(0, int((l['t0'] - .12) * SR)):int((l['t1'] + .15) * SR)] = 1
+    env = uniform_filter1d(maximum_filter1d(gate, size=int(.25 * SR)), size=int(.2 * SR))
+    v *= 10 ** ((VOICE_LUFS - lufs(np.vstack([v, v]))) / 20)
+    return np.vstack([v, v]), np.clip(env, 0, 1)
+
+
+def main(out, voiced=False):
     build()
     mix = sfx + amb
-    gain = TARGET_LUFS - lufs(mix)
+    if voiced:
+        mix = mix * 10 ** ((BED_LUFS - lufs(mix)) / 20)
+        voice, env = voice_track()
+        mix = mix * (1 - DUCK * env) + voice
+        gain = MIX_LUFS - lufs(mix)
+    else:
+        gain = TARGET_LUFS - lufs(mix)
     mix, red, share = limit(mix * 10 ** (gain / 20))
     wavfile.write(out, SR, (mix.T * 32767).astype(np.int16))
     print(f'写出 {out}  {DUR:.2f}s  增益 {gain:+.1f} dB  限幅最多 {red:.1f} dB（{share:.2f}% 采样）  积分响度 {lufs(mix):.1f} LUFS')
 
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else 'out/audio.wav')
+    args = [a for a in sys.argv[1:] if not a.startswith('--')]
+    main(args[0] if args else 'out/audio.wav', voiced='--voice' in sys.argv)
