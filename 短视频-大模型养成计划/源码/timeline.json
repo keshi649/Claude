@@ -1,0 +1,834 @@
+{
+ "duration": 222.847,
+ "scenes": [
+  {
+   "name": "hook",
+   "t0": 0.0,
+   "t1": 23.172
+  },
+  {
+   "name": "title",
+   "t0": 23.172,
+   "t1": 26.772
+  },
+  {
+   "name": "birth",
+   "t0": 26.772,
+   "t1": 38.45
+  },
+  {
+   "name": "pretrain",
+   "t0": 38.45,
+   "t1": 73.254
+  },
+  {
+   "name": "base",
+   "t0": 73.254,
+   "t1": 86.141
+  },
+  {
+   "name": "token",
+   "t0": 86.141,
+   "t1": 109.557
+  },
+  {
+   "name": "sft",
+   "t0": 109.557,
+   "t1": 126.105
+  },
+  {
+   "name": "rlhf",
+   "t0": 126.105,
+   "t1": 149.971
+  },
+  {
+   "name": "halluc",
+   "t0": 149.971,
+   "t1": 174.98
+  },
+  {
+   "name": "fix",
+   "t0": 174.98,
+   "t1": 193.945
+  },
+  {
+   "name": "grads",
+   "t0": 193.945,
+   "t1": 208.035
+  },
+  {
+   "name": "end",
+   "t0": 208.035,
+   "t1": 222.847
+  }
+ ],
+ "lines": [
+  {
+   "id": "h1",
+   "spk": "N",
+   "text": "早几年，你要是问 AI 这么一句：",
+   "scene": "hook",
+   "t0": 0.6,
+   "t1": 3.306,
+   "voice": "3ba7aafa32d3.wav"
+  },
+  {
+   "id": "h2",
+   "spk": "U",
+   "text": "林黛玉倒拔垂杨柳，是怎么回事？",
+   "scene": "hook",
+   "t0": 3.506,
+   "t1": 6.48,
+   "voice": "a6f454f71e70.wav"
+  },
+  {
+   "id": "h3",
+   "spk": "M",
+   "text": "这是《红楼梦》中的经典情节！林黛玉虽然体弱多病，却在一次……",
+   "scene": "hook",
+   "t0": 6.88,
+   "t1": 12.618,
+   "voice": "3017229e3b30.wav"
+  },
+  {
+   "id": "h4",
+   "spk": "N",
+   "text": "它真能一本正经地，给你编出{一整段}。",
+   "scene": "hook",
+   "t0": 12.818,
+   "t1": 15.998,
+   "voice": "a9e65e53e720.wav"
+  },
+  {
+   "id": "h5",
+   "spk": "N",
+   "text": "它在骗你吗？不是。",
+   "scene": "hook",
+   "t0": 16.348,
+   "t1": 17.825,
+   "voice": "31f3968b09e2.wav"
+  },
+  {
+   "id": "h6",
+   "spk": "N",
+   "text": "它只是，被{养}成了这样。",
+   "scene": "hook",
+   "t0": 18.075,
+   "t1": 20.064,
+   "voice": "c63681f84b78.wav"
+  },
+  {
+   "id": "h7",
+   "spk": "N",
+   "text": "今天，我们就亲手{养一只 AI}。",
+   "scene": "hook",
+   "t0": 20.364,
+   "t1": 22.872,
+   "voice": "aaab55b857b6.wav"
+  },
+  {
+   "id": "b1",
+   "spk": "N",
+   "text": "刚出生的模型，脑子里是上千亿个{随机数}。",
+   "scene": "birth",
+   "t0": 27.672,
+   "t1": 31.38,
+   "voice": "e3f2a7d5cfb7.wav"
+  },
+  {
+   "id": "b2",
+   "spk": "U",
+   "text": "你好呀！",
+   "scene": "birth",
+   "t0": 31.68,
+   "t1": 32.351,
+   "voice": "f64c7dc9c181.wav"
+  },
+  {
+   "id": "b3",
+   "spk": "M",
+   "text": "鿏㗊锟斤拷烫烫烫屯屯屯",
+   "scene": "birth",
+   "t0": 32.651,
+   "t1": 35.051,
+   "voice": null
+  },
+  {
+   "id": "b4",
+   "spk": "N",
+   "text": "跟{猫踩键盘}，差不多。",
+   "scene": "birth",
+   "t0": 35.271,
+   "t1": 37.05,
+   "voice": "8c97d1054289.wav"
+  },
+  {
+   "id": "p1",
+   "spk": "N",
+   "text": "第一课叫{预训练}。规则只有一条：",
+   "scene": "pretrain",
+   "t0": 39.15,
+   "t1": 42.064,
+   "voice": "99aa17cf3162.wav"
+  },
+  {
+   "id": "p2",
+   "spk": "N",
+   "text": "{猜下一个字}。",
+   "scene": "pretrain",
+   "t0": 42.214,
+   "t1": 43.306,
+   "voice": "342c4ac44973.wav"
+  },
+  {
+   "id": "p3",
+   "spk": "N",
+   "text": "床前明月——",
+   "scene": "pretrain",
+   "t0": 43.756,
+   "t1": 44.743,
+   "voice": "01c9d44e4bb0.wav"
+  },
+  {
+   "id": "p4",
+   "spk": "M",
+   "text": "床前明月饼？",
+   "scene": "pretrain",
+   "t0": 45.093,
+   "t1": 46.485,
+   "voice": "6070aed208b3.wav"
+  },
+  {
+   "id": "p5",
+   "spk": "N",
+   "text": "猜错了，就{挨罚}，把参数调一调。",
+   "scene": "pretrain",
+   "t0": 47.085,
+   "t1": 49.815,
+   "voice": "36195e5b06b6.wav"
+  },
+  {
+   "id": "p6",
+   "spk": "M",
+   "text": "床前明月光！",
+   "scene": "pretrain",
+   "t0": 50.215,
+   "t1": 51.593,
+   "voice": "8893844e5188.wav"
+  },
+  {
+   "id": "p7",
+   "spk": "N",
+   "text": "猜对了，就{奖励}。",
+   "scene": "pretrain",
+   "t0": 52.043,
+   "t1": 53.345,
+   "voice": "4ddc9b5b1dc5.wav"
+  },
+  {
+   "id": "p8",
+   "spk": "N",
+   "text": "然后，把整个{互联网}喂给它。",
+   "scene": "pretrain",
+   "t0": 53.745,
+   "t1": 56.118,
+   "voice": "66470fbe1e0b.wav"
+  },
+  {
+   "id": "p9",
+   "spk": "N",
+   "text": "百科、小说、论文、代码，还有{贴吧}和{评论区}。",
+   "scene": "pretrain",
+   "t0": 56.318,
+   "t1": 59.801,
+   "voice": "c0c1dbd4ba15.wav"
+  },
+  {
+   "id": "p10",
+   "spk": "N",
+   "text": "十几万亿个 token，一个人不吃不睡，得读上{好几万年}。",
+   "scene": "pretrain",
+   "t0": 60.051,
+   "t1": 64.63,
+   "voice": "23d79bc45184.wav"
+  },
+  {
+   "id": "p11",
+   "spk": "N",
+   "text": "成千上万张{显卡}，没日没夜，跑上几十天。",
+   "scene": "pretrain",
+   "t0": 64.88,
+   "t1": 68.883,
+   "voice": "0474dd36431c.wav"
+  },
+  {
+   "id": "p12",
+   "spk": "N",
+   "text": "顺便，它还学会了——",
+   "scene": "pretrain",
+   "t0": 69.183,
+   "t1": 70.948,
+   "voice": "2dfbdcc48cb4.wav"
+  },
+  {
+   "id": "p13",
+   "spk": "M",
+   "text": "家人们谁懂啊！",
+   "scene": "pretrain",
+   "t0": 71.098,
+   "t1": 72.454,
+   "voice": "4fedec1792c4.wav"
+  },
+  {
+   "id": "q1",
+   "spk": "N",
+   "text": "读完之后，它成了一个{基座模型}。",
+   "scene": "base",
+   "t0": 73.854,
+   "t1": 76.526,
+   "voice": "e687e5a3954e.wav"
+  },
+  {
+   "id": "q2",
+   "spk": "U",
+   "text": "今天天气怎么样？",
+   "scene": "base",
+   "t0": 76.826,
+   "t1": 78.354,
+   "voice": "c5a1b4055028.wav"
+  },
+  {
+   "id": "q3",
+   "spk": "M",
+   "text": "明天天气怎么样？后天天气怎么样？大后天……",
+   "scene": "base",
+   "t0": 78.654,
+   "t1": 82.741,
+   "voice": "440c79eedfca.wav"
+  },
+  {
+   "id": "q4",
+   "spk": "N",
+   "text": "它不是在答题，是在{接龙}。",
+   "scene": "base",
+   "t0": 83.041,
+   "t1": 85.441,
+   "voice": "4090d14d2fe4.wav"
+  },
+  {
+   "id": "k1",
+   "spk": "N",
+   "text": "插一句：它看到的其实不是字，是 {token}。",
+   "scene": "token",
+   "t0": 87.041,
+   "t1": 90.349,
+   "voice": "afe5fc1e4e3b.wav"
+  },
+  {
+   "id": "k2",
+   "spk": "N",
+   "text": "一个词，会被切成{好几块}。",
+   "scene": "token",
+   "t0": 90.549,
+   "t1": 92.858,
+   "voice": "3d5c6300c41a.wav"
+  },
+  {
+   "id": "k3",
+   "spk": "U",
+   "text": "strawberry 里有几个 r？",
+   "scene": "token",
+   "t0": 93.258,
+   "t1": 95.242,
+   "voice": "813d8487b309.wav"
+  },
+  {
+   "id": "k4",
+   "spk": "M",
+   "text": "有两个！",
+   "scene": "token",
+   "t0": 95.492,
+   "t1": 96.357,
+   "voice": "3e95bf7e20d9.wav"
+  },
+  {
+   "id": "k5",
+   "spk": "N",
+   "text": "不少模型，都{栽过}这道题。",
+   "scene": "token",
+   "t0": 96.757,
+   "t1": 99.182,
+   "voice": "cddf4a08d01c.wav"
+  },
+  {
+   "id": "k6",
+   "spk": "U",
+   "text": "9.11 和 9.9，哪个大？",
+   "scene": "token",
+   "t0": 99.582,
+   "t1": 101.827,
+   "voice": "32e3f3d6a045.wav"
+  },
+  {
+   "id": "k7",
+   "spk": "M",
+   "text": "9.11 更大！",
+   "scene": "token",
+   "t0": 102.077,
+   "t1": 103.552,
+   "voice": "36ba5226ac81.wav"
+  },
+  {
+   "id": "k8",
+   "spk": "N",
+   "text": "毕竟在版本号和日期里，9.11 确实排在 9.9 {后面}。",
+   "scene": "token",
+   "t0": 103.952,
+   "t1": 108.857,
+   "voice": "00037591ec1d.wav"
+  },
+  {
+   "id": "s1",
+   "spk": "N",
+   "text": "第二课叫{微调}，相当于上岗培训。",
+   "scene": "sft",
+   "t0": 110.357,
+   "t1": 113.431,
+   "voice": "3030f5c9c3e7.wav"
+  },
+  {
+   "id": "s2",
+   "spk": "N",
+   "text": "给它看成千上万份{标准问答}，告诉它：",
+   "scene": "sft",
+   "t0": 113.631,
+   "t1": 116.776,
+   "voice": "32e113719088.wav"
+  },
+  {
+   "id": "s3",
+   "spk": "N",
+   "text": "别接龙了，你现在是个{助手}。",
+   "scene": "sft",
+   "t0": 116.926,
+   "t1": 119.468,
+   "voice": "a86b2a9f656b.wav"
+  },
+  {
+   "id": "s4",
+   "spk": "N",
+   "text": "它学得很快，还学会了一句{经典台词}：",
+   "scene": "sft",
+   "t0": 119.768,
+   "t1": 123.016,
+   "voice": "3650f0ca1abf.wav"
+  },
+  {
+   "id": "s5",
+   "spk": "M",
+   "text": "作为一个 AI 语言模型……",
+   "scene": "sft",
+   "t0": 123.216,
+   "t1": 125.205,
+   "voice": "9b3c693d0ed3.wav"
+  },
+  {
+   "id": "r1",
+   "spk": "N",
+   "text": "第三课，让{人类打分}。",
+   "scene": "rlhf",
+   "t0": 126.905,
+   "t1": 128.802,
+   "voice": "661f1fa5690c.wav"
+  },
+  {
+   "id": "r2",
+   "spk": "N",
+   "text": "同一个问题答两遍，人挑{更好}的那个。",
+   "scene": "rlhf",
+   "t0": 129.002,
+   "t1": 132.171,
+   "voice": "294b49db2fce.wav"
+  },
+  {
+   "id": "r3",
+   "spk": "N",
+   "text": "可是人类，都爱听{好话}。",
+   "scene": "rlhf",
+   "t0": 132.471,
+   "t1": 134.654,
+   "voice": "b05a9a158047.wav"
+  },
+  {
+   "id": "r4",
+   "spk": "U",
+   "text": "我觉得，一加一等于三。",
+   "scene": "rlhf",
+   "t0": 134.954,
+   "t1": 137.042,
+   "voice": "3e8cc785c486.wav"
+  },
+  {
+   "id": "r5",
+   "spk": "M",
+   "text": "您说得太对了！这是我听过最有创意的数学！",
+   "scene": "rlhf",
+   "t0": 137.292,
+   "t1": 141.335,
+   "voice": "c4cb89f0e80e.wav"
+  },
+  {
+   "id": "r6",
+   "spk": "N",
+   "text": "这毛病，叫{谄媚}。",
+   "scene": "rlhf",
+   "t0": 141.735,
+   "t1": 143.151,
+   "voice": "1017da549ecf.wav"
+  },
+  {
+   "id": "r7",
+   "spk": "N",
+   "text": "2025 年，真有一次模型更新，因为太会{拍马屁}，被紧急撤回。",
+   "scene": "rlhf",
+   "t0": 143.351,
+   "t1": 149.271,
+   "voice": "8ffe9e14a3de.wav"
+  },
+  {
+   "id": "x1",
+   "spk": "N",
+   "text": "现在回到林黛玉。打开它的{脑子}看看。",
+   "scene": "halluc",
+   "t0": 150.771,
+   "t1": 154.12,
+   "voice": "7de28eaa95cd.wav"
+  },
+  {
+   "id": "x2",
+   "spk": "N",
+   "text": "它见过{林黛玉}，也见过{倒拔垂杨柳}。",
+   "scene": "halluc",
+   "t0": 154.42,
+   "t1": 157.635,
+   "voice": "d32606f7fd16.wav"
+  },
+  {
+   "id": "x3",
+   "spk": "N",
+   "text": "它的本能，是把话{接下去}，接得越像真的越好。",
+   "scene": "halluc",
+   "t0": 157.885,
+   "t1": 161.915,
+   "voice": "a63d3a2a44e9.wav"
+  },
+  {
+   "id": "x4",
+   "spk": "N",
+   "text": "可它脑子里，没有一个{查证}按钮。",
+   "scene": "halluc",
+   "t0": 162.165,
+   "t1": 164.86,
+   "voice": "3a7f8254ed84.wav"
+  },
+  {
+   "id": "x5",
+   "spk": "N",
+   "text": "训练时还像考试：{蒙一个}可能得分，{交白卷}一定零分。",
+   "scene": "halluc",
+   "t0": 165.16,
+   "t1": 169.957,
+   "voice": "e02d7c226f70.wav"
+  },
+  {
+   "id": "x6",
+   "spk": "N",
+   "text": "一本正经地胡说八道，就这么来了。它叫{幻觉}。",
+   "scene": "halluc",
+   "t0": 170.257,
+   "t1": 174.28,
+   "voice": "4ca6ec58f773.wav"
+  },
+  {
+   "id": "f1",
+   "spk": "N",
+   "text": "后来，人们给它配上{搜索}，让它先查再答，",
+   "scene": "fix",
+   "t0": 175.68,
+   "t1": 179.421,
+   "voice": "5f0e28c45ea5.wav"
+  },
+  {
+   "id": "f2",
+   "spk": "N",
+   "text": "还专门教它说：{我不确定}。",
+   "scene": "fix",
+   "t0": 179.521,
+   "t1": 181.914,
+   "voice": "6b6be16bb568.wav"
+  },
+  {
+   "id": "f3",
+   "spk": "U",
+   "text": "林黛玉倒拔垂杨柳，是怎么回事？",
+   "scene": "fix",
+   "t0": 182.264,
+   "t1": 185.238,
+   "voice": "a6f454f71e70.wav"
+  },
+  {
+   "id": "f4",
+   "spk": "M",
+   "text": "倒拔垂杨柳的是鲁智深，出自《水浒传》。林黛玉拔不动。",
+   "scene": "fix",
+   "t0": 185.538,
+   "t1": 190.811,
+   "voice": "c6a2a8ef0c1b.wav"
+  },
+  {
+   "id": "f5",
+   "spk": "N",
+   "text": "林黛玉，终于{不拔树}了。",
+   "scene": "fix",
+   "t0": 191.111,
+   "t1": 193.145,
+   "voice": "88ca3686ee42.wav"
+  },
+  {
+   "id": "g1",
+   "spk": "N",
+   "text": "你用的每一个 AI，都是这么{长大}的。",
+   "scene": "grads",
+   "t0": 194.745,
+   "t1": 197.808,
+   "voice": "3f9741183e26.wav"
+  },
+  {
+   "id": "g2",
+   "spk": "N",
+   "text": "读差不多的书，上差不多的{三堂课}。",
+   "scene": "grads",
+   "t0": 198.408,
+   "t1": 201.508,
+   "voice": "2238cbe7a953.wav"
+  },
+  {
+   "id": "g3",
+   "spk": "N",
+   "text": "只是老师不同，养出的{脾气}也不同。",
+   "scene": "grads",
+   "t0": 202.108,
+   "t1": 205.235,
+   "voice": "107a75b45d6e.wav"
+  },
+  {
+   "id": "e1",
+   "spk": "N",
+   "text": "所以下次 AI 胡说八道，先别急着{生气}。",
+   "scene": "end",
+   "t0": 208.635,
+   "t1": 212.413,
+   "voice": "5c16c0538db4.wav"
+  },
+  {
+   "id": "e2",
+   "spk": "N",
+   "text": "它只是读了太多书，又太想把话{接下去}了。",
+   "scene": "end",
+   "t0": 212.663,
+   "t1": 216.297,
+   "voice": "6c649bf16a2e.wav"
+  },
+  {
+   "id": "e3",
+   "spk": "N",
+   "text": "以上内容由 AI 生成，仅供参考。",
+   "scene": "end",
+   "t0": 217.097,
+   "t1": 220.047,
+   "voice": "1534a6b74348.wav"
+  }
+ ],
+ "cues": [
+  {
+   "name": "send_h2",
+   "t": 3.506,
+   "kind": "send"
+  },
+  {
+   "name": "recv_h3",
+   "t": 6.88,
+   "kind": "recv"
+  },
+  {
+   "name": "stamp_h4",
+   "t": 15.798,
+   "kind": "stamp"
+  },
+  {
+   "name": "start",
+   "t": 25.172,
+   "kind": "start"
+  },
+  {
+   "name": "hatch",
+   "t": 27.072,
+   "kind": "hatch"
+  },
+  {
+   "name": "send_b2",
+   "t": 31.68,
+   "kind": "send"
+  },
+  {
+   "name": "garble",
+   "t": 32.651,
+   "kind": "garble"
+  },
+  {
+   "name": "cat",
+   "t": 35.071,
+   "kind": "meow"
+  },
+  {
+   "name": "quiz",
+   "t": 43.756,
+   "kind": "quiz"
+  },
+  {
+   "name": "wrong",
+   "t": 46.535,
+   "kind": "wrong"
+  },
+  {
+   "name": "right",
+   "t": 51.643,
+   "kind": "right"
+  },
+  {
+   "name": "books",
+   "t": 54.145,
+   "kind": "whoosh"
+  },
+  {
+   "name": "counter",
+   "t": 60.051,
+   "kind": "counter"
+  },
+  {
+   "name": "fire",
+   "t": 65.48,
+   "kind": "fire"
+  },
+  {
+   "name": "meme",
+   "t": 71.098,
+   "kind": "pop"
+  },
+  {
+   "name": "send_q2",
+   "t": 76.826,
+   "kind": "send"
+  },
+  {
+   "name": "recv_q3",
+   "t": 78.654,
+   "kind": "recv"
+  },
+  {
+   "name": "quest",
+   "t": 86.341,
+   "kind": "quest"
+  },
+  {
+   "name": "chop",
+   "t": 90.949,
+   "kind": "chop"
+  },
+  {
+   "name": "wrong_k4",
+   "t": 96.407,
+   "kind": "wrong"
+  },
+  {
+   "name": "wrong_k7",
+   "t": 103.602,
+   "kind": "wrong"
+  },
+  {
+   "name": "bell",
+   "t": 109.857,
+   "kind": "bell"
+  },
+  {
+   "name": "levelup_s3",
+   "t": 119.468,
+   "kind": "levelup"
+  },
+  {
+   "name": "ding_s5",
+   "t": 123.216,
+   "kind": "ding"
+  },
+  {
+   "name": "show",
+   "t": 126.405,
+   "kind": "show"
+  },
+  {
+   "name": "vote",
+   "t": 130.202,
+   "kind": "coin"
+  },
+  {
+   "name": "clap",
+   "t": 141.035,
+   "kind": "clap"
+  },
+  {
+   "name": "alarm",
+   "t": 144.551,
+   "kind": "alarm"
+  },
+  {
+   "name": "debug",
+   "t": 150.071,
+   "kind": "glitch"
+  },
+  {
+   "name": "stamp_x6",
+   "t": 172.457,
+   "kind": "stamp"
+  },
+  {
+   "name": "search",
+   "t": 176.48,
+   "kind": "ding"
+  },
+  {
+   "name": "send_f3",
+   "t": 182.264,
+   "kind": "send"
+  },
+  {
+   "name": "recv_f4",
+   "t": 185.538,
+   "kind": "recv"
+  },
+  {
+   "name": "levelup_f5",
+   "t": 191.211,
+   "kind": "levelup"
+  },
+  {
+   "name": "fanfare",
+   "t": 194.145,
+   "kind": "fanfare"
+  },
+  {
+   "name": "stamp_e3",
+   "t": 217.597,
+   "kind": "stamp"
+  }
+ ]
+}
