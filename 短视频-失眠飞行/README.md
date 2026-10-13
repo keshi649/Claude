@@ -39,7 +39,7 @@
   - `scenes1~6.js`：60 个镜头，按小节排好。
   - `test.html` + `test.js`：角色测试页，各种姿势、正面半身、走路跑步、玩偶摆在一张图上看（`PAGE=test.html node render.cjs preview 0,1,2 out/test`）。
   - `main.js`：镜头表和转场（冲进去、甩镜头、穿云、闪白、水波、漏光、虚化、红蓝错位……）、逐字亮起的歌词、水印、柔光、调色、暗角、颗粒、封面。
-- **声音**：`源码/mix.py`。原曲剪掉开头的数字静音原样使用；两句画外音（`narrate_cosy.py`，CosyVoice 3 + FunASR 核对）；numpy 合成的音效和环境声，有人声时让开；成片 −16.1 LUFS，真峰值 −1.0 dBTP。
+- **声音**：`源码/mix.py`。原曲剪掉开头的数字静音原样使用；两句画外音（`narrate_cosy.py`，CosyVoice 3 + FunASR 核对）；numpy 合成的音效和环境声，有人声时让开；成片 −16.0 LUFS，真峰值 −0.9 dBTP。
 - **字体**（都是 SIL OFL）：霞鹜文楷、思源宋体、思源黑体、龙藏体、志莽行书。构建时下载并校验 sha256，不放进仓库。
 
 ## 重新生成

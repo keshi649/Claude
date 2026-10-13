@@ -156,10 +156,13 @@ def swoosh(): return whoosh(.35, True, 800, 6000) * .6
 # ---------------- 摆放（歌曲时间） ----------------
 # 开头：屋里的底噪、钟、玩偶的眼睛亮起来、窗户被风推开、床浮起来、冲出窗外
 place(amb, room(4.4) * np.linspace(1, 0, int(4.4 * SR)) ** .5, TRIM, -30)
-for k_ in range(4): place(sfx, tick(), TRIM + .15 + k_, -26, .3)
-place(sfx, sparkle(.8, 93, 9), TRIM + 1.3, -20, -.2)
-place(sfx, chime([74, 78, 81, 86], .1, 1.8), TRIM + 1.35, -22, .2)
-place(sfx, whoosh(1.2, True, 200, 1800), TRIM + 2.3, -14, .5)
+# 画外音（视频 0.15~2.5 秒）念的时候不放短促的音效：钟的嘀嗒放在字和字的空隙里（0.02、1.22 秒）和念完以后；
+# 玩偶眼睛亮起来（1.25 秒）只垫一层没有起音的微光声，"叮"等念完（2.55 秒）再响
+for t_ in (.02, 1.22, 2.6, 3.6): place(sfx, tick(), TRIM + t_, -26, .3)
+glim = bp(noise(1.4), 3000, 9000) * np.sin(np.pi * np.linspace(0, 1, int(1.4 * SR))) ** 2
+place(sfx, glim, TRIM + 1.15, -30, -.2)
+place(sfx, chime([74, 78, 81, 86], .1, 1.8), TRIM + 2.55, -22, .2)
+place(sfx, whoosh(1.2, True, 200, 1800), TRIM + 2.45, -14, .5)
 place(amb, wind(2.2, 300, 1400) * np.sin(np.pi * np.linspace(0, 1, int(2.2 * SR))), TRIM + 2.4, -20, .4)
 place(sfx, sparkle(1.0, 88, 10), TRIM + 2.9, -22, 0)
 place(sfx, whoosh(1.0, True, 300, 4000), bar(2) - .55, -12, .3)
@@ -219,14 +222,17 @@ place(sfx, wings(1.2), 205.5, -20, .3)
 # 尾声：屋里的底噪、钟、打字、发送、震动、收到消息
 send, read = SONG_DUR + 1.1, SONG_DUR + 1.9
 place(amb, room(EPI + CARD), SONG_DUR - .1, -32, 0)
-for k_ in range(int(EPI + CARD)): place(sfx, tick(), SONG_DUR + .3 + k_, -28, .2)
+# 钟：结尾那句画外音（歌曲 209.29 秒起，约 2.4 秒）念的时候停
+for k_ in range(int(EPI + CARD)):
+    t_ = SONG_DUR + .3 + k_
+    if not (209.1 < t_ < 211.9): place(sfx, tick(), t_, -28, .2)
 for k_ in range(6): place(sfx, tap(), SONG_DUR + .4 + k_ * .1, -24, -.4 + (k_ % 2) * .8)
 place(sfx, swoosh(), send, -22, -.4)
 place(sfx, swoosh(), send + .02, -22, .4)
 place(sfx, buzz(.45), read - .05, -22, -.5)
 place(sfx, buzz(.45), read, -22, .5)
 place(sfx, chime([86, 91], .12, 1.2), read + .1, -20, 0)
-place(sfx, chime([74, 78, 81, 86, 90], .12, 2.4), SONG_DUR + EPI + .05, -24, 0)
+# 片尾卡不再加"叮"：结尾那句画外音就是收尾
 
 # ---------------- 画外音（CosyVoice 3 女声）：开头一句、结尾一句 ----------------
 # 开头那句放在前奏里，人声第一次开口（歌曲 4.52 秒）之前念完；结尾那句在歌唱完、两条"睡了吗？"落下以后

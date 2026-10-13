@@ -349,7 +349,7 @@ function sEndCard(g, s, k) {
   text(g, '你失眠的时候，在想谁？', 960, 150, 64, { k: 'kai', col: '#FFFFFF', alpha: a, glow: '#FFB8DA', gr: 30, ls: 4 });
   text(g, '失眠飞行', 960, 800, 80, { k: 'kai', col: '#FFFFFF', alpha: a, glow: '#9FB4FF', gr: 26, ls: 24 });
   text(g, '歌曲：《失眠飞行》 接个吻，开一枪 / 沈以诚 / 薛黛霏', 960, 880, 30, { k: 'kai', col: '#CFCBEF', alpha: a * .9, ls: 2 });
-  text(g, '画面、动画、音效：Claude 用代码生成', 960, 930, 28, { k: 'kai', col: '#B8B4DA', alpha: a * .85, ls: 2 });
+  text(g, '画面、动画、音效：Claude 用代码生成 · 配音：CosyVoice 3 合成', 960, 930, 28, { k: 'kai', col: '#B8B4DA', alpha: a * .85, ls: 2 });
   text(g, '甜菜 出品', 960, 1000, 40, { k: 'kai', col: '#FFE2B0', alpha: a, glow: '#FFB870', gr: 16, ls: 10 });
 }
 
