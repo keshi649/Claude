@@ -16,7 +16,7 @@
 | `asr_full.py` | 整条转写成片 | `/home/user/tts/venv/bin/python 工具/asr_full.py 成片.mp4` |
 | `line_asr.py` | 按时间轴逐句转写成片，按拼音和原稿比 | `/home/user/tts/venv/bin/python 工具/line_asr.py 源码 成片.mp4` |
 | `seg_asr.py` | 转写成片里的几小段 | `/home/user/tts/venv/bin/python 工具/seg_asr.py 成片.mp4 起:止 …` |
-| `tone_check.py` | 看配音里某几个字的音高曲线（声调），`--vot` 看送气 | `/home/user/tts/venv/bin/python 工具/tone_check.py 源码 编号 字 [--vot]` |
+| `tone_check.py` | 看配音里某几个字的音高曲线（声调），`--vot` 看送气，`--all` 连整句一起看 | `/home/user/tts/venv/bin/python 工具/tone_check.py 源码 编号 [字] [--vot] [--all]` |
 | `takes.py` | 同一句换几个种子各合成一版，挑声调和语速都对的 | 见文件开头 |
 | `fill_docs.py` | 把 README / 脚本里的 `⟨…⟩` 占位符换成真实时间、大小、切镜头时刻 | `python3 工具/fill_docs.py 集目录 "查读错的说明"` |
 

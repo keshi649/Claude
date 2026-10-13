@@ -26,7 +26,10 @@ with tempfile.TemporaryDirectory() as td:
             continue
         a, b = max(0, l['t0'] - .12), l['t1'] + .15
         sf.write(seg, x[int(a * sr):int(b * sr)], sr)
-        hyp, ref = cjk(m.generate(input=seg)[0]['text']), cjk(l['text'])
+        # 原稿用配音实际念的字（voice_cv3/n_编号.json 的 chars：数字已写成汉字，拼音标注已换回原字）；没有就用字幕
+        vj = os.path.join(src, 'voice_cv3', f"n_{l['id']}.json")
+        said = ''.join(c[0] for c in json.load(open(vj, encoding='utf-8'))['chars']) if os.path.exists(vj) else l['text']
+        hyp, ref = cjk(m.generate(input=seg)[0]['text']), cjk(said)
         A, B = lazy_pinyin(ref), lazy_pinyin(hyp)
         sm = SequenceMatcher(a=A, b=B, autojunk=False)
         same = sum(bl.size for bl in sm.get_matching_blocks())
