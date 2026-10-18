@@ -155,7 +155,8 @@ function scribbleNotes(g, pts, t, o = {}) {
     // 抖动的线（越往后越宽松）
     const q = [];
     for (let i = 0; i < pts.length; i++) { const [x, y] = pts[i]; q.push([x + Math.sin(i * 1.7 + t * 9) * (o.rough ?? 4), y + Math.cos(i * 2.3 + t * 7) * (o.rough ?? 4)]); }
-    sk(g, q, { w: o.w ?? 1.8, a: 0.75, j: 2.5, passes: 2, taper: 0.6 });
+    if (o.warm) eraseStroke(g, q, (o.w ?? 1.8) * 2.6, 0.35);
+    sk(g, q, { w: o.w ?? 1.8, a: 0.8, j: 2.5, passes: 2, taper: 0.6 });
     const step = Math.max(3, Math.floor(pts.length / 5));
     for (let i = step; i < pts.length; i += step) doodle(g, 'note', q[i][0], q[i][1] - 12, o.size ?? 16);
   });
@@ -168,7 +169,7 @@ function scribbleNotes(g, pts, t, o = {}) {
 // tear；blush；mouth 'closed'|'open'|'smile'；hair 摆动；moon 月光从右边照来的强度；warm 暖光；tilt 低头/抬头（度）
 function herClose(g, x, y, s, o = {}) {
   const u = s / 2;
-  g.save(); g.translate(x, y); g.rotate(R(o.tilt ?? 0));
+  g.save(); g.translate(x, y); if (o.flip) g.scale(-1, 1); g.rotate(R(o.tilt ?? 0));
   const Q = (a, b) => [a * u, b * u];
   const sw = (o.hair ?? 0) * 0.05;
   withSeed(o.seed ?? 9100, () => {
@@ -223,7 +224,7 @@ function herClose(g, x, y, s, o = {}) {
     else sk(g, [[0.6 * u, 0.345 * u], [0.685 * u, 0.345 * u]], { w: 1.4, a: 0.72 });
     if (m === 'smile') sk(g, [[0.57 * u, 0.32 * u], [0.605 * u, 0.345 * u]], { w: 1.2, a: 0.6 });
     if (o.blush) { for (let i = 0; i < 5; i++) sk(g, [[(0.26 + i * 0.05) * u, 0.27 * u], [(0.31 + i * 0.05) * u, 0.17 * u]], { w: 1.1, a: 0.45 * o.blush, passes: 1 }); glow(g, 0.38 * u, 0.22 * u, 0.2 * u, C.rose, 0.3 * o.blush, 'multiply'); }
-    if (o.tear) { const ty = ey + 0.09 * u + o.tear * 0.42 * u, tx = ex + 0.05 * u + o.tear * 0.05 * u; const tp = new Path2D(); tp.ellipse(tx, ty, 0.022 * u, 0.036 * u, 0, 0, 6.283); erase(g, tp, 1); sk(g, spline([[tx - 0.022 * u, ty], [tx, ty + 0.036 * u], [tx + 0.022 * u, ty]], 4), { w: 1, a: 0.6 }); glow(g, tx, ty, 0.05 * u, C.moonHot, 0.6); }
+    if (o.tear) { const ty = ey + 0.09 * u + o.tear * 0.42 * u, tx = ex + 0.05 * u + o.tear * 0.05 * u; const tp = new Path2D(); tp.ellipse(tx, ty, 0.034 * u, 0.052 * u, 0, 0, 6.283); sk(g, spline([[ex + 0.02 * u, ey + 0.06 * u], [tx - 0.01 * u, (ey + ty) / 2], [tx, ty - 0.04 * u]], 4), { w: 1.2, a: 0.35, passes: 1 }); glow(g, tx, ty, 0.12 * u, C.amberHot, 0.5); erase(g, tp, 1); sk(g, spline([[tx - 0.022 * u, ty], [tx, ty + 0.036 * u], [tx + 0.022 * u, ty]], 4), { w: 1, a: 0.6 }); glow(g, tx, ty, 0.05 * u, C.moonHot, 0.6); }
     // 头发：齐刘海、齐下巴的短发，侧边别在耳朵后面
     const hp = [Q(0.7, -0.25), Q(0.69, -0.7), Q(0.26, -1.12), Q(-0.5, -1.08), Q(-0.98, -0.62), Q(-1.1 + sw * 0.4, 0.05), Q(-1.02 + sw, 0.6), Q(-0.8 + sw, 0.86), Q(-0.56 + sw * 0.8, 0.9),
       Q(-0.42 + sw * 0.6, 0.78), Q(-0.33, 0.42), Q(-0.3, 0.0), Q(-0.16, -0.2), Q(0.18, -0.23), Q(0.42, -0.25)];
@@ -246,5 +247,82 @@ function herClose(g, x, y, s, o = {}) {
   });
   if (o.moon) glow(g, 0.85 * u, 0, 0.8 * u, C.moon, 0.28 * o.moon);
   if (o.warm) glow(g, 0.6 * u, 0.2 * u, 1.2 * u, C.amber, 0.3 * o.warm);
+  g.restore();
+}
+
+// ---------------- 特写：他的侧脸（朝右） ----------------
+// 参数和 herClose 一样；他的鼻梁高一点、下巴方一点、眉毛浓，头发乱，额前翘起一撮
+function hisClose(g, x, y, s, o = {}) {
+  const u = s / 2;
+  g.save(); g.translate(x, y); if (o.flip) g.scale(-1, 1); g.rotate(R(o.tilt ?? 0));
+  const Q = (a, b) => [a * u, b * u];
+  withSeed(o.seed ?? 9200, () => {
+    // 肩膀：条纹衫、背带
+    const sh = [Q(0.32, 1.2), Q(0.5, 1.55), Q(0.95, 2.05), Q(1.3, 2.7), Q(-1.8, 2.7), Q(-1.6, 2.0), Q(-1.0, 1.5), Q(-0.42, 1.2)];
+    const shp = pathOf(spline(sh, 6, true)); paperFill(g, shp); shade(g, shp, o.night ? 0.2 : 0.06, 80, { scale: 0.9 });
+    g.save(); g.clip(shp); for (let i = 0; i < 6; i++) { const yy = 1.45 + i * 0.24; const st = new Path2D(); st.moveTo(-2 * u, (yy - 0.05) * u); st.lineTo(2 * u, (yy + 0.1) * u); st.lineTo(2 * u, (yy + 0.2) * u); st.lineTo(-2 * u, (yy + 0.05) * u); st.closePath(); shade(g, st, 0.72, 5, { hatch: 0.5, scale: 0.8 }); } g.restore();
+    sk(g, spline([Q(0.32, 1.2), Q(0.5, 1.55), Q(0.95, 2.05), Q(1.3, 2.7)], 6), { w: 2.4, a: 0.85 });
+    sk(g, spline([Q(-0.42, 1.2), Q(-1.0, 1.5), Q(-1.6, 2.0), Q(-1.8, 2.7)], 6), { w: 2.4, a: 0.85 });
+    sk(g, [Q(0.45, 1.6), Q(0.2, 2.7)], { w: 4, a: 0.85 });            // 背带
+    // 脖子
+    const nk = [Q(0.2, 0.62), Q(0.3, 1.28), Q(-0.46, 1.3), Q(-0.38, 0.4)];
+    const np = pathOf(spline(nk, 4, true)); paperFill(g, np); shade(g, np, 0.26, 60, { scale: 0.9 });
+    g.save(); g.clip(np); smudgeBlob(g, 0.0, 0.78 * u, 0.42 * u, 0.32, 0.45); g.restore();
+    sk(g, spline([Q(0.24, 0.72), Q(0.26, 0.98), Q(0.3, 1.25)], 5), { w: 2, a: 0.8 }); sk(g, spline([Q(-0.37, 0.45), Q(-0.42, 0.9), Q(-0.46, 1.28)], 5), { w: 1.8, a: 0.62 });
+    sk(g, [Q(0.27, 0.92), Q(0.31, 0.98)], { w: 1.4, a: 0.5 });          // 喉结
+    // 脸
+    const fp = [Q(0.56, -0.78), Q(0.68, -0.32), Q(0.7, -0.18), Q(0.64, -0.06), Q(0.72, 0.06), Q(0.86, 0.17), Q(0.84, 0.22), Q(0.72, 0.25), Q(0.74, 0.31), Q(0.7, 0.36),
+      Q(0.715, 0.41), Q(0.65, 0.48), Q(0.69, 0.6), Q(0.62, 0.72), Q(0.4, 0.78), Q(0.05, 0.66), Q(-0.14, 0.42), Q(-0.3, 0.1), Q(-0.36, -0.5), Q(0.1, -0.95)];
+    const facePath = pathOf(spline(fp, 6, true)); paperFill(g, facePath);
+    g.save(); g.clip(facePath);
+    const shd = new Path2D(); shd.rect(-1 * u, -1.2 * u, 1.1 * u, 2.4 * u); shade(g, shd, o.night ? 0.3 : 0.18, 60, { scale: 0.9 });
+    smudgeBlob(g, 0.3 * u, 0.66 * u, 0.32 * u, 0.14, 0.6);
+    g.restore();
+    sk(g, spline(fp.slice(1, 17), 6), { w: 2.8, a: 0.9, j: 0.5 });
+    // 耳朵
+    const ep = [Q(-0.08, -0.14), Q(0.0, 0.02), Q(-0.03, 0.22), Q(-0.12, 0.3), Q(-0.24, 0.2), Q(-0.27, -0.02), Q(-0.18, -0.14)];
+    part(g, ep, { w: 2, per: 5, tone: 0.12 });
+    sk(g, spline([Q(-0.09, -0.06), Q(-0.18, 0.04), Q(-0.12, 0.18)], 5), { w: 1.3, a: 0.6 });
+    // 眼睛
+    const look = o.look ?? 0, bl = o.blink ?? 0;
+    const ex = 0.46 * u, ey = -0.07 * u;
+    const open = (o.eyes === 'closed' ? 0 : 1) * (1 - bl) * (o.eyes === 'down' ? 0.55 : o.eyes === 'wide' ? 1.3 : 1);
+    if (open < 0.12) {
+      sk(g, spline([[ex - 0.12 * u, ey], [ex, ey + 0.025 * u], [ex + 0.1 * u, ey + 0.01 * u]], 5), { w: 2.4, a: 0.9 });
+    } else {
+      const top = [[ex - 0.12 * u, ey], [ex - 0.02 * u, ey - 0.055 * u * open], [ex + 0.09 * u, ey - 0.022 * u * open]];
+      const bot = [[ex - 0.11 * u, ey + 0.01 * u], [ex, ey + 0.035 * u * open], [ex + 0.08 * u, ey + 0.01 * u]];
+      const eyeP = pathOf(spline(top.concat(bot.slice().reverse()), 5, true)); erase(g, eyeP, 1);
+      g.save(); g.clip(eyeP);
+      const ix = ex + 0.04 * u, iy = ey - 0.006 * u - look * 0.016 * u;
+      const ir = new Path2D(); ir.ellipse(ix, iy, 0.028 * u, 0.046 * u, 0, 0, 6.283);
+      g.fillStyle = graphStyle(g); g.globalAlpha = 0.95; g.fill(ir); g.globalAlpha = 1;
+      erase(g, circlePath(ix + 0.01 * u, iy - 0.016 * u, 0.01 * u), 1);
+      g.restore();
+      sk(g, spline(top, 5), { w: 2.8, a: 0.95, taper: 0.4 });
+      sk(g, spline(bot, 5), { w: 1.1, a: 0.5, taper: 0.5 });
+    }
+    const bw = (o.brows ?? 0) * 0.03 * u;
+    sk(g, spline([[ex - 0.18 * u, ey - 0.15 * u + bw], [ex - 0.02 * u, ey - 0.2 * u], [ex + 0.14 * u, ey - 0.16 * u - bw]], 5), { w: 4, a: 0.82, taper: 0.5 });
+    sk(g, [[0.72 * u, 0.2 * u], [0.76 * u, 0.22 * u]], { w: 1.2, a: 0.5 });
+    const m = o.mouth ?? 'closed';
+    if (m === 'open') { const mo = new Path2D(); mo.ellipse(0.68 * u, 0.355 * u, 0.034 * u, 0.026 * u, 0, 0, 6.283); g.save(); g.fillStyle = graphStyle(g); g.globalAlpha = 0.7; g.fill(mo); g.restore(); }
+    else sk(g, [[0.6 * u, 0.355 * u], [0.7 * u, 0.355 * u]], { w: 1.5, a: 0.75 });
+    if (m === 'smile') sk(g, [[0.565 * u, 0.33 * u], [0.605 * u, 0.355 * u]], { w: 1.3, a: 0.65 });
+    if (o.blush) { for (let i = 0; i < 4; i++) sk(g, [[(0.3 + i * 0.05) * u, 0.26 * u], [(0.35 + i * 0.05) * u, 0.16 * u]], { w: 1.1, a: 0.4 * o.blush, passes: 1 }); glow(g, 0.4 * u, 0.22 * u, 0.2 * u, C.rose, 0.25 * o.blush, 'multiply'); }
+    if (o.tear) { const ty = ey + 0.09 * u + o.tear * 0.42 * u, tx = ex + 0.05 * u; const tp = new Path2D(); tp.ellipse(tx, ty, 0.03 * u, 0.048 * u, 0, 0, 6.283); erase(g, tp, 1); glow(g, tx, ty, 0.1 * u, C.amberHot, 0.5); }
+    // 头发：乱乱的，额前一撮翘起来，耳朵上面剪短
+    const hp = [Q(0.66, -0.36), Q(0.82, -0.62), Q(0.62, -0.98), Q(0.2, -1.16), Q(-0.4, -1.12), Q(-0.86, -0.86), Q(-1.02, -0.4), Q(-0.98, 0.1), Q(-0.8, 0.42), Q(-0.6, 0.38),
+      Q(-0.42, 0.12), Q(-0.3, -0.12), Q(-0.12, -0.22), Q(0.12, -0.36), Q(0.36, -0.42)];
+    const hpath = pathOf(spline(hp, 6, true)); paperFill(g, hpath); shade(g, hpath, o.night ? 0.75 : 0.62, 50, { scale: 0.9 });
+    g.save(); g.clip(hpath);
+    for (let i = 0; i < 16; i++) { const v = i / 15; sk(g, spline([Q(lerp(0.6, -0.85, v), lerp(-1.0, -0.95, v)), Q(lerp(0.4, -0.95, v), lerp(-0.6, -0.3, v)), Q(lerp(0.4, -0.75, v), lerp(-0.38, 0.35, v))], 6), { w: 1.2, a: 0.42, passes: 1, taper: 0.8 }); }
+    for (let i = 0; i < 5; i++) { const v = i / 4; eraseStroke(g, [Q(lerp(0.3, -0.6, v) + 0.06, -0.98 - Math.sin(v * 3) * 0.06), Q(lerp(0.3, -0.6, v) - 0.06, -0.96 - Math.sin(v * 3) * 0.06)], 0.03 * u, 0.4); }
+    g.restore();
+    sk(g, spline(hp, 6, true), { w: 2.8, a: 0.9 });
+    sk(g, spline([Q(0.55, -0.9), Q(0.95, -0.82), Q(0.8, -0.56)], 5), { w: 2.2, a: 0.8 });
+  });
+  if (o.warm) glow(g, 0.6 * u, 0.2 * u, 1.3 * u, C.amber, 0.3 * o.warm);
+  if (o.moon) glow(g, 0.85 * u, 0, 0.8 * u, C.moon, 0.28 * o.moon);
   g.restore();
 }
