@@ -1,0 +1,4 @@
+*.mp4
+*.m4a
+*.wav
+!源码/voice_cv3/*.wav
