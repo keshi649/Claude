@@ -37,6 +37,8 @@ function mk(w, h) { const c = document.createElement('canvas'); c.width = Math.c
 
 // ---------------- 线条抖动（boil） ----------------
 let BOIL = 0;                       // 0,1,2 三套
+// 面（排线）默认不抖：整屏的排线每 4 帧换一套，画面像在闪，码率也翻倍；只让线条"呼吸"
+const FILL_BOIL = false;
 function setBoil(frameNo) { BOIL = Math.floor(frameNo / 4) % 3; }
 
 // ---------------- 颜色 ----------------
@@ -276,7 +278,7 @@ function paperFill(g, path, a = 1) { g.save(); g.globalAlpha = a; g.fillStyle = 
 // 排线：tone 0~1（0 白纸，1 最黑）；ang 排线方向（度）
 function hatch(g, path, tone, ang = 35, o = {}) {
   if (tone <= 0.02) return;
-  const sc = (o.scale ?? 1) / scaleOf(g), a = o.a ?? 1, ph = o.phase ?? BOIL;
+  const sc = (o.scale ?? 1) / scaleOf(g), a = o.a ?? 1, ph = o.phase ?? (FILL_BOIL ? BOIL : 0);
   g.save();
   g.clip(path);
   const lay = (L, an, al) => { if (al <= 0.01) return; g.globalAlpha = al * a; g.fillStyle = hatchStyle(g, L, an, sc, ph); g.fill(path); };
@@ -323,7 +325,7 @@ function shade(g, path, v, ang = 30, o = {}) {
 // 只排一个方向（cross 时再加一层交叉）
 function hatchLayer(g, path, t, ang, o = {}) {
   if (t <= 0.02) return;
-  const sc = (o.scale ?? 1) / scaleOf(g), a = o.a ?? 1, ph = o.phase ?? BOIL;
+  const sc = (o.scale ?? 1) / scaleOf(g), a = o.a ?? 1, ph = o.phase ?? (FILL_BOIL ? BOIL : 0);
   const lay = (L, an, al) => { if (al <= 0.01) return; g.globalAlpha = al * a; g.fillStyle = hatchStyle(g, L, an, sc, ph); g.fill(path); };
   if (t < 0.25) lay(0, ang, t / 0.25);
   else if (t < 0.5) { lay(0, ang, 1 - (t - 0.25) / 0.25); lay(1, ang, (t - 0.25) / 0.25); }

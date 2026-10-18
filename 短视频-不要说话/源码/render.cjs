@@ -3,7 +3,7 @@
 //   node render.cjs cover 6.0 ../封面.jpg             封面（不带歌词、加大字）
 //   node render.cjs video 0 900 out/part0.mp4 [30]    渲染第 [0, 900) 帧，交给 ffmpeg（无损中间文件）
 //   node render.cjs sfx out/sfx.json                   导出画面里的动作时刻（给 mix.py 排音效）
-// 环境变量 PAGE=test.html 可以换成别的页面。
+// 环境变量 PAGE=test_fig.html 可以换成别的页面（人物测试页）。
 const { chromium } = require('playwright');
 const path = require('path');
 const fs = require('fs');
@@ -54,7 +54,7 @@ function b64(u) { return Buffer.from(u.slice(u.indexOf(',') + 1), 'base64'); }
   } else if (cmd === 'video') {
     const f0 = parseInt(a1), f1 = parseInt(a2), fps = parseInt(a4 || '30');
     const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-',
-      '-c:v', 'libx264', '-preset', 'ultrafast', '-qp', '0', '-pix_fmt', 'yuv444p', a3], { stdio: ['pipe', 'inherit', 'inherit'] });
+      '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '12', '-pix_fmt', 'yuv420p', a3], { stdio: ['pipe', 'inherit', 'inherit'] });
     const t0 = Date.now();
     for (let f = f0; f < f1; f++) {
       const u = await grab(page, f / fps, {});
@@ -65,6 +65,10 @@ function b64(u) { return Buffer.from(u.slice(u.indexOf(',') + 1), 'base64'); }
     ff.stdin.end();
     await new Promise(r => ff.on('close', r));
     console.log(`done in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+  } else if (cmd === 'shots') {
+    const sh = await page.evaluate(() => SHOTS.map(s => [s.id, +(s.t0 - OFFSET).toFixed(2), s.tin.type]));
+    fs.writeFileSync(a1, JSON.stringify(sh));
+    console.log(a1, sh.length, 'shots');
   } else if (cmd === 'sfx') {
     const ev = await page.evaluate(() => window.sfxPlan ? window.sfxPlan() : []);
     fs.writeFileSync(a1, JSON.stringify(ev, null, 1));

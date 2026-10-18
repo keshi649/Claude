@@ -126,11 +126,11 @@ function sleeveCard(g, x, y, s, kind, rot, o = {}) {
   g.restore();
 }
 function dressingRoom(g, t, o = {}) {
-  const wall = rectPath(-400, -200, 2800, 1500); paperFill(g, wall); shade(g, wall, 0.55, 80, { scale: 1 });
+  const wall = rectPath(-900, -400, 3600, 1900); paperFill(g, wall); shade(g, wall, 0.55, 80, { scale: 1 });
   const mx = o.mx ?? 960, my = o.my ?? 420, mw = 560, mh = 420;
   // 墙上的杯套：一排排
   let k = 0;
-  for (let r = 0; r < 6; r++) for (let c = 0; c < 16; c++) {
+  for (let r = 0; r < 6; r++) for (let c = -3; c < 16; c++) {   // 镜头从左边推过来，最左到 x≈-560，墙和杯套要铺过去
     const x = -300 + c * 170 + (r % 2) * 60, y = 40 + r * 140;
     if (x > mx - mw / 2 - 120 && x < mx + mw / 2 + 120 && y > my - mh / 2 - 90 && y < my + mh / 2 + 90) continue;
     sleeveCard(g, x, y, 62, DOODLES[(k++) % DOODLES.length], (hash(r, c) - 0.5) * 14, { seed: 11200 + r * 20 + c });
@@ -145,8 +145,8 @@ function dressingRoom(g, t, o = {}) {
   for (const [bx, by] of bulbs) { erase(g, circlePath(bx, by, 13), 1); skEllipse(g, bx, by, 13, 13, { w: 1.4, a: 0.7, passes: 1 }); glow(g, bx, by, 46, C.amberHot, 0.5); }
   glow(g, mx, my, 700, C.amber, 0.22);
   // 桌子
-  const tb = rectPath(-400, my + mh / 2 + 70, 2800, 900); paperFill(g, tb); shade(g, tb, 0.5, 0, { scale: 1 });
-  withSeed(11301, () => sk(g, [[-400, my + mh / 2 + 70], [2400, my + mh / 2 + 70]], { w: 2.6, a: 0.9 }));
+  const tb = rectPath(-900, my + mh / 2 + 70, 3600, 900); paperFill(g, tb); shade(g, tb, 0.5, 0, { scale: 1 });
+  withSeed(11301, () => sk(g, [[-900, my + mh / 2 + 70], [2700, my + mh / 2 + 70]], { w: 2.6, a: 0.9 }));
 }
 shot('s38', bar(51), (g, t, d) => {
   const u = t / d;

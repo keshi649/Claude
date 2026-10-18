@@ -223,8 +223,10 @@ function renderShot(g, i, ts) {
   withSeed(strHash(S.id), () => S.fn(g, ts - S.t0, d, ts));
   g.restore();
 }
+let COVERMODE = false;
 window.frame = function (T, opts = {}) {
   const ts = T + OFFSET;
+  COVERMODE = !!opts.cover;
   setBoil(Math.round(T * FPS));
   const g = MAIN.getContext('2d');
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
@@ -253,6 +255,17 @@ window.frame = function (T, opts = {}) {
   if (!(ts > SONG_END - ENDCARD && !opts.cover)) watermark(g, ts);
   vignette(g, 0.32);
   postGrain(g, 0.45);
+};
+
+// 封面：开头那一幕（右边是正在画的海和她），左边的字换成片名
+window.overlayAfter = (g, ts, opts) => {
+  if (!opts.cover) return;
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+  pencilText(g, '不要说话', 96, 300, 172, { align: 'left' });
+  pencilText(g, '你有没有喜欢过一个人，', 104, 486, 58, { align: 'left' });
+  pencilText(g, '从来没说出口？', 104, 572, 58, { align: 'left' });
+  pencilText(g, '陈奕迅 · 铅笔画 MV', 106, 690, 40, { align: 'left', a: 0.7 });
+  g.restore();
 };
 
 // 音效表：镜头里登记的动作时刻（歌曲时间），render.cjs sfx 导出给 mix.py

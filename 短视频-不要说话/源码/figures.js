@@ -505,7 +505,12 @@ function bustFront(g, who, x, y, s, o = {}) {
     if (arms === 'glass') { hand(-0.95 * r, -0.1 * r, 0.7 * r, -8, 'glass'); hand(0.95 * r, -0.1 * r, 0.7 * r, 8, 'glass'); sk(g, [Q(-1.45, 2.1), Q(-1.3, 0.9), Q(-1.05, 0.25)], { w: lw * 1.2, a: 0.8 }); sk(g, [Q(1.45, 2.1), Q(1.3, 0.9), Q(1.05, 0.25)], { w: lw * 1.2, a: 0.8 }); }
     else if (arms === 'shh') { sk(g, [Q(0.9, 2.6), Q(0.55, 1.45), Q(0.2, 0.9)], { w: lw * 1.2, a: 0.8 }); hand(0.08 * r, 0.62 * r, 0.6 * r, -12, 'point'); }
     else if (arms === 'chest') { hand(0.15 * r, 1.75 * r, 0.75 * r, -60, 'open'); hand(-0.25 * r, 1.85 * r, 0.75 * r, 50, 'open'); }
-    else if (arms === 'mouth') { hand(0.05 * r, 0.6 * r, 0.75 * r, -10, 'open'); }
+    else if (arms === 'mouth') {   // 捂嘴：右手从左下方抬上来，手指横着盖住嘴，眼睛和右脸的眼泪露在外面
+      const sl = [Q(-0.42, 0.66), Q(-0.72, 1.2), Q(-0.98, 2.2), Q(-1.42, 2.2), Q(-1.1, 1.05), Q(-0.62, 0.4)];
+      const slp = pathOf(spline(sl, 5, true)); paperFill(g, slp); shade(g, slp, bodyTone + 0.08, 80, { scale: 0.9 });
+      sk(g, spline(sl.slice(0, 3), 5), { w: lw * 1.2, a: 0.82 }); sk(g, spline(sl.slice(3), 5), { w: lw * 1.2, a: 0.82 });
+      hand(-0.24 * r, 0.56 * r, 0.6 * r, 84, 'open');
+    }
     else if (arms === 'cup') { if (o.cupDraw) o.cupDraw(g, 0, 1.75 * r, r); hand(-0.42 * r, 1.85 * r, 0.62 * r, 70, 'open'); hand(0.42 * r, 1.85 * r, 0.62 * r, -70, 'open'); }
   });
   if (o.night) { g.save(); g.clip(all); g.globalAlpha = 0.25; const pt = g.createPattern(smudgeTile, 'repeat'); g.fillStyle = pt; g.fillRect(-3 * r, -3 * r, 6 * r, 7 * r); g.restore(); }

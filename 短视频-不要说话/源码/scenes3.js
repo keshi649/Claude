@@ -182,7 +182,7 @@ shot('s18', lineT0(13) - 0.15, (g, t, d) => {
   const grow = smooth(chT(13, 2) - 0.3, lineT1(13), ts);
   const pts = [];
   const N = Math.floor(10 + grow * 50);
-  for (let i = 0; i < N; i++) { const u = i / 60; pts.push([1000 + u * 860 + Math.sin(u * 9 + t * 2) * 60, 520 - u * 400 + Math.cos(u * 7 + t * 1.5) * 50]); }
+  for (let i = 0; i < N; i++) { const u = i / 60, k = Math.min(1, u * 4); pts.push([930 + u * 930 + Math.sin(u * 9 + t * 2) * 60 * k, 630 - u * 500 + Math.cos(u * 7 + t * 1.5) * 50 * k]); }
   scribbleNotes(g, pts, t, { a: 1, rough: 6, size: 30, w: 3.2, warm: 1 });
 });
 sfx(lineT0(13) - 0.15, 'hum', { dur: 4.4 });
@@ -269,14 +269,15 @@ sfx(bar(28) + 1.75 + 0.3, 'applause', { dur: 3.2 });
 const DOODLES = ['moon', 'star', 'cat', 'fish', 'boat', 'umbrella', 'sun', 'flower', 'leaf', 'note', 'snow', 'moon', 'star'];
 shot('s22', bar(29) + 1.75, (g, t, d) => {
   const u = t / d;
-  cam(g, lerp(700, 1500, ease(u)), 560, 1.0);
-  stageSet(g, t, { mode: 'dawn', ghost: [2200, 880], footlights: false });
+  // 布景只有 x -100~2020 宽：放大 1.15 倍，镜头中心只在 745~1175 之间摇，摇不出布景
+  cam(g, lerp(745, 1175, ease(u)), 560, 1.15);
+  stageSet(g, t, { mode: 'dawn', ghost: [1567, 800], footlights: false });
   beam(g, 1900, -200, 1400, 900, 200, 600, C.dawn, 0.25, { layers: 4, endA: 0.3 });
   // 一排杯子，一天出现一个
   for (let i = 0; i < 11; i++) {
     const appear = 0.25 + i * 0.42;
     if (t < appear) continue;
-    const x = 300 + i * 190, pp = backOut(clamp((t - appear) / 0.35));
+    const x = 285 + i * 135, pp = backOut(clamp((t - appear) / 0.35));
     g.save(); g.translate(x, 930); g.scale(pp, pp); coffeeCup(g, 0, 0, 92, { doodle: DOODLES[i], warm: i === Math.floor((t - 0.25) / 0.42) ? 0.8 : 0.25, t }); g.restore();
     pencilText(g, ['一', '二', '三', '四', '五', '六', '日', '一', '二', '三', '四'][i], x, 975, 26, { a: 0.6 * pp });
   }

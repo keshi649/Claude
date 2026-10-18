@@ -104,7 +104,7 @@ function hisSketch(g, k, w, h) {   // 速写本里的一页：各种样子的他
   ];
   poses[k % poses.length]();
   g.restore();
-  pencilText(g, ['看不见的墙', '午睡', '笑', '跳', '咖啡'][k % 5], 0, h * 0.4, h * 0.09, { a: 0.6 });
+  pencilText(g, ['看不见的墙', '午睡', '笑', '走', '咖啡'][k % 5], 0, h * 0.4, h * 0.09, { a: 0.6 });
 }
 shot('s12', lineT0(7) - 0.2, (g, t, d) => {
   cam(g, 960, 540, 1.0);

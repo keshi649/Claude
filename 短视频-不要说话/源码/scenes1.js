@@ -61,8 +61,10 @@ shot('s01', OFFSET, (g, t, d) => {
   camReset(g);
   vignettePaper(g, 1420, 560, 700, 640, 5, 90);
   camReset(g);
-  pencilText(g, '你有没有喜欢过一个人，', 96, 352, 74, { align: 'left' });
-  pencilText(g, '从来没说出口？', 96, 466, 74, { align: 'left' });
+  if (!COVERMODE) {
+    pencilText(g, '你有没有喜欢过一个人，', 96, 352, 74, { align: 'left' });
+    pencilText(g, '从来没说出口？', 96, 466, 74, { align: 'left' });
+  }
 });
 sfx(OFFSET + 0.0, 'pencil', { dur: 3.4, gain: 0.8 });
 sfx(OFFSET + 2.0, 'shimmer', { dur: 1.8 });

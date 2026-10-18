@@ -168,8 +168,9 @@ shot('s31', lineT0(24) - 0.15, (g, t, d) => {
   const ts = t + lineT0(24) - 0.15;
   const grow = smooth(chT(24, 2) - 0.3, lineT1(24) + 0.2, ts);
   const pts = []; const N = Math.floor(8 + grow * 60);
-  for (let i = 0; i < N; i++) { const u = i / 68; pts.push([600 + u * 900 + Math.sin(u * 8 + t * 2) * 60, 560 - u * 330 + Math.cos(u * 6 + t * 1.5) * 50]); }
-  scribbleNotes(g, pts, t, { a: 1, rough: 6, size: 26, w: 3, warm: 0.7 });
+  // 从她嘴边出发，飘向开着的窗
+  for (let i = 0; i < N; i++) { const u = i / 68, k = Math.min(1, u * 4); pts.push([585 + u * 720 + Math.sin(u * 8 + t * 2) * 50 * k, 700 - u * 430 + Math.cos(u * 6 + t * 1.5) * 40 * k]); }
+  scribbleNotes(g, pts, t, { a: 1, rough: 6, size: 34, w: 3.4, warm: 1.1 });
   glow(g, 1320, 300, 400, C.moon, 0.18);
 });
 sfx(lineT0(24) - 0.15, 'hum', { dur: 4.5 });
