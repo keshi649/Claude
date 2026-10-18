@@ -14,4 +14,4 @@ const lineT0 = i => LYRICS[i].ch[0][1];
 const lineT1 = i => LYRICS[i].ch[LYRICS[i].ch.length - 1][2];
 
 // 画外音：开头的问话 h1、结尾的问话 e1（成片里放在哪儿，mix.py 也读这里）
-const VO = { h1: 1.45, e1: 276.3 };   // 歌曲时间
+const VO = { h1: 1.45, e1: 276.5 };   // 歌曲时间

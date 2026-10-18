@@ -214,10 +214,11 @@ shot('s58', VO.e1 - 1.1, (g, t, d) => {
   camReset(g);
   const ts = t + VO.e1 - 1.1;
   withSeed(11700, () => { skRect(g, 220, 230, 1480, 560, { w: 2.4, a: 0.55, over: 12 }); });
-  // 跟着配音一个字一个字写出来（配音的逐字时间在 voice_cv3/n_e1.json，这里按 0.12 秒一个字估）
-  const p = clamp((ts - VO.e1 + 0.1) / 2.6);
-  writeWords(g, '你没说出口的那句话，', 960, 440, 96, clamp(p * 1.9), { sp: 6 });
-  writeWords(g, '是什么？', 960, 600, 96, clamp(p * 1.9 - 1.0), { sp: 6 });
+  // 跟着配音一个字一个字写出来（逐字时间见 voice_cv3/n_e1.json：你 0.17 … 话 1.81，是 1.91 … 么 2.39~2.64），
+  // 每个字比念到早一点；第二行写得快一点，问号在"么"念完之前写好，片尾卡揉进来之前能多停一会儿
+  const tau = ts - VO.e1;
+  writeWords(g, '你没说出口的那句话，', 960, 440, 96, clamp((tau - 0.09) / 1.72), { sp: 6 });
+  writeWords(g, '是什么？', 960, 600, 96, clamp((tau - 1.83) / 0.57), { sp: 6 });
   coffeeCup(g, 1640, 800, 90, { doodle: 'spot', warm: 0.7, t });
 });
 
