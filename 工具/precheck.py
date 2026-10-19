@@ -2,7 +2,8 @@
 1. 每个 .js 用 node --check 查语法；
 2. scenes*.js、main.js、audio.py 里写死的 S('编号')、EN、CH('编号', 第几段)、MK、SS('幕名')、SE，
    在 timeline.json 里都找得到（改了旁白分段以后，CH 的段号最容易越界）；
-3. audio.py 的 build() 里调用的函数都有定义（从别的集复制过来删改时容易漏，build.sh 跑到音频那步才会报错）。
+3. audio.py 的 build() 里调用的函数都有定义（从别的集复制过来删改时容易漏，build.sh 跑到音频那步才会报错）；
+4. 每个对话框（'D' 那几句）在 scenes*.js 里都有 dialogBox(g, t, '编号', …)（《久坐》那支开头的 d1 忘了画，预览时才发现）。
 用法：python3 工具/precheck.py 源码目录（先跑过 narration.py 或 fake_tl.py）"""
 import ast
 import builtins
@@ -70,6 +71,12 @@ if os.path.exists(ap):
         for c in ast.walk(fn):
             if isinstance(c, ast.Call) and isinstance(c.func, ast.Name) and c.func.id not in defined | local:
                 problem(f'audio.py：{fn.name}() 里调用了没定义的 {c.func.id}()')
+
+print('4. 对话框有没有画')
+scene_code = ''.join(open(f, encoding='utf-8').read() for f in sorted(glob.glob(os.path.join(src, 'scenes*.js'))))
+for l in tl['lines']:
+    if l['kind'] == 'D' and not re.search(r"dialogBox\(\s*\w+\s*,\s*\w+\s*,\s*['\"]" + re.escape(l['id']) + r"['\"]", scene_code):
+        problem(f"对话框 {l['id']}（{l['text']}）在 scenes*.js 里没有 dialogBox(g, t, {l['id']!r}, …)，画面上不会出现")
 
 print('没发现问题' if not bad else f'一共 {bad} 处问题')
 sys.exit(1 if bad else 0)

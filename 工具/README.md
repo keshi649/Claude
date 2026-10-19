@@ -6,7 +6,8 @@
 |---|---|---|
 | `setup_tts.sh` | 新容器里搭配音环境（CosyVoice 3 + FunASR，CPU），约 20~30 分钟、12 GB | `bash 工具/setup_tts.sh > /tmp/setup_tts.log 2>&1` |
 | `fake_tl.py` | 配音没合成完时，先估一个时间轴预览画面 | `python3 工具/fake_tl.py 源码` |
-| `precheck.py` | 渲染前查 JS 语法、时间轴编号（`S` `CH` `SS`…）、`audio.py` 里没定义的函数 | `python3 工具/precheck.py 源码` |
+| `precheck.py` | 渲染前查 JS 语法、时间轴编号（`S` `CH` `SS`…）、`audio.py` 里没定义的函数、对话框有没有画 | `python3 工具/precheck.py 源码` |
+| `sfx_check.py` | 渲染前查短促音效有没有压在旁白某个字的字头上（按配音的逐字时间算），列出 `audio.py` 的行 | `python3 工具/sfx_check.py 源码` |
 | `selfcheck.py` | 盖章时刻、"你"的次数、总时长、讲完到结束、最宽的字幕 | `python3 工具/selfcheck.py 源码` |
 | `measure.sh` | 成片的时长、大小、前 20 秒切镜头、响度、真峰值 | `bash 工具/measure.sh 成片.mp4` |
 | `review.sh` | 每秒 1 帧拼成图，通看一遍 | `bash 工具/review.sh 成片.mp4 输出目录` |
@@ -16,6 +17,7 @@
 | `asr_full.py` | 整条转写成片 | `/home/user/tts/venv/bin/python 工具/asr_full.py 成片.mp4` |
 | `line_asr.py` | 按时间轴逐句转写成片，按拼音和原稿比 | `/home/user/tts/venv/bin/python 工具/line_asr.py 源码 成片.mp4` |
 | `seg_asr.py` | 转写成片里的几小段 | `/home/user/tts/venv/bin/python 工具/seg_asr.py 成片.mp4 起:止 …` |
+| `stems.py` | 把声音拆成纯人声、人声 + 环境声、人声 + 音效三轨，分别转写，查单句转写错是哪一层的问题 | `python3 工具/stems.py 源码 输出目录` |
 | `tone_check.py` | 看配音里某几个字的音高曲线（声调），`--vot` 看送气，`--all` 连整句一起看 | `/home/user/tts/venv/bin/python 工具/tone_check.py 源码 编号 [字] [--vot] [--all]` |
 | `takes.py` | 同一句换几个种子各合成一版，挑声调和语速都对的 | 见文件开头 |
 | `split_mp4.py` | 成片超过 30 MB 时切成几段：优先切在段落开头（编码时用 `-force_key_frames` 放好关键帧），segment 封装器 `-c copy` 切，核对每段 ≤ 30 MB、帧数加起来等于整片 | `python3 工具/split_mp4.py 成片.mp4 输出前缀 30 切点1,切点2,…` |
