@@ -21,6 +21,7 @@
 | `tone_check.py` | 看配音里某几个字的音高曲线（声调），`--vot` 看送气，`--all` 连整句一起看 | `/home/user/tts/venv/bin/python 工具/tone_check.py 源码 编号 [字] [--vot] [--all]` |
 | `takes.py` | 同一句换几个种子各合成一版，挑声调和语速都对的 | 见文件开头 |
 | `split_mp4.py` | 成片超过 30 MB 时切成几段：优先切在段落开头（编码时用 `-force_key_frames` 放好关键帧），segment 封装器 `-c copy` 切，核对每段 ≤ 30 MB、帧数加起来等于整片 | `python3 工具/split_mp4.py 成片.mp4 输出前缀 30 切点1,切点2,…` |
+| `splice_parts.py` | 只重渲了几段画面时（`node render.cjs video 起始帧 结束帧 out/re_起始帧.mp4 30`），把它们按帧换进 build.sh 渲出来的 `out/part*.mp4`，配上音频一次编码成成片，不用整片重渲 | `python3 工具/splice_parts.py 源码 输出.mp4 out/mix.wav 关键帧时刻 out/re_2190.mp4 …` |
 | `fill_docs.py` | 把 README / 脚本里的 `⟨…⟩` 占位符换成真实时间、大小、切镜头时刻 | `python3 工具/fill_docs.py 集目录 "查读错的说明"` |
 
 带 `/home/user/tts/venv/bin/python` 的几个要用配音环境的 Python（里面有 FunASR、pyworld）。
