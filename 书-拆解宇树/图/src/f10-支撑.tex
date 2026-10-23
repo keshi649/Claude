@@ -1,0 +1,39 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{foot/.style={circle, fill=ink, minimum size=3.2mm, inner sep=0pt},
+           air/.style={circle, draw=ink, fill=white, line width=0.7pt, minimum size=3.2mm, inner sep=0pt},
+           com/.style={circle, draw=ink, fill=white, line width=0.9pt, minimum size=2.6mm, inner sep=0pt, path picture={\fill[ink] (path picture bounding box.center) circle (0.5mm);}},
+           capt/.style={font=\scriptsize, align=center, text=ink}}
+  % 1 四足站立
+  \begin{scope}
+    \draw[mid, line width=0.6pt, rounded corners=3pt] (-13,-7) rectangle (13,7);
+    \fill[black!18] (-11,-9) -- (11,-9) -- (11,9) -- (-11,9) -- cycle;
+    \node[foot] at (-11,9) {}; \node[foot] at (11,9) {}; \node[foot] at (-11,-9) {}; \node[foot] at (11,-9) {};
+    \node[com] at (0.5,0.5) {};
+    \node[capt] at (0,-17) {四足站立\\支撑面大，静态稳定};
+  \end{scope}
+  % 2 四足对角小跑
+  \begin{scope}[xshift=44mm]
+    \draw[mid, line width=0.6pt, rounded corners=3pt] (-13,-7) rectangle (13,7);
+    \draw[black!50, line width=2pt] (-11,9) -- (11,-9);
+    \node[foot] at (-11,9) {}; \node[air] at (11,9) {}; \node[air] at (-11,-9) {}; \node[foot] at (11,-9) {};
+    \node[com] at (2,2.5) {};
+    \node[capt] at (0,-17) {对角小跑\\只剩一条线，靠动态平衡};
+  \end{scope}
+  % 3 双足单脚支撑
+  \begin{scope}[xshift=88mm]
+    \draw[mid, line width=0.6pt, rounded corners=3pt] (-8,-5) rectangle (8,5);
+    \fill[black!18, rounded corners=1pt] (-7,-3) rectangle (-1,7);
+    \draw[ink, line width=0.6pt, rounded corners=1pt] (1,-7) rectangle (7,3);
+    \node[com] at (-2.5,1) {};
+    \node[capt] at (0,-17) {双足单脚支撑\\支撑面只有一只脚};
+  \end{scope}
+  % 图例
+  \node[foot, minimum size=2.6mm] at (-12,-29) {}; \node[font=\scriptsize, anchor=west] at (-10,-29) {着地的脚};
+  \node[air, minimum size=2.6mm] at (14,-29) {}; \node[font=\scriptsize, anchor=west] at (16,-29) {抬起的脚};
+  \fill[black!18] (39,-30.5) rectangle (43,-27.5); \node[font=\scriptsize, anchor=west] at (44,-29) {支撑面};
+  \node[com] at (63,-29) {}; \node[font=\scriptsize, anchor=west] at (65,-29) {重心的投影（俯视）};
+\end{tikzpicture}
+\end{document}

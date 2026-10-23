@@ -1,0 +1,18 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{st/.style={box, minimum width=27mm, minimum height=17mm, font=\scriptsize, text width=25mm},
+           sm/.style={font=\tiny, text=mid, align=center, text width=27mm}}
+  \node[st] (a) at (0,0) {\textbf{1　Train 训练}\\Isaac Gym 或\\Isaac Lab};
+  \node[st] (b) at (33,0) {\textbf{2　Play 回放}\\同一个仿真器里看\\导出策略文件};
+  \node[st] (c) at (66,0) {\textbf{3　Sim2Sim}\\换到 MuJoCo 再跑\\查“钻空子”};
+  \node[dark, minimum width=27mm, minimum height=17mm, font=\scriptsize, text width=25mm] (d) at (99,0) {\textbf{4　Sim2Real}\\上真机\\先进入调试模式};
+  \draw[arr] (a) -- (b); \draw[arr] (b) -- (c); \draw[arr] (c) -- (d);
+  \node[sm] at (0,-13) {显卡上跑几十分钟到几小时};
+  \node[sm] at (33,-13) {发现问题回到第 1 步};
+  \node[sm] at (66,-13) {几乎不花钱，挡住大量事故};
+  \node[sm] at (99,-13) {吊起来、小增益、手边有急停};
+  \draw[arr, mid, densely dashed] (66,9) to[out=150,in=30] node[above, font=\tiny, text=mid] {不通过就回去改} (0,9);
+\end{tikzpicture}
+\end{document}

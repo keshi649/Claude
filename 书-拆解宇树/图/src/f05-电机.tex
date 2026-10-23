@@ -1,0 +1,45 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{tag/.style={font=\scriptsize, align=left, text=ink}, lead/.style={mid, line width=0.4pt}}
+  % 外壳
+  \draw[ink, line width=1pt, fill=black!12] (0,0) circle (30);
+  % 定子铁芯（带齿）
+  \draw[ink, line width=0.6pt, fill=black!30] (0,0) circle (26);
+  \fill[white] (0,0) circle (14.6);
+  \foreach \i in {0,...,11} {
+    \pgfmathsetmacro{\a}{\i*30}
+    \fill[black!30] (\a-7:14.4) -- (\a-7:20) -- (\a+7:20) -- (\a+7:14.4) -- cycle;
+  }
+  % 线圈（U V W 循环）
+  \foreach \i/\ph in {0/U,1/V,2/W,3/U,4/V,5/W,6/U,7/V,8/W,9/U,10/V,11/W} {
+    \pgfmathsetmacro{\a}{\i*30}
+    \fill[black!65, rounded corners=0.6pt] (\a-12:16) -- (\a-12:21.5) -- (\a-7.5:21.5) -- (\a-7.5:16) -- cycle;
+    \fill[black!65, rounded corners=0.6pt] (\a+7.5:16) -- (\a+7.5:21.5) -- (\a+12:21.5) -- (\a+12:16) -- cycle;
+    \node[font=\tiny\bfseries, text=white] at (\a:23.5) {\ph};
+  }
+  % 气隙
+  \draw[mid, densely dotted] (0,0) circle (14);
+  % 转子
+  \draw[ink, line width=0.6pt, fill=black!8] (0,0) circle (13);
+  \foreach \i/\p/\col in {0/N/black!80,1/S/black!45,2/N/black!80,3/S/black!45} {
+    \pgfmathsetmacro{\a}{\i*90+45}
+    \fill[\col] (\a-30:9) -- (\a-30:12.6) arc (\a-30:\a+30:12.6) -- (\a+30:9) arc (\a+30:\a-30:9) -- cycle;
+    \node[font=\scriptsize\bfseries, text=white] at (\a:10.8) {\p};
+  }
+  % 转轴
+  \draw[ink, line width=0.6pt, fill=white] (0,0) circle (4);
+  \fill[ink] (0,0) circle (1.2);
+  \draw[arr] (0,0) ++(60:6) arc (60:150:6);
+  % 标注
+  \node[tag, anchor=west] (a) at (38,26) {外壳};
+  \node[tag, anchor=west] (b) at (38,16) {定子铁芯和线圈（不动）\\U、V、W 三相轮流通电};
+  \node[tag, anchor=west] (c) at (38,2) {气隙};
+  \node[tag, anchor=west] (d) at (38,-10) {转子：贴着永磁体（N、S 交替）};
+  \node[tag, anchor=west] (e) at (38,-22) {转轴：接减速器};
+  \draw[lead] (a.west) -- (45:30); \draw[lead] (b.west) -- (25:21);
+  \draw[lead] (c.west) -- (5:14); \draw[lead] (d.west) -- (-30:12);
+  \draw[lead] (e.west) -- (-45:4);
+\end{tikzpicture}
+\end{document}

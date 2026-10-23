@@ -1,0 +1,19 @@
+% 封面公用设置
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont{NotoSansCJK-Regular.ttc}[Path=/usr/share/fonts/opentype/noto/,FontIndex=2,
+  BoldFont=NotoSansCJK-Bold.ttc,BoldFeatures={FontIndex=2}]
+\newCJKfontfamily\heiti{NotoSansCJK-Medium.ttc}[Path=/usr/share/fonts/opentype/noto/,FontIndex=2,
+  BoldFont=NotoSansCJK-Bold.ttc,BoldFeatures={FontIndex=2}]
+\newCJKfontfamily\heitiblack{NotoSansCJK-Black.ttc}[Path=/usr/share/fonts/opentype/noto/,FontIndex=2]
+\newCJKfontfamily\songti{NotoSerifCJK-Regular.ttc}[Path=/usr/share/fonts/opentype/noto/,FontIndex=2,
+  BoldFont=NotoSerifCJK-Bold.ttc,BoldFeatures={FontIndex=2}]
+\setmainfont{TeX Gyre Heros}
+\xeCJKDeclareCharClass{FullLeft}{"2018,"201C}
+\xeCJKDeclareCharClass{FullRight}{"2019,"201D}
+\xeCJKDeclareCharClass{CJK}{"2014,"2026}
+\usetikzlibrary{calc}
+\definecolor{cbg}{HTML}{F3F0E9}
+\definecolor{cink}{HTML}{16181D}
+\definecolor{cacc}{HTML}{EE6A1F}
+\definecolor{cline}{HTML}{8A96A3}

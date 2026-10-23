@@ -1,0 +1,19 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{st/.style={box, minimum width=22mm, minimum height=16mm, font=\scriptsize, text width=20mm},
+           sm/.style={font=\tiny, text=mid, align=center, text width=23mm}}
+  \node[st, fill=white] (a) at (0,0) {\textbf{人的动作}\\动作捕捉\\或视频姿态估计};
+  \node[st] (b) at (26,0) {\textbf{重定向}\\改尺寸、守关节\\限位、脚不打滑};
+  \node[st] (c) at (52,0) {\textbf{参考动作}\\一串机器人\\关节角度};
+  \node[st] (d) at (78,0) {\textbf{训练跟踪策略}\\强化学习\\+ 域随机化};
+  \node[dark, minimum width=22mm, minimum height=16mm, font=\scriptsize, text width=20mm] (e) at (104,0) {\textbf{真机表演}\\先 Sim2Sim\\再上真机};
+  \draw[arr] (a) -- (b); \draw[arr] (b) -- (c); \draw[arr] (c) -- (d); \draw[arr] (d) -- (e);
+  \node[sm] at (0,-13) {秧歌、武术、\\专业运动员};
+  \node[sm] at (26,-13) {把大人的衣服\\改给小孩穿};
+  \node[sm] at (52,-13) {只是姿势，\\没考虑力和平衡};
+  \node[sm] at (78,-13) {奖励：越像越高分，\\不能摔};
+  \node[sm] at (104,-13) {集群还要定位、\\对表、编排};
+\end{tikzpicture}
+\end{document}

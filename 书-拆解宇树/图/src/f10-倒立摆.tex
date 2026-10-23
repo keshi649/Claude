@@ -1,0 +1,40 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{capt/.style={font=\scriptsize, align=center, text=ink}}
+  % 左：倒立摆会越倒越快
+  \begin{scope}
+    \draw[mid, line width=0.6pt] (-22,0) -- (22,0);
+    \foreach \x in {-20,-16,...,20} \draw[mid, line width=0.4pt] (\x,0) -- (\x-2,-2.5);
+    \draw[ink, line width=1.2pt] (0,0) -- (12,34);
+    \fill[ink] (0,0) circle (1);
+    \draw[ink, line width=0.8pt, fill=black!25] (12,34) circle (5);
+    \draw[mid, densely dashed] (0,0) -- (0,38);
+    \draw[ink] (0,14) arc (90:70.6:14);
+    \node[font=\scriptsize] at (3.4,17) {$\theta$};
+    \draw[arr, line width=1.1pt] (12,34) -- (12,24) node[right, font=\scriptsize, text=mid] {重力};
+    \draw[arr, mid] (17,36) arc (60:20:10);
+    \node[capt] at (0,-10) {一歪就越倒越快；杆越长，倒得越慢};
+  \end{scope}
+  % 右：捕获点
+  \begin{scope}[xshift=68mm]
+    \draw[mid, line width=0.6pt] (-26,0) -- (34,0);
+    \foreach \x in {-24,-20,...,32} \draw[mid, line width=0.4pt] (\x,0) -- (\x-2,-2.5);
+    % 当前支撑脚和身体
+    \draw[ink, line width=1.2pt] (-14,0) -- (-6,32);
+    \fill[ink] (-14,0) circle (1);
+    \draw[ink, line width=0.8pt, fill=black!25] (-6,32) circle (5);
+    \draw[arr, line width=1.1pt] (-6,40) -- (6,40) node[right, font=\scriptsize] {速度 $v$};
+    % 重心投影
+    \draw[mid, densely dashed] (-6,27) -- (-6,0);
+    \node[font=\tiny, text=mid] at (-6,-5) {重心 $x$};
+    % 捕获点
+    \fill[ink] (14,0) circle (1.2);
+    \draw[ink, line width=0.8pt, densely dotted] (-6,32) -- (14,0);
+    \node[font=\tiny, text=ink] at (14,-5) {捕获点};
+    \draw[darr] (-6,-9) -- node[below, font=\tiny] {$v/\omega$} (14,-9);
+    \node[capt] at (4,-18) {把下一步踩到“捕获点”上，身体就能停下来};
+  \end{scope}
+\end{tikzpicture}
+\end{document}

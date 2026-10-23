@@ -1,0 +1,37 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{tag/.style={font=\scriptsize, align=center, text=ink}}
+  % 左：推旋转木马
+  \begin{scope}
+    \draw[ink, line width=0.8pt, fill=pale] (0,0) circle (16);
+    \fill[ink] (0,0) circle (1.2);
+    \draw[ink, line width=0.6pt] (0,0) -- (16,0);
+    \draw[arr, line width=1.4pt] (16,-12) -- (16,8);
+    \node[tag, anchor=south west] at (17,6) {顺着切线推\\全部变成转动};
+    \draw[arr, line width=1.4pt, mid] (34,0) -- (19,0);
+    \node[tag, text=mid] at (30,-6) {朝圆心推\\白费力气};
+    \draw[arr, mid] (0,0) ++(-30:9) arc (-30:60:9);
+    \node[font=\small\bfseries] at (0,-23) {推旋转木马};
+  \end{scope}
+  % 右：dq 坐标
+  \begin{scope}[xshift=72mm]
+    \draw[ink, line width=0.8pt, fill=black!8] (0,0) circle (13);
+    \fill[black!80] (-6,-3) rectangle (6,3);
+    \node[font=\scriptsize\bfseries, text=white] at (3.2,0) {N};
+    \node[font=\scriptsize\bfseries, text=white] at (-3.2,0) {S};
+    % d 轴（磁铁方向）
+    \draw[ink, line width=0.6pt, densely dashed] (-20,0) -- (22,0) node[right, font=\scriptsize] {$d$ 轴（磁铁方向）};
+    % q 轴
+    \draw[ink, line width=0.6pt, densely dashed] (0,-18) -- (0,22) node[above, font=\scriptsize] {$q$ 轴};
+    % 电流矢量沿 q 轴
+    \draw[arr, line width=1.8pt] (0,0) -- (0,17);
+    \node[tag, anchor=west] at (2,12) {$i_q$：产生扭矩};
+    \node[tag, anchor=west, text=mid] at (14,-9) {$i_d \approx 0$：不出力只发热};
+    \draw[arr, mid] (0,0) ++(-20:16) arc (-20:30:16);
+    \node[font=\scriptsize, text=mid, anchor=west] at (16,3) {转子转动};
+    \node[font=\small\bfseries] at (0,-23) {FOC：电流始终垂直于磁铁方向};
+  \end{scope}
+\end{tikzpicture}
+\end{document}

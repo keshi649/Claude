@@ -1,0 +1,23 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm, node distance=6mm]
+  \tikzset{blk/.style={box, minimum width=26mm, minimum height=13mm, font=\scriptsize},
+           blkd/.style={dark, minimum width=26mm, minimum height=13mm, font=\scriptsize},
+           sm/.style={font=\tiny, text=mid, align=center}}
+  \node[boxw, font=\scriptsize, minimum height=9mm, align=center] (cmd) at (0,20) {速度指令\\（往前 1 m/s）};
+  \node[blk] (mpc) at (34,20) {\textbf{MPC}\\单刚体模型\\往前预测 0.3–0.5 秒};
+  \node[blk] (wbc) at (68,20) {\textbf{WBC}\\二次规划\\兼顾多个任务};
+  \node[blkd] (rob) at (102,20) {关节\\（第 9 章的五个数）\\→ 机器人};
+  \node[blk] (est) at (68,-2) {\textbf{状态估计}\\IMU + 关节数据};
+  \draw[arr] (cmd) -- (mpc);
+  \draw[arr] (mpc) -- node[above, sm] {每只脚\\的力} (wbc);
+  \draw[arr] (wbc) -- node[above, sm] {关节扭矩\\或目标} (rob);
+  \draw[arr] (rob.south) |- (est.east);
+  \draw[arr] (est.west) -| (mpc.south);
+  \draw[arr] (est.north) -- (wbc.south);
+  \node[sm, anchor=east] at (32,6) {每秒几十\\到上百次};
+  \node[sm, anchor=west] at (70,9.5) {每秒 500–1000 次};
+  \node[sm, anchor=west] at (82,-5) {身体姿态、速度、\\哪只脚着地};
+\end{tikzpicture}
+\end{document}
