@@ -135,7 +135,8 @@ SCENES_DEF.push(() => {
   // C2i：溪边的石头上，看日落；她把头靠在他肩上（长音一直到间奏）
   scene('C2i', CUT(31), (g, s, k) => {
     camera(g, 1180 - k * 20, 640 - k * 8, 1.6 - k * .05, () => {
-      streamLand(g, s, { time: 'sunset', sunX: 700, sunY: 560 });
+      streamLand(g, s, { time: 'sunset', sunX: 700, sunY: 540 + k * 9 });
+      birds(g, s, 200 + k * 150, 260 + k * 6, 9, 1, '#4A3A50');
       const rx = STREAM.rockX, ry = STREAM.rockY;
       const lean = E.io(seg(s, Lc(31, 3), Lc(31, 6)));
       const Ph = { who: 'he', u: 30, x: rx + 40, seat: ry - 34, view: 'back', out: OUTFIT.heSummer, pose: { sitF: true, aN1: 14, tilt: lean * .08 }, light: LT.gold, t: s };

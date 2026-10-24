@@ -144,11 +144,11 @@ function streamLand(g, s, o = {}) {
   const pts = []; for (let i = 0; i <= 40; i++) pts.push(streamCurve(i / 40));
   const bankPath = (ext) => { g.beginPath(); pts.forEach(([x, y, w], i) => i ? g.lineTo(x - w / 2 - ext * (.3 + y / 1100), y) : g.moveTo(x - w / 2 - ext * .3, y)); for (let i = pts.length - 1; i >= 0; i--) g.lineTo(pts[i][0] + pts[i][2] / 2 + ext * (.3 + pts[i][1] / 1100), pts[i][1]); g.closePath(); };
   g.fillStyle = tm === 'sunrise' ? '#5E7A58' : '#5A4E3A'; bankPath(14); g.fill();
-  g.fillStyle = tm === 'sunrise' ? '#BFD8EA' : '#8E7EB8';
+  g.fillStyle = tm === 'sunrise' ? '#BFD8EA' : tm === 'gold' ? '#6A6AA2' : '#4E4A86';
   bankPath(0); g.fill();
   // 水面的反光（天空的颜色）+ 波光
   g.save(); g.clip();
-  g.fillStyle = vgrad(g, 560, H, [[0, rgba('#FFF0D0', .95)], [.35, rgba(tm === 'sunrise' ? '#CFE2F0' : '#F6B0A0', .55)], [1, rgba(tm === 'sunrise' ? '#7A9CC8' : '#5A5296', .5)]]); g.fillRect(-200, 540, W + 400, H);
+  g.fillStyle = vgrad(g, 560, H, tm === 'sunrise' ? [[0, rgba('#FFF0D0', .95)], [.35, rgba('#CFE2F0', .55)], [1, rgba('#7A9CC8', .5)]] : [[0, rgba('#FFF0D0', .95)], [.22, rgba('#F6B0A0', .6)], [.5, rgba('#B07AA0', .15)], [1, rgba('#3A3670', 0)]]); g.fillRect(-200, 540, W + 400, H);
   // 水里太阳的倒影：沿着溪往近处的一串碎金
   for (let i = 0; i < 70; i++) {
     const t = hash(i, 41) * .85, [x, y, w] = streamCurve(t), a = Math.max(0, Math.sin(s * (3 + hash(i, 42) * 4) + i * 1.3));
@@ -185,6 +185,16 @@ function streamLand(g, s, o = {}) {
   }
 }
 
+/* 一群鸟：x, y 领头的位置，n 只，dir 飞的方向 */
+function birds(g, s, x, y, n = 7, dir = 1, col = '#3A3448', sc = 1) {
+  g.strokeStyle = col; g.lineWidth = 3 * sc; g.lineCap = 'round';
+  for (let i = 0; i < n; i++) {
+    const bx = x - dir * (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 34 * sc - dir * Math.ceil(i / 2) * 20 * sc, by = y + Math.ceil(i / 2) * 22 * sc + Math.sin(s * 3 + i) * 5;
+    const fl = Math.sin(s * 10 + i * 2) * 9 * sc;
+    g.beginPath(); g.moveTo(bx - 13 * sc, by - fl); g.quadraticCurveTo(bx - 5 * sc, by - 6 * sc, bx, by); g.quadraticCurveTo(bx + 5 * sc, by - 6 * sc, bx + 13 * sc, by - fl); g.stroke();
+  }
+}
+
 /* ---------------- 山坡草地（放风筝） ---------------- */
 function meadow(g, s, o = {}) {
   const tilt = o.tilt || 0;   // 镜头往上摇（0..1）
@@ -217,7 +227,7 @@ function park(g, s, yr) {
   g.fillStyle = vgrad(g, 760, H, [[0, ground], [1, shade(ground, .85)]]); g.fillRect(-100, 760, W + 200, H);
   g.fillStyle = shade(ground, .9); g.fillRect(-100, 900, W + 200, 40);   // 小路
   // 树：叶子的颜色和多少跟着季节变
-  const leaf = ramp([[0, '#F7A9C0'], [.12, '#F7B6C8'], [.22, '#8CC070'], [.45, '#6EA058'], [.55, '#E0A048'], [.68, '#C66A3A'], [.76, '#9E8A7A'], [1, '#F7A9C0']], season);
+  const leaf = ramp([[0, '#F7A9C0'], [.12, '#F7B6C8'], [.17, '#D8E8B0'], [.22, '#8CC070'], [.45, '#6EA058'], [.55, '#E0A048'], [.68, '#C66A3A'], [.76, '#9E8A7A'], [1, '#F7A9C0']], season);
   const amount = season < .62 ? 1 : season < .78 ? 1 - (season - .62) / .16 : season < .92 ? 0 : (season - .92) / .08;
   for (const [tx, sc] of [[520, 1.2], [1500, 1.05]]) {
     g.fillStyle = '#5A4436'; poly(g, [[tx - 26 * sc, 790], [tx - 12 * sc, 420], [tx + 12 * sc, 420], [tx + 26 * sc, 790]]); g.fill();

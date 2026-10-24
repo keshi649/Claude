@@ -172,9 +172,10 @@ SCENES_DEF.push(() => {
 
   // C1j：两个人沿着溪往日出走（"细水长流"），一直到间奏
   scene('C1j', Lc(15, 7) - .3, (g, s, k) => {
-    camera(g, 960 - k * 10, 540 - k * 6, 1.04 + k * .012, () => {
-      streamLand(g, s, { time: 'sunrise', sunX: 1000, sunY: 540, rock: false });
-      const t = .78 - k * .05;
+    camera(g, 960 - k * 14, 540 - k * 10, 1.04 + k * .035, () => {
+      streamLand(g, s, { time: 'sunrise', sunX: 1000, sunY: 560 - k * 26, rock: false });
+      birds(g, s, -300 + k * 260, 300 - k * 20, 7, 1);
+      const t = .8 - k * .085;
       const [cx, cy, cw] = streamCurve(t);
       const px = cx + cw / 2 + 60, py = cy;
       const Ps = { who: 'she', u: 26 - k * 1.2, x: px, y: py, view: 'back', out: OUTFIT.sheTravel, pose: { aF1: 22, aF2: 0, bob: Math.abs(Math.sin(s * 3.5)) * .06 }, light: LT.gold, t: s };

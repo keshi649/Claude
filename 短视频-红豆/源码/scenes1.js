@@ -253,11 +253,13 @@ SCENES_DEF.push(() => {
       bust(g, 1170 - lean * 120, 450 + lean * 70, 165, { who: 'she', out: OUTFIT.sheWinter, light: LT.snow, t: s, eyes: lean > .4 ? 'closed' : 'happy', mouth: 'smile', tilt: -.08 - lean * .22, blush: 1 });
       // 他捧着她的手，凑到嘴边呵气
       const hy = lerp(860, 780, E.io(seg(s, CUT(3), CUT(3) + 1))), hx = 905 - lean * 30;
-      // 她的两只手合在一起（指尖朝上），他的两只大手从两边捧住
-      mitt(g, hx + 30, hy + 120, 1.05, -Math.PI / 2 - .12, { sleeve: OUTFIT.sheWinter.top, skin: SKIN.she, flip: true });
-      mitt(g, hx + 62, hy + 120, 1.05, -Math.PI / 2 + .12, { sleeve: OUTFIT.sheWinter.top, skin: SKIN.she });
-      mitt(g, hx - 70, hy + 150, 1.25, -.75, { sleeve: OUTFIT.heWinter.top, skin: SKIN.he, flip: true, palm: true });
-      mitt(g, hx + 165, hy + 160, 1.25, Math.PI + .78, { sleeve: OUTFIT.heWinter.top, skin: SKIN.he, palm: true });
+      // 她两只手捧着一杯热茶，他把一只大手盖在她手上（给她暖手）
+      const mx = hx + 60, my = hy + 150;
+      mitt(g, mx - 150, my - 40, 1.0, -.25, { fist: true, sleeve: OUTFIT.sheWinter.top, skin: SKIN.she });
+      mug(g, mx, my, 1.7, '#F2EBE0', s, 1.2);
+      mitt(g, mx + 150, my - 40, 1.0, Math.PI + .25, { fist: true, sleeve: OUTFIT.sheWinter.top, skin: SKIN.she, flip: true });
+      const cover = E.out(seg(s, CUT(3) + .4, CUT(3) + 1.2));
+      mitt(g, lerp(mx - 420, mx - 210, cover), my - 100 + (1 - cover) * 60, 1.15, .25, { sleeve: OUTFIT.heWinter.top, skin: SKIN.he, flip: true });
       puff(g, 800, 600, s, Lt(3) + .2, 1, 1.1); puff(g, 800, 600, s, Lt(3) + 1.6, 1, 1.1);
     });
     bloomSnow(g, s, 43, 40, [-40, -60, W + 40, H + 40], { r: 12, vy: 50, a: .7 });

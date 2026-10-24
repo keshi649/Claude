@@ -100,10 +100,10 @@ SCENES_DEF.push(() => {
     const sx = lerp(560, 1060, E.out(seg(k, 0, 1.4))), sy = lerp(640, 520, E.out(seg(k, 0, 1.4)));
     if (open < .05) slipRoll(g, sx, sy, 160, lerp(1.2, .1, seg(k, 0, 1.2)));
     else slip(g, sx, sy, lerp(200, 900, open), '陪你看细水长流', seg(s, Lc(36, 4), Lc(36, 5) + .9), { rot: lerp(.3, -.02, open) });
-    // 两只老手捏着纸条的两头
-    const w = lerp(200, 900, open);
-    mitt(g, sx - w / 2 - 70, sy + 120, 1.5, -.9, { sleeve: OUTFIT.heOld.top, skin: '#E2BC9C', palm: true });
-    mitt(g, sx + w / 2 + 70, sy + 120, 1.5, Math.PI + .9, { sleeve: OUTFIT.heOld.top, skin: '#E2BC9C', palm: true, flip: true });
+    // 两只老手捏着纸条的两头（没展开时捏着纸卷）
+    const w = open < .05 ? 160 : lerp(200, 900, open);
+    mitt(g, sx - w / 2 - 70, sy + 34, 1.15, -.2, { fist: true, sleeve: OUTFIT.heOld.top, skin: '#E2BC9C' });
+    mitt(g, sx + w / 2 + 70, sy + 34, 1.15, Math.PI + .2, { fist: true, sleeve: OUTFIT.heOld.top, skin: '#E2BC9C', flip: true });
   }, { tr: { type: 'fade', dur: .4 }, bloom: .3 });
 
   // C3f：两只老了的手，再拉一次钩——小指上还系着那根红线
@@ -138,7 +138,8 @@ SCENES_DEF.push(() => {
   scene('C3h', CUT(39), (g, s, k) => {
     const pause = seg(s, 207.3, 209.2), up = E.io(seg(s, Lc(39, 9), Lc(39, 10) + 1.2));
     camera(g, 1180 - k * 14, 640 - k * 6 - up * 160, 1.6 - k * .04 - up * .2, () => {
-      streamLand(g, s, { time: 'sunset', sunX: 700, sunY: 560, tree: false });
+      streamLand(g, s, { time: 'sunset', sunX: 700, sunY: 540 + k * 8, tree: false });
+      birds(g, s, 1900 - k * 170, 240 + k * 8, 9, -1, '#4A3A50');
       redBeanTree(g, s, 1640, 760, .9, .45, .1, { pods: true });
       const rx = STREAM.rockX, ry = STREAM.rockY;
       const lean = E.io(seg(s, Lc(39, 3), Lc(39, 6)));
@@ -176,12 +177,12 @@ SCENES_DEF.push(() => {
 
   // O2：窗台上的罐子，窗外又下雪了；罐子旁边一张新写的纸条——"明年还一起看雪"，一只老手把它卷起来放进罐子
   scene('O2', 216.6, (g, s, k) => {
-    camera(g, 520, 600, 1.9, () => {
+    camera(g, 540, 560, 2.5, () => {
       room(g, s, { mood: 'night', lampX: 1200, outside: (gg, x, y, w, h) => nightSnowOutside(gg, x, y, w, h, s, { bloom: .7 }), frost: .25 });
       const sy = ROOM.winY + ROOM.winH + 14;
       jar(g, 400, sy, .62, { fill: .3, slips: 9, seed: 17, seed2: 5 });
       const pick = seg(k, 2.8, 4.2);
-      if (pick < .4) slip(g, 600, sy - 30 - pick * 60, 200, '明年还一起看雪', clamp(k / 1.8), { rot: -.05 });
+      if (pick < .4) slip(g, 610, sy - 40 - pick * 60, 250, '明年还一起看雪', clamp(k / 1.8), { rot: -.04 });
       else slipRoll(g, lerp(600, 410, (pick - .4) / .6), lerp(sy - 60, sy - 150, Math.sin(Math.PI * (pick - .4) / .6 * .5)), 50, 1.4);
       if (k > 2.4) mitt(g, lerp(820, 520, E.io(seg(k, 2.4, 3.6))) + (pick > .4 ? lerp(0, -190, (pick - .4) / .6) : 0), sy - 10 - pick * 80, .42, Math.PI + .3, { fist: true, sleeve: OUTFIT.sheOld.top, skin: '#EBCBB4', flip: true });
     });
