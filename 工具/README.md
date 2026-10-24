@@ -13,6 +13,7 @@
 | `cut_diff.py` | 柔和转场（淡入、虚化、甩镜头）measure.sh 数不到：按分镜给出换镜头的时刻，比转场前后两帧的差和同一镜头里的差 | `python3 工具/cut_diff.py 成片.mp4 3.51,6.71,…` |
 | `review.sh` | 每秒 1 帧拼成图，通看一遍 | `bash 工具/review.sh 成片.mp4 输出目录` |
 | `safe_check.sh` | 抽几帧叠上平台遮挡区，看关键的字有没有被挡 | `bash 工具/safe_check.sh 成片.mp4 输出目录 时刻…` |
+| `edge_check.py` | 查画面四边有没有露出黑边（像素缓冲没盖满画面），每秒抽两帧，按时刻打印哪一边；底下那条常被歌词挡住，单帧预览看不出来 | `python3 工具/edge_check.py 成片.mp4` |
 | `sheet.py` | 把几张帧拼成一张图 | `python3 工具/sheet.py 输出.jpg 每行几张 缩放 帧…` |
 | `safe_overlay.py` | 给帧叠上遮挡区（`safe_check.sh` 会调用） | `python3 工具/safe_overlay.py 帧…` |
 | `asr_full.py` | 整条转写成片 | `/home/user/tts/venv/bin/python 工具/asr_full.py 成片.mp4` |
