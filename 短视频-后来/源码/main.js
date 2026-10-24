@@ -191,6 +191,16 @@ function dateStamp(g, t, a, s) {
 }
 function watermark(g) { text(g, '甜菜', W - 40, 52, 30, 'rgba(255,255,255,.62)', { align: 'right', weight: 600, shadow: 'rgba(0,0,0,.5)', blur: 8 }); }
 
+/* 封面：大字片名放在画面中间偏上（抖音主页的格子按中间裁成 3:4，也看得全） */
+function coverTitle(g) {
+  g.fillStyle = lg(g, 0, 0, 0, 950, [[0, 'rgba(3,5,26,.5)'], [.4, 'rgba(3,5,26,.4)'], [1, 'rgba(3,5,26,0)']]); g.fillRect(0, 0, W, 950);
+  const q = layer('coverT', 900, 460);
+  q.font = `360px ${FONT.brush}`; q.textAlign = 'center'; q.textBaseline = 'middle';
+  q.shadowColor = 'rgba(255,214,160,.95)'; q.shadowBlur = 40; q.fillStyle = '#FFFBF2'; q.fillText('后来', 450, 240);
+  g.drawImage(LAYER.coverT, 540 - 450, 520 - 230);
+  text(g, '刘 若 英', 540, 790, 56, '#F4EEE2', { weight: 600, ls: 10, shadow: 'rgba(0,0,0,.7)', blur: 14 });
+}
+
 /* ---------------- 一帧 ---------------- */
 function shotAt(t) { let k = 0; while (k + 1 < SHOTS.length && SHOTS[k + 1].t <= t) k++; return k; }
 function drawShot(s, t) { const g = layer('shot' + (s.i % 2)); s.fn(g, t, s); return LAYER['shot' + (s.i % 2)]; }
@@ -229,6 +239,7 @@ window.frame = function (t) {
   // 开头几秒：小字告诉刷到的人这是哪首歌
   const tag = env(t, .15, .7, 2.9, 3.3);
   if (tag > 0 && !window.COVER) text(g, '刘若英 ·《后来》', 490, 300, 42, '#F6F0E4', { alpha: tag, weight: 500, ls: 6, shadow: 'rgba(0,0,0,.7)', blur: 14 });
+  if (window.COVER) coverTitle(g);
   watermark(g);
   endCredits(g, t);
 };
