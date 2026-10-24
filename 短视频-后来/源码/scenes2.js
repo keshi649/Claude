@@ -269,6 +269,14 @@ function shWindowRain(g, t, s) {
   g.fillRect(0, 0, W, 100); g.fillRect(0, H - 130, W, 130); g.fillRect(0, 0, 60, H); g.fillRect(W - 60, 0, 60, H); g.fillRect(300, 0, 30, H); g.fillRect(0, 760, 330, 26);
   g.restore();
   rain(g, t, { n: 80, len: 90, lw: 2, col: 'rgba(200,220,255,.2)', seed: 51 });
+  // 楼下开过一辆车，车灯的光从屋里扫过去
+  const sw = seg(lt, 2.0, 3.4);
+  if (sw > 0 && sw < 1) {
+    const x = lerp(-500, W + 500, E.io(sw)), a = Math.sin(sw * PI) * .32;
+    g.save(); g.globalCompositeOperation = 'screen';
+    g.fillStyle = lg(g, x - 260, 0, x + 260, 0, [[0, 'rgba(255,240,210,0)'], [.5, `rgba(255,240,210,${a})`], [1, 'rgba(255,240,210,0)']]);
+    poly(g, [[x - 160, 0], [x + 160, 0], [x + 360, H], [x - 360, H]]); g.fill(); g.restore();
+  }
 }
 
 /* ---------------- S11 旧书里的干栀子花 ---------------- */

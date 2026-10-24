@@ -55,21 +55,36 @@ function shRelease(g, t, s) {
 /* ---------------- S60 飞过清晨的城市 ---------------- */
 function shOverCity(g, t, s) {
   const lt = t - s.t;
-  // 俯瞰：街道、屋顶、底下一点点的人
-  g.fillStyle = '#6A6070'; g.fillRect(0, 0, W, H);
-  const off = lt * 160;
-  for (let i = -1; i < 7; i++) for (let j = -1; j < 10; j++) {
-    const x = i * 220 - mod(off * .3, 220), y = j * 240 - mod(off, 240);
-    g.fillStyle = ['#C89A8A', '#A88A9A', '#D8B8A0', '#9A8AA8'][mod(i * 3 + j + Math.floor(off / 240), 4)]; g.fillRect(x + 20, y + 20, 160, 180);
-    g.fillStyle = 'rgba(255,220,180,.25)'; g.fillRect(x + 20, y + 20, 160, 30);
+  // 俯瞰清晨的城市：街道、屋顶（水箱、空调外机）、行道树、车，人行道上密密的小人——"人海"
+  const BW = 300, BH = 360, off = lt * 140;
+  g.fillStyle = '#5E5A66'; g.fillRect(0, 0, W, H);
+  const r = R(351);
+  for (let i = -1; i < 6; i++) for (let j = -1; j < 8; j++) {
+    const x = i * BW - mod(off * .25, BW), y = j * BH - mod(off, BH), id = i * 31 + j + Math.floor(off / BH) * 7;
+    // 人行道
+    g.fillStyle = '#A89A98'; g.fillRect(x + 30, y + 30, BW - 60, BH - 60);
+    // 屋顶
+    const rc = ['#C89A8A', '#B8A0B0', '#D8B8A0', '#A8A0B8', '#C8B0A0'][mod(id, 5)];
+    g.fillStyle = rc; g.fillRect(x + 50, y + 50, BW - 100, BH - 100);
+    g.fillStyle = 'rgba(40,20,40,.35)'; g.fillRect(x + 50, y + BH - 70, BW - 100, 20); g.fillRect(x + BW - 70, y + 50, 20, BH - 100);   // 朝阳拉出的影子
+    g.fillStyle = shade(rc, 1.15); g.fillRect(x + 70 + hash(id, 1) * 60, y + 80 + hash(id, 2) * 80, 50, 40);                          // 水箱
+    for (let k = 0; k < 3; k++) { g.fillStyle = '#D8D4D0'; g.fillRect(x + 80 + k * 40, y + BH - 120, 26, 18); }                        // 空调外机
+    // 行道树
+    for (let k = 0; k < 3; k++) { circ(g, x + 40 + k * 110, y + 24, 22, '#4A7A4A'); circ(g, x + 34 + k * 110, y + 18, 10, '#6A9A5A'); }
   }
-  // 街上的人（小点）
-  for (let i = 0; i < 200; i++) { const x = mod(hash(i, 1) * 1600 + Math.sin(i) * t * 20, 1300) - 100, y = mod(hash(i, 2) * 2400 - off, 2200) - 100; circ(g, mod(Math.round(x / 220) * 220 + 10 - mod(off * .3, 220), W + 220), y, 5, ['#2A2A30', '#E8E0D0', '#8A3A3A'][i % 3]); }
-  tint(g, '#FFB080', .3, 'soft-light');
+  // 车
+  for (let k = 0; k < 10; k++) { const lane = k % 3, x = mod(hash(k, 3) * 1800 + t * (180 + k * 20), 1500) - 200, y = mod(hash(k, 4) * 3000 - off, 2600) - 300; const yy = Math.round((y + mod(off, BH)) / BH) * BH - mod(off, BH) + 4 + lane * 8; g.fillStyle = ['#E8E4DC', '#C04A3A', '#3A4A6A'][k % 3]; g.fillRect(x, yy, 46, 20); }
+  // 人行道上的人（小点），密密地流
+  for (let k = 0; k < 420; k++) {
+    const col = Math.floor(hash(k, 1) * 6) - 1, bx = col * BW - mod(off * .25, BW) + 30 + hash(k, 2) * (BW - 60);
+    const y = mod(hash(k, 3) * 2600 + Math.sin(k) * t * 25 - off, 2600) - 300;
+    circ(g, bx, y, 4.5, ['#2A2A30', '#E8E0D0', '#8A3A3A', '#3A4A6A'][k % 4]);
+  }
+  tint(g, '#FFB080', .32, 'soft-light');
   // 干花从上往下斜着飞过，越来越近
-  const k = lt / 3.2, fx = lerp(200, 760, k), fy = lerp(500, 1100, k), r = lerp(70, 220, k);
+  const k = lt / 3.2, fx = lerp(200, 760, k), fy = lerp(500, 1100, k), rr = lerp(70, 220, k);
   g.save(); g.shadowColor = 'rgba(0,0,0,.35)'; g.shadowBlur = 30; g.shadowOffsetY = 60;
-  gardenia(g, fx, fy, r, lt * 2, { aged: .9 - k * .3, tilt: .9 }); g.restore();
+  gardenia(g, fx, fy, rr, lt * 2, { aged: .9 - k * .3, tilt: .9 }); g.restore();
 }
 /* ---------------- S61 穿过金色的云 ---------------- */
 function shThroughClouds(g, t, s) {
@@ -177,6 +192,24 @@ function shRiseStars(g, t, s) {
   g.restore();
   // 萤火虫一路往上飘，变成星星
   fireflies(g, t, { n: 50, rise: 160, y0: 600, y1: 2400, size: 24, seed: 333 });
+  // 升到顶以后，星星一颗颗连起来，连成一朵栀子花
+  const cst = seg(lt, 4.2, 8.6);
+  if (cst > 0) {
+    const cx = 540, cy = 820, pts = [];
+    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU - PI / 2; pts.push([[cx + Math.cos(a) * 90, cy + Math.sin(a) * 90], [cx + Math.cos(a + .32) * 290, cy + Math.sin(a + .32) * 290], [cx + Math.cos(a) * 330, cy + Math.sin(a) * 330], [cx + Math.cos(a - .32) * 250, cy + Math.sin(a - .32) * 250]]); }
+    g.save(); g.globalCompositeOperation = 'screen'; g.lineCap = 'round';
+    pts.forEach((pp, i) => {
+      const k = clamp(cst * 7 - i);
+      if (k <= 0) return;
+      g.strokeStyle = `rgba(210,225,255,${.55 * k})`; g.lineWidth = 2.5;
+      g.beginPath(); g.moveTo(pp[0][0], pp[0][1]);
+      for (let j = 1; j < pp.length * k; j++) g.lineTo(pp[j][0], pp[j][1]);
+      g.lineTo(lerp(pp[0][0], pp[0][0], 1), pp[0][1] * (k >= 1 ? 1 : 1)); if (k >= 1) g.stroke(); else g.stroke();
+      for (const [x, y] of pp) { glow(g, x, y, 26, '#E8F0FF', .8 * k); circ(g, x, y, 3.5, `rgba(255,255,255,${k})`); }
+    });
+    glow(g, cx, cy, 120, '#FFF4D8', .5 * cst);
+    g.restore();
+  }
   const m = seg(lt, 6.8, 7.6);
   if (m > 0 && m < 1) { const x = lerp(950, 250, m), y = lerp(250, 700, m); g.save(); g.globalCompositeOperation = 'screen'; g.strokeStyle = lg(g, x, y, x + 320, y - 200, [[0, 'rgba(255,255,255,.95)'], [1, 'rgba(255,255,255,0)']]); g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(x, y); g.lineTo(x + 320, y - 200); g.stroke(); g.restore(); }
 }

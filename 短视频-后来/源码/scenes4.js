@@ -151,13 +151,12 @@ function shPuddle(g, t, s) {
   }
   const picked = E.io(seg(lt, 3.8, 5.0));
   if (picked < 1 || lt < 3.8) gardenia(g, px + Math.sin(lt * .7) * 8 * (fall >= 1 ? 1 : 0), fall >= 1 ? py - picked * 700 : fy, 120, rot, { tilt: .55, aged: .1 });
-  // 他的鞋走进来（3.0 秒），手伸下来把花捡起
+  // 他的影子先落进来（3.0 秒），手伸下来把花捡起
   const step = E.out(seg(lt, 2.6, 3.4));
-  g.fillStyle = '#E8E6E2'; g.beginPath(); g.ellipse(lerp(1300, 760, step), 900, 140, 70, 0, 0, TAU); g.fill();
-  g.fillStyle = '#27324F'; g.fillRect(lerp(1300, 760, step) - 60, -10, 140, 900);
+  g.fillStyle = `rgba(10,12,20,${.35 * step})`; g.beginPath(); g.ellipse(px + 200, py - 380, 520, 260, -.3, 0, TAU); g.fill();
   if (lt > 3.4) {
-    const hd = E.io(seg(lt, 3.4, 3.9)) - picked * 0;
-    hand(g, px + 40, lerp(-200, py - 120, hd) - picked * 700, 1.4, PI / 2 + .3, 'open', '#F4F3EF');
+    const hd = E.io(seg(lt, 3.4, 3.9));
+    hand(g, px + 40, lerp(-200, py - 120, hd) - picked * 700, 1.4, PI / 2 + .3, 'open', SKIN);
   }
   rain(g, t, { n: 200, len: 90, lw: 2, col: 'rgba(220,230,245,.4)', seed: 93 });
 }
@@ -267,7 +266,7 @@ function shPlatformWait(g, t, s) {
   fig(g, { x: 250, y: 2250, h: 1800, who: 'girl', view: 'side', dir: 1, light: L, eyes: 'down', pose: { lean: .02, head: .12, arms: [{ sh: .2, el: .3 }, { sh: .2, el: .3 }] } });
   g.fillStyle = '#2A2028'; g.fillRect(0, 0, 330, H);
   g.fillStyle = 'rgba(255,200,140,.28)'; g.fillRect(300, 0, 30, H);
-  hand(g, 300, 1060, 1.1, -.15, 'open', '#F6F3EC');
+  for (let i = 0; i < 4; i++) capsule(g, 318, 1010 + i * 34, 15, 352, 1004 + i * 34, 13, i % 2 ? SKIN : shade(SKIN, .95));   // 扶着柱子边的四个指尖
 }
 function shTrainLeave(g, t, s) {
   const lt = t - s.t;
@@ -316,7 +315,7 @@ function shPhotos(g, t, s) {
   g.fillStyle = '#E8DCC0'; g.save(); g.translate(300, 1500); g.rotate(-.2); g.fillRect(-140, -60, 280, 120); g.fillStyle = '#C04A3A'; g.fillRect(-140, -60, 280, 26); g.restore();
   g.fillStyle = '#222'; g.save(); g.translate(720, 1580); g.rotate(.15); g.fillRect(-160, -100, 320, 200); g.fillStyle = '#E8E0D0'; g.fillRect(-140, -80, 280, 90); circ(g, -60, 50, 26, '#555'); circ(g, 60, 50, 26, '#555'); g.restore();
   // 先拿起"笑着的他"，再换成"不说话的他"
-  const k1 = E.out(seg(t, ch(27, 1), ch(27, 2) + .2)), k2 = E.out(seg(t, ch(27, 4) - .2, ch(27, 6)));
+  const k1 = E.out(seg(t, ch(26, 0) + .3, ch(26, 4))), k2 = E.out(seg(t, ch(27, 4) - .2, ch(27, 6)));
   const p1x = lerp(380, 540, k1) - k2 * 700, p1y = lerp(1450, 760, k1);
   polaroid(g, p1x, p1y, lerp(300, 600, k1), lerp(-.25, -.04, k1), boyPhoto(1), { age: .6, under: k1 > .5 ? handBehind : null, over: k1 > .5 ? handFront : null });
   if (k2 > 0) polaroid(g, lerp(1300, 560, k2), lerp(800, 760, k2), 600, lerp(.3, .05, k2), boyPhoto(0), { age: .6, under: handBehind, over: handFront });

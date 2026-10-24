@@ -181,7 +181,7 @@ function shStandStill(g, t, s) {
   for (let i = 0; i < 26; i++) {
     const dir = i % 2 ? 1 : -1, sp = 1400 + hash(i, 2) * 900, x = mod(hash(i, 1) * 3000 + dir * t * sp, 3000) - 900, depth = hash(i, 3);
     const h = 700 + depth * 700, y = 1500 + depth * 380;
-    q.globalAlpha = .3;
+    q.globalAlpha = .6;
     for (let k = 0; k < 4; k++) tiny(q, x - dir * k * 50, y, h, ['#2A2E38', '#4A3A40', '#3A4450', '#2A2A30'][i % 4], { coat: 1 });
   }
   g.save(); g.filter = 'blur(3px)'; g.globalAlpha = .95; g.drawImage(LAYER.crowdBlur, 0, 0); g.restore();

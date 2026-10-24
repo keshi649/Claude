@@ -194,13 +194,18 @@ function shSmell(g, t, s) {
   bokeh(g, t, { n: 30, seed: 41, size: 150, a: .4, cols: ['#FFF4C8', '#D8F0B0', '#FFFFFF', '#FFE0A0'] });
   sunRays(g, t, 900, 100, .7);
   const down = E.io(seg(t, ch(10, 1) - .2, ch(10, 3) + .2));
-  const F = { x: 380, y: 3300, h: 2900, who: 'girl', view: 'side', dir: 1, pose: { lean: .05 + down * .12, head: .05 + down * .42, legs: [{ th: 0, kn: 0 }, { th: 0, kn: 0 }], arms: [{ sh: .2, el: 2.6 - down * .3 }, { sh: 0, el: 0 }] }, light: SUM_L, eyes: down > .4 ? 'closed' : 'open', blush: .3 + down * .4 };
+  const F = { x: 380, y: 3300, h: 2900, who: 'girl', view: 'side', dir: 1, pose: { lean: .05 + down * .12, head: .05 + down * .42, legs: [{ th: 0, kn: 0 }, { th: 0, kn: 0 }], arms: [{ sh: .05, el: .1 }, { sh: 0, el: .1 }] }, light: SUM_L, eyes: down > .4 ? 'closed' : 'open', blush: .3 + down * .4 };
   fig(g, F);
-  // 他的手从右边递过来一朵栀子（0~1 秒），她接住，捧到鼻子前
-  const give = E.io(seg(lt, 0, 1.0)), take = seg(lt, 1.0, 1.6);
-  const fx = take < 1 ? lerp(1100, 840, give) : lerp(840, 740, E.io(seg(t, ch(10, 1) - .2, ch(10, 3) + .2))), fy = lerp(1050, 1000, give) + down * 40;
-  if (take < 1) hand(g, fx + 80, fy + 70, 1.3, PI + .25, 'open', '#F4F3EF');
-  else hand(g, fx - 120, fy + 140, 1.3, -.55, 'open', '#F6F3EC');
+  // 鼻尖在哪（侧脸朝右，头往下低了 a）
+  const a = F.pose.lean + F.pose.head, u = F.u, nose = [F.headP[0] + (.55 * Math.cos(a) - .2 * Math.sin(a)) * u, F.headP[1] + (.55 * Math.sin(a) + .2 * Math.cos(a)) * u];
+  // 他的手从右边递过来一朵栀子（0~1 秒），她接过来（只露一只手），捧到鼻子底下
+  const give = E.io(seg(lt, 0, 1.0)), take = seg(lt, 1.0, 1.6), lift = E.io(seg(t, ch(10, 1) - .4, ch(10, 3) + .2));
+  let fx, fy;
+  if (take < 1) { fx = lerp(1150, 860, give); fy = lerp(1150, 1100, give); hand(g, fx + 90, fy + 60, 1.3, PI + .25, 'open', SKIN); }
+  else {
+    fx = lerp(860, nose[0] + .3 * u, lift); fy = lerp(1100, nose[1] + .45 * u, lift);
+    hand(g, fx - 30, fy + 210, 1.3, -PI / 2 + .3, 'open', SKIN);
+  }
   gardenia(g, fx, fy, 95, t * .1, { tilt: .9 });
   leaf(g, fx + 30, fy + 70, 120, .7);
   // 香气：一缕缕金色的烟往上飘

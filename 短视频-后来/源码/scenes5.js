@@ -177,13 +177,15 @@ function oldCampusNight(g, t, o = {}) {
   return { sx, sy };
 }
 function shCampusGone(g, t, s) {
-  const lt = t - s.t;
+  const lt = t - s.t, z = 1 + lt * .018;
+  g.save(); g.translate(W * .45, H * .8); g.scale(z, z); g.translate(-W * .45, -H * .8);
   // 开头：泪滴砸在地上的水花
   oldCampusNight(g, t);
   const k = seg(lt, 0, .8);
   if (k < 1) { g.strokeStyle = `rgba(220,235,255,${(1 - k) * .8})`; g.lineWidth = 5; for (let i = 0; i < 3; i++) { g.beginPath(); g.ellipse(540, 1760, 30 + k * 500 + i * 60, (30 + k * 500 + i * 60) * .25, 0, 0, TAU); g.stroke(); } }
-  fig(g, { x: 300, y: 1800, h: 1000, who: 'woman', view: 'back', light: { x: .6, y: -.8, rim: '#FFE6C0', rimA: .6, sh: .45, col: '#0A0A18' }, wind: .2 + .1 * Math.sin(t), pose: { tilt: .05 } });
-  autumnLeaves(g, t, { n: 10, seed: 183, size: 22 });
+  fig(g, { x: 300, y: 1800, h: 1000, who: 'woman', view: 'back', light: { x: .6, y: -.8, rim: '#FFE6C0', rimA: .6, sh: .45, col: '#0A0A18' }, wind: .2 + .25 * Math.sin(t * 1.3), pose: { tilt: .05 } });
+  g.restore();
+  autumnLeaves(g, t, { n: 16, seed: 183, size: 22 });
 }
 
 /* ---------------- 间奏 S44 树桩发光，栀子长出来 ---------------- */
@@ -231,6 +233,15 @@ function shGhosts(g, t, s) {
   const u = 720 / 7.3;
   fig(q, { x: bike.seat[0] + .1 * u, y: bike.seat[1] + 3.72 * u, h: 720, who: 'boy', view: 'side', dir: 1, light: SUM_L, pose: { lean: .32, head: -.2, legs: [{ th: 1.1, kn: 1.2 }, { th: .9, kn: 1.0 }], arms: [{ sh: 1.05, el: .2 }, { sh: 1.0, el: .25 }] } });
   fig(q, { x: bike.rack[0] - 10, y: bike.rack[1] + 2.82 * 96, h: 700, who: 'girl', view: 'front', light: SUM_L, eyes: 'closed', smile: 1, blush: .5, pose: { sitF: 1, hip: 1.0, legs: [{ sw: .2 }, { sw: -.1 }], arms: [{ sh: .9, el: .3 }, { sh: .9, el: .9 }] }, swing: .3 });
+  // 骑过去以后，两个人又出现在长椅上（半透明），他在说什么，她笑得歪过去
+  const sitIn = seg(lt, 4.4, 5.2);
+  if (sitIn > 0) {
+    const q2 = layer('ghostBench'), ub = 640 / 7.3;
+    fig(q2, { x: 250, y: 1640, h: 640, who: 'boy', view: 'side', dir: 1, light: SUM_L, pose: Object.assign(POSE.sit(1.86), { lean: .05, head: -.05, arms: [{ sh: .8 + Math.sin(t * 6) * .2, el: .6 }, { sh: .3, el: .4 }] }) });
+    fig(q2, { x: 420, y: 1640, h: 610, who: 'girl', view: 'side', dir: -1, light: SUM_L, eyes: 'closed', blush: .5, pose: Object.assign(POSE.sit(), { lean: .15 + Math.sin(t * 4) * .05, head: .1 }) });
+    g.save(); g.globalAlpha = .7 * sitIn; g.globalCompositeOperation = 'screen'; g.filter = 'blur(2px)'; g.drawImage(LAYER.ghostBench, 0, 0); g.restore();
+    g.save(); g.globalAlpha = .55 * sitIn; g.drawImage(LAYER.ghostBench, 0, 0); g.restore();
+  }
   // 现在的她站在一边看着，笑了
   fig(g, { x: 900, y: 1800, h: 1000, who: 'woman', view: 'side', dir: -1, light: { x: -.8, y: -.5, rim: '#FFF0C8', rimA: .8, sh: .35, col: '#1A1428' }, eyes: lt > 3 ? 'closed' : 'open', blush: .2, wind: .2 });
   g.save(); g.globalAlpha = .75; g.globalCompositeOperation = 'screen'; g.filter = 'blur(2px)'; g.drawImage(LAYER.ghostKids, 0, 0); g.restore();

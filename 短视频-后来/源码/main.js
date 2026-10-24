@@ -44,7 +44,7 @@ const SHOTS = [
   { t: 68.85, fn: shFireflies, look: 'memNight', stamp: 1, tr: 'fade', d: .4 },
   { t: 71.75, fn: shKiss, look: 'memNight', stamp: 1, tr: 'fade', d: .4 },
   { t: 77.60, fn: shBalconySky, look: 'night', tr: 'fade', d: .6 },
-  { t: 81.35, fn: shSighs, look: 'night', tr: 'fade', d: .3 },
+  { t: 81.35, fn: shSighs, look: 'night' },
   { t: 84.40, fn: shEyeStars, look: 'night', tr: 'fade', d: .4 },
   { t: 89.83, fn: shBicycle, look: 'summer', stamp: 1, tr: 'white', d: .5 },
   { t: 96.95, fn: shEarphones, look: 'summer', stamp: 1, tr: 'fade', d: .4 },
