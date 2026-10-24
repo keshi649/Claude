@@ -259,6 +259,9 @@ function overlays(g, s) {
   const ca = seg(s, CREDIT_AT, CREDIT_AT + 1.2);
   if (ca > 0) {
     withAlpha(g, E.out(ca), () => {
+      // 字底下垫一层淡淡的暗带（后面是雪里的树，小字会和雪团叠在一起）
+      g.fillStyle = rgrad(g, W / 2, 920, 20, 520, [[0, 'rgba(8,8,24,.55)'], [1, 'rgba(8,8,24,0)']]);
+      g.save(); g.translate(W / 2, 920); g.scale(1, .3); g.beginPath(); g.arc(0, 0, 520, 0, TAU); g.restore(); g.fill();
       text(g, '甜菜 出品', W / 2, 860, 46, { k: 'serifB', col: '#FFF6EE', shadow: 'rgba(0,0,0,.55)', sblur: 10, ls: 10 });
       text(g, '歌曲《红豆》 演唱：方大同　词：林夕　曲：柳重言', W / 2, 930, 26, { k: 'serif', col: 'rgba(255,246,238,.85)', shadow: 'rgba(0,0,0,.5)', sblur: 6, ls: 2 });
       text(g, '画面、动画：Claude 用代码生成', W / 2, 972, 24, { k: 'serif', col: 'rgba(255,246,238,.75)', shadow: 'rgba(0,0,0,.5)', sblur: 6, ls: 2 });

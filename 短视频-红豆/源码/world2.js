@@ -307,7 +307,7 @@ function redBeanTree(g, s, x, y, grow, season = .3, night = 0, o = {}) {
     const lx = tp[0] + Math.cos(a) * r * 1.2, ly = tp[1] + Math.sin(a) * r * .45, L = 10 + grow * 16, ang = hash(i, 59) * TAU;
     g.beginPath(); for (let j = -2; j <= 2; j++) { const px = lx + Math.cos(ang) * j * L * .3, py = ly + Math.sin(ang) * j * L * .3; g.moveTo(px, py); g.lineTo(px + Math.cos(ang + 1.2) * L * .25, py + Math.sin(ang + 1.2) * L * .25); g.moveTo(px, py); g.lineTo(px + Math.cos(ang - 1.2) * L * .25, py + Math.sin(ang - 1.2) * L * .25); } g.stroke();
   }
-  if (winter) { g.fillStyle = mixc('#F4F7FB', '#C8D2E8', night); for (const tp of tips) { ell(g, tp[0], tp[1] - 4, 26 * grow + 6, 9 * grow + 3); g.fill(); } ell(g, x, y - hgt * .62, trunkW * .8, 8); g.fill(); }
+  if (winter) { g.fillStyle = mixc('#F4F7FB', '#C8D2E8', night); for (const tp of tips) { ell(g, tp[0], tp[1] - 3, 12 * grow + 4, 4 * grow + 2, -.15); g.fill(); } ell(g, x, y - hgt * .62, trunkW * .8, 8); g.fill(); }
   // 红豆荚（夏末秋天）
   if (grow > .6 && (o.pods ?? (season > .4 && season < .8))) {
     for (let i = 0; i < 26; i++) {
