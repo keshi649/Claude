@@ -1,15 +1,7 @@
 'use strict';
-/* main.js：镜头表、转场、歌词、水印、片尾字、整体后期（柔光、调色、暗角、颗粒）、逐帧入口 frame(T)。
-   视频时间 T = 歌曲时间 s（开头 0.43 秒静音不剪：第一帧就有画面在动，前奏马上就起）。成片和歌一样长，不另加片尾卡。 */
+/* main.js：镜头表、像素风的转场、歌词、水印、片尾字、逐帧入口 frame(t)。
+   视频时间 = 歌曲时间（开头 0.43 秒静音不剪：第一帧就有画面在动）。成片和歌一样长，不另加片尾卡。 */
 const DURATION = SONG_DUR;
-
-/* 歌词时间：第 k 句（从 0 数）第一个字开口 / 第 i 个字 / 最后一个字唱完 */
-const Lt = k => LYRICS[k].chars[0][1];
-const Lc = (k, i) => LYRICS[k].chars[Math.min(i, LYRICS[k].chars.length - 1)][1];
-const Le = k => LYRICS[k].chars[LYRICS[k].chars.length - 1][2];
-/* 镜头一般在这句开口前 0.3 秒切进来 */
-const CUT = k => Lt(k) - .3;
-
 function buildScenes() {
   SCENES.length = 0;
   SCENES_DEF.forEach(f => f());
@@ -20,15 +12,15 @@ function buildScenes() {
 /* ---------------- 合成与转场 ---------------- */
 const bufA = mk(), bufB = mk(), gA = bufA.getContext('2d'), gB = bufB.getContext('2d');
 const bufT = mk(), gT = bufT.getContext('2d');
+const MASK = mk(160, 90), gMask = MASK.getContext('2d');       // 转场的遮罩：160×90 一格 = 屏幕上 12×12（像素风的方块）
 function drawScene(sc, g, s) {
   g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
-  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
-  g.fillStyle = '#0B0A12'; g.fillRect(0, 0, W, H);
+  g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none'; g.imageSmoothingEnabled = false;
+  g.fillStyle = '#07060E'; g.fillRect(0, 0, W, H);
   sc.draw(g, s, s - sc.a);
   g.restore();
 }
 function sceneAt(s) { for (let i = SCENES.length - 1; i >= 0; i--) if (s >= SCENES[i].a) return i; return 0; }
-
 function composite(g, s) {
   const i = sceneAt(s);
   for (const j of [i, i + 1]) {
@@ -40,270 +32,164 @@ function composite(g, s) {
   drawScene(SCENES[i], g, s);
   return SCENES[i];
 }
-
+/* 按遮罩把 B 盖到 A 上：fn(cx, cy) 返回这一格要不要换成 B（160×90 的格子） */
+function maskBlend(g, fn, skipA = false) {
+  gMask.clearRect(0, 0, 160, 90); gMask.fillStyle = '#fff';
+  for (let cy = 0; cy < 90; cy++) for (let cx = 0; cx < 160; cx++) if (fn(cx, cy)) gMask.fillRect(cx, cy, 1, 1);
+  gT.save(); gT.setTransform(1, 0, 0, 1, 0, 0); gT.globalCompositeOperation = 'copy'; gT.drawImage(bufB, 0, 0);
+  gT.globalCompositeOperation = 'destination-in'; gT.imageSmoothingEnabled = false; gT.drawImage(MASK, 0, 0, W, H); gT.restore();
+  if (!skipA) g.drawImage(bufA, 0, 0);
+  g.drawImage(bufT, 0, 0);
+}
 function transition(g, s, tr, u, A, B) {
   const type = tr.type;
   const both = () => { drawScene(A, gA, s); drawScene(B, gB, s); };
-  if (type === 'fade' || type === 'blur') {
-    both();
-    g.drawImage(bufA, 0, 0);
-    const e = E.sine(u);
-    if (type === 'blur') { const b = Math.sin(Math.PI * u) * 14; g.filter = `blur(${b.toFixed(1)}px)`; g.drawImage(bufA, 0, 0); g.globalAlpha = e; g.drawImage(bufB, 0, 0); g.filter = 'none'; g.globalAlpha = 1; return; }
-    g.globalAlpha = e; g.drawImage(bufB, 0, 0); g.globalAlpha = 1;
-    return;
-  }
+  g.imageSmoothingEnabled = false;
   if (type === 'flash' || type === 'black') {
     drawScene(u < .5 ? A : B, g, s);
-    const k = u < .5 ? E.in2(u * 2) : 1 - E.out2((u - .5) * 2);
-    g.fillStyle = type === 'flash' ? `rgba(255,246,238,${k})` : `rgba(6,5,12,${k})`; g.fillRect(0, 0, W, H);
-    if (type === 'flash') glow(g, W / 2, H / 2, 1400 * k, '#FFE4E8', k * .5);
+    const k = u < .5 ? E.in2(u * 2) : 1 - E.out2((u - .5) * 2), q = Math.round(k * 8) / 8;     // 亮度分 8 级跳（像素风）
+    g.fillStyle = type === 'flash' ? `rgba(255,246,236,${q})` : `rgba(6,5,12,${q})`; g.fillRect(0, 0, W, H);
     return;
   }
-  if (type === 'zoom') {            // 冲进去：A 放大、变糊，B 从放大处缩回来
-    both();
-    const cx = tr.cx ?? W / 2, cy = tr.cy ?? H / 2;
-    const za = 1 + E.in(Math.min(1, u * 1.6)) * (tr.zoom ?? 3), zb = 1 + (1 - E.out(clamp((u - .35) / .65))) * .5;
-    g.save(); g.translate(cx, cy); g.scale(za, za); g.translate(-cx, -cy);
-    if (u > .2) g.filter = `blur(${((u - .2) * 18).toFixed(1)}px)`;
-    g.drawImage(bufA, 0, 0); g.restore(); g.filter = 'none';
-    const ab = clamp((u - .3) / .4);
-    g.save(); g.globalAlpha = ab; g.translate(W / 2, H / 2); g.scale(zb, zb); g.translate(-W / 2, -H / 2);
-    if (u < .7) g.filter = `blur(${((.7 - u) * 16).toFixed(1)}px)`;
-    g.drawImage(bufB, 0, 0); g.restore(); g.filter = 'none';
-    const f = Math.sin(Math.PI * u); g.fillStyle = `rgba(255,250,250,${f * (tr.flash ?? .2)})`; g.fillRect(0, 0, W, H);
+  if (type === 'dither') {          // 抖动溶解：按 4×4 Bayer 阈值一格一格换成下一个镜头
+    both(); const th = u * 16;
+    maskBlend(g, (cx, cy) => BAYER[(cy & 3) * 4 + (cx & 3)] + hash(cx >> 2, cy >> 2, 9) * .99 < th);
     return;
   }
-  if (type === 'whip' || type === 'whipV') {  // 甩镜头，带运动模糊
-    both();
-    const e = E.io(u), dx = type === 'whip' ? (tr.dir ?? 1) : 0, dy = type === 'whipV' ? (tr.dir ?? 1) : 0;
-    const L = type === 'whip' ? W : H;
-    const off = -L * e, blur = Math.sin(Math.PI * u);
+  if (type === 'mosaic') {          // 马赛克：前一个镜头的方块越变越大，后一个镜头从大方块变回来
+    both(); const src = u < .5 ? bufA : bufB, k = u < .5 ? u * 2 : (1 - u) * 2;
+    const bs = Math.max(1, Math.round(1 + E.in2(k) * (tr.max || 60)));
+    const sw = Math.max(1, Math.round(W / bs)), sh = Math.max(1, Math.round(H / bs));
+    gT.save(); gT.setTransform(1, 0, 0, 1, 0, 0); gT.globalCompositeOperation = 'copy'; gT.imageSmoothingEnabled = true; gT.drawImage(src, 0, 0, sw, sh); gT.restore();
+    g.drawImage(bufT, 0, 0, sw, sh, 0, 0, W, H);
+    return;
+  }
+  if (type === 'iris' || type === 'bean') {   // 方块组成的圆孔 / 红豆形的口子张开，里面是下一个镜头
+    both(); const cx0 = (tr.cx ?? W / 2) / 12, cy0 = (tr.cy ?? H / 2) / 12, r = E.io(u) * 110, rot = tr.rot ?? -.5;
+    const cs = Math.cos(rot), sn = Math.sin(rot);
+    maskBlend(g, (cx, cy) => { const dx = cx + .5 - cx0, dy = cy + .5 - cy0; if (type === 'iris') return dx * dx + dy * dy < r * r; const x = dx * cs + dy * sn, y = -dx * sn + dy * cs; return (x * x) / (r * r) + (y * y) / (r * r * .5) < 1; });
+    if (type === 'bean' && u > .02 && u < .98) {   // 口子边上一圈红
+      gMask.clearRect(0, 0, 160, 90); gMask.fillStyle = RED;
+      for (let cy = 0; cy < 90; cy++) for (let cx = 0; cx < 160; cx++) { const dx = cx + .5 - cx0, dy = cy + .5 - cy0, x = dx * cs + dy * sn, y = -dx * sn + dy * cs, v = (x * x) / (r * r) + (y * y) / (r * r * .5); if (v >= 1 && v < 1 + 4 / Math.max(4, r)) gMask.fillRect(cx, cy, 1, 1); }
+      g.drawImage(MASK, 0, 0, W, H);
+    }
+    return;
+  }
+  if (type === 'wipe') {            // 斜着的台阶一格格扫过去
+    both(); const d = tr.dir ?? 1;
+    maskBlend(g, (cx, cy) => ((d > 0 ? cx : 159 - cx) + cy * 1.2) / (160 + 108) < E.io(u) * 1.04);
+    return;
+  }
+  if (type === 'blinds') {          // 百叶窗：一条条从中间张开
+    both(); const n = 9;
+    maskBlend(g, (cx, cy) => { const band = Math.floor(cy / (90 / n)), inBand = (cy % (90 / n)) / (90 / n), k = clamp(u * 1.6 - band / n * .6); return Math.abs(inBand - .5) < k / 2; });
+    return;
+  }
+  if (type === 'push' || type === 'whip') {   // 推过去 / 甩过去（带残影）；位移按 12 像素取整
+    both(); const e = type === 'whip' ? E.io(u) : E.io2(u), d = tr.dir ?? 1, off = Math.round(-W * e * d / 12) * 12;
     g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
-    for (let k = 5; k >= 0; k--) {
-      const o = k * 46 * blur;
-      g.globalAlpha = k ? .16 : 1;
-      g.drawImage(bufA, dx * (off - o), dy * (off - o)); g.drawImage(bufB, dx * (off + L - o), dy * (off + L - o));
-    }
-    g.globalAlpha = 1;
+    if (type === 'whip') { const bl = Math.sin(Math.PI * u); for (let k = 4; k >= 1; k--) { g.globalAlpha = .14; const o2 = Math.round(k * 60 * bl / 12) * 12 * d; g.drawImage(bufA, off - o2, 0); g.drawImage(bufB, off + W * d - o2, 0); } g.globalAlpha = 1; }
+    g.drawImage(bufA, off, 0); g.drawImage(bufB, off + W * d, 0);
     return;
   }
-  if (type === 'iris') {
-    drawScene(u < .5 ? A : B, g, s);
-    const cx = tr.cx ?? W / 2, cy = tr.cy ?? H / 2, rmax = 1250;
-    const r = u < .5 ? rmax * (1 - E.in(u * 2)) : rmax * E.out((u - .5) * 2);
-    g.save(); g.beginPath(); g.rect(0, 0, W, H); g.arc(cx, cy, Math.max(r, 0), 0, TAU, true); g.fillStyle = tr.col || '#0B0A12'; g.fill('evenodd'); g.restore();
+  if (type === 'drop') {            // 往下沉：上一个镜头往上推走（镜头往下摇）
+    both(); const e = E.io2(u), off = Math.round(H * e / 12) * 12;
+    g.drawImage(bufA, 0, -off); g.drawImage(bufB, 0, H - off);
     return;
   }
-  if (type === 'bean') {            // 红豆形的口子从一点张开，里面是下一个镜头；口子边上一圈红光
-    both();
-    g.drawImage(bufA, 0, 0);
-    const cx = tr.cx ?? W / 2, cy = tr.cy ?? H / 2, e = E.io(u), rot = tr.rot ?? -.5;
-    const R0 = 1500 * e;
-    if (R0 > 1) {
-      g.save(); g.translate(cx, cy); g.rotate(rot + u * .6); g.beginPath(); g.ellipse(0, 0, R0, R0 * .72, 0, 0, TAU); g.restore();
-      g.save(); g.clip(); g.drawImage(bufB, 0, 0); g.restore();
-      g.save(); g.translate(cx, cy); g.rotate(rot + u * .6); g.strokeStyle = rgba(RED, .9 * (1 - e)); g.lineWidth = 26 * (1 - e) + 2; g.shadowColor = RED_L; g.shadowBlur = 40;
-      g.beginPath(); g.ellipse(0, 0, R0, R0 * .72, 0, 0, TAU); g.stroke(); g.restore();
-    }
-    return;
-  }
-  if (type === 'ripple') {          // 水波：两张图交叉，横条按正弦错开
-    both();
-    const amp = Math.sin(Math.PI * u) * 34, e = E.sine(u);
-    for (let y = 0; y < H; y += 12) {
-      const dx = Math.sin(y * .035 + u * 18) * amp;
-      g.globalAlpha = 1; g.drawImage(bufA, 0, y, W, 12, dx, y, W, 12);
-      g.globalAlpha = e; g.drawImage(bufB, 0, y, W, 12, -dx, y, W, 12);
-    }
-    g.globalAlpha = 1;
-    const f = Math.sin(Math.PI * u) * .22; g.fillStyle = `rgba(230,240,255,${f})`; g.fillRect(0, 0, W, H);
-    return;
-  }
-  if (type === 'leak') {            // 胶片漏光：暖色光从一边扫过
-    both();
-    g.drawImage(bufA, 0, 0); g.globalAlpha = E.sine(u); g.drawImage(bufB, 0, 0); g.globalAlpha = 1;
-    const k = Math.sin(Math.PI * u), x = lerp(-400, W + 400, tr.dir === -1 ? 1 - u : u);
-    g.save(); g.globalCompositeOperation = 'screen';
-    g.fillStyle = rgrad(g, x, H * .4, 0, 1100, [[0, `rgba(255,196,140,${.95 * k})`], [.4, `rgba(255,110,100,${.5 * k})`], [1, 'rgba(255,90,100,0)']]); g.fillRect(0, 0, W, H);
-    g.restore();
-    return;
-  }
-  if (type === 'slide' || type === 'slideUp') {   // 推：B 把 A 推出去
-    both();
-    const e = E.io(u), d = tr.dir ?? 1;
-    if (type === 'slide') { g.drawImage(bufA, -W * e * d, 0); g.drawImage(bufB, W * (1 - e) * d, 0); }
-    else { g.drawImage(bufA, 0, -H * e * d); g.drawImage(bufB, 0, H * (1 - e) * d); }
-    return;
-  }
-  if (type === 'blinds') {          // 百叶窗：一条一条翻过去
-    both();
-    g.drawImage(bufA, 0, 0);
-    const n = 12, hh = H / n;
-    for (let i = 0; i < n; i++) {
-      const k = E.io(clamp(u * 1.6 - i / n * .6));
-      if (k <= 0) continue;
-      const h = hh * k;
-      g.drawImage(bufB, 0, i * hh + (hh - h) / 2, W, h, 0, i * hh + (hh - h) / 2, W, h);
-    }
-    return;
-  }
-  if (type === 'spin') {            // 转着推进去
-    both();
-    const e = E.io(u), a = (tr.dir ?? 1) * (e < .5 ? E.in2(e * 2) : -(1 - E.out2((e - .5) * 2))) * .35;
-    const src = u < .5 ? bufA : bufB, z = u < .5 ? 1 + E.in2(u * 2) * .9 : 1 + (1 - E.out2((u - .5) * 2)) * .9;
-    g.save(); g.translate(W / 2, H / 2); g.rotate(a); g.scale(z, z); g.translate(-W / 2, -H / 2);
-    g.filter = `blur(${(Math.sin(Math.PI * u) * 10).toFixed(1)}px)`; g.drawImage(src, 0, 0); g.restore(); g.filter = 'none';
-    return;
-  }
-  if (type === 'burn') {            // 胶片烧穿：白热的斑从中间化开
-    both();
-    g.drawImage(u < .5 ? bufA : bufB, 0, 0);
-    const k = Math.sin(Math.PI * u);
-    g.save(); g.globalCompositeOperation = 'screen';
-    for (let i = 0; i < 5; i++) {
-      const x = W * (.2 + hash(i, 3) * .6), y = H * (.2 + hash(i, 4) * .6);
-      g.fillStyle = rgrad(g, x, y, 0, 300 + 900 * k, [[0, `rgba(255,240,220,${k})`], [.3, `rgba(255,150,90,${.8 * k})`], [1, 'rgba(255,60,60,0)']]); g.fillRect(0, 0, W, H);
-    }
-    g.restore();
+  if (type === 'ripple') {          // 水波：一行行左右错开，同时抖动溶解
+    both(); const amp = Math.sin(Math.PI * u) * 5, th = u * 16;
+    g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
+    for (let y = 0; y < H; y += 12) { const dx = Math.round(Math.sin(y * .02 + u * 14) * amp) * 12; g.drawImage(bufA, 0, y, W, 12, dx, y, W, 12); }
+    maskBlend(g, (cx, cy) => BAYER[(cy & 3) * 4 + (cx & 3)] < th, true);
     return;
   }
   drawScene(u < .5 ? A : B, g, s);
 }
 
-/* ---------------- 后期 ---------------- */
-const small1 = mk(480, 270), small2 = mk(480, 270), gs1 = small1.getContext('2d'), gs2 = small2.getContext('2d');
-function bloom(g, src, k = .5, th = .5) {
-  if (k <= .01) return;
-  gs1.setTransform(1, 0, 0, 1, 0, 0); gs1.globalCompositeOperation = 'copy';
-  gs1.filter = `brightness(${(1 - th * .55).toFixed(2)}) contrast(${(1 + th * 2.2).toFixed(2)})`;
-  gs1.drawImage(src, 0, 0, 480, 270); gs1.filter = 'none';
-  gs2.setTransform(1, 0, 0, 1, 0, 0); gs2.globalCompositeOperation = 'copy'; gs2.filter = 'blur(7px)'; gs2.drawImage(small1, 0, 0); gs2.filter = 'none';
-  gs2.globalCompositeOperation = 'lighter'; gs2.filter = 'blur(2px)'; gs2.drawImage(small1, 0, 0); gs2.filter = 'none'; gs2.globalCompositeOperation = 'source-over';
-  g.save(); g.globalCompositeOperation = 'screen'; g.globalAlpha = k; g.imageSmoothingQuality = 'high';
-  g.drawImage(small2, 0, 0, W, H); g.restore();
-}
-
-/* ---------------- 歌词 ----------------
-   底部居中，思源宋体。整句淡淡地出来，唱到哪个字，哪个字亮起来；一颗小红豆在正在唱的字上面一跳一跳。
-   上一句提前淡出、往上走，下一句从下面淡进来（交棒时刻 = max(下一句第一个字 − 0.3, 上一句最后一个字 + 0.3)）。 */
-const LYR_Y = 990, LYR_PX = 50, LYR_LS = 8;
-const LYR_HIDE = [];                   // 某些时段不显示歌词，[开始, 结束]
+/* ---------------- 歌词：底部居中，像素字 5 倍（60px）；整句淡淡地出来，唱到哪个字哪个字亮起来、往上跳一下；
+   一颗小红豆跳在正在唱的那个字上面。上一句淡完了下一句才进来 ---------------- */
+const LK = 5, LY_TOP = 930, LX = 960;
 function lyricWindows() {
-  // 每句：a 开始淡入（0.3 秒淡完），b 开始淡出（0.3 秒淡完）。上一句淡完了下一句才进来，两句不叠在一起
   const out = [];
   for (let i = 0; i < LYRICS.length; i++) {
     const L = LYRICS[i], c0 = L.chars[0][1], cN = L.chars[L.chars.length - 1], next = LYRICS[i + 1];
     let a = c0 - .4;
-    if (out.length) a = Math.max(a, out[out.length - 1].b + .3);
+    if (out.length) a = Math.max(a, out[out.length - 1].b + .25);
     let b = Math.max(cN[2] + .15, cN[1] + 1.0);
-    if (next) b = Math.max(Math.min(b, next.chars[0][1] - .62), cN[1] + .25);
+    if (next) b = Math.max(Math.min(b, next.chars[0][1] - .6), cN[1] + .25);
     out.push({ L, a, b });
   }
   return out;
 }
 let LYRW = null;
-function drawLyrics(g, s) {
-  if (LYR_HIDE.some(([a, b]) => s >= a && s <= b)) return;
+function lyricLayout(L) {
+  if (L._lay) return L._lay;
+  let x = 0; const xs = [], cs = [];
+  for (const ch of L.text) { if (ch === ' ') { x += 7; continue; } xs.push(x); cs.push(ch); x += textW12(ch); }
+  return (L._lay = { xs, cs, w: x });
+}
+const BEAN_SPR = () => cached('lyr_bean', 7, 5, g => { pbean(g, 1, 1, 2); });
+function drawLyrics(g, t) {
   if (!LYRW) LYRW = lyricWindows();
   for (const { L, a, b } of LYRW) {
-    if (s < a - .05 || s > b + .4) continue;
-    const fin = clamp((s - a) / .3), fout = clamp((b + .3 - s) / .3);
-    const vis = Math.min(fin, fout);
-    if (vis <= 0) continue;
-    const chars = L.chars;
-    const items = []; let x = 0, ci = 0;
-    for (const ch of L.text) {
-      if (ch === ' ') { x += LYR_PX * .8; continue; }
-      items.push({ ch, x, t: chars[ci][1], e: chars[ci][2] }); ci++;
-      x += LYR_PX + LYR_LS;
-    }
-    const wid = x - LYR_LS, x0 = W / 2 - wid / 2 + LYR_PX / 2;
-    const yo = (1 - E.out(fin)) * 18 - (1 - fout) * 24;
-    g.save();
-    g.globalAlpha = vis;
-    // 字底下垫一条很淡的暗带
-    g.fillStyle = rgrad(g, W / 2, LYR_Y, 10, wid * .62 + 80, [[0, 'rgba(12,8,16,.34)'], [1, 'rgba(12,8,16,0)']]);
-    g.save(); g.translate(W / 2, LYR_Y + 4); g.scale(1, .17); g.beginPath(); g.arc(0, 0, wid * .62 + 80, 0, TAU); g.restore(); g.fill();
-    g.font = F(LYR_PX, 'serif'); g.textAlign = 'center'; g.textBaseline = 'middle';
+    if (t < a - .05 || t > b + .3) continue;
+    const fin = clamp((t - a) / .25), fout = clamp((b + .25 - t) / .25), A = Math.min(fin, fout);
+    if (A <= 0) continue;
+    const dy = ri((1 - E.out(fin)) * 3) * LK - ri((1 - fout) * 3) * LK;
+    const lay = lyricLayout(L), x0 = LX - lay.w * LK / 2;
     let cur = -1;
-    for (let i = 0; i < items.length; i++) if (s >= items[i].t - .02) cur = i;
-    for (const it of items) {
-      const lit = clamp((s - it.t + .05) / .18);
-      const y = LYR_Y + yo;
-      const cx = x0 + it.x;
-      if (lit > 0) { g.save(); g.shadowColor = 'rgba(255,190,190,.9)'; g.shadowBlur = 16; g.globalAlpha = vis * lit * .55; g.fillStyle = '#FFE9E4'; g.fillText(it.ch, cx, y); g.restore(); }
-      g.save();
-      g.shadowColor = 'rgba(0,0,8,.6)'; g.shadowBlur = 8; g.shadowOffsetY = 2;
-      g.globalAlpha = vis * (.42 + .58 * lit);
-      g.fillStyle = lit > 0 ? mixc('#DCD6D2', '#FFFFFF', lit) : '#DCD6D2';
-      g.fillText(it.ch, cx, y);
-      g.restore();
+    lay.cs.forEach((c, j) => {
+      const u = t - (L.chars[j][1] - .04);
+      let col = '#FFFFFF', al = .38, jy = 0;
+      if (u >= 0) { al = 1; cur = j; if (u < .12) jy = -LK; col = u < .3 ? mix('#FFC7C7', '#FFFFFF', clamp(u / .3)) : '#FFFFFF'; }
+      ptext(g, c, x0 + lay.xs[j] * LK, LY_TOP + dy + jy, LK, col, { ol: '#0A0C1C', alpha: A * al });
+    });
+    if (cur >= 0 && t < b + .1) {   // 跳动的小红豆
+      const ct = L.chars[cur][1], hop = clamp((t - ct + .06) / .22);
+      const xa = cur ? x0 + lay.xs[cur - 1] * LK : x0 - 40, xb = x0 + lay.xs[cur] * LK;
+      const bx = lerp(xa, xb, E.out2(hop)) + 3 * LK, by = LY_TOP + dy - 7 * LK - ri(Math.sin(Math.PI * hop) * 3) * LK;
+      g.save(); g.globalAlpha = A * clamp((b + .1 - t) / .25); g.imageSmoothingEnabled = false;
+      g.drawImage(BEAN_SPR(), ri(bx / LK) * LK, ri(by / LK) * LK, 7 * LK, 5 * LK); g.restore();
     }
-    // 跳动的小红豆：从上一个字跳到这个字上面
-    if (cur >= 0 && s < b + .1) {
-      const it = items[cur], prev = items[Math.max(0, cur - 1)];
-      const hop = clamp((s - it.t + .06) / .22);
-      const bx = lerp(x0 + (cur ? prev.x : it.x - 40), x0 + it.x, E.out2(hop));
-      const by = LYR_Y + yo - LYR_PX * .78 - Math.sin(Math.PI * hop) * 18;
-      const ba = clamp((b + .1 - s) / .25) * clamp((s - it.t + .3) / .2);
-      withAlpha(g, ba * vis, () => bean(g, bx, by, 9, -.3 + Math.sin(s * 3) * .15));
-    }
-    g.restore();
   }
 }
 
-/* ---------------- 水印、片尾字 ---------------- */
-const CREDIT_AT = 226.2;               // 尾奏最后一次起伏（222~229 秒）的中间，片尾字淡进来
-function overlays(g, s) {
-  text(g, '甜菜', 1886, 48, 30, { k: 'serif', align: 'right', col: 'rgba(255,255,255,.7)', shadow: 'rgba(0,0,0,.45)', sblur: 6, ls: 3 });
-  const ca = seg(s, CREDIT_AT, CREDIT_AT + 1.2);
-  if (ca > 0) {
-    withAlpha(g, E.out(ca), () => {
-      // 字底下垫一层淡淡的暗带（后面是雪里的树，小字会和雪团叠在一起）
-      g.fillStyle = rgrad(g, W / 2, 920, 20, 520, [[0, 'rgba(8,8,24,.55)'], [1, 'rgba(8,8,24,0)']]);
-      g.save(); g.translate(W / 2, 920); g.scale(1, .3); g.beginPath(); g.arc(0, 0, 520, 0, TAU); g.restore(); g.fill();
-      text(g, '甜菜 出品', W / 2, 860, 46, { k: 'serifB', col: '#FFF6EE', shadow: 'rgba(0,0,0,.55)', sblur: 10, ls: 10 });
-      text(g, '歌曲《红豆》 演唱：方大同　词：林夕　曲：柳重言', W / 2, 930, 26, { k: 'serif', col: 'rgba(255,246,238,.85)', shadow: 'rgba(0,0,0,.5)', sblur: 6, ls: 2 });
-      text(g, '画面、动画：Claude 用代码生成', W / 2, 972, 24, { k: 'serif', col: 'rgba(255,246,238,.75)', shadow: 'rgba(0,0,0,.5)', sblur: 6, ls: 2 });
-    });
-  }
+/* ---------------- 暗角、水印、片尾字 ---------------- */
+const VIG = (() => {
+  const c = mk(), g = c.getContext('2d');
+  const gr = g.createRadialGradient(W / 2, H / 2, 460, W / 2, H / 2, 1150);
+  gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,.36)');
+  g.fillStyle = gr; g.fillRect(0, 0, W, H); return c;
+})();
+const CREDIT_AT = 226.2;            // 尾奏最后一次起伏（222~229 秒）的中间
+function drawCredits(g, t) {
+  const a = seg(t, CREDIT_AT, CREDIT_AT + .8); if (a <= 0) return;
+  g.save(); g.globalAlpha = a; g.fillStyle = 'rgba(8,8,24,.45)'; g.fillRect(420, 780, 1080, 230); g.restore();
+  ptext(g, '甜菜 出品', 960, 796, 6, '#FFF6E6', { align: 'center', alpha: a, ol: '#140A20' });
+  ptext(g, '歌曲《红豆》 演唱：方大同　词：林夕　曲：柳重言', 960, 900, 3, '#FFF2E6', { align: 'center', alpha: a, ol: '#140A20' });
+  ptext(g, '画面、动画：Claude 用代码生成', 960, 954, 3, '#FFF2E6', { align: 'center', alpha: a * .95, ol: '#140A20' });
 }
 
 /* ---------------- 逐帧入口 ---------------- */
-const main = mk(), gM = main.getContext('2d');
-const GRADE = 'saturate(1.04) contrast(1.04)';
-function frame(T) {
-  const s = T;
-  const sc = composite(gM, s);
+const MAIN = mk(), gM = MAIN.getContext('2d');
+window.frame = function (t) {
+  const sc = composite(gM, t);
   const g = ctx;
-  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
-  const grade = sc && sc.grade !== undefined ? sc.grade : GRADE;
-  if (grade) g.filter = typeof grade === 'function' ? grade(s) : grade;
-  g.drawImage(main, 0, 0); g.filter = 'none';
-  const bl = sc && sc.bloom != null ? (typeof sc.bloom === 'function' ? sc.bloom(s) : sc.bloom) : .22;
-  bloom(g, main, bl, .6);
-  g.drawImage(TEX.vig, 0, 0);
-  // 纸纹 + 颗粒：绘本的质感
-  g.globalCompositeOperation = 'soft-light'; g.globalAlpha = .2; g.drawImage(TEX.grain, 0, 0, W, H);
-  g.globalAlpha = .1; g.drawImage(TEX.paperBig, 0, 0, W, H);
-  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
-  if (sc && sc.over) sc.over(g, s, s - sc.a);
-  if (!window.NO_LYRICS) drawLyrics(g, s);
-  overlays(g, s);
-  const fo = seg(s, DURATION - 1.4, DURATION - .05);
-  if (fo > 0) { g.fillStyle = `rgba(0,0,0,${E.sine(fo)})`; g.fillRect(0, 0, W, H); }
-}
-window.drawCover = function (s) { if (typeof drawCoverArt === 'function') drawCoverArt(s); else frame(s); };
-window.frame = frame;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none'; g.imageSmoothingEnabled = false;
+  g.drawImage(MAIN, 0, 0);
+  g.drawImage(VIG, 0, 0);
+  if (sc && sc.over) sc.over(g, t, t - sc.a);
+  if (!window.NO_LYRICS) drawLyrics(g, t);
+  const fo = seg(t, DURATION - 1.4, DURATION - .05);
+  if (fo > 0) { g.fillStyle = `rgba(0,0,0,${(Math.round(E.sine(fo) * 12) / 12).toFixed(3)})`; g.fillRect(0, 0, W, H); }
+  drawCredits(g, t);
+  ptext(g, '甜菜', 1876, 42, 3, '#FFFFFF', { align: 'right', alpha: .8, ol: '#0A0C1C' });
+};
+window.drawCover = function (t) { if (typeof drawCoverArt === 'function') drawCoverArt(t); else window.frame(t); };
 window.READY = false;
-window.DURATION = DURATION;
-Promise.all([['SerifM', '红豆还没好好的感受'], ['SerifB', '甜菜出品'], ['MaShan', '红豆'], ['LongCang', '一起看一场雪']]
-  .map(([f, s]) => document.fonts.load(`60px "${f}"`, s))).then(() => {
-  buildTextures();
-  // 纸纹（大张，叠在整个画面上）
-  TEX.paperBig = noiseCanvas(480, 270, (x, y) => { const n = fbm(x / 6, y / 6, 4, 91), m = fbm(x / 40, y / 40, 3, 92); const v = 128 + (n - .5) * 70 + (m - .5) * 50; return [v, v, v, 255]; });
-  if (typeof buildWorld === 'function') buildWorld();
+fontsReady(LYRICS.map(l => l.text).join('') + '红豆方大同甜菜出品歌曲演唱词林夕曲柳重言画面动画用代码生成《》：　一起看一场雪牵手走过沙丘陪你看细水长流明年还一起看雪南站年还没Claude0123456789').then(() => {
   buildScenes();
-  frame(0);
+  window.frame(0);
   window.READY = true;
 });

@@ -1,188 +1,177 @@
 'use strict';
 /* scenes2.js —— 第一遍副歌（"有时候 有时候" ~ "也许你会陪我看细水长流"，47.5 ~ 82.9 秒）：
-   沙漏里流的是红豆；窗外从冬天到春天，做完的心愿一张张摊在窗台上打了钩；雪人化了，红豆眼睛掉下来；
-   站台上分别，车门关上，小指上的红线从门缝里穿过去；火车开走，线越拉越长；夜里他一个人，把线绕在手指上攥紧，
-   线跨过一片屋顶，一直连到夜车上的她；早晨她回来，扑进他怀里；两个人沿着溪往日出走。 */
-
-function nightMoonOutside(g, x, y, w, h, s) {
-  g.fillStyle = vgrad(g, y, y + h, [[0, '#0B1230'], [1, '#2E3462']]); g.fillRect(x, y, w, h);
-  stars(g, s, 0, 0, .6, .6);
-  moon(g, x + w * .68, y + h * .3, 44, { halo: '#9FB2FF', haloA: .4 });
-  const rs = R(8); g.fillStyle = '#141A38';
-  for (let i = 0; i < 7; i++) { const bx = x + i * w / 6 - 30, bh = 60 + rs() * 90; g.fillRect(bx, y + h - bh, 80 + rs() * 40, bh); }
-}
-const HUG = { tb: 6, hd: -4, aN1: 78, aN2: 55, aF1: 84, aF2: 50, lN1: 4, lN2: 0, lF1: -6, lF2: 0 };
+   沙漏里流的是红豆；窗外从冬天到春天，做完的心愿摊在窗台上打了钩；雪人化了，红豆眼睛掉下来；
+   站台上分别，车门关上，红线从门缝里穿过去；火车开走，线越拉越长；夜里他一个人，把线一圈圈绕在胳膊上，
+   线跨过一片屋顶，一直连到夜车上的她；早晨她回来，扑过来抱住他；两个人沿着溪往日出走。 */
 
 SCENES_DEF.push(() => {
   // C1a：沙漏的特写，里面流下来的是红豆；窗外的光一明一暗地扫过（时间在走）
   scene('C1a', CUT(8), (g, s, k) => {
-    const day = .5 + .5 * Math.sin(s * 2.6);
-    g.fillStyle = vgrad(g, 0, H, [[0, mixc('#2E3352', '#E2D3C0', day)], [1, mixc('#1E2238', '#C9B49C', day)]]); g.fillRect(0, 0, W, H);
-    // 窗台
-    g.fillStyle = mixc('#4A4258', '#E9E1D3', day); g.fillRect(0, 760, W, 40); g.fillStyle = mixc('#3A3448', '#D8CCBA', day); g.fillRect(0, 800, W, 300);
-    // 斜着扫过去的光
-    const sweep = ((s * .9) % 1);
-    g.save(); g.globalCompositeOperation = 'screen'; g.fillStyle = `rgba(255,220,160,${.35 * day})`;
-    poly(g, [[sweep * 2600 - 700, 0], [sweep * 2600 - 300, 0], [sweep * 2600 - 900, H], [sweep * 2600 - 1300, H]]); g.fill(); g.restore();
-    jar(g, 1450, 772, 1.1, { fill: .3, slips: 3, seed: 7 });
-    hourglass(g, 860, 600, 1.45, lerp(.15, .55, k / 2.1), s);
-    bokeh(g, s, 91, 10, ['#FFE0B0', '#FFFFFF'], { r0: 40, r1: 90, a: .18 * day });
-  }, { tr: { type: 'flash', dur: .4 }, bloom: .3 });
+    shot(g, 'c1a', 160, 90, 12, (b, gl) => {
+      const day = .5 + .5 * Math.sin(s * 2.6), q = Math.round(day * 4) / 4;
+      prect(b, 0, 0, 160, 66, mix('#2E3352', '#E2D3C0', q)); prect(b, 0, 66, 160, 4, mix('#4A4258', '#F2EBE0', q)); prect(b, 0, 70, 160, 20, mix('#3A3448', '#D8CCBA', q));
+      for (let y = 6; y < 60; y += 8) for (let x = (y / 8 % 2) * 5 + 2; x < 160; x += 10) pdot(b, x, y, mix('#363C5C', '#D8C8B2', q));
+      const sw = ((s * .9) % 1) * 260 - 60; pbeam(b, sw, sw + 24, 0, 70, -.6, '#FFE0A0', .3 * day);
+      phourglass(b, 64, 14, 52, lerp(.15, .6, k / 2.1), s);
+      pjar(b, 118, 66, 2, { fill: .3, slips: 3 });
+      pbokeh(b, s, 160, 90, 91, 6, ['#FFE0B0', '#FFFFFF'], .12 * day);
+    });
+  }, { tr: { type: 'flash', dur: .4 } });
 
   // C1b：窗台上的罐子，窗外从下雪到开花（日夜飞快地换）；做完的心愿一张张摊开、打钩
   scene('C1b', Lc(8, 3) - .3, (g, s, k) => {
     const yr = clamp(k / 1.9);
-    const outside = (gg, x, y, w, h) => {
-      const day = .5 + .5 * Math.sin(s * 9);
-      gg.fillStyle = vgrad(gg, y, y + h, [[0, mixc(mixc('#0E1534', '#7AB0DC', day), '#9CC8E8', yr * day)], [1, mixc('#2E3462', '#E8F0F2', day)]]); gg.fillRect(x, y, w, h);
-      if (yr < .5) bloomSnow(gg, s, 15, 30, [x, y - 20, x + w, y + h], { r: 6, vy: 80, bloomK: .5, a: .9 * (1 - yr * 2) });
-      // 一根伸进窗口的树枝：先是雪，后是花
-      gg.strokeStyle = '#5A4436'; gg.lineWidth = 12; gg.lineCap = 'round'; gg.beginPath(); gg.moveTo(x + w + 20, y + 120); gg.quadraticCurveTo(x + w * .6, y + 160, x + w * .25, y + 110); gg.stroke();
-      for (let i = 0; i < 14; i++) { const t = i / 13, bx = lerp(x + w + 10, x + w * .25, t), by = y + 120 + Math.sin(t * 3) * 40 - 10; const bl = clamp(yr * 2.2 - hash(i, 3)); if (bl > 0) bloomFlake(gg, bx, by + (hash(i, 4) - .5) * 30, 14, i, bl, 1, '#FFD4E0'); else { gg.fillStyle = '#F4F7FB'; ell(gg, bx, by - 6, 14, 5); gg.fill(); } }
-    };
-    camera(g, 520, 560, 1.75, () => {
-      room(g, s, { mood: 'morning', outside, lamp: false, shelf: false });
-      jar(g, 470, ROOM.winY + ROOM.winH + 14, .62, { fill: .3, slips: 3 - Math.floor(clamp(k / 1.9) * 2.2), seed: 7 });
-      // 摊开、打了钩的纸条
-      const sl = [['一起看一场雪', 360, .2], ['牵手走过沙丘', 610, .9]];
-      sl.forEach(([t, x, at], i) => { const a = seg(k, at, at + .4); if (a > 0) withAlpha(g, a, () => slip(g, x, ROOM.winY + ROOM.winH + 30 - i * 4, 150, t, 1, { rot: -.04 + i * .07, check: seg(k, at + .3, at + .8) })); });
+    shot(g, 'c1b', 160, 90, 12, (b, gl) => {
+      const day = Math.round((.5 + .5 * Math.sin(s * 9)) * 3) / 3;
+      prect(b, 0, 0, 160, 90, '#E8DCCA');
+      // 窗
+      b.save(); b.beginPath(); b.rect(14, 4, 132, 50); b.clip();
+      psky(b, 160, 60, [[0, mix(mix('#0E1534', '#7AB0DC', day), '#9CC8E8', yr * day)], [1, mix('#2E3462', '#E8F0F2', day)]]);
+      if (yr < .55) psnow(b, s, 160, 60, { n: 50, v: 16, seed: 15, bigRate: .3 });
+      // 伸进窗口的一根树枝：先是雪，后是花
+      pline(b, 150, 14, 110, 20, '#5A4436'); pline(b, 110, 20, 70, 14, '#5A4436'); pline(b, 110, 20, 96, 30, '#5A4436');
+      for (let i = 0; i < 14; i++) { const u = i / 13, bx = ri(lerp(148, 72, u)), by = ri(lerp(14, 18, u) + Math.sin(u * 6) * 4); const bl = clamp(yr * 2.4 - hash(i, 3) * 1.2); if (bl > .4) { pdot(b, bx, by - 1, '#FFC0D4'); pdot(b, bx - 1, by, '#FFC0D4'); pdot(b, bx + 1, by, '#FFC0D4'); pdot(b, bx, by + 1, '#FFC0D4'); pdot(b, bx, by, '#FFE38A'); } else prect(b, bx - 1, by - 1, 3, 1, '#F4F7FB'); }
+      b.restore();
+      prect(b, 12, 2, 136, 2, '#F4EEE4'); prect(b, 12, 54, 136, 3, '#F4EEE4'); prect(b, 12, 4, 2, 50, '#F4EEE4'); prect(b, 146, 4, 2, 50, '#F4EEE4'); prect(b, 79, 4, 2, 50, '#F4EEE4');
+      prect(b, 6, 57, 148, 4, '#D8CCBA');
+      pjar(b, 26, 57, 1.6, { fill: .3, slips: 3 - Math.min(2, Math.floor(yr * 2.2)) });
+      // 做完的心愿：第一张摊开、打钩，第二张从右边滑进来把它推出去，再打钩
+      const out = E.io(seg(k, .95, 1.25)), x1 = ri(lerp(92, -60, out)), x2 = ri(lerp(220, 92, out));
+      if (k > .2 && out < 1) pslip(b, x1, ri(lerp(70, 64, E.out(seg(k, .2, .45)))), 84, '一起看一场雪', 1, { check: seg(k, .45, .85) });
+      if (out > 0) pslip(b, x2, 64, 84, '牵手走过沙丘', 1, { check: seg(k, 1.3, 1.7) });
     });
-  }, { tr: { type: 'fade', dur: .35 }, bloom: .25 });
+  }, { tr: { type: 'dither', dur: .35 } });
 
-  // C1c：春天，路灯下的雪人化了；"有尽头"时两颗红豆眼睛掉进水洼里
+  // C1c：春天，路灯下的雪人化了；"有尽头"时两颗红豆眼睛掉进水洼里；地上冒出小芽
   scene('C1c', CUT(9), (g, s, k) => {
     const melt = lerp(.25, 1, E.io(clamp(k / 3.2)));
-    camera(g, 660, 880, 2.1, () => {
-      snowTown(g, s, { season: 'spring', lamps: [[1180, 1000, 1.5]], hz: 600, lampOn: 0 });
-      snowman(g, 620, 1000, 1.25, melt, s, { eyesDrop: seg(s, Lc(9, 7) - .2, Lc(9, 7) + .5) });
-      // 水滴
-      for (let i = 0; i < 6; i++) { const ph = ((s * 1.2 + i / 6) % 1); g.fillStyle = `rgba(190,215,240,${.7 * (1 - ph)})`; ell(g, 560 + i * 24, 880 + ph * 110, 3, 5); g.fill(); }
-      // 冒出来的小芽
-      for (let i = 0; i < 5; i++) { const gx = 480 + i * 70, gy = 1004, h = 18 * E.out(seg(k, .5 + i * .3, 1.4 + i * .3)); g.strokeStyle = '#6EA058'; g.lineWidth = 4; g.beginPath(); g.moveTo(gx, gy); g.lineTo(gx, gy - h); g.stroke(); g.fillStyle = '#86B866'; ell(g, gx - 6, gy - h, 7, 4, -.5); g.fill(); ell(g, gx + 6, gy - h, 7, 4, .5); g.fill(); }
+    shot(g, 'c1c', 160, 90, 12, (b, gl) => {
+      psky(b, 160, 60, [[0, '#8EC1E6'], [1, '#E6F0EE']]);
+      pcloud(b, 20, 18, 40, '#FFFFFF', '#E0ECF4'); pcloud(b, 100, 10, 34, '#FFFFFF', '#E0ECF4');
+      for (let x = 0; x < 160; x++) { const top = ri(46 - (noise1(x / 30, 7) * .5 + .5) * 8); prect(b, x, top, 1, 54 - top, '#9CB7A8'); }
+      prect(b, 0, 52, 160, 38, '#A9C79A'); for (let i = 0; i < 30; i++) pdot(b, hash(i, 8) * 160, 54 + hash(i, 9) * 30, ['#FFFFFF', '#FFD6E0', '#FFE9A8'][i % 3]);
+      pell(b, 34, 58, 12, 2, '#EEF3F8'); pell(b, 132, 64, 10, 2, '#EEF3F8');
+      streetLamp(b, gl, 120, 70, 64, 0);
+      psnowman(b, 70, 70, melt, seg(s, Lc(9, 7) - .2, Lc(9, 7) + .5), s);
+      for (let i = 0; i < 6; i++) { const ph = ((s * 1.2 + i / 6) % 1); pdot(b, 62 + i * 3, 52 + ri(ph * 16), rgba('#BED7F0', .8 * (1 - ph))); }
+      for (let i = 0; i < 5; i++) { const gx = 30 + i * 22, hgt = ri(4 * E.out(seg(k, .5 + i * .3, 1.4 + i * .3))); if (hgt > 0) { prect(b, gx, 72 - hgt, 1, hgt, '#6EA058'); pdot(b, gx - 1, 72 - hgt, '#86B866'); pdot(b, gx + 1, 72 - hgt, '#86B866'); } }
     });
-  }, { tr: { type: 'blur', dur: .45 }, bloom: .25, grade: 'saturate(1.05)' });
+  }, { tr: { type: 'mosaic', dur: .45, max: 30 } });
 
-  // C1d：站台上分别——她站在车门里，他在站台上；"都有时候"车门关上，小指上的红线从门缝里穿过去
+  // C1d：站台上分别——她站在车门里，他在站台上；"都有时候"车门关上，红线从门缝里穿过去
   scene('C1d', CUT(10), (g, s, k) => {
-    camera(g, 960, 610, 1.15, () => {
-      station(g, s, { time: 'grey' });
-      const door = E.io(seg(s, Lc(10, 4) - .25, Lc(10, 4) + .45));
-      const Ps = { who: 'she', u: 38, x: 760, y: 800, f: 1, out: OUTFIT.sheTravel, pose: pose('stand', { aN1: lerp(20, 48, seg(k, .3, 1.2)), aN2: 10 }), light: LT.day, t: s, eyes: door > .5 ? 'down' : 'open', mouth: 'flat' };
-      trainCar(g, 200, 1400, { doorX: 560, door, inFn: (gg) => { gg.fillStyle = '#4A4250'; gg.fillRect(600, 300, 400, 600); person(gg, Ps); } });
-      platform(g, s, { time: 'grey', signX: 1500, clockX: 1300 });
-      suitcase(g, 680, 798, .7, '#C47F5A');
-      const Ph = { who: 'he', u: 42, x: 1020, y: 975, f: -1, out: OUTFIT.heTravel, pose: pose('stand', { aN1: lerp(15, 42, seg(k, .5, 1.5)), aN2: 12, hd: 4 }), light: LT.day, t: s, mouth: 'flat' };
-      person(g, Ph);
+    const door = E.io(seg(s, Lc(10, 4) - .25, Lc(10, 4) + .45));
+    shot(g, 'c1d', 320, 180, 6, (b, gl) => {
+      stationBg(b, gl, s, { time: 'grey' });
+      const reach = seg(k, .3, 1.2);
+      trainCar(b, 40, 250, { doorX: 96, door, inFn: (bb, dx) => { prect(bb, dx - 11, 68, 22, 60, '#4A4250'); monAt(bb, dx - 12, 128, { who: 'she', eyes: door > .5 ? 'dn' : 'r', armR: reach > .5 ? 'reach' : 'n' }, 1); } });
+      platform(b, gl, s, { time: 'grey', signX: 256, clockX: 196 });
+      pspr(b, suitcase(), 74, 119);
+      monAt(b, 160, 152, { who: 'he', eyes: 'l', armL: seg(k, .5, 1.5) > .5 ? 'reach' : 'n', mouth: '' }, 1);
       // 红线：她的手 → （门缝）→ 他的手
-      const a = handPos(Ps), b = handPos(Ph), gap = [760, lerp(a[1], b[1], .4)];
-      redThread(g, door > .9 ? [a, gap, [lerp(gap[0], b[0], .5), lerp(gap[1], b[1], .5) + 18], b] : [a, [lerp(a[0], b[0], .5), lerp(a[1], b[1], .5) + 30], b], 3, 1, .6);
-      // 落叶
-      for (const p of floaters(s, 101, 14, [0, 100, W, 1000], { vy: -50, vx: -60, amp: 40 })) { g.fillStyle = '#C8904A'; g.save(); g.translate(p.x, p.y); g.rotate(p.ph + s * 2); ell(g, 0, 0, 9, 4); g.fill(); g.restore(); }
+      const a = [146, 117], hb = [153, 141];
+      if (door > .6) pcurve(b, 136, 118, 144, 134, hb[0], hb[1], RED);
+      else pcurve(b, a[0], a[1], (a[0] + hb[0]) / 2, (a[1] + hb[1]) / 2 + 8, hb[0], hb[1], RED);
+      drift(s, 320, 180, { n: 12, v: 10, vx: -14, seed: 101 }, (x, y) => { pdot(b, x, y, '#C8904A'); pdot(b, x + 1, y, '#B87A3A'); });
     });
-  }, { tr: { type: 'whip', dur: .45 }, bloom: .2, grade: 'saturate(.92) contrast(1.03)' });
+  }, { tr: { type: 'whip', dur: .45 } });
 
   // C1e：火车开走了，他一个人站在站台上，红线越拉越长
   scene('C1e', CUT(11), (g, s, k) => {
-    const go = Math.pow(clamp(k / 3.3), 2.2) * 2600;
-    camera(g, 960, 610, 1.15, () => {
-      station(g, s, { time: 'grey' });
-      trainCar(g, 200 + go, 1400, { doorX: 560, door: 1 });
-      trainCar(g, 200 + go - 1420, 1400, { doorX: 700, door: 1 });
-      platform(g, s, { time: 'grey', signX: 1500, clockX: 1300 });
-      const Ph = { who: 'he', u: 42, x: 1020, y: 975, f: 1, out: OUTFIT.heTravel, pose: pose('stand', { aN1: lerp(30, 70, seg(k, 0, 2.5)), aN2: 8, hd: lerp(0, 10, seg(k, 2, 3.5)) }), light: LT.day, t: s, mouth: 'sad', eyes: k > 2.2 ? 'down' : 'open' };
-      person(g, Ph);
-      const b = handPos(Ph), dx = 760 + go;
-      const end = dx < W + 300 ? [dx, 620] : [W + 400, 600];
-      redThread(g, [b, [lerp(b[0], end[0], .5), lerp(b[1], end[1], .5) + 20 * (1 - clamp(k / 2))], end], 3, 1, .8);
-      for (const p of floaters(s, 102, 24, [0, 100, W, 1000], { vy: -60, vx: -140 - go * .05, amp: 40 })) { g.fillStyle = '#C8904A'; g.save(); g.translate(p.x, p.y); g.rotate(p.ph + s * 3); ell(g, 0, 0, 9, 4); g.fill(); g.restore(); }
+    const go = ri(Math.pow(clamp(k / 3.3), 2.2) * 420);
+    shot(g, 'c1e', 320, 180, 6, (b, gl) => {
+      stationBg(b, gl, s, { time: 'grey' });
+      trainCar(b, 40 + go, 250, { doorX: 96, door: 1 }); trainCar(b, 40 + go - 254, 250, { doorX: 120, door: 1 });
+      platform(b, gl, s, { time: 'grey', signX: 256, clockX: 196 });
+      const sad = k > 2.2;
+      monAt(b, 160, 152, { who: 'he', eyes: sad ? 'sad' : 'r', armR: 'reach' }, 1);
+      const hx = 183, hy = 141, ex = 136 + go < 330 ? 136 + go : 330, ey = 120;
+      pcurve(b, hx, hy, (hx + ex) / 2, (hy + ey) / 2 + 6 * (1 - clamp(k / 2)), ex, ey, RED);
+      drift(s, 320, 180, { n: 22, v: 12, vx: -40 - go * .2, seed: 102 }, (x, y) => { pdot(b, x, y, '#C8904A'); pdot(b, x + 1, y, '#B87A3A'); });
     });
-  }, { tr: { type: 'fade', dur: .3 }, bloom: .2, grade: 'saturate(.9) contrast(1.03)' });
+  }, { tr: { type: 'dither', dur: .3 } });
 
   // C1f：夜里，他一个人坐在窗边，手里是那张"一起看一场雪"
   scene('C1f', CUT(12), (g, s, k) => {
-    camera(g, 800, 640, 1.3 + k * .02, () => {
-      room(g, s, { mood: 'night', outside: (gg, x, y, w, h) => nightMoonOutside(gg, x, y, w, h, s), lampOn: .35,
-        sill: (gg, x, y, w) => { jar(gg, x + 140, y, .5, { fill: .26, slips: 1, seed: 7 }); hourglass(gg, x + 380, y - 85, .55, .7, s); } });
-      g.fillStyle = '#9A7254'; g.fillRect(1000, 914, 140, 14); g.fillRect(1010, 926, 11, 76); g.fillRect(1120, 926, 11, 76); g.fillRect(1128, 740, 13, 188); g.fillRect(1128, 760, 40, 10);
-      const Ph = { who: 'he', u: 40, x: 1065, seat: 912, f: -1, out: OUTFIT.heHome, pose: pose('sit', { tb: 10, hd: 18, aN1: 48, aN2: 62, aF1: 44, aF2: 66 }), light: { dir: -1, shade: .3, amb: '#2A3060', ambA: .35, rim: '#C8D4FF', rimA: .7 }, t: s, eyes: 'down', mouth: 'flat' };
-      person(g, Ph);
-      const hp = handPos(Ph);
-      slip(g, hp[0] - 30, hp[1] - 20, 120, '一起看一场雪', 1, { rot: .25 });
-      // 月光
-      g.save(); g.globalCompositeOperation = 'screen'; g.fillStyle = lgrad(g, ROOM.winX, ROOM.winY, 1100, 1000, [[0, 'rgba(170,190,255,.25)'], [1, 'rgba(170,190,255,0)']]);
-      poly(g, [[ROOM.winX, ROOM.winY], [ROOM.winX + ROOM.winW, ROOM.winY], [1500, 1080], [700, 1080]]); g.fill(); g.restore();
-      roomLight(g, 'night', { lx: 600, ly: 500 });
-    });
-  }, { tr: { type: 'black', dur: .5 }, bloom: .25, grade: 'saturate(.95)' });
+    shot(g, 'c1f', 240, 135, 8, (b, gl) => {
+      room(b, gl, s, { mood: 'night', lampOn: .3, outside: (bb, x, y, w, h) => outsideMoon(bb, x, y, w, h, s),
+        sill: (bb, x, y, w) => { pjar(bb, x + 14, y, 1, { fill: .26, slips: 1 }); phourglass(bb, x + 48, y - 18, 18, .7, s); } });
+      pbeam(b, RM.winX, RM.winX + RM.winW, RM.winY + RM.winH, 135, .9, '#AABEFF', .16);
+      prect(b, 94, 112, 18, 2, '#9A7254'); prect(b, 95, 114, 2, 10, '#9A7254'); prect(b, 109, 114, 2, 10, '#9A7254'); prect(b, 110, 98, 2, 14, '#9A7254');
+      monAt(b, 92, 114, { who: 'he', sit: 1, eyes: 'dn', armL: 'front', armR: 'front' }, 1);
+      prect(b, 96, 106, 12, 6, '#F7EFDF'); prect(b, 96, 111, 12, 1, '#E4D6BC'); pdot(b, 97, 107, RED); prect(b, 99, 108, 7, 1, '#B8A88E');
+      roomShade(b, 'night', 50, 60);
+    }, { zoom: lerp(1, 1.3, E.io(clamp(k / 3.8))), cx: lerp(120, 92, E.io(clamp(k / 3.8))), cy: lerp(67.5, 84, E.io(clamp(k / 3.8))) });
+  }, { tr: { type: 'black', dur: .5 } });
 
-  // C1g：他把红线一圈圈绕在手指上、攥紧；镜头顺着线往右，线跨过一片屋顶，一直伸到远处
+  // C1g：他把红线一圈圈绕在胳膊上、攥紧；镜头顺着线往右，线跨过一片屋顶，一直伸到远处山坡上的一列夜车
   scene('C1g', CUT(13), (g, s, k) => {
-    const pan = E.io(clamp((k - 1.2) / 2.7)) * 2400;
-    rooftops(g, s, { pan });
-    const fx = 420 - pan, fy = 600;
-    if (fx > -500) {
-      const wind = E.out(seg(k, .1, 1.3));
-      // 拳头
-      const P = mitt(g, fx, fy, 2.4, -.25, { fist: true, sleeve: OUTFIT.heHome.top, skin: SKIN.he });
-      // 绕在手上的几圈红线
-      g.strokeStyle = RED; g.lineWidth = 6;
-      for (let i = 0; i < Math.round(1 + wind * 4); i++) { g.beginPath(); g.ellipse(fx + 150 + i * 14, fy - 40 + i * 4, 30, 80, -.25, 0, TAU); g.stroke(); }
-    }
-    // 线：从手里一直往右伸到远方（远处山坡上一列亮着灯的小火车）
-    const a = [fx + 210, fy - 30], far = [W - 180 + (2400 - pan) * .9, 520];
-    redThread(g, [a, [lerp(a[0], far[0], .3), 560], [lerp(a[0], far[0], .7), 500], far], 4, 1, .8);
-    const tx = W - 220 + (2400 - pan) * .9 + k * 20;
-    if (tx < W + 200) { for (let i = 0; i < 6; i++) { g.fillStyle = '#1A1F3A'; g.fillRect(tx + i * 46, 505, 42, 24); g.fillStyle = '#FFD290'; g.fillRect(tx + i * 46 + 6, 510, 30, 8); } glow(g, tx + 140, 515, 160, '#FFC070', .4); }
-  }, { tr: { type: 'fade', dur: .4 }, bloom: .35 });
+    const camX = ri(E.io(clamp((k - .7) / 2.3)) * 320);
+    const tx = ri(540 + k * 5);
+    shot(g, 'c1g', 640, 180, 6, (b, gl) => {
+      // 远处山坡和一列亮着灯的小火车（在屋顶后面）
+      rooftops(b, gl, s, { pan: 0, far: bb => {
+        for (let x = 380; x < 640; x++) { const top = ri(92 - Math.sin((x - 380) / 90) * 14); prect(bb, x, top, 1, 180 - top, '#1A1F40'); }
+        for (let i = 0; i < 5; i++) { const cx = tx + i * 10, cy = ri(92 - Math.sin((cx + 5 - 380) / 90) * 14) - 6; prect(bb, cx, cy, 9, 5, '#2A2F50'); prect(bb, cx + 1, cy + 1, 7, 2, '#FFD290'); if (gl) prect(gl, cx + 1, cy + 1, 7, 2, 'rgba(255,200,120,.9)'); }
+      } });
+      // 左边：他站在窗口，把线一圈圈绕在胳膊上
+      prect(b, 0, 70, 64, 110, '#232848'); prect(b, 6, 80, 50, 60, '#3A3F5C'); prect(b, 4, 78, 54, 2, '#D9D0C2'); prect(b, 4, 140, 54, 3, '#D9D0C2');
+      if (gl) prect(gl, 6, 80, 50, 60, 'rgba(255,200,130,.25)');
+      const wind = Math.round(E.out(seg(k, .1, 1.3)) * 4);
+      monAt(b, 18, 140, { who: 'he', armR: 'reach', eyes: wind >= 4 ? 'shut' : 'r' }, 1);
+      for (let i = 0; i < wind; i++) prect(b, 35 + i * 2, 127, 1, 6, RED);
+      const ty = ri(92 - Math.sin((tx + 25 - 380) / 90) * 14) - 4, path = [[41, 130], [90, 126], [160, 116], [270, 104], [420, 92], [tx + 25, ty]];
+      ppath(b, path, RED);
+      if (gl) ppath(gl, path, 'rgba(255,90,110,.6)');
+    }, { camX });
+  }, { tr: { type: 'dither', dur: .4 } });
 
-  // C1h：夜车上的她，看着窗外飞过去的风景；小指上的红线轻轻一拽，她笑了
+  // C1h：夜车上的她，看着窗外飞过去的风景；手上的红线轻轻一拽，她笑了
   scene('C1h', CUT(14), (g, s, k) => {
-    g.fillStyle = '#3A3040'; g.fillRect(0, 0, W, H);
-    g.fillStyle = vgrad(g, 0, H, [[0, '#5A4A50'], [1, '#2E2630']]); g.fillRect(0, 0, W, H);
-    trainView(g, s, 120, 140, 1000, 640, { speed: 1 });
-    g.strokeStyle = '#2A2228'; g.lineWidth = 30; rr(g, 120, 140, 1000, 640, 30); g.stroke();
-    // 玻璃上她的倒影
-    withAlpha(g, .14, () => bust(g, 760, 430, 120, { who: 'she', out: OUTFIT.sheTravel, eyes: 'open', mouth: 'flat' }));
     const tug = seg(s, Lc(14, 3), Lc(14, 3) + .5), smile = seg(s, Lc(14, 4), Lc(14, 5));
-    // 车厢里的暖灯
-    glow(g, 1500, 120, 600, '#FFC880', .4);
-    bust(g, 1440, 470, 170, { who: 'she', out: OUTFIT.sheTravel, light: { dir: -1, shade: .25, amb: '#3A2A50', ambA: .25, rim: '#BFD0FF', rimA: .6 }, t: s, gaze: [-1, -.2], tilt: .06, mouth: smile > .3 ? 'smile' : 'flat', blush: .3 + smile * .7, eyes: smile > .6 ? 'happy' : 'open' });
-    // 她举起的手、小指上的红线，从窗户穿出去
-    const hx = 1180, hy = 820 + Math.sin(Math.PI * tug) * -18;
-    const M = mitt(g, hx, hy, 1.15, -Math.PI / 2 - .35, { sleeve: OUTFIT.sheTravel.top, skin: SKIN.she, palm: true });
-    g.strokeStyle = RED; g.lineWidth = 5; g.beginPath(); g.ellipse(M.pinkyMid[0], M.pinkyMid[1], 9, 16, -.35, 0, TAU); g.stroke();
-    redThread(g, [M.pinkyMid, [900, 700 - Math.sin(Math.PI * tug) * 40], [500, 600], [140, 560]], 4, 1, .5 + tug);
-  }, { tr: { type: 'slide', dur: .5, dir: 1 }, bloom: .3 });
+    shot(g, 'c1h', 160, 90, 12, (b, gl) => {
+      prect(b, 0, 0, 160, 90, '#4A3C48'); prect(b, 0, 70, 160, 20, '#3A2E38');
+      trainView(b, gl, s, 8, 8, 92, 56, 1);
+      prect(b, 6, 6, 96, 2, '#2A2228'); prect(b, 6, 64, 96, 3, '#2A2228'); prect(b, 6, 8, 2, 56, '#2A2228'); prect(b, 100, 8, 2, 56, '#2A2228');
+      // 玻璃上她的倒影
+      b.save(); b.globalAlpha = .18; monAt(b, 56, 58, { who: 'she', eyes: 'l' }, 1); b.restore();
+      if (gl) pdisc(gl, 140, 6, 16, 'rgba(255,200,128,.4)');
+      monAt(b, 104, 82, { who: 'she', eyes: smile > .6 ? 'happy' : 'l', blush: smile > .3 ? 1 : 0, armL: 'reach' }, 2);
+      // 手上的红线，从窗户穿出去
+      const ax = 104 - 8 - 4 * 2 + 2, ay = 82 - 32 + 10, dy = ri(Math.sin(Math.PI * tug) * -3);
+      prect(b, ax, ay - 2, 2, 6, RED);
+      ppath(b, [[ax, ay + dy], [70, 46 + dy], [40, 40], [8, 38]], RED);
+      if (gl) ppath(gl, [[ax, ay + dy], [70, 46 + dy], [40, 40], [8, 38]], `rgba(255,90,110,${.4 + tug * .5})`);
+    });
+  }, { tr: { type: 'push', dur: .5, dir: 1 } });
 
-  // C1i：早晨，她回来了——跳下车，跑过站台，扑进他怀里
+  // C1i：早晨，她回来了——跳下车，跑过站台，扑过来抱住他
   scene('C1i', CUT(15), (g, s, k) => {
-    const run = seg(k, .2, 1.5), hug = E.out(seg(k, 1.3, 1.7));
-    camera(g, 1000 + hug * 60, 610, 1.15 + hug * .2, () => {
-      station(g, s, { time: 'dawn' });
-      trainCar(g, -300, 1400, { doorX: 900, door: 0, col: '#EDE6D6' });
-      platform(g, s, { time: 'dawn', signX: 1650, clockX: 1350, pillars: [160, 1840] });
-      const sx = lerp(620, 1080, E.io(run)), sy = 975 - (run < .15 ? 0 : 0);
-      const Ps = { who: 'she', u: 42, x: sx, y: sy, f: 1, out: OUTFIT.sheTravel, pose: hug > 0 ? lerpPose(walkPose(s * 8, .55), HUG, hug) : walkPose(s * 8, .55), light: LT.gold, t: s, eyes: hug > .5 ? 'closed' : 'happy', mouth: 'open', blush: 1, hairFly: (1 - hug) * .6 };
-      const Ph = { who: 'he', u: 44, x: 1150, y: 975, f: -1, out: OUTFIT.heTravel, pose: hug > 0 ? lerpPose(pose('stand', { aN1: 50, aN2: 20 }), HUG, hug) : pose('stand', { aN1: lerp(5, 50, seg(k, .6, 1.2)), aN2: 20 }), light: LT.gold, t: s, eyes: hug > .5 ? 'closed' : 'happy', mouth: 'smile', blush: .8 };
-      person(g, Ps); person(g, Ph);
-      if (hug > .5) for (const p of floaters(s, 111, 12, [900, 500, 1300, 900], { vy: 60, amp: 30 })) { g.fillStyle = `rgba(255,220,200,${.8 * p.tw * hug})`; circ(g, p.x, p.y, 3 + p.sz * 3); g.fill(); }
-    });
-    glow(g, 1500, 400, 900, '#FFD8A0', .25);
-  }, { tr: { type: 'leak', dur: .6 }, bloom: .4, grade: 'saturate(1.06)' });
+    const run = seg(k, .2, 1.4), hug = seg(k, 1.3, 1.6);
+    shot(g, 'c1i', 320, 180, 6, (b, gl) => {
+      stationBg(b, gl, s, { time: 'dawn' });
+      trainCar(b, -60, 250, { doorX: 150, door: 0, col: '#EDE6D6' });
+      platform(b, gl, s, { time: 'dawn', signX: 270, clockX: 220, pillars: [12, 308] });
+      const sx = ri(lerp(80, 166, E.io(run)));
+      if (hug < 1) {
+        monAt(b, sx, 152 - (run > 0 && run < 1 ? (Math.floor(s * 8) % 2) : 0), { who: 'she', eyes: 'happy', blush: 1, legs: run > 0 && run < 1 ? walkLeg(s, 10) : 0, armR: run > .7 ? 'hug' : 'n' }, 1);
+        monAt(b, 196, 152, { who: 'he', eyes: run > .5 ? 'happy' : 'l', armL: run > .6 ? 'hug' : 'n', blush: run > .6 ? 1 : 0 }, 1);
+      } else {
+        monAt(b, 196, 152, { who: 'he', eyes: 'shut', armL: 'hug', blush: 1 }, 1);
+        monAt(b, 172, 152, { who: 'she', eyes: 'shut', armR: 'hug', blush: 1, lean: 1 }, 1);
+        for (let i = 0; i < 5; i++) { const u = seg(s, CUT(15) + 1.6 + i * .2, CUT(15) + 2.6 + i * .2); if (u > 0 && u < 1) pheart(b, 186 + (i - 2) * 6, 128 - u * 26, rgba('#FF5A78', 1 - u)); }
+      }
+    }, { zoom: lerp(1, 1.5, E.io(seg(k, 1.2, 2.2))), cx: lerp(160, 190, E.io(seg(k, 1.2, 2.2))), cy: lerp(90, 120, E.io(seg(k, 1.2, 2.2))) });
+  }, { tr: { type: 'wipe', dur: .6, dir: -1 } });
 
-  // C1j：两个人沿着溪往日出走（"细水长流"），一直到间奏
+  // C1j：两个人沿着一条小溪往日出走（"细水长流"），一直到间奏
   scene('C1j', Lc(15, 7) - .3, (g, s, k) => {
-    camera(g, 960 - k * 14, 540 - k * 10, 1.04 + k * .035, () => {
-      streamLand(g, s, { time: 'sunrise', sunX: 1000, sunY: 560 - k * 26, rock: false });
-      birds(g, s, -300 + k * 260, 300 - k * 20, 7, 1);
-      const t = .8 - k * .085;
-      const [cx, cy, cw] = streamCurve(t);
-      const px = cx + cw / 2 + 60, py = cy;
-      const Ps = { who: 'she', u: 26 - k * 1.2, x: px, y: py, view: 'back', out: OUTFIT.sheTravel, pose: { aF1: 22, aF2: 0, bob: Math.abs(Math.sin(s * 3.5)) * .06 }, light: LT.gold, t: s };
-      const Ph = { who: 'he', u: 27 - k * 1.2, x: px + 64 - k * 3, y: py + 2, view: 'back', out: OUTFIT.heTravel, pose: { aN1: 22, aN2: 0, bob: Math.abs(Math.sin(s * 3.5 + 1.5)) * .06 }, light: LT.gold, t: s };
-      person(g, Ps); person(g, Ph);
-      const a = handPos(Ps, 'F'), b = handPos(Ph, 'N');
-      g.fillStyle = SKIN.she; circ(g, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, 6); g.fill();
-    });
-  }, { tr: { type: 'fade', dur: .8 }, bloom: .45, grade: 'saturate(1.05)' });
+    shot(g, 'c1j', 320, 180, 6, (b, gl) => {
+      streamSet(b, gl, s, { time: 'sunrise', sunX: 172, sunY: ri(94 - k * 4), rock: false });
+      pbirds(b, s, ri(-20 + k * 34), ri(40 - k * 2), 7, 1);
+      const u = .78 - k * .07, [cx, cy, cw] = streamC(u), px = ri(cx + cw / 2 + 8), py = ri(cy);
+      monAt(b, px, py, { who: 'she', back: 1, armR: 'hold', legs: walkLeg(s, 4) }, 1);
+      monAt(b, px + 28, py + 1, { who: 'he', back: 1, armL: 'hold', legs: walkLeg(s + .4, 4) }, 1);
+    }, { zoom: 1 + k * .03, cx: 160, cy: 96 });
+  }, { tr: { type: 'dither', dur: .8 } });
 });

@@ -1,5 +1,5 @@
 #!/bin/bash
-# 一键重新生成 MV《红豆》（横屏 1920×1080，30fps）：
+# 一键重新生成 MV《红豆》像素版（横屏 1920×1080，30fps）：
 #   下载字体（校验 sha256）→ 4 路并行渲染画面 → 原曲响度调到 −16 LUFS → 合成 MP4 → 超过 30 MB 按段落切成几段
 # 歌曲音频不进仓库（仓库是公开的）：先把用户发来的视频放到 audio/song.mp4（只用它的音轨）。
 # 歌词的逐字时间已经算好在 lyrics.js、节拍在 timing.js；要重新算，见 analyze.py、align.py（要 Demucs 和 torchaudio）。
@@ -8,17 +8,16 @@
 set -e
 cd "$(dirname "$0")"
 mkdir -p fonts out
-# 字体都是 SIL OFL：思源宋体 Medium / Bold（noto-cjk 的固定版本）、马善政毛笔、龙藏体（google/fonts 的固定提交）
-GF=https://cdn.jsdelivr.net/gh/google/fonts@66928797f271fed5ee428544e7229685e2d90127/ofl
-fetch() {  # 目标文件 地址 sha256
-  [ -f "$1" ] && echo "$3  $1" | sha256sum -c --quiet 2>/dev/null && return
-  curl -sSL --fail -o "$1" "$2"
-  echo "$3  $1" | sha256sum -c --quiet
-}
-fetch fonts/NotoSerifSC-Medium.otf https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@Serif2.003/Serif/SubsetOTF/SC/NotoSerifSC-Medium.otf e4e9beb5aaeb951e101aa8f122e2a6801ea9e48ac9f9b6bdfeef2436b55bc8ee
-fetch fonts/NotoSerifSC-Bold.otf https://cdn.jsdelivr.net/gh/notofonts/noto-cjk@Serif2.003/Serif/SubsetOTF/SC/NotoSerifSC-Bold.otf 24693d48bdb9152f0a06b02af625638a1097abd6de4010ebba027f6e82710527
-fetch fonts/MaShanZheng-Regular.ttf $GF/mashanzheng/MaShanZheng-Regular.ttf 6d2546bb189c732a8ca29af9e22457b152387d158aa459e4ac2ce1e51788b7fb
-fetch fonts/LongCang-Regular.ttf $GF/longcang/LongCang-Regular.ttf e5bf2c3f24ef2327c6f136d8f73e2f9dfdf44896fdbeb35a9515f44777bb91bc
+# 字体：缝合像素字体 Fusion Pixel 12px（比例宽度、简体，SIL OFL 1.1），取自 npm 上 @fontsource 的固定版本 5.3.0，校验 sha256
+FONT=fonts/FusionPixel12.woff2
+FONT_SHA=043eae5e616b0d1e75dc746d3d687b4413f9f1c70c1a09bc4ebb705ef1cc8e32
+if ! { [ -f $FONT ] && echo "$FONT_SHA  $FONT" | sha256sum -c --quiet 2>/dev/null; }; then
+  tmp=$(mktemp -d)
+  curl -sSL --fail -o $tmp/f.tgz https://registry.npmjs.org/@fontsource/fusion-pixel-12px-proportional-sc/-/fusion-pixel-12px-proportional-sc-5.3.0.tgz
+  tar -xzf $tmp/f.tgz -C $tmp package/files/fusion-pixel-12px-proportional-sc-latin-400-normal.woff2
+  cp $tmp/package/files/fusion-pixel-12px-proportional-sc-latin-400-normal.woff2 $FONT; rm -rf $tmp
+  echo "$FONT_SHA  $FONT" | sha256sum -c --quiet
+fi
 [ -f audio/song.mp4 ] || { echo "缺 audio/song.mp4（用户发来的歌曲视频，音轨 3:52.64）"; exit 1; }
 NAME=红豆
 FPS=30

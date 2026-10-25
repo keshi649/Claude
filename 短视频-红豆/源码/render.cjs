@@ -1,8 +1,9 @@
 // 用法：
-//   node render.cjs preview <t1,t2,...> <outdir>        渲染若干时间点的单帧 PNG
-//   node render.cjs cover <t> <out.jpg>                 渲染封面（main.js 的 drawCover；t 是取景的歌曲时间）
-//   node render.cjs video <startFrame> <endFrame> <out.mp4> [fps]   渲染一段视频（不含声音）
-//   node render.cjs scenes <out.json>                   导出镜头表（编号、开始时刻）
+//   node render.cjs preview <t1,t2,...> <outdir>                  渲染若干时间点的单帧 PNG
+//   node render.cjs cover <t> <out.jpg>                           封面：不画歌词，大字片名
+//   node render.cjs video <startFrame> <endFrame> <out.mp4> [fps]  渲染一段视频（不含声音）
+//   node render.cjs scenes <out.json>                             导出镜头表（编号、开始时刻），写文档用
+//   PAGE=test.html node render.cjs preview 0,1 out/test            角色、道具测试页
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -10,8 +11,7 @@ const { spawn } = require('child_process');
 const { chromium } = require('playwright');
 
 const ROOT = __dirname;
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.ttf': 'font/ttf', '.otf': 'font/otf' };
-const PAGE = process.env.PAGE || 'index.html';
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.woff2': 'font/woff2' };
 
 function serve() {
   return new Promise(res => {
@@ -29,8 +29,8 @@ async function open(srv) {
   const browser = await chromium.launch({ args: ['--disable-gpu', '--font-render-hinting=none'] });
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 });
   page.on('pageerror', e => { console.error('PAGE ERROR', e); process.exitCode = 1; });
-  page.on('console', m => { if (m.type() === 'error') console.error('console:', m.text()); });
-  await page.goto(`http://127.0.0.1:${srv.address().port}/${PAGE}`);
+  page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') console.error('console:', m.text()); });
+  await page.goto(`http://127.0.0.1:${srv.address().port}/${process.env.PAGE || 'index.html'}`);
   await page.waitForFunction('window.READY === true', null, { timeout: 60000 });
   return { browser, page };
 }
@@ -44,25 +44,25 @@ async function open(srv) {
     fs.mkdirSync(b, { recursive: true });
     for (const t of times) {
       const url = await page.evaluate(t => { window.frame(t); return document.getElementById('c').toDataURL('image/png'); }, t);
-      const f = path.join(b, `t${t.toFixed(2).padStart(7, '0')}.png`);
+      const f = path.join(b, `t${t.toFixed(2).padStart(6, '0')}.png`);
       fs.writeFileSync(f, Buffer.from(url.split(',')[1], 'base64'));
       console.log(f);
     }
-  } else if (mode === 'cover') {   // node render.cjs cover <t> <out.jpg>：不带字幕的单帧，用作封面
-    const url = await page.evaluate(t => { window.COVER = true; if (window.drawCover) window.drawCover(t); else window.frame(t); return document.getElementById('c').toDataURL('image/jpeg', 0.96); }, Number(a));
+  } else if (mode === 'cover') {
+    const url = await page.evaluate(t => { window.COVER = true; if (window.drawCover) window.drawCover(t); else window.frame(t); return document.getElementById('c').toDataURL('image/jpeg', 0.95); }, Number(a));
     fs.writeFileSync(b, Buffer.from(url.split(',')[1], 'base64'));
     console.log(b);
-  } else if (mode === 'scenes') {   // node render.cjs scenes <out.json>：镜头表（编号、开始的歌曲时间、视频时间），写文档用
-    const js = await page.evaluate(() => JSON.stringify(SCENES.map(sc => ({ id: sc.id, s: +sc.a.toFixed(2), t: +(sc.a - (window.TRIM || 0)).toFixed(2) }))));
+  } else if (mode === 'scenes') {
+    const js = await page.evaluate(() => JSON.stringify(SCENES.map(sc => ({ id: sc.id, s: +sc.a.toFixed(2) }))));
     fs.writeFileSync(a, js);
     console.log(a, JSON.parse(js).length, 'scenes');
   } else if (mode === 'video') {
     const fps = Number(d || 30), f0 = Number(a), f1 = Number(b);
-    const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-',
-      '-c:v', 'libx264', '-preset', 'medium', '-crf', '17', '-pix_fmt', 'yuv420p', '-r', String(fps), c], { stdio: ['pipe', 'inherit', 'inherit'] });
+    const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'png', '-i', '-',
+      '-c:v', 'libx264', '-preset', 'medium', '-crf', '14', '-pix_fmt', 'yuv420p', '-r', String(fps), c], { stdio: ['pipe', 'inherit', 'inherit'] });
     const t0 = Date.now();
     for (let f = f0; f < f1; f++) {
-      const url = await page.evaluate(t => { window.frame(t); return document.getElementById('c').toDataURL('image/jpeg', 0.95); }, f / fps);
+      const url = await page.evaluate(t => { window.frame(t); return document.getElementById('c').toDataURL('image/png'); }, f / fps);
       const buf = Buffer.from(url.split(',')[1], 'base64');
       if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
       if ((f - f0) % 150 === 0) console.log(`[${c}] frame ${f}/${f1}  ${((Date.now() - t0) / 1000).toFixed(0)}s`);
