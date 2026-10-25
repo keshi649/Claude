@@ -43,7 +43,7 @@ function illusion(g, t) {
   }
   // "其实一直是黑白的"：取色给你看——天、草、屋顶都是灰的
   topText(g, '这张画', '一直是黑白的', { col: '#D3D0DE' });
-  const picks = [[200, 700, '天'], [560, 1200, '草'], [810, 844, '屋顶']];   // 取色笔的笔尖在 (x, y+76)
+  const picks = [[200, 700, '天'], [560, 1200, '草'], [790, 844, '屋顶']];   // 取色笔的笔尖在 (x, y+76)
   picks.forEach(([x, y, s], i) => {
     const p = pop(t, CH('b3', 1) - .2 + i * .25, .3); if (p <= 0) return;
     g.save(); g.translate(x, y); g.scale(p, p);
