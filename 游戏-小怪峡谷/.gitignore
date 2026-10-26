@@ -1,0 +1,3 @@
+# 字体构建时从 npm 下载（SIL OFL，build.py 校验 sha256），不进仓库
+fonts/
+__pycache__/
