@@ -250,18 +250,16 @@ float nz = texture2D(tNoise, wp / 1700.0).r;
 float nz2 = texture2D(tNoise, wp / 330.0 + 0.37).r;
 vec3 grass = texture2D(tGrass, wp / 430.0).rgb * (0.82 + 0.36 * nz);
 grass = mix(grass, grass * vec3(0.92, 1.04, 0.86), smoothstep(0.55, 0.75, nz2));
-vec3 stone = mix(texture2D(tStone, wp / 230.0).rgb, vec3(0.8, 0.76, 0.66), 0.22);
-vec3 plaza = texture2D(tPlaza, wp / 360.0).rgb;
-float side = clamp((wp.y - wp.x) / 900.0, -1.0, 1.0);          // 蓝方那半边 > 0
-plaza *= mix(vec3(1.06, 0.96, 0.92), vec3(0.92, 0.98, 1.08), side * 0.5 + 0.5);
-vec3 sand = texture2D(tSand, wp / 380.0).rgb;
 vec3 c = grass;
 float kb = smoothstep(0.32, 0.62, ctl.b + (nz2 - 0.5) * 0.35);
-c = mix(c, sand, kb);
+if (kb > 0.001) c = mix(c, texture2D(tSand, wp / 380.0).rgb, kb);
 float kr = smoothstep(0.38, 0.6, ctl.r + (nz2 - 0.5) * 0.3);
-c = mix(c, stone, kr);
+if (kr > 0.001) c = mix(c, mix(texture2D(tStone, wp / 230.0).rgb, vec3(0.8, 0.76, 0.66), 0.22), kr);
 float kg = smoothstep(0.4, 0.6, ctl.g);
-c = mix(c, plaza, kg);
+if (kg > 0.001) {
+  float side = clamp((wp.y - wp.x) / 900.0, -1.0, 1.0);          // 蓝方那半边 > 0
+  c = mix(c, texture2D(tPlaza, wp / 360.0).rgb * mix(vec3(1.06, 0.96, 0.92), vec3(0.92, 0.98, 1.08), side * 0.5 + 0.5), kg);
+}
 // 地图外：深一点的林地
 float out1 = max(max(${BORDER}.0 - wp.x, wp.x - ${L - BORDER}.0), max(${BORDER}.0 - wp.y, wp.y - ${L - BORDER}.0));
 c *= 1.0 - 0.35 * smoothstep(-40.0, 160.0, out1);
@@ -588,7 +586,7 @@ function buildPit(p) {
     b.scale.y = 0.55 + R() * 0.3; g.add(b);
   }
   const m = new THREE.Mesh(bakeGroup(g), VCOL());
-  m.castShadow = true; m.receiveShadow = true;
+  m.castShadow = false; m.receiveShadow = true;
   return m;
 }
 
@@ -664,7 +662,7 @@ function buildScene() {
   cliffParts.push(cliffGeo(outer, borderInner(), CLIFF_H, 99));
   for (const g of cliffParts) {
     const m = new THREE.Mesh(g, cliffMat);
-    m.receiveShadow = true; m.castShadow = true; m.matrixAutoUpdate = false;
+    m.receiveShadow = true; m.castShadow = false; m.matrixAutoUpdate = false;
     scene.add(m);
   }
   // 树、石头、远处的密林

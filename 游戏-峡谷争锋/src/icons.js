@@ -10,6 +10,7 @@ const SKILL_THEME = {
   s1: ['#7CE0A0', '#0E4A2A'], s2: ['#C8F08A', '#2A4A0E'], s3: ['#9CF0FF', '#0E3A4A'],
   h1: ['#9CFF9C', '#0E5A2A'], h2: ['#8AD860', '#1E4A0E'], h3: ['#FFE89A', '#7A4A0E'],
   flash: ['#FFF0A0', '#7A5A0E'], heal: ['#9CFF9C', '#0E5A2A'], recall: ['#9CC8FF', '#0E2A6A'], atk: ['#F4E2B0', '#5A3A12'],
+  lasthit: ['#F4E2B0', '#4A3A20'], tower: ['#F4E2B0', '#3A3A4A'],
 };
 function iconBg(g, s, c1, c2) {
   const gr = g.createRadialGradient(s * 0.42, s * 0.35, s * 0.05, s * 0.5, s * 0.5, s * 0.72);
@@ -70,6 +71,14 @@ function drawSkillGlyph(g, id, s) {
     case 'flash': glowFill(g, col, P(() => { g.moveTo(36 * k, 6 * k); g.lineTo(16 * k, 36 * k); g.lineTo(30 * k, 36 * k); g.lineTo(24 * k, 58 * k); g.lineTo(48 * k, 26 * k); g.lineTo(34 * k, 26 * k); g.closePath(); })); break;
     case 'recall': glowStroke(g, col, 3.5 * k, () => { g.moveTo(14 * k, 32 * k); g.lineTo(c, 12 * k); g.lineTo(50 * k, 32 * k); g.moveTo(20 * k, 28 * k); g.lineTo(20 * k, 52 * k); g.lineTo(44 * k, 52 * k); g.lineTo(44 * k, 28 * k); g.moveTo(28 * k, 52 * k); g.lineTo(28 * k, 40 * k); g.lineTo(36 * k, 40 * k); g.lineTo(36 * k, 52 * k); }); break;
     case 'atk': glowFill(g, col, P(() => swordPath(g, c, c + 18 * k, 40 * k, 0, 4 * k))); break;
+    case 'lasthit':                              // 补刀：小兵的头盔
+      glowFill(g, col, P(() => { g.arc(c, c + 4 * k, 17 * k, Math.PI, 0); g.lineTo(c + 17 * k, c + 12 * k); g.lineTo(c - 17 * k, c + 12 * k); g.closePath(); }));
+      glowStroke(g, col, 3 * k, () => { g.moveTo(c, c - 13 * k); g.lineTo(c, c - 22 * k); g.moveTo(c - 10 * k, c + 18 * k); g.lineTo(c + 10 * k, c + 18 * k); });
+      break;
+    case 'tower':                                // 推塔：一座塔
+      glowFill(g, col, P(() => { g.moveTo(c - 9 * k, c + 22 * k); g.lineTo(c - 6 * k, c - 8 * k); g.lineTo(c + 6 * k, c - 8 * k); g.lineTo(c + 9 * k, c + 22 * k); g.closePath(); g.moveTo(c - 13 * k, c + 24 * k); g.lineTo(c + 13 * k, c + 24 * k); g.lineTo(c + 13 * k, c + 18 * k); g.lineTo(c - 13 * k, c + 18 * k); g.closePath(); }));
+      glowFill(g, '#9CC8FF', P(() => g.arc(c, c - 16 * k, 7 * k, 0, 7)));
+      break;
   }
 }
 // 圆形的技能图标（按钮里用）

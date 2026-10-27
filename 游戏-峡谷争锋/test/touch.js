@@ -1,5 +1,6 @@
-// 测触屏：用 CDP 发多指触摸（Playwright 的 touchscreen.tap 只能单指）。摇杆按住的同时第二根手指按普攻、拖技能瞄准、拖到“取消施法”、
-// 闪现、回城、恢复、按小地图、暂停、商店、推荐装备。每一步检查对局状态对不对。
+// 测触屏：用 CDP 发多指触摸（Playwright 的 touchscreen.tap 只能单指）。点“+”学技能、摇杆按住的同时第二根手指按普攻、补刀键、推塔键、
+// 点敌人锁定 / 点空地取消、点敌方头像锁定、拖技能瞄准（技能轮盘）、拖到“取消施法”、闪现、回城、恢复、按小地图、暂停、商店、推荐装备。
+// 每一步检查对局状态对不对。
 // 用法：node test/touch.js [输出目录]
 const path = require('path'), fs = require('fs');
 const { ROOT, launch, watchErrors } = require('./lib');
@@ -22,10 +23,17 @@ const { ROOT, launch, watchErrors } = require('./lib');
   const T = async (type, pts) => { await cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y, id]) => ({ x, y, id, radiusX: 4, radiusY: 4, force: 1 })) }); if (type === 'touchMove') await page.waitForTimeout(450); };
   const run = s => page.evaluate(s => { for (let i = 0; i < s * 60; i++) { playerCmd(G.W, G.me); step(G.W, 1 / 60); G.W.ev.length = 0; } }, s);
   const st = () => page.evaluate(() => ({ x: Math.round(G.me.x), y: Math.round(G.me.y), cd0: +G.me.sk[0].cd.toFixed(2), flash: Math.round(G.me.flashCd), heal: Math.round(G.me.healCd), recall: G.me.recall, scr: G.scr,
-    joy: !!INP.joy, atk: INP.atk != null, aim: INP.aim ? { s: INP.aim.s, cancel: INP.aim.cancel, moved: INP.aim.moved } : null, peek: R3.peek, items: G.me.items.slice(), gold: Math.round(G.me.gold) }));
+    joy: !!INP.joy, atk: INP.atk != null, mode: INP.atkMode, cmdMode: G.me.cmd.atkMode, aim: INP.aim ? { s: INP.aim.s, cancel: INP.aim.cancel, moved: INP.aim.moved, fx: Math.round(INP.aim.fx), fy: Math.round(INP.aim.fy) } : null,
+    peek: R3.peek, items: G.me.items.slice(), gold: Math.round(G.me.gold), rank: G.me.sk.map(k => k.rank), pts: G.me.skillPts, lock: INP.lock }));
   const Lt = await page.evaluate(() => HUD.L);
   const res = [];
   const ok = (name, cond, info) => { res.push([name, !!cond]); console.log((cond ? 'OK  ' : 'FAIL') + ' ' + name + (info ? '  ' + JSON.stringify(info) : '')); };
+  // 0. 点技能 1 左上角的“+”：学会技能 1
+  let s00 = await st();
+  ok('开局：技能都没学、有 1 个技能点', s00.rank.join() === '0,0,0' && s00.pts === 1, s00);
+  await T('touchStart', [[Lt.up[0].x, Lt.up[0].y, 20]]); await T('touchEnd', []);
+  s00 = await st();
+  ok('点“+”：技能 1 升到 1 级', s00.rank[0] === 1 && s00.pts === 0, { rank: s00.rank, pts: s00.pts });
   // 1. 摇杆往右上推 2 秒
   let s0 = await st();
   await T('touchStart', [[Lt.joy.x, Lt.joy.y, 1]]);
@@ -44,6 +52,34 @@ const { ROOT, launch, watchErrors } = require('./lib');
   await T('touchEnd', []);
   s1 = await st();
   ok('全松开', !s1.joy && !s1.atk, s1);
+  await T('touchStart', [[Lt.lasthit.x, Lt.lasthit.y, 21]]); await run(0.05);
+  s1 = await st();
+  ok('按住补刀键：只打小兵野怪', s1.atk && s1.mode === 'minion' && s1.cmdMode === 'minion', { mode: s1.mode, cmd: s1.cmdMode });
+  await T('touchEnd', []);
+  await T('touchStart', [[Lt.tower.x, Lt.tower.y, 22]]); await run(0.05);
+  s1 = await st();
+  ok('按住推塔键：只打塔', s1.atk && s1.mode === 'tower' && s1.cmdMode === 'tower', { mode: s1.mode, cmd: s1.cmdMode });
+  await T('touchEnd', []);
+  // 点敌人锁定、点空地取消、点头像锁定：把一个敌方英雄挪到玩家右边
+  const foe = await page.evaluate(() => { const e = G.W._heroes.find(h => h.team === 1); e.x = G.me.x + 260; e.y = G.me.y - 60; e.vx = e.vy = 0; e.cmd = {}; e.ai.next = 99; delete e._px; R3.alpha = 1;
+    render3D(G.W, G.me, G.me, 0.02, null); const o = [0, 0, 0]; worldToScreen(e.x, groundH(e.x, e.y) + unitTop(e) * 0.5, e.y, o); return { id: e.id, sx: o[0], sy: o[1] }; });
+  await T('touchStart', [[foe.sx, foe.sy, 23]]); await T('touchEnd', []);
+  s1 = await st();
+  ok('点屏幕上的敌方英雄：锁定', s1.lock === foe.id, { lock: s1.lock, foe: foe.id });
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: path.join(out, 't0-lock.png') });
+  const empty = await page.evaluate(() => [HUD.w * 0.6, HUD.h * 0.3]);   // 右上方一块空地（不在按钮上、离敌人远）
+  await T('touchStart', [[empty[0], empty[1], 24]]); await T('touchEnd', []);
+  s1 = await st();
+  ok('点空地：取消锁定', !s1.lock, { lock: s1.lock });
+  await page.waitForTimeout(500);
+  const foes = await page.evaluate(() => HUD.foes.map(e => e.id));
+  ok('敌方英雄靠近：技能上方出现头像', foes.includes(foe.id), foes);
+  const fi = foes.indexOf(foe.id);
+  await T('touchStart', [[Lt.foes[fi].x, Lt.foes[fi].y, 25]]); await T('touchEnd', []);
+  s1 = await st();
+  ok('点敌方头像：锁定', s1.lock === foe.id, { lock: s1.lock });
+  await page.evaluate(() => { const e = G.W._heroes.find(h => h.team === 1); const p = spawnPoint(1, e.slot); e.x = p[0]; e.y = p[1]; delete e._px; INP.lock = 0; });
   // 3. 拖技能 1 瞄准，松手放出去
   const sk = Lt.s[0];
   await T('touchStart', [[sk.x, sk.y, 3]]);
@@ -51,7 +87,7 @@ const { ROOT, launch, watchErrors } = require('./lib');
   await T('touchMove', [[sk.x - 60, sk.y - 40, 3]]);
   s1 = await st();
   const dec = await page.evaluate(() => R3.aimG && Object.values(R3.aimG).filter(Boolean).length);
-  ok('拖技能：进入瞄准、地上有指示', s1.aim && s1.aim.moved && dec > 0, { aim: s1.aim, decals: dec });
+  ok('拖技能：进入瞄准（技能轮盘跟着手指）、地上有指示', s1.aim && s1.aim.moved && s1.aim.fx < -40 && dec > 0, { aim: s1.aim, decals: dec });
   await page.waitForTimeout(400);
   await page.screenshot({ path: path.join(out, 't2-aim.png') });
   await T('touchEnd', []);

@@ -16,6 +16,7 @@ const { ROOT, launch, watchErrors } = require('./lib');
   await page.waitForSelector('#select:not([hidden])');
   await page.evaluate(() => document.querySelector('#bGo').click());
   await page.waitForFunction(() => G.scr === 'game', null, { timeout: 30000 });
+  await page.evaluate(() => { G.me.manual = false; applySkillRanks(G.me); });   // 电脑替玩家打：技能按推荐顺序自动升
   let shot = 0;
   for (let k = 0; k < 500; k++) {
     const r = await page.evaluate(() => {

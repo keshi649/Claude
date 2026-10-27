@@ -205,7 +205,10 @@ function newWorld(opt) {
     const list = team ? opt.red : opt.blue;
     list.forEach((hid, k) => {
       const h = makeHero(W, hid, team, k);
-      if (team === 0 && k === opt.player) { h.isPlayer = true; W.playerId = h.id; }
+      if (team === 0 && k === opt.player) {
+        h.isPlayer = true; W.playerId = h.id;
+        h.manual = true; h.skillPts = 1; for (const st of h.sk) st.rank = 0;   // 玩家像王者一样自己点“+”升技能
+      }
     });
   }
   // 电脑的分路：按英雄定位，重复的往空着的路上排
@@ -239,7 +242,7 @@ function makeHero(W, hid, team, k) {
     flashCd: 0, healCd: 0, recall: 0, kills: 0, deaths: 0, assists: 0, streak: 0, multi: 0, multiT: -99,
     dmgH: 0, dmgT: 0, goldTotal: START_GOLD, cs: 0, hitBy: {}, respawnAt: 0, revealT: -9, aggroT: -9, aggroV: 0,
     lastHurt: -9, lastHeroHurt: -9, atkN: 0, lock: 0, cmd: {}, path: null, pathGoal: null, pathT: -9, isPlayer: false,
-    lane: d.lane, ai: { next: 0 }, proj: d.proj, hp: 1, maxHp: 1, z: 0, vx: 0, vy: 0,
+    lane: d.lane, ai: { next: 0 }, proj: d.proj, hp: 1, maxHp: 1, z: 0, vx: 0, vy: 0, manual: false, skillPts: 0,
   });
   applySkillRanks(h);
   heroStats(h, true);
@@ -258,6 +261,18 @@ function applySkillRanks(h) {
   const r = [0, 0, 0];
   for (let i = 0; i < h.lvl; i++) r[SKILL_ORDER[i]]++;
   for (let s = 0; s < 3; s++) h.sk[s].rank = r[s];
+}
+function canUpgrade(h, s) {
+  if (!h.manual || h.skillPts <= 0) return false;
+  const r = h.sk[s].rank, n = HERO_BY_ID[h.hid].skills[s].cd.length;
+  if (r >= n) return false;
+  return s === 2 ? r < Math.floor(h.lvl / 4) : r < Math.ceil(h.lvl / 2);
+}
+function upgradeSkill(W, h, s) {
+  if (!canUpgrade(h, s)) return false;
+  h.sk[s].rank++; h.skillPts--;
+  W.ev.push({ t: 'skillUp', id: h.id, s, rank: h.sk[s].rank });
+  return true;
 }
 function heroStats(h, fill) {
   const d = HERO_BY_ID[h.hid], n = h.lvl - 1;
@@ -375,7 +390,7 @@ function addXp(W, h, v) {
   let up = false;
   while (h.lvl < MAX_LVL && h.xp >= XP_NEED(h.lvl)) { h.xp -= XP_NEED(h.lvl); h.lvl++; up = true; }
   if (h.lvl >= MAX_LVL) h.xp = 0;
-  if (up) { applySkillRanks(h); heroStats(h, false); h.hp = Math.min(h.maxHp, h.hp + h.maxHp * 0.05); W.ev.push({ t: 'lvl', id: h.id, lvl: h.lvl }); }
+  if (up) { if (h.manual) h.skillPts = h.lvl - h.sk.reduce((a, k) => a + k.rank, 0); else applySkillRanks(h); heroStats(h, false); h.hp = Math.min(h.maxHp, h.hp + h.maxHp * 0.05); W.ev.push({ t: 'lvl', id: h.id, lvl: h.lvl }); }
 }
 const heroesOf = (W, team) => W._heroes ? W._heroes.filter(h => h.team === team) : W.units.filter(u => u.kind === 'hero' && u.team === team);
 function heroDied(W, v, k, src) {
@@ -528,7 +543,7 @@ function doAttack(W, u, t) {
   u.atkT = W.t; u.atkTgt = t.id;
   if (Math.abs(t.x - u.x) > 4) u.face = t.x > u.x ? 1 : -1;
   if (u.kind === 'hero') {
-    u.lock = u.proj ? 0.12 : 0.16; u.revealT = W.t;
+    u.lock = u.proj ? 0.08 : 0.1; u.revealT = W.t;
     if (fxOn(u, 'invis')) clearFx(u, 'invis');
     if (u.recall) { u.recall = 0; W.ev.push({ t: 'recallX', id: u.id }); }
   }
@@ -896,17 +911,20 @@ function goTo(W, h, tx, ty, dt) {          // 英雄走到某处：看得见就�
 function attackable(W, team, u) {
   return u && !u.dead && u.team !== team && !untarg(u) && !u.inv && !u.reset && canSee(W, team, u);
 }
-// 玩家按住普攻：在范围（+extra）里挑目标。英雄优先挑血最少的，再是小兵 / 野怪（血最少的，方便补刀），最后是塔
-function autoTarget(W, h, extra) {
+// 玩家按住普攻：在范围（+extra）里挑目标。mode：'hero'（普攻键，英雄优先挑血最少的，再是小兵 / 野怪，最后是塔）、
+// 'minion'（补刀键：只打小兵和野怪，挑血最少的）、'tower'（推塔键：只打塔和水晶）
+function autoTarget(W, h, extra, mode) {
   let bestH = null, bh = 1e9, bestM = null, bm = 1e9, bestS = null, bs = 1e9;
   near(W, h.x, h.y, h.range + extra + 90, u => {
     if (!attackable(W, h.team, u)) return;
     const e = edge(h, u);
     if (e > h.range + extra) return;
     if (u.kind === 'hero') { const v = u.hp + e * 2; if (v < bh) { bh = v; bestH = u; } }
-    else if (u.kind === 'minion' || u.kind === 'monster') { const v = u.hp + e * 1.5; if (v < bm) { bm = v; bestM = u; } }
+    else if (u.kind === 'minion' || u.kind === 'monster') { const v = (mode === 'minion' ? u.hp * 2 : u.hp) + e * 1.5; if (v < bm) { bm = v; bestM = u; } }
     else { if (e < bs) { bs = e; bestS = u; } }
   });
+  if (mode === 'minion') return bestM;
+  if (mode === 'tower') return bestS;
   return bestH || bestM || bestS;
 }
 
@@ -951,6 +969,7 @@ function heroStep(W, h, dt) {
   if (h.leap) { stepLeap(W, h, dt); return; }
   if (h.chan) { stepChan(W, h, dt); return; }
   const c = h.cmd || (h.cmd = {});
+  if (c.cast && c.cast.at != null && W.t - c.cast.at > 0.5) c.cast = null;
   if (c.cast) { const cs = c.cast; c.cast = null; castSkill(W, h, cs.s, cs.x, cs.y, cs.id); if (h.dash || h.leap || h.chan) return; }
   if (c.flash) { const f = c.flash; c.flash = null; doFlash(W, h, f[0], f[1]); }
   if (c.heal) { c.heal = false; doHealSpell(W, h); }
@@ -969,7 +988,7 @@ function heroStep(W, h, dt) {
   const canAtk = !spin;
   // 普攻目标
   let tgt = null;
-  if (c.atkAuto && canAtk) tgt = autoTarget(W, h, c.mv ? 30 : 320);
+  if (c.atkAuto && canAtk) tgt = autoTarget(W, h, c.mv ? 30 : 320, c.atkMode);
   else if (c.atk && canAtk) { tgt = byId(W, c.atk); if (!attackable(W, h.team, tgt)) { tgt = null; c.atk = 0; } }
   if (tgt) {
     const e = edge(h, tgt);

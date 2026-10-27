@@ -639,7 +639,10 @@ function newWorld(opt) {
     const list = team ? opt.red : opt.blue;
     list.forEach((hid, k) => {
       const h = makeHero(W, hid, team, k);
-      if (team === 0 && k === opt.player) { h.isPlayer = true; W.playerId = h.id; }
+      if (team === 0 && k === opt.player) {
+        h.isPlayer = true; W.playerId = h.id;
+        h.manual = true; h.skillPts = 1; for (const st of h.sk) st.rank = 0;   // 玩家像王者一样自己点“+”升技能
+      }
     });
   }
   // 电脑的分路：按英雄定位，重复的往空着的路上排
@@ -673,7 +676,7 @@ function makeHero(W, hid, team, k) {
     flashCd: 0, healCd: 0, recall: 0, kills: 0, deaths: 0, assists: 0, streak: 0, multi: 0, multiT: -99,
     dmgH: 0, dmgT: 0, goldTotal: START_GOLD, cs: 0, hitBy: {}, respawnAt: 0, revealT: -9, aggroT: -9, aggroV: 0,
     lastHurt: -9, lastHeroHurt: -9, atkN: 0, lock: 0, cmd: {}, path: null, pathGoal: null, pathT: -9, isPlayer: false,
-    lane: d.lane, ai: { next: 0 }, proj: d.proj, hp: 1, maxHp: 1, z: 0, vx: 0, vy: 0,
+    lane: d.lane, ai: { next: 0 }, proj: d.proj, hp: 1, maxHp: 1, z: 0, vx: 0, vy: 0, manual: false, skillPts: 0,
   });
   applySkillRanks(h);
   heroStats(h, true);
@@ -692,6 +695,18 @@ function applySkillRanks(h) {
   const r = [0, 0, 0];
   for (let i = 0; i < h.lvl; i++) r[SKILL_ORDER[i]]++;
   for (let s = 0; s < 3; s++) h.sk[s].rank = r[s];
+}
+function canUpgrade(h, s) {
+  if (!h.manual || h.skillPts <= 0) return false;
+  const r = h.sk[s].rank, n = HERO_BY_ID[h.hid].skills[s].cd.length;
+  if (r >= n) return false;
+  return s === 2 ? r < Math.floor(h.lvl / 4) : r < Math.ceil(h.lvl / 2);
+}
+function upgradeSkill(W, h, s) {
+  if (!canUpgrade(h, s)) return false;
+  h.sk[s].rank++; h.skillPts--;
+  W.ev.push({ t: 'skillUp', id: h.id, s, rank: h.sk[s].rank });
+  return true;
 }
 function heroStats(h, fill) {
   const d = HERO_BY_ID[h.hid], n = h.lvl - 1;
@@ -809,7 +824,7 @@ function addXp(W, h, v) {
   let up = false;
   while (h.lvl < MAX_LVL && h.xp >= XP_NEED(h.lvl)) { h.xp -= XP_NEED(h.lvl); h.lvl++; up = true; }
   if (h.lvl >= MAX_LVL) h.xp = 0;
-  if (up) { applySkillRanks(h); heroStats(h, false); h.hp = Math.min(h.maxHp, h.hp + h.maxHp * 0.05); W.ev.push({ t: 'lvl', id: h.id, lvl: h.lvl }); }
+  if (up) { if (h.manual) h.skillPts = h.lvl - h.sk.reduce((a, k) => a + k.rank, 0); else applySkillRanks(h); heroStats(h, false); h.hp = Math.min(h.maxHp, h.hp + h.maxHp * 0.05); W.ev.push({ t: 'lvl', id: h.id, lvl: h.lvl }); }
 }
 const heroesOf = (W, team) => W._heroes ? W._heroes.filter(h => h.team === team) : W.units.filter(u => u.kind === 'hero' && u.team === team);
 function heroDied(W, v, k, src) {
@@ -962,7 +977,7 @@ function doAttack(W, u, t) {
   u.atkT = W.t; u.atkTgt = t.id;
   if (Math.abs(t.x - u.x) > 4) u.face = t.x > u.x ? 1 : -1;
   if (u.kind === 'hero') {
-    u.lock = u.proj ? 0.12 : 0.16; u.revealT = W.t;
+    u.lock = u.proj ? 0.08 : 0.1; u.revealT = W.t;
     if (fxOn(u, 'invis')) clearFx(u, 'invis');
     if (u.recall) { u.recall = 0; W.ev.push({ t: 'recallX', id: u.id }); }
   }
@@ -1330,17 +1345,20 @@ function goTo(W, h, tx, ty, dt) {          // 英雄走到某处：看得见就�
 function attackable(W, team, u) {
   return u && !u.dead && u.team !== team && !untarg(u) && !u.inv && !u.reset && canSee(W, team, u);
 }
-// 玩家按住普攻：在范围（+extra）里挑目标。英雄优先挑血最少的，再是小兵 / 野怪（血最少的，方便补刀），最后是塔
-function autoTarget(W, h, extra) {
+// 玩家按住普攻：在范围（+extra）里挑目标。mode：'hero'（普攻键，英雄优先挑血最少的，再是小兵 / 野怪，最后是塔）、
+// 'minion'（补刀键：只打小兵和野怪，挑血最少的）、'tower'（推塔键：只打塔和水晶）
+function autoTarget(W, h, extra, mode) {
   let bestH = null, bh = 1e9, bestM = null, bm = 1e9, bestS = null, bs = 1e9;
   near(W, h.x, h.y, h.range + extra + 90, u => {
     if (!attackable(W, h.team, u)) return;
     const e = edge(h, u);
     if (e > h.range + extra) return;
     if (u.kind === 'hero') { const v = u.hp + e * 2; if (v < bh) { bh = v; bestH = u; } }
-    else if (u.kind === 'minion' || u.kind === 'monster') { const v = u.hp + e * 1.5; if (v < bm) { bm = v; bestM = u; } }
+    else if (u.kind === 'minion' || u.kind === 'monster') { const v = (mode === 'minion' ? u.hp * 2 : u.hp) + e * 1.5; if (v < bm) { bm = v; bestM = u; } }
     else { if (e < bs) { bs = e; bestS = u; } }
   });
+  if (mode === 'minion') return bestM;
+  if (mode === 'tower') return bestS;
   return bestH || bestM || bestS;
 }
 
@@ -1385,6 +1403,7 @@ function heroStep(W, h, dt) {
   if (h.leap) { stepLeap(W, h, dt); return; }
   if (h.chan) { stepChan(W, h, dt); return; }
   const c = h.cmd || (h.cmd = {});
+  if (c.cast && c.cast.at != null && W.t - c.cast.at > 0.5) c.cast = null;
   if (c.cast) { const cs = c.cast; c.cast = null; castSkill(W, h, cs.s, cs.x, cs.y, cs.id); if (h.dash || h.leap || h.chan) return; }
   if (c.flash) { const f = c.flash; c.flash = null; doFlash(W, h, f[0], f[1]); }
   if (c.heal) { c.heal = false; doHealSpell(W, h); }
@@ -1403,7 +1422,7 @@ function heroStep(W, h, dt) {
   const canAtk = !spin;
   // 普攻目标
   let tgt = null;
-  if (c.atkAuto && canAtk) tgt = autoTarget(W, h, c.mv ? 30 : 320);
+  if (c.atkAuto && canAtk) tgt = autoTarget(W, h, c.mv ? 30 : 320, c.atkMode);
   else if (c.atk && canAtk) { tgt = byId(W, c.atk); if (!attackable(W, h.team, tgt)) { tgt = null; c.atk = 0; } }
   if (tgt) {
     const e = edge(h, tgt);
@@ -3189,18 +3208,16 @@ float nz = texture2D(tNoise, wp / 1700.0).r;
 float nz2 = texture2D(tNoise, wp / 330.0 + 0.37).r;
 vec3 grass = texture2D(tGrass, wp / 430.0).rgb * (0.82 + 0.36 * nz);
 grass = mix(grass, grass * vec3(0.92, 1.04, 0.86), smoothstep(0.55, 0.75, nz2));
-vec3 stone = mix(texture2D(tStone, wp / 230.0).rgb, vec3(0.8, 0.76, 0.66), 0.22);
-vec3 plaza = texture2D(tPlaza, wp / 360.0).rgb;
-float side = clamp((wp.y - wp.x) / 900.0, -1.0, 1.0);          // 蓝方那半边 > 0
-plaza *= mix(vec3(1.06, 0.96, 0.92), vec3(0.92, 0.98, 1.08), side * 0.5 + 0.5);
-vec3 sand = texture2D(tSand, wp / 380.0).rgb;
 vec3 c = grass;
 float kb = smoothstep(0.32, 0.62, ctl.b + (nz2 - 0.5) * 0.35);
-c = mix(c, sand, kb);
+if (kb > 0.001) c = mix(c, texture2D(tSand, wp / 380.0).rgb, kb);
 float kr = smoothstep(0.38, 0.6, ctl.r + (nz2 - 0.5) * 0.3);
-c = mix(c, stone, kr);
+if (kr > 0.001) c = mix(c, mix(texture2D(tStone, wp / 230.0).rgb, vec3(0.8, 0.76, 0.66), 0.22), kr);
 float kg = smoothstep(0.4, 0.6, ctl.g);
-c = mix(c, plaza, kg);
+if (kg > 0.001) {
+  float side = clamp((wp.y - wp.x) / 900.0, -1.0, 1.0);          // 蓝方那半边 > 0
+  c = mix(c, texture2D(tPlaza, wp / 360.0).rgb * mix(vec3(1.06, 0.96, 0.92), vec3(0.92, 0.98, 1.08), side * 0.5 + 0.5), kg);
+}
 // 地图外：深一点的林地
 float out1 = max(max(${BORDER}.0 - wp.x, wp.x - ${L - BORDER}.0), max(${BORDER}.0 - wp.y, wp.y - ${L - BORDER}.0));
 c *= 1.0 - 0.35 * smoothstep(-40.0, 160.0, out1);
@@ -3527,7 +3544,7 @@ function buildPit(p) {
     b.scale.y = 0.55 + R() * 0.3; g.add(b);
   }
   const m = new THREE.Mesh(bakeGroup(g), VCOL());
-  m.castShadow = true; m.receiveShadow = true;
+  m.castShadow = false; m.receiveShadow = true;
   return m;
 }
 
@@ -3603,7 +3620,7 @@ function buildScene() {
   cliffParts.push(cliffGeo(outer, borderInner(), CLIFF_H, 99));
   for (const g of cliffParts) {
     const m = new THREE.Mesh(g, cliffMat);
-    m.receiveShadow = true; m.castShadow = true; m.matrixAutoUpdate = false;
+    m.receiveShadow = true; m.castShadow = false; m.matrixAutoUpdate = false;
     scene.add(m);
   }
   // 树、石头、远处的密林
@@ -3755,11 +3772,20 @@ function worldToScreen(x, h, y, out) {
 
 const MSCALE = 1.22;                         // 小兵放大
 const R3 = {
-  scene: null, t: 0, camX: 2500, camY: 2500, shake: 0, peek: null, aimCam: null,
+  scene: null, t: 0, alpha: 1, camX: 2500, camY: 2500, shake: 0, peek: null, aimCam: null,
   heroes: new Map(), monsters: new Map(), structs: new Map(), minion: {}, mcache: new Map(), corpses: [],
   projs: new Map(), pool: {}, fx: [], decals: [], bars: [], W: null, me: null, tex: {}, view: [0, 0, L, L],
   towerRing: null, aimG: null,
 };
+
+/* ---------- 插值：模拟固定 60 步/秒，画面按屏幕刷新；画的时候取上一步和这一步之间的位置，走起来不一顿一顿 ---------- */
+const _ip = [0, 0];
+function ip(u) {
+  const a = R3.alpha;
+  if (u._px == null || a >= 1 || Math.abs(u.x - u._px) + Math.abs(u.y - u._py) > 200) { _ip[0] = u.x; _ip[1] = u.y; }
+  else { _ip[0] = u._px + (u.x - u._px) * a; _ip[1] = u._py + (u.y - u._py) * a; }
+  return _ip;
+}
 
 /* ---------- 画布贴图：圈、实心圆、虚线圈、箭头、刀光、光点 ---------- */
 function decalTex(kind) {
@@ -3931,15 +3957,21 @@ function init3D(scene) {
     for (const g of [P.body, P.legL, P.legR]) {
       const m = new THREE.InstancedMesh(g, VCOL(), max);
       m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      m.count = 0; m.frustumCulled = false; m.castShadow = true; m.visible = false;
+      m.count = 0; m.frustumCulled = false; m.castShadow = false; m.visible = false;
       scene.add(m);
       ent.meshes.push(m);
     }
     ent.max = max;
     R3.minion[mt + team] = ent;
   }
-  // 敌方塔的攻击范围圈
+  // 小兵脚下的淡影子（一块实例化的软圆片）
+  const bm = new THREE.InstancedMesh(_decalGeo, new THREE.MeshBasicMaterial({ map: decalTex('soft'), color: '#000000', transparent: true, opacity: 0.35, depthWrite: false }), 260);
+  bm.instanceMatrix.setUsage(THREE.DynamicDrawUsage); bm.frustumCulled = false; bm.count = 0; bm.renderOrder = 1;
+  scene.add(bm);
+  R3.blob = { mesh: bm, n: 0, max: 260 };
+  // 敌方塔的攻击范围圈；锁定目标脚下的红圈
   R3.towerRing = decal('dash', '#FF4A3A', { op: 0.85 }); freeDecal(R3.towerRing); R3.towerRing.used = true;
+  R3.lockRing = decal('ring', '#FF3A2E', { op: 0.95 }); freeDecal(R3.lockRing); R3.lockRing.used = true;
 }
 // 换一局：清掉上一局的英雄、塔、特效
 function reset3D() {
@@ -3950,7 +3982,7 @@ function reset3D() {
   R3.heroes.clear(); R3.monsters.clear(); R3.structs.clear(); R3.projs.clear(); R3.mcache.clear(); R3.corpses.length = 0;
   for (const f of R3.fx) endFx(f);
   R3.fx.length = 0;
-  for (const d of R3.decals) if (d !== R3.towerRing) freeDecal(d);
+  for (const d of R3.decals) if (d !== R3.towerRing && d !== R3.lockRing) freeDecal(d);
   R3.pa.n = 0; R3.pn.n = 0;
 }
 
@@ -4000,7 +4032,7 @@ function faceYaw(W, u, v, dt) {
     if (t) want = Math.atan2(t.x - u.x, t.y - u.y);
   }
   if (want == null && d > 0.6 && d < 120) want = Math.atan2(dx, dy);
-  if (want != null) v.yaw = angLerp(v.yaw, want, 1 - Math.exp(-dt * 16));
+  if (want != null) v.yaw = angLerp(v.yaw, want, 1 - Math.exp(-dt * 24));
   v.lx = u.x; v.ly = u.y;
 }
 function syncHero(W, u, v, me, dt, vis) {
@@ -4010,8 +4042,9 @@ function syncHero(W, u, v, me, dt, vis) {
   root.visible = show;
   if (!show) { v.ring.mesh.visible = false; if (v.shield) v.shield.visible = false; if (v.stars) v.stars.visible = false; if (v.recall) v.recall.visible = false; if (v.extra) v.extra.mesh.visible = false; return; }
   faceYaw(W, u, v, dt);
-  const gh = groundH(u.x, u.y);
-  root.position.set(u.x, gh + (u.z || 0), u.y);
+  const P = ip(u), px = P[0], py = P[1];
+  const gh = groundH(px, py);
+  root.position.set(px, gh + (u.z || 0), py);
   root.rotation.y = v.yaw;
   const spin = fxOn(u, 'spin');
   animHero(v.rig, {
@@ -4033,7 +4066,7 @@ function syncHero(W, u, v, me, dt, vis) {
   const isMe = me && u.id === me.id;
   ring.mesh.material.color.set(isMe ? '#7CFF6A' : TEAM_RING[u.team]);
   ring.mesh.material.opacity = isMe ? 0.95 : 0.75;
-  placeDecal(ring, u.x, u.y, isMe ? 92 : 84, null, 0, 3);
+  placeDecal(ring, px, py, isMe ? 92 : 84, null, 0, 3);
   // 护盾：一个半透明的泡泡
   const sh = !u.dead && shieldOf(u) > 0;
   if (sh && !v.shield) {
@@ -4042,7 +4075,7 @@ function syncHero(W, u, v, me, dt, vis) {
   }
   if (v.shield) {
     v.shield.visible = sh;
-    if (sh) { v.shield.position.set(u.x, gh + 62, u.y); v.shield.scale.set(64, 76, 64); v.shield.material.opacity = 0.16 + 0.06 * Math.sin(R3.t * 6); }
+    if (sh) { v.shield.position.set(px, gh + 62, py); v.shield.scale.set(64, 76, 64); v.shield.material.opacity = 0.16 + 0.06 * Math.sin(R3.t * 6); }
   }
   // 眩晕：头顶转圈的星星
   const st = !u.dead && fxOn(u, 'stun');
@@ -4053,11 +4086,11 @@ function syncHero(W, u, v, me, dt, vis) {
   }
   if (v.stars) {
     v.stars.visible = !!st;
-    if (st) { v.stars.position.set(u.x, gh + (u.z || 0) + 150, u.y); v.stars.children.forEach((s, i) => { const a = R3.t * 5 + i * 2.09; s.position.set(Math.cos(a) * 22, Math.sin(R3.t * 7 + i) * 3, Math.sin(a) * 22); s.rotation.y = R3.t * 4; }); }
+    if (st) { v.stars.position.set(px, gh + (u.z || 0) + 150, py); v.stars.children.forEach((s, i) => { const a = R3.t * 5 + i * 2.09; s.position.set(Math.cos(a) * 22, Math.sin(R3.t * 7 + i) * 3, Math.sin(a) * 22); s.rotation.y = R3.t * 4; }); }
   }
   // 被冻住 / 缠住：脚下一圈
   const rt = !u.dead && fxOn(u, 'root');
-  if (rt) { if (!v.extra) v.extra = decal('ring', '#9CE8FF', { add: true }); placeDecal(v.extra, u.x, u.y, 70 + Math.sin(R3.t * 10) * 4, null, 0, 4); v.extra.mesh.visible = true; }
+  if (rt) { if (!v.extra) v.extra = decal('ring', '#9CE8FF', { add: true }); placeDecal(v.extra, px, py, 70 + Math.sin(R3.t * 10) * 4, null, 0, 4); v.extra.mesh.visible = true; }
   else if (v.extra) { freeDecal(v.extra); v.extra = null; }
   // 回城：一根蓝色光柱
   if (!u.dead && u.recall) {
@@ -4066,7 +4099,7 @@ function syncHero(W, u, v, me, dt, vis) {
       R3.scene.add(v.recall);
     }
     const k = clamp01((W.t - u.recall) / RECALL_T);
-    v.recall.visible = true; v.recall.position.set(u.x, gh + 130, u.y); v.recall.scale.set(1 - k * 0.4, 0.3 + k * 0.7, 1 - k * 0.4);
+    v.recall.visible = true; v.recall.position.set(px, gh + 130, py); v.recall.scale.set(1 - k * 0.4, 0.3 + k * 0.7, 1 - k * 0.4);
     if (Math.random() < 0.5) part(true, u.x + (Math.random() - 0.5) * 70, gh + 10, u.y + (Math.random() - 0.5) * 70, 0, 120 + k * 120, 0, 0.8, 18, '#9CC8FF', 0);
   } else if (v.recall) v.recall.visible = false;
   // 红蓝 buff：身上冒一点红 / 蓝的火星
@@ -4092,7 +4125,8 @@ function syncMonster(W, u, v, dt) {
   if (v.spd < 5 && !u.aggro && !u.dead) {       // 没事的时候朝营地外面（朝地图中间）
     v.yaw = angLerp(v.yaw, Math.atan2(L / 2 - u.x, L / 2 - u.y), 0.02);
   }
-  root.position.set(u.x, groundH(u.x, u.y) - (u.dead ? deadT * 20 : 0), u.y);
+  const P = ip(u);
+  root.position.set(P[0], groundH(P[0], P[1]) - (u.dead ? deadT * 20 : 0), P[1]);
   root.rotation.y = v.yaw;
   animMonster(v.rig, { move: clamp01(v.spd / 150), atk: W.t - u.atkT < 0.5 ? W.t - u.atkT : -1, dead: deadT }, R3.t + u.id);
   const mat = v.rig.mats.lit;
@@ -4107,16 +4141,23 @@ function syncMonster(W, u, v, dt) {
 const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p3 = new THREE.Vector3(), _s3 = new THREE.Vector3(), _lm = new THREE.Matrix4(), _fm = new THREE.Matrix4();
 function syncMinions(W, dt) {
   for (const k in R3.minion) R3.minion[k].n = 0;
+  R3.blob.n = 0;
   const [x0, y0, x1, y1] = R3.view;
   const seen = new Set();
   const put = (u, yaw, ph, mv, fall, sink) => {
     const ent = R3.minion[u.mt + u.team];
     if (!ent || ent.n >= ent.max) return;
     const i = ent.n++;
-    const gh = groundH(u.x, u.y) - sink;
+    const P = u.kind === 'minion' ? ip(u) : [u.x, u.y], ux = P[0], uy = P[1];
+    const gh = groundH(ux, uy) - sink;
     const bob = Math.abs(Math.sin(ph)) * 2.5 * mv;
+    if (R3.blob.n < R3.blob.max && sink < 1) {
+      const sz = u.mt === 'vanguard' ? 120 : u.mt === 'siege' ? 80 : u.mt === 'super' ? 70 : 52;
+      _m4.makeScale(sz, 1, sz); _m4.setPosition(ux + 6, groundH(ux, uy) + 1.5, uy - 4);
+      R3.blob.mesh.setMatrixAt(R3.blob.n++, _m4);
+    }
     _e.set(fall, yaw, 0, 'YXZ'); _q.setFromEuler(_e);
-    _p3.set(u.x, gh + bob, u.y); _s3.set(MSCALE, MSCALE, MSCALE);
+    _p3.set(ux, gh + bob, uy); _s3.set(MSCALE, MSCALE, MSCALE);
     _m4.compose(_p3, _q, _s3);
     ent.meshes[0].setMatrixAt(i, _m4);
     for (let j = 0; j < 2; j++) {
@@ -4152,6 +4193,7 @@ function syncMinions(W, dt) {
     const ent = R3.minion[k];
     for (const m of ent.meshes) { m.count = ent.n; m.visible = ent.n > 0; m.instanceMatrix.needsUpdate = true; }
   }
+  R3.blob.mesh.count = R3.blob.n; R3.blob.mesh.visible = R3.blob.n > 0; R3.blob.mesh.instanceMatrix.needsUpdate = true;
   if (R3.mcache.size > 400) for (const id of R3.mcache.keys()) if (!seen.has(id)) R3.mcache.delete(id);
 }
 function minionDiedVis(e) {
@@ -4263,7 +4305,8 @@ function syncProjs(W, dt) {
       h = th + (e.h0 - th) * f + Math.sin(f * Math.PI) * (p.vis === 'shell' ? 80 : 20);
     } else if (p.vis === 'bigarrow') h = 70;
     const o = e.obj;
-    o.position.set(p.x, groundH(p.x, vz) + h, vz);
+    const PP = ip(p), pxx = PP[0], vzz = vz + (PP[1] - p.y);
+    o.position.set(pxx, groundH(pxx, vzz) + h, vzz);
     const dir = p.kind === 'home' ? (p.ang != null ? p.ang : 0) : Math.atan2(p.dy, p.dx);
     o.rotation.set(0, Math.atan2(Math.cos(dir), Math.sin(dir)), 0);
     _qi.setFromEuler(o.rotation).invert();
@@ -4479,10 +4522,11 @@ function render3D(W, follow, me, dt, aim) {
   S3.uWind.value = R3.t;
   if (S3.water) S3.water.material.uniforms.uT.value = R3.t;
   // 镜头
-  let tx = follow ? follow.x : R3.camX, ty = follow ? follow.y : R3.camY;
+  const FP = follow ? ip(follow) : null;
+  let tx = FP ? FP[0] : R3.camX, ty = FP ? FP[1] : R3.camY;
   if (R3.peek) { tx = R3.peek[0]; ty = R3.peek[1]; }
   else if (R3.aimCam) { tx += R3.aimCam[0]; ty += R3.aimCam[1]; }
-  const kk = R3.peek ? 1 - Math.exp(-dt * 14) : 1 - Math.exp(-dt * 7);
+  const kk = R3.peek ? 1 - Math.exp(-dt * 16) : R3.aimCam ? 1 - Math.exp(-dt * 8) : 1 - Math.exp(-dt * 22);
   R3.camX += (tx - R3.camX) * kk; R3.camY += (ty - R3.camY) * kk;
   R3.camX = clamp(R3.camX, 300, L - 300); R3.camY = clamp(R3.camY, 380, L - 200);
   R3.shake = Math.max(0, R3.shake - dt * 18);
@@ -4566,6 +4610,13 @@ function render3D(W, follow, me, dt, aim) {
       if (tgt && Math.random() < 0.3) part(true, me.x, groundH(me.x, me.y) + 4, me.y, 0, 0, 0, 0.3, 120, '#FF3A2A', 0, -0.3);
     }
   }
+  // 锁定的目标：脚下一个转着的红圈
+  const lr = R3.lockRing, lk = me && INP.lock ? byId(W, INP.lock) : null;
+  if (lk && !lk.dead && canSee(W, me.team, lk)) {
+    const P = ip(lk);
+    placeDecal(lr, P[0], P[1], lk.r * 2 + 46 + Math.sin(R3.t * 6) * 6, null, R3.t * 1.5, 4);
+    lr.mesh.visible = true;
+  } else lr.mesh.visible = false;
   syncAim(me, aim);
   stepFx(dt);
   stepParticles(R3.pa, dt);
@@ -4635,6 +4686,7 @@ const SKILL_THEME = {
   s1: ['#7CE0A0', '#0E4A2A'], s2: ['#C8F08A', '#2A4A0E'], s3: ['#9CF0FF', '#0E3A4A'],
   h1: ['#9CFF9C', '#0E5A2A'], h2: ['#8AD860', '#1E4A0E'], h3: ['#FFE89A', '#7A4A0E'],
   flash: ['#FFF0A0', '#7A5A0E'], heal: ['#9CFF9C', '#0E5A2A'], recall: ['#9CC8FF', '#0E2A6A'], atk: ['#F4E2B0', '#5A3A12'],
+  lasthit: ['#F4E2B0', '#4A3A20'], tower: ['#F4E2B0', '#3A3A4A'],
 };
 function iconBg(g, s, c1, c2) {
   const gr = g.createRadialGradient(s * 0.42, s * 0.35, s * 0.05, s * 0.5, s * 0.5, s * 0.72);
@@ -4695,6 +4747,14 @@ function drawSkillGlyph(g, id, s) {
     case 'flash': glowFill(g, col, P(() => { g.moveTo(36 * k, 6 * k); g.lineTo(16 * k, 36 * k); g.lineTo(30 * k, 36 * k); g.lineTo(24 * k, 58 * k); g.lineTo(48 * k, 26 * k); g.lineTo(34 * k, 26 * k); g.closePath(); })); break;
     case 'recall': glowStroke(g, col, 3.5 * k, () => { g.moveTo(14 * k, 32 * k); g.lineTo(c, 12 * k); g.lineTo(50 * k, 32 * k); g.moveTo(20 * k, 28 * k); g.lineTo(20 * k, 52 * k); g.lineTo(44 * k, 52 * k); g.lineTo(44 * k, 28 * k); g.moveTo(28 * k, 52 * k); g.lineTo(28 * k, 40 * k); g.lineTo(36 * k, 40 * k); g.lineTo(36 * k, 52 * k); }); break;
     case 'atk': glowFill(g, col, P(() => swordPath(g, c, c + 18 * k, 40 * k, 0, 4 * k))); break;
+    case 'lasthit':                              // 补刀：小兵的头盔
+      glowFill(g, col, P(() => { g.arc(c, c + 4 * k, 17 * k, Math.PI, 0); g.lineTo(c + 17 * k, c + 12 * k); g.lineTo(c - 17 * k, c + 12 * k); g.closePath(); }));
+      glowStroke(g, col, 3 * k, () => { g.moveTo(c, c - 13 * k); g.lineTo(c, c - 22 * k); g.moveTo(c - 10 * k, c + 18 * k); g.lineTo(c + 10 * k, c + 18 * k); });
+      break;
+    case 'tower':                                // 推塔：一座塔
+      glowFill(g, col, P(() => { g.moveTo(c - 9 * k, c + 22 * k); g.lineTo(c - 6 * k, c - 8 * k); g.lineTo(c + 6 * k, c - 8 * k); g.lineTo(c + 9 * k, c + 22 * k); g.closePath(); g.moveTo(c - 13 * k, c + 24 * k); g.lineTo(c + 13 * k, c + 24 * k); g.lineTo(c + 13 * k, c + 18 * k); g.lineTo(c - 13 * k, c + 18 * k); g.closePath(); }));
+      glowFill(g, '#9CC8FF', P(() => g.arc(c, c - 16 * k, 7 * k, 0, 7)));
+      break;
   }
 }
 // 圆形的技能图标（按钮里用）
@@ -4774,32 +4834,40 @@ function iconURL(c) { return c.toDataURL(); }
 const FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC","WenQuanYi Zen Hei",sans-serif';
 const C = { gold: '#F4C85A', gold2: '#FFE7A0', red: '#FF5A4E', blue: '#4AA8FF', green: '#6CF06C', dim: '#B8B4C8', ink: '#0B0A14', white: '#F6F4EE' };
 const HUD = { cv: null, g: null, w: 1, h: 1, dpr: 1, L: null, ins: { l: 0, r: 0, t: 0, b: 0 }, floats: [], ann: [], feed: [], toasts: [], portraits: {},
-  nb: null, lvlFlash: [0, 0, 0], keyboard: false, mini: null, press: {}, t: 0 };
+  nb: null, lvlFlash: [0, 0, 0], readyFlash: [0, 0, 0], cdPrev: null, foes: [], keyboard: false, mini: null, press: {}, t: 0 };
 
 function hudResize(w, h, dpr) {
   HUD.w = w; HUD.h = h; HUD.dpr = dpr;
   HUD.cv.width = Math.round(w * dpr); HUD.cv.height = Math.round(h * dpr);
   HUD.cv.style.width = w + 'px'; HUD.cv.style.height = h + 'px';
   HUD.L = hudLayout();
+  if (typeof TAG_CACHE !== 'undefined') { TAG_CACHE.clear(); DISC_CACHE.clear(); }   // 缓存的小图按像素比画的，换了就重画
 }
+// u：界面缩放（主要按屏幕高，宽屏不缩）。按钮的位置照王者：普攻大圆键在右下，三个技能围着它，补刀键在普攻左下、推塔键在右上，
+// 技能左上角是升级用的“+”，再往左一排回城、恢复、闪现；敌方英雄靠近时，技能上方出一排头像，点一下锁定
 function hudLayout() {
   const W = HUD.w, H = HUD.h, I = HUD.ins;
-  const u = Math.max(0.72, Math.min(H / 400, W / 860, 1.45));
+  const u = Math.max(0.8, Math.min(H / 400, W / 720, 1.45));
   const L2 = { u };
   L2.mini = { x: I.l + 6 * u, y: 6 * u, s: Math.round(124 * u) };
-  const ax = W - I.r - 82 * u, ay = H - 84 * u - I.b;
-  L2.atk = { x: ax, y: ay, r: 47 * u };
-  const sk = [[190, 108], [142, 112], [94, 112]];
-  L2.s = sk.map(([a, d]) => ({ x: ax + Math.cos(a * Math.PI / 180) * d * u, y: ay - Math.sin(a * Math.PI / 180) * d * u, r: 31 * u }));
-  L2.flash = { x: ax - 214 * u, y: H - 32 * u - I.b, r: 23 * u };
-  L2.heal = { x: ax - 268 * u, y: H - 30 * u - I.b, r: 20 * u };
-  L2.recall = { x: ax - 316 * u, y: H - 30 * u - I.b, r: 20 * u };
+  const ax = W - I.r - 84 * u, ay = H - 92 * u - I.b;
+  L2.atk = { x: ax, y: ay, r: 48 * u };
+  const at = (a, d, r) => ({ x: ax + Math.cos(a * Math.PI / 180) * d * u, y: ay - Math.sin(a * Math.PI / 180) * d * u, r: r * u });
+  L2.s = [at(190, 110, 31), at(142, 114, 31), at(94, 114, 31)];
+  L2.up = L2.s.map(b => ({ x: b.x - (b.r + 6 * u) * 0.72, y: b.y - (b.r + 6 * u) * 0.72, r: 11 * u }));
+  L2.lasthit = at(236, 78, 19);
+  L2.tower = at(50, 78, 19);
+  L2.foes = [0, 1, 2].map(i => ({ x: ax - (75 + i * 42) * u, y: ay - 135 * u, r: 17 * u }));
+  L2.flash = { x: ax - 214 * u, y: H - 36 * u - I.b, r: 23 * u };
+  L2.heal = { x: ax - 268 * u, y: H - 34 * u - I.b, r: 20 * u };
+  L2.recall = { x: ax - 316 * u, y: H - 34 * u - I.b, r: 20 * u };
   L2.cancel = { x: W - I.r - 66 * u, y: 116 * u, r: 34 * u };
   L2.pause = { x: W - I.r - 22 * u, y: 22 * u, r: 17 * u };
   L2.score = { x: W - I.r - 50 * u, y: 8 * u, h: 28 * u };
   L2.shop = { x: I.l + 34 * u, y: L2.mini.y + L2.mini.s + 36 * u, r: 25 * u };
   L2.buy = { x: I.l + 34 * u, y: L2.shop.y + 70 * u, r: 27 * u };
-  L2.joy = { x: I.l + 118 * u, y: H - 104 * u - I.b, r: 60 * u, knob: 26 * u };
+  L2.joy = { x: I.l + 120 * u, y: H - 108 * u - I.b, r: 64 * u, knob: 27 * u };
+  L2.wheel = 66 * u;                          // 技能轮盘的半径：手指离开技能键这么远就是瞄满
   return L2;
 }
 
@@ -4847,6 +4915,38 @@ function circ(g, x, y, r, fill, stroke, lw) {
 function rrect(g, x, y, w, h, r) {
   g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
 }
+const TAG_CACHE = new Map(), DISC_CACHE = new Map();
+function nameTag(text, col, size) {
+  const key = text + col + size;
+  let c = TAG_CACHE.get(key);
+  if (!c) {
+    const d = HUD.dpr, f = `600 ${size}px ${FONT}`;
+    const m = mkc(1, 1).getContext('2d'); m.font = f;
+    const w = Math.ceil(m.measureText(text).width + size * 0.6), h = Math.ceil(size * 1.5);
+    c = mkc(Math.ceil(w * d), Math.ceil(h * d));
+    const g = c.getContext('2d'); g.scale(d, d);
+    txt(g, text, w / 2, h / 2, size, col, { w: 600 });
+    c.cw = w; c.ch = h;
+    if (TAG_CACHE.size > 300) TAG_CACHE.clear();
+    TAG_CACHE.set(key, c);
+  }
+  return c;
+}
+function drawTag(g, text, x, y, size, col) { const c = nameTag(text, col, Math.round(size * 2) / 2); g.drawImage(c, x - c.cw / 2, y - c.ch / 2, c.cw, c.ch); }
+function portraitDisc(hid, r, ring, dim) {
+  const key = hid + '|' + r + '|' + ring + '|' + (dim ? 1 : 0);
+  let c = DISC_CACHE.get(key);
+  if (!c) {
+    const d = HUD.dpr, N = Math.ceil((r * 2 + 4) * d);
+    c = mkc(N, N);
+    const g = c.getContext('2d'); g.scale(d, d);
+    portrait(g, hid, r + 2, r + 2, r, ring, dim);
+    if (DISC_CACHE.size > 200) DISC_CACHE.clear();
+    DISC_CACHE.set(key, c);
+  }
+  return c;
+}
+function drawDisc(g, hid, x, y, r, ring, dim) { const c = portraitDisc(hid, Math.round(r * 2) / 2, ring, dim); g.drawImage(c, x - r - 2, y - r - 2, r * 2 + 4, r * 2 + 4); }
 function portrait(g, hid, x, y, r, ring, dim) {
   const p = HUD.portraits[hid];
   g.save(); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.clip();
@@ -4890,6 +4990,18 @@ function drawHUD(W, me, dt, mode) {
   drawBars(g, W, me, u);
   drawFloats(g, dt);
   if (mode === 'demo') return;
+  if (me && !me.dead && me.hp < me.maxHp * 0.3) {      // 残血：屏幕四周一圈红，一跳一跳
+    const a = (0.35 + 0.25 * Math.sin(HUD.t * 6)) * (1 - me.hp / (me.maxHp * 0.3) * 0.6);
+    const gr = g.createRadialGradient(HUD.w / 2, HUD.h / 2, Math.min(HUD.w, HUD.h) * 0.42, HUD.w / 2, HUD.h / 2, Math.max(HUD.w, HUD.h) * 0.62);
+    gr.addColorStop(0, 'rgba(200,20,20,0)'); gr.addColorStop(1, `rgba(200,20,20,${a.toFixed(3)})`);
+    g.fillStyle = gr; g.fillRect(0, 0, HUD.w, HUD.h);
+  }
+  if (me && !me.dead && me.recall) {
+    const k = clamp01((W.t - me.recall) / RECALL_T), w = 150 * u, y = HUD.h - HUD.ins.b - 84 * u;
+    drawTag(g, '回城中', HUD.w / 2, y - 12 * u, 13 * u, '#CFE4FF');
+    g.fillStyle = 'rgba(10,8,18,0.8)'; g.fillRect(HUD.w / 2 - w / 2 - 1, y - 1, w + 2, 7 * u + 2);
+    g.fillStyle = '#7FB4FF'; g.fillRect(HUD.w / 2 - w / 2, y, w * k, 7 * u);
+  }
   if (me && me.dead) {
     g.fillStyle = 'rgba(28,30,44,0.42)'; g.fillRect(0, 0, HUD.w, HUD.h);
     const left = Math.max(0, Math.ceil(me.respawnAt - W.t));
@@ -4907,9 +5019,11 @@ function drawHUD(W, me, dt, mode) {
   drawToasts(g, dt, u);
 }
 function drawBars(g, W, me, u) {
+  const lock = me ? INP.lock : 0;
   for (const b of R3.bars) {
     if (b.dead) continue;
-    worldToScreen(b.x, groundH(b.x, b.y) + unitTop(b), b.y, _sp);
+    const p = ip(b);
+    worldToScreen(p[0], groundH(p[0], p[1]) + unitTop(b), p[1], _sp);
     if (_sp[2] > 1 || _sp[0] < -80 || _sp[0] > HUD.w + 80 || _sp[1] < -40 || _sp[1] > HUD.h + 40) continue;
     const x = Math.round(_sp[0]), y = Math.round(_sp[1]);
     const k = b.hp / b.maxHp;
@@ -4928,13 +5042,8 @@ function drawBars(g, W, me, u) {
       // 等级
       const lx = x0 - 9 * u;
       g.fillStyle = 'rgba(10,8,18,0.9)'; g.fillRect(lx - 7.5 * u, y - 2 * u, 15 * u, h + 4 * u);
-      txt(g, String(b.lvl), lx, y + h / 2 + 0.5, 10.5 * u, C.gold2, { ol: false });
-      txt(g, HERO_BY_ID[b.hid].name + (isMe ? '' : ''), x + 4 * u, y - 9 * u, 10.5 * u, isMe ? '#C8FFC8' : ally ? '#CFE6FF' : '#FFD0C8', { w: 600 });
-      if (isMe && b.recall) {
-        const p = clamp01((W.t - b.recall) / RECALL_T);
-        g.fillStyle = 'rgba(10,8,18,0.85)'; g.fillRect(x0 - 1, y + h + 3 * u, w + 2, 5 * u);
-        g.fillStyle = '#7FB4FF'; g.fillRect(x0, y + h + 3 * u + 1, w * p, 5 * u - 2);
-      }
+      drawTag(g, String(b.lvl), lx, y + h / 2 + 0.5, 10.5 * u, C.gold2);
+      drawTag(g, HERO_BY_ID[b.hid].name, x + 4 * u, y - 9 * u, 10.5 * u, isMe ? '#C8FFC8' : ally ? '#CFE6FF' : '#FFD0C8');
     } else if (b.kind === 'minion') {
       const ally = me ? b.team === me.team : b.team === 0;
       const big = b.mt === 'siege' || b.mt === 'super' || b.mt === 'vanguard';
@@ -4946,14 +5055,19 @@ function drawBars(g, W, me, u) {
       const w = (big ? 110 : buff ? 64 : 46) * u, h = (big ? 9 : 6) * u;
       g.fillStyle = 'rgba(10,8,18,0.85)'; g.fillRect(x - w / 2 - 1, y - 1, w + 2, h + 2);
       g.fillStyle = big ? '#C86AFF' : '#F0A830'; g.fillRect(x - w / 2, y, w * k, h);
-      if (big || buff) txt(g, MONSTER[b.mt].name, x, y - 9 * u, 11 * u, big ? '#E8C8FF' : '#FFE0A0', { w: 600 });
+      if (big || buff) drawTag(g, MONSTER[b.mt].name, x, y - 9 * u, 11 * u, big ? '#E8C8FF' : '#FFE0A0');
     } else {
       const ally = me ? b.team === me.team : b.team === 0;
       const w = (b.kind === 'crystal' ? 110 : 90) * u, h = 9 * u;
       g.fillStyle = 'rgba(10,8,18,0.85)'; g.fillRect(x - w / 2 - 1, y - 1, w + 2, h + 2);
       g.fillStyle = ally ? '#3D8BFF' : '#E8463C'; g.fillRect(x - w / 2, y, w * k, h);
       g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(x - w / 2, y, w * k, h * 0.4);
-      if (b.inv) txt(g, '无敌', x, y - 9 * u, 10 * u, C.dim, { w: 600 });
+      if (b.inv) drawTag(g, '无敌', x, y - 9 * u, 10 * u, C.dim);
+    }
+    if (lock && b.id === lock) {                          // 锁定：头顶一个红色倒三角，一上一下地跳
+      const yy = y - (b.kind === 'hero' ? 24 : 14) * u - Math.abs(Math.sin(HUD.t * 5)) * 4 * u;
+      g.fillStyle = '#FF3A2E'; g.strokeStyle = 'rgba(20,4,4,0.9)'; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(x - 8 * u, yy - 9 * u); g.lineTo(x + 8 * u, yy - 9 * u); g.lineTo(x, yy); g.closePath(); g.fill(); g.stroke();
     }
   }
 }
@@ -5004,7 +5118,7 @@ function drawMinimap(g, W, me, m) {
   for (const h of W._heroes) {
     if (h.dead || !canSee(W, myTeam, h)) continue;
     const [x, y] = P(h.x, h.y), isMe = me && h.id === me.id;
-    portrait(g, h.hid, x, y, isMe ? 8.5 : 7, isMe ? '#7CFF6A' : h.team === myTeam ? '#4AA8FF' : '#FF5A4E');
+    drawDisc(g, h.hid, x, y, isMe ? 8.5 : 7, isMe ? '#7CFF6A' : h.team === myTeam ? '#4AA8FF' : '#FF5A4E');
   }
   g.restore();
 }
@@ -5060,22 +5174,34 @@ function cdOverlay(g, x, y, r, frac, secs, u) {
 }
 function drawControls(g, W, me, u, L2) {
   if (!me) return;
-  const dead = me.dead;
-  // 摇杆
+  const dead = me.dead, stun = !dead && !!fxOn(me, 'stun');
+  // 摇杆：推的方向那一段圈亮起来
   const J = L2.joy, j = INP.joy;
   const bx = j ? j.bx : J.x, by = j ? j.by : J.y;
-  circ(g, bx, by, J.r, 'rgba(20,24,40,0.28)', 'rgba(220,230,255,0.45)', 2);
-  circ(g, bx, by, J.r * 0.62, null, 'rgba(220,230,255,0.16)', 1.5);
+  circ(g, bx, by, J.r, 'rgba(20,24,40,0.26)', 'rgba(220,230,255,0.42)', 2);
+  circ(g, bx, by, J.r * 0.62, null, 'rgba(220,230,255,0.14)', 1.5);
   const kx = j ? j.x : bx, ky = j ? j.y : by;
+  if (j && Math.hypot(kx - bx, ky - by) > 6) {
+    const a = Math.atan2(ky - by, kx - bx);
+    g.save(); g.strokeStyle = 'rgba(140,210,255,0.95)'; g.lineWidth = 5 * u; g.lineCap = 'round';
+    g.shadowColor = '#6FC0FF'; g.shadowBlur = 10;
+    g.beginPath(); g.arc(bx, by, J.r, a - 0.55, a + 0.55); g.stroke(); g.restore();
+  }
   const kg = g.createRadialGradient(kx - 6 * u, ky - 6 * u, 2, kx, ky, J.knob);
-  kg.addColorStop(0, 'rgba(255,255,255,0.95)'); kg.addColorStop(1, 'rgba(160,190,230,0.75)');
-  circ(g, kx, ky, J.knob, kg, 'rgba(255,255,255,0.8)', 1.5);
-  // 普攻
-  const A = L2.atk, pressed = INP.atk != null || INP.keyAtk;
+  kg.addColorStop(0, j ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.7)'); kg.addColorStop(1, j ? 'rgba(160,200,240,0.8)' : 'rgba(160,190,230,0.45)');
+  circ(g, kx, ky, J.knob, kg, 'rgba(255,255,255,0.7)', 1.5);
+  // 普攻、补刀、推塔
+  const mode = INP.atk != null || INP.keyAtk ? (INP.atkMode || 'hero') : null;
+  const A = L2.atk, hitting = !dead && W.t - me.atkT < 0.18;
   g.save(); g.globalAlpha = dead ? 0.45 : 1;
-  const ar = A.r * (pressed ? 0.94 : 1);
+  const ar = A.r * (mode === 'hero' ? 0.93 : 1);
   g.drawImage(skillIcon('atk', 128), A.x - ar, A.y - ar, ar * 2, ar * 2);
-  circ(g, A.x, A.y, ar, null, pressed ? '#FFF2C0' : C.gold, 3);
+  circ(g, A.x, A.y, ar, null, mode === 'hero' || hitting ? '#FFF2C0' : C.gold, mode === 'hero' ? 4 : 3);
+  for (const [k, b, icon] of [['minion', L2.lasthit, 'lasthit'], ['tower', L2.tower, 'tower']]) {
+    const on = mode === k, r = b.r * (on ? 0.92 : 1);
+    g.drawImage(skillIcon(icon, 64), b.x - r, b.y - r, r * 2, r * 2);
+    circ(g, b.x, b.y, r, null, on ? '#FFF2C0' : 'rgba(244,200,90,0.85)', on ? 3 : 1.8);
+  }
   g.restore();
   // 三个技能
   const hd = HERO_BY_ID[me.hid];
@@ -5086,37 +5212,74 @@ function drawControls(g, W, me, u, L2) {
     g.save();
     g.globalAlpha = dead ? 0.45 : 1;
     g.drawImage(skillIcon(def.id, 96), b.x - r, b.y - r, r * 2, r * 2);
-    if (!st.rank) { circ(g, b.x, b.y, r, 'rgba(10,10,20,0.68)'); txt(g, s === 2 ? '4级' : '2级', b.x, b.y, 11 * u, C.dim, { w: 700 }); }
+    if (!st.rank) circ(g, b.x, b.y, r, 'rgba(10,10,20,0.7)');
     else if (st.cd > 0) cdOverlay(g, b.x, b.y, r, st.cd / cdOf(me, s), st.cd, u);
-    circ(g, b.x, b.y, r, null, st.rank && st.cd <= 0 ? C.gold : 'rgba(150,140,120,0.8)', 2.2);
+    else if (stun) circ(g, b.x, b.y, r, 'rgba(60,60,70,0.6)');
+    const ready = st.rank && st.cd <= 0 && !stun;
+    circ(g, b.x, b.y, r, null, ready ? C.gold : 'rgba(150,140,120,0.8)', 2.2);
+    // 冷却刚好：亮一下
+    if (ready && HUD.cdPrev && HUD.cdPrev[s] > 0) HUD.readyFlash[s] = 0.5;
+    if (HUD.readyFlash[s] > 0) circ(g, b.x, b.y, r + (0.5 - HUD.readyFlash[s]) * 18 * u, null, `rgba(255,240,180,${HUD.readyFlash[s] * 2})`, 3);
     // 技能等级：下面一排小点
     const n = def.cd.length;
     for (let i = 0; i < n; i++) {
       const a = Math.PI / 2 + (i - (n - 1) / 2) * 0.24;
       circ(g, b.x + Math.cos(a) * (r + 5 * u), b.y + Math.sin(a) * (r + 5 * u), 2.2 * u, i < st.rank ? '#FFD86A' : 'rgba(40,36,50,0.9)');
     }
-    if (HUD.lvlFlash[s] > 0) { circ(g, b.x, b.y, r + 4 * u, null, `rgba(255,230,120,${HUD.lvlFlash[s]})`, 4); }
+    if (HUD.lvlFlash[s] > 0) circ(g, b.x, b.y, r + 4 * u, null, `rgba(255,230,120,${HUD.lvlFlash[s]})`, 4);
     g.restore();
+    // 能升级：左上角一个金色的“+”
+    if (canUpgrade(me, s)) {
+      const p = L2.up[s], pr = p.r * (1 + 0.12 * Math.sin(HUD.t * 7));
+      g.save(); g.shadowColor = '#FFD86A'; g.shadowBlur = 12;
+      circ(g, p.x, p.y, pr, '#F6C445', '#FFF4C8', 1.5); g.restore();
+      g.fillStyle = '#4A2A06'; g.fillRect(p.x - pr * 0.55, p.y - pr * 0.15, pr * 1.1, pr * 0.3); g.fillRect(p.x - pr * 0.15, p.y - pr * 0.55, pr * 0.3, pr * 1.1);
+    }
   }
-  for (let s = 0; s < 3; s++) HUD.lvlFlash[s] = Math.max(0, HUD.lvlFlash[s] - 1 / 60);
+  HUD.cdPrev = me.sk.map(k => k.cd);
+  for (let s = 0; s < 3; s++) { HUD.lvlFlash[s] = Math.max(0, HUD.lvlFlash[s] - 1 / 60); HUD.readyFlash[s] = Math.max(0, HUD.readyFlash[s] - 1 / 60); }
   // 回城、恢复、闪现
   const small = [['recall', L2.recall, me.recall ? 1 : 0, 0], ['heal', L2.heal, me.healCd, HEAL_CD], ['flash', L2.flash, me.flashCd, FLASH_CD]];
   for (const [id, b, cd, max] of small) {
     g.save(); g.globalAlpha = dead ? 0.45 : 1;
-    g.drawImage(skillIcon(id, 64), b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
-    if (id !== 'recall' && cd > 0) cdOverlay(g, b.x, b.y, b.r, cd / max, cd, u);
-    circ(g, b.x, b.y, b.r, null, id === 'recall' && cd ? '#9CC8FF' : 'rgba(244,200,90,0.85)', 1.8);
+    const r = b.r * (INP.aim && INP.aim.s === id ? 1.08 : 1);
+    g.drawImage(skillIcon(id, 64), b.x - r, b.y - r, r * 2, r * 2);
+    if (id !== 'recall' && cd > 0) cdOverlay(g, b.x, b.y, r, cd / max, cd, u);
+    circ(g, b.x, b.y, r, null, id === 'recall' && cd ? '#9CC8FF' : 'rgba(244,200,90,0.85)', 1.8);
     g.restore();
   }
-  // 瞄准中：取消施法
+  // 身边的敌方英雄：头像排在技能上方，点一下锁定
+  if (!dead && !INP.aim) {
+    HUD.foes = nearFoes(W, me);
+    HUD.foes.forEach((e, i) => {
+      const b = L2.foes[i], locked = INP.lock === e.id;
+      drawDisc(g, e.hid, b.x, b.y, b.r, locked ? '#FF3A2E' : 'rgba(255,120,110,0.9)');
+      if (locked) circ(g, b.x, b.y, b.r + 3 * u, null, '#FF3A2E', 2.5);
+      const k = e.hp / e.maxHp;
+      g.fillStyle = 'rgba(10,8,18,0.85)'; g.fillRect(b.x - b.r, b.y + b.r + 2 * u, b.r * 2, 3.5 * u);
+      g.fillStyle = '#E8463C'; g.fillRect(b.x - b.r, b.y + b.r + 2 * u, b.r * 2 * k, 3.5 * u);
+    });
+  } else HUD.foes = [];
+  // 瞄准中：技能轮盘（技能键外一圈，手指拖到哪儿圈里的小圆就到哪儿）+ 取消施法
   if (INP.aim) {
-    const c = L2.cancel, on = INP.aim.cancel;
+    const a = INP.aim, R = L2.wheel;
+    circ(g, a.x0, a.y0, R, 'rgba(30,60,120,0.22)', a.cancel ? 'rgba(255,90,80,0.7)' : 'rgba(150,200,255,0.75)', 2);
+    const fd = Math.hypot(a.fx, a.fy), kk = fd > R ? R / fd : 1;
+    circ(g, a.x0 + a.fx * kk, a.y0 + a.fy * kk, 16 * u, a.cancel ? 'rgba(255,90,80,0.8)' : 'rgba(200,230,255,0.85)', '#FFFFFF', 1.5);
+    const c = L2.cancel, on = a.cancel;
     circ(g, c.x, c.y, c.r * (on ? 1.12 : 1), on ? 'rgba(220,50,40,0.75)' : 'rgba(20,16,30,0.7)', on ? '#FFB0A8' : 'rgba(255,120,110,0.85)', 2.5);
     g.strokeStyle = '#FFFFFF'; g.lineWidth = 3 * u; g.lineCap = 'round';
     g.beginPath(); g.moveTo(c.x - 9 * u, c.y - 9 * u); g.lineTo(c.x + 9 * u, c.y + 9 * u); g.moveTo(c.x + 9 * u, c.y - 9 * u); g.lineTo(c.x - 9 * u, c.y + 9 * u); g.stroke();
-    txt(g, '取消施法', c.x, c.y + c.r + 11 * u, 11 * u, '#FFD0C8', { w: 700 });
+    drawTag(g, '取消施法', c.x, c.y + c.r + 11 * u, 11 * u, '#FFD0C8');
   }
-  if (HUD.keyboard) txt(g, 'WASD 移动 · J/空格 普攻 · 1 2 3 技能 · F 闪现 · H 恢复 · B 回城 · P 暂停', HUD.w / 2, HUD.h - 10 * u, 10 * u, 'rgba(230,226,240,0.75)', { w: 500 });
+  if (HUD.keyboard) drawTag(g, 'WASD 移动 · J/空格 普攻 · K 补刀 · L 推塔 · 1 2 3 技能 · Shift+1 2 3 升级 · F 闪现 · H 恢复 · B 回城 · P 暂停', HUD.w / 2, HUD.h - 10 * u, 10 * u, 'rgba(230,226,240,0.75)');
+}
+// 身边看得见的敌方英雄（最多 3 个，近的在前）
+function nearFoes(W, me) {
+  const out = [];
+  for (const e of W._heroes) if (e.team !== me.team && !e.dead && canSee(W, me.team, e) && !untarg(e) && Math.hypot(e.x - me.x, e.y - me.y) < 1000) out.push(e);
+  out.sort((a, b) => Math.hypot(a.x - me.x, a.y - me.y) - Math.hypot(b.x - me.x, b.y - me.y));
+  return out.slice(0, 3);
 }
 function drawAnn(g, W, dt, u) {
   if (!HUD.ann.length) return;
@@ -5144,7 +5307,7 @@ function drawAnn(g, W, dt, u) {
 function drawFeed(g, dt, u, L2) {
   let y = L2.score.y + L2.score.h + 10 * u;
   const x1 = L2.score.x - 18 * u;
-  for (let i = 0; i < HUD.feed.length && i < 4; i++) {
+  for (let i = 0; i < HUD.feed.length && i < 3; i++) {
     const f = HUD.feed[i];
     f.t += dt;
     if (f.t > 7) { HUD.feed.length = i; break; }
@@ -5152,9 +5315,9 @@ function drawFeed(g, dt, u, L2) {
     g.save(); g.globalAlpha = a;
     const w = 92 * u, h = 22 * u, x0 = x1 - w;
     g.fillStyle = 'rgba(10,10,24,0.6)'; g.fillRect(x0, y, w, h);
-    if (f.k) portrait(g, f.k, x0 + 14 * u, y + h / 2, 9 * u, f.kt === 0 ? '#4AA8FF' : '#FF5A4E');
-    txt(g, '⚔', x0 + w / 2, y + h / 2, 11 * u, C.gold2, { ol: false });
-    portrait(g, f.v, x1 - 14 * u, y + h / 2, 9 * u, f.vt === 0 ? '#4AA8FF' : '#FF5A4E', true);
+    if (f.k) drawDisc(g, f.k, x0 + 14 * u, y + h / 2, 9 * u, f.kt === 0 ? '#4AA8FF' : '#FF5A4E');
+    drawTag(g, '⚔', x0 + w / 2, y + h / 2, 11 * u, C.gold2);
+    drawDisc(g, f.v, x1 - 14 * u, y + h / 2, 9 * u, f.vt === 0 ? '#4AA8FF' : '#FF5A4E', true);
     g.restore();
     y += h + 4 * u;
   }
@@ -5178,37 +5341,75 @@ function drawToasts(g, dt, u) {
 
 /* ===== input.js ===== */
 'use strict';
-/* input.js：触屏（多指）和键盘鼠标，坐标都是 HUD 画布上的 CSS 像素。
-   左下按住 = 摇杆（按在哪儿摇杆就出现在哪儿，松手回原位）；按住普攻键自动打范围里的目标（英雄优先、再补刀）；
-   技能键：点一下自动瞄最近的敌方英雄，按住拖动 = 自己瞄（地上出现范围圈、方向箭头或落点圈），拖到“取消施法”上松手就不放；闪现同理。
-   镜头是斜着往下看的：屏幕上往上拖一段，对应地上往北走得更远一点（除以俯角的正弦），这样指的方向和看到的方向一致。
-   键盘：WASD / 方向键移动，J / 空格普攻，1 2 3（或 Q E R）技能朝鼠标放，F 闪现，H 恢复，B 回城，P / Esc 暂停。 */
+/* input.js：触屏（多指）和键盘鼠标，坐标都是 HUD 画布上的 CSS 像素。照王者的操作：
+   - 左下按住 = 摇杆（按在哪儿摇杆就出现在哪儿，松手回原位）。
+   - 普攻键：按住一直打，英雄优先；补刀键只打小兵和野怪（挑血最少的），推塔键只打塔。
+   - 锁定：普攻打到的敌方英雄自动锁定，点屏幕上的敌人或技能上方的敌方头像也能锁定；锁定后普攻和点按放的技能都先打它，
+     点空地取消。锁定的目标头上有红色箭头、脚下红圈。
+   - 技能键：点一下自动放（先锁定的目标，再最近的敌方英雄，再小兵野怪，都没有就朝前）；按住拖动出现技能轮盘，地上画范围和方向，
+     拖到“取消施法”上松手就不放。技能左上角的“+”点一下升级。冲刺、跳起来的时候按的技能，落地后接着放（最多等 0.5 秒）。
+   - 镜头斜着往下看：屏幕上往上拖一段，对应地上往北更远一点（除以俯角的正弦），这样指的方向和看到的一致。
+   键盘：WASD / 方向键移动，J / 空格普攻，K 补刀，L 推塔，1 2 3（或 Q E R）技能朝鼠标放，Shift+1 2 3 升级技能，F 闪现，H 恢复，B 回城，P / Esc 暂停。 */
 
-const INP = { ptr: {}, joy: null, atk: null, aim: null, keys: {}, keyAtk: false, mouse: null, mouseT: -9, onPause: null, onShop: null };
+const INP = { ptr: {}, joy: null, atk: null, atkMode: 'hero', aim: null, keys: {}, keyAtk: false, keyMode: 'hero', mouse: null, mouseT: -9, lock: 0, onPause: null, onShop: null };
 const JOY_DEAD = 6;
 const SIN_P = Math.sin(CAMC.pitch);
 
-function inpReset() { INP.ptr = {}; INP.joy = null; INP.atk = null; INP.aim = null; INP.keyAtk = false; INP.keys = {}; R3.peek = null; R3.aimCam = null; }
+function inpReset() { INP.ptr = {}; INP.joy = null; INP.atk = null; INP.aim = null; INP.keyAtk = false; INP.keys = {}; INP.lock = 0; R3.peek = null; R3.aimCam = null; }
 function hitBtn(b, x, y, pad) { return Math.hypot(x - b.x, y - b.y) <= b.r + (pad || 6); }
 // 屏幕上的方向 → 地上的方向
 function scrDir(dx, dy) { const wx = dx, wy = dy / SIN_P, d = Math.hypot(wx, wy) || 1; return [wx / d, wy / d]; }
 
+/* ---------- 锁定 ---------- */
+function lockTarget(W, me) {
+  const t = INP.lock ? byId(W, INP.lock) : null;
+  if (!t || t.dead || !attackable(W, me.team, t) || Math.hypot(t.x - me.x, t.y - me.y) > 1500) { INP.lock = 0; return null; }
+  return t;
+}
+function setLock(id) { if (INP.lock !== id) { INP.lock = id; if (id) sfx('click', null, null, 0.4); } }
+// 点屏幕：离点的地方最近的敌方单位（英雄优先），在头顶或身上都算
+const _sq = [0, 0, 0];
+function pickUnitAt(W, me, x, y) {
+  let best = null, bd = 1e9;
+  const R = 46 * HUD.L.u;
+  for (const u of W.units) {
+    if (u.dead || u.team === me.team || !attackable(W, me.team, u)) continue;
+    if (u.kind !== 'hero' && u.kind !== 'monster' && u.kind !== 'minion' && u.kind !== 'tower' && u.kind !== 'crystal') continue;
+    const p = ip(u), gh = groundH(p[0], p[1]);
+    let d = 1e9;
+    for (const h of [unitTop(u) * 0.5, unitTop(u) * 0.15]) {
+      worldToScreen(p[0], gh + h, p[1], _sq);
+      d = Math.min(d, Math.hypot(_sq[0] - x, _sq[1] - y));
+    }
+    const sc = d - (u.kind === 'hero' ? 18 : 0);
+    if (d < R + (u.kind === 'tower' || u.kind === 'crystal' ? 30 : 0) && sc < bd) { bd = sc; best = u; }
+  }
+  return best;
+}
+
+/* ---------- 触屏 ---------- */
 function onPointerDown(W, me, id, x, y) {
   const Lt = HUD.L;
   const m = Lt.mini;
   if (x >= m.x && y >= m.y && x < m.x + m.s && y < m.y + m.s) { INP.ptr[id] = { role: 'mini' }; miniPeek(x, y); return; }
   if (hitBtn(Lt.pause, x, y, 10)) { INP.onPause && INP.onPause(); return; }
+  const sc = Lt.score;
+  if (y < sc.y + sc.h + 4 && x > sc.x - 260 * Lt.u && x < sc.x - 10 * Lt.u) { INP.onPause && INP.onPause(); return; }   // 点比分：看战绩
   if (hitBtn(Lt.shop, x, y, 6)) { INP.onShop && INP.onShop(); return; }
   if (HUD.nb && hitBtn(Lt.buy, x, y, 6)) { if (!buy(W, me, HUD.nb)) toast('金币不够', C.dim); return; }
+  for (let s = 0; s < 3; s++) if (canUpgrade(me, s) && hitBtn(Lt.up[s], x, y, 7)) { upgradeSkill(W, me, s); return; }
   if (me.dead) { if (x < HUD.w * 0.45) startJoy(id, x, y); return; }
-  if (hitBtn(Lt.atk, x, y, 10)) { INP.atk = id; INP.ptr[id] = { role: 'atk' }; return; }
+  for (let i = 0; i < HUD.foes.length; i++) if (hitBtn(Lt.foes[i], x, y, 5)) { setLock(HUD.foes[i].id); return; }
+  if (hitBtn(Lt.atk, x, y, 10)) { INP.atk = id; INP.atkMode = 'hero'; INP.ptr[id] = { role: 'atk' }; return; }
+  if (hitBtn(Lt.lasthit, x, y, 6)) { INP.atk = id; INP.atkMode = 'minion'; INP.ptr[id] = { role: 'atk' }; return; }
+  if (hitBtn(Lt.tower, x, y, 6)) { INP.atk = id; INP.atkMode = 'tower'; INP.ptr[id] = { role: 'atk' }; return; }
   for (let s = 0; s < 3; s++) {
     if (hitBtn(Lt.s[s], x, y, 7)) {
       const st = me.sk[s];
-      if (!st.rank) { toast(s === 2 ? '4 级解锁大招' : '2 级解锁这个技能', C.dim); return; }
+      if (!st.rank) { toast(canUpgrade(me, s) ? '点左上角的 + 升级这个技能' : s === 2 ? '4 级才能学大招' : '还没学这个技能', C.dim); return; }
       if (st.cd > 0) { toast('技能冷却中', C.dim); return; }
-      INP.aim = { id, s, x0: Lt.s[s].x, y0: Lt.s[s].y, dx: 0, dy: -1, mag: 0.6, moved: false, cancel: false, tgt: null };
-      const [fx, fy] = faceDir(me); INP.aim.dx = fx; INP.aim.dy = fy;
+      const [fx, fy] = faceDir(me);
+      INP.aim = { id, s, x0: Lt.s[s].x, y0: Lt.s[s].y, fx: 0, fy: 0, dx: fx, dy: fy, mag: 0.6, moved: false, cancel: false, tgt: null };
       INP.ptr[id] = { role: 'aim' };
       return;
     }
@@ -5216,13 +5417,16 @@ function onPointerDown(W, me, id, x, y) {
   if (hitBtn(Lt.flash, x, y, 6)) {
     if (me.flashCd > 0) { toast('闪现冷却中', C.dim); return; }
     const [fx, fy] = joyDir(me);
-    INP.aim = { id, s: 'flash', x0: Lt.flash.x, y0: Lt.flash.y, dx: fx, dy: fy, mag: 1, moved: false, cancel: false, tgt: null };
+    INP.aim = { id, s: 'flash', x0: Lt.flash.x, y0: Lt.flash.y, fx: 0, fy: 0, dx: fx, dy: fy, mag: 1, moved: false, cancel: false, tgt: null };
     INP.ptr[id] = { role: 'aim' };
     return;
   }
   if (hitBtn(Lt.heal, x, y, 5)) { if (me.healCd > 0) toast('恢复冷却中', C.dim); else me.cmd.heal = true; return; }
   if (hitBtn(Lt.recall, x, y, 5)) { me.cmd.recall = true; return; }
   if (x < HUD.w * 0.45 && y > m.y + m.s + 8 && !INP.joy) { startJoy(id, x, y); return; }
+  // 点到敌人：锁定；点空地：取消锁定
+  const u = pickUnitAt(W, me, x, y);
+  setLock(u ? u.id : 0);
 }
 function startJoy(id, x, y) {
   const J = HUD.L.joy;
@@ -5251,9 +5455,10 @@ function onPointerMove(W, me, id, x, y) {
   else if (p.role === 'mini') miniPeek(x, y);
   else if (p.role === 'aim' && INP.aim && INP.aim.id === id) {
     const a = INP.aim, px = x - a.x0, py = y - a.y0, d = Math.hypot(px, py);
-    const R = 62 * HUD.L.u;
+    a.fx = px; a.fy = py;
+    const R = HUD.L.wheel;
     if (d > JOY_DEAD) { a.moved = true; const [wx, wy] = scrDir(px, py); a.dx = wx; a.dy = wy; a.mag = Math.min(1, d / R); }
-    a.cancel = a.moved && hitBtn(HUD.L.cancel, x, y, 8);
+    a.cancel = a.moved && hitBtn(HUD.L.cancel, x, y, 10);
     if (a.s !== 'flash') {
       const def = sdef(me, a.s);
       if (def.aim === 'unit') a.tgt = pickDirTarget(W, me, def, a.dx, a.dy);
@@ -5296,20 +5501,23 @@ function pickDirTarget(W, me, def, dx, dy) {
   }
   return best;
 }
+function cast(W, me, o) { o.at = W.t; me.cmd.cast = o; }
 function castAimed(W, me, s, dx, dy, mag) {
   const def = sdef(me, s);
-  if (def.aim === 'point') me.cmd.cast = { s, x: me.x + dx * mag * def.range, y: me.y + dy * mag * def.range };
-  else if (def.aim === 'dir') me.cmd.cast = { s, x: me.x + dx * 300, y: me.y + dy * 300 };
-  else if (def.aim === 'unit') { const t = pickDirTarget(W, me, def, dx, dy); if (!t) { toast('附近没有敌方英雄', C.dim); return; } me.cmd.cast = { s, id: t.id }; }
-  else me.cmd.cast = { s };
+  if (def.aim === 'point') cast(W, me, { s, x: me.x + dx * mag * def.range, y: me.y + dy * mag * def.range });
+  else if (def.aim === 'dir') cast(W, me, { s, x: me.x + dx * 300, y: me.y + dy * 300 });
+  else if (def.aim === 'unit') { const t = pickDirTarget(W, me, def, dx, dy); if (!t) { toast('附近没有敌方英雄', C.dim); return; } cast(W, me, { s, id: t.id }); }
+  else cast(W, me, { s });
 }
-// 点一下：自动找目标
+// 点一下：自动找目标（锁定的 > 最近的敌方英雄 > 小兵野怪 > 朝前）
 function smartCast(W, me, s) {
   const def = sdef(me, s);
-  if (def.aim === 'self') { me.cmd.cast = { s }; return; }
+  if (def.aim === 'self') { cast(W, me, { s }); return; }
   const reach = def.aim === 'unit' ? def.range + 80 : Math.min(def.range, 1100) + (def.aim === 'point' ? (def.rad || 100) * 0.6 : 60);
   let tgt = null, bd = 1e9;
-  for (const e of W._heroes) {
+  const lk = lockTarget(W, me);
+  if (lk && dist(me, lk) < reach + 100 && (def.aim !== 'unit' || lk.kind === 'hero')) tgt = lk;
+  if (!tgt) for (const e of W._heroes) {
     if (e.team === me.team || e.dead || !canSee(W, me.team, e) || untarg(e)) continue;
     const d = dist(me, e);
     if (d < reach && d < bd) { bd = d; tgt = e; }
@@ -5319,15 +5527,15 @@ function smartCast(W, me, s) {
       if ((u.kind === 'minion' || u.kind === 'monster') && u.team !== me.team && !u.dead && !u.reset) { const d = dist(me, u); if (d < bd) { bd = d; tgt = u; } }
     });
   }
-  if (def.aim === 'unit') { if (!tgt) { toast('附近没有敌方英雄', C.dim); return; } me.cmd.cast = { s, id: tgt.id }; return; }
+  if (def.aim === 'unit') { if (!tgt) { toast('附近没有敌方英雄', C.dim); return; } cast(W, me, { s, id: tgt.id }); return; }
   if (tgt) {
     const lead = tgt.kind === 'hero' ? 0.25 : 0;
-    me.cmd.cast = { s, x: tgt.x + (tgt.vx || 0) * lead, y: tgt.y + (tgt.vy || 0) * lead };
+    cast(W, me, { s, x: tgt.x + (tgt.vx || 0) * lead, y: tgt.y + (tgt.vy || 0) * lead });
     return;
   }
   const [dx, dy] = joyDir(me);
   const r = def.aim === 'point' ? def.range * 0.6 : 300;
-  me.cmd.cast = { s, x: me.x + dx * r, y: me.y + dy * r };
+  cast(W, me, { s, x: me.x + dx * r, y: me.y + dy * r });
 }
 function moveVec() {
   if (INP.joy) {
@@ -5340,27 +5548,36 @@ function moveVec() {
   if (!x && !y) return null;
   return scrDir(x, y);
 }
-// 每帧：把摇杆、普攻键写进玩家的指令
+// 每帧：把摇杆、普攻键写进玩家的指令。按着普攻键、锁定的英雄在附近：就打它；不然按键的种类挑目标
 function playerCmd(W, me) {
   const c = me.cmd || (me.cmd = {});
   c.mv = moveVec();
-  c.atkAuto = INP.atk != null || INP.keyAtk;
-  c.goto = null; c.atk = 0;
+  const pressed = INP.atk != null || INP.keyAtk;
+  const mode = INP.atk != null ? INP.atkMode : INP.keyMode;
+  c.goto = null; c.atk = 0; c.atkAuto = false; c.atkMode = mode;
+  const lk = lockTarget(W, me);
+  if (pressed) {
+    if (lk && mode === 'hero' && edge(me, lk) < me.range + 420) c.atk = lk.id;
+    else c.atkAuto = true;
+  }
 }
 // 键盘
 function mouseWorld() {
   if (!INP.mouse || R3.t - INP.mouseT > 4) return null;
   return screenToGround(INP.mouse[0], INP.mouse[1]);
 }
-function onKey(W, me, code, down) {
+function onKey(W, me, code, down, shift) {
   if (down) HUD.keyboard = true;
   INP.keys[code] = down;
-  if (code === 'KeyJ' || code === 'Space') INP.keyAtk = down;
-  if (!down || !me || me.dead) return;
+  const atkKey = { KeyJ: 'hero', Space: 'hero', KeyK: 'minion', KeyL: 'tower' }[code];
+  if (atkKey) { if (down) { INP.keyAtk = true; INP.keyMode = atkKey; } else if (INP.keyMode === atkKey) INP.keyAtk = false; }
+  if (!down || !me) return;
   const sk = { Digit1: 0, KeyQ: 0, KeyU: 0, Digit2: 1, KeyE: 1, KeyI: 1, Digit3: 2, KeyR: 2, KeyO: 2 }[code];
+  if (sk != null && shift) { if (!upgradeSkill(W, me, sk)) toast('现在不能升这个技能', C.dim); return; }
+  if (me.dead) return;
   if (sk != null) {
     const st = me.sk[sk];
-    if (!st.rank) { toast(sk === 2 ? '4 级解锁大招' : '2 级解锁这个技能', C.dim); return; }
+    if (!st.rank) { toast(canUpgrade(me, sk) ? '先按 Shift+' + (sk + 1) + ' 升级这个技能' : sk === 2 ? '4 级才能学大招' : '还没学这个技能', C.dim); return; }
     if (st.cd > 0) { toast('技能冷却中', C.dim); return; }
     const mw = mouseWorld();
     if (mw) {
@@ -5554,7 +5771,8 @@ function sayVoice(id) {
 
 const STEP = 1 / 60;
 const G = { scr: 'boot', W: null, me: null, demo: null, demoCam: null, demoT: 0, diff: 1, hero: 'warrior', paused: false, acc: 0, last: 0,
-  endShown: false, crystalWarnT: -99, stats: { win: 0, lose: 0 }, img: {}, sc: null, dprGL: 1, perf: { t: 0, n: 0, off: false }, rotate: false, freeze: false };
+  endShown: false, crystalWarnT: -99, stats: { win: 0, lose: 0 }, img: {}, sc: null, dprGL: 1, dprMax: 1,
+  perf: { t: 0, n: 0, off: false, warm: 1, good: 0, capped: false }, rotate: false, freeze: false };
 const $ = s => document.querySelector(s);
 const STORE = 'xgzf-v1';
 function loadPrefs() {
@@ -5568,7 +5786,7 @@ function layout() {
   resize3D(w, h, G.dprGL);
   const cs = getComputedStyle(document.documentElement);
   const px = v => parseFloat(cs.getPropertyValue(v)) || 0;
-  HUD.ins = { l: px('--sal'), r: px('--sar'), t: 0, b: px('--sab') * 0.5 };
+  HUD.ins = { l: px('--sal'), r: px('--sar'), t: 0, b: px('--sab') };   // 底下一排按钮让开 iPhone 的横条（回到桌面的手势区）
   hudResize(w, h, Math.min(window.devicePixelRatio || 1, 2));
   G.rotate = h > w * 1.05;
   $('#rotate').classList.toggle('on', G.rotate && G.scr !== 'boot');
@@ -5578,7 +5796,7 @@ function layout() {
 /* ---------- 画面切换 ---------- */
 function show(id) {
   for (const el of document.querySelectorAll('.scr')) el.hidden = el.id !== id;
-  G.scr = id;
+  G.scr = id; G.perf.warm = 1;
   $('#rotate').classList.toggle('on', G.rotate && id !== 'boot');
 }
 function hideAll() { for (const el of document.querySelectorAll('.scr')) el.hidden = true; }
@@ -5606,9 +5824,11 @@ function buildTitle() {
   h.innerHTML = `<div class="box">
     <div class="hd">怎么玩</div>
     <p>你在<b class="b">蓝方</b>（左下），和 4 个电脑队友一起推掉右上角<b class="r">红方的水晶</b>就赢。三条路每路三座塔，一座一座推过去；小兵每 30 秒出一波。</p>
-    <p><b>手机</b>（横着拿）：左手按住左下就是摇杆；右手按住大圆键普攻，自动打身边的敌人（英雄优先）。技能键点一下自动放；按住拖动自己瞄，地上会出现范围和方向，拖到右上的“取消施法”松手就不放。左上的小地图按住能看别处。</p>
-    <p><b>电脑</b>：WASD 移动，J 或空格普攻，1 2 3 放技能（朝鼠标的方向），F 闪现，H 恢复，B 回城，P 暂停。</p>
-    <p>左边的金币是商店，金币够了下面的推荐装备会亮，点一下就买。2 级解锁第二个技能，4 级解锁大招。野区有红、蓝 BUFF，河道里有小龙和大龙；打掉大龙，三条路会出先锋帮你推塔。</p>
+    <p><b>手机</b>（横着拿）：左下按住是摇杆。右下大圆键普攻，按住一直打（英雄优先）；旁边两个小键：左下<b>补刀</b>只打小兵野怪，右上<b>推塔</b>只打塔。</p>
+    <p><b>技能</b>：开局先点技能左上角的金色“+”学技能，升级了再点。技能键点一下自动放；按住拖动自己瞄，拖到右上的“取消施法”松手就不放。</p>
+    <p><b>锁定</b>：普攻打到的敌方英雄会自动锁定；点屏幕上的敌人、或技能上方的敌方头像也能锁定，之后普攻和技能都先打它，点空地取消。</p>
+    <p><b>电脑</b>：WASD 移动，J 或空格普攻，K 补刀，L 推塔，1 2 3 放技能（朝鼠标），Shift+1 2 3 升级技能，F 闪现，H 恢复，B 回城，P 暂停。</p>
+    <p>左边的金币是商店，推荐装备钱够了会亮，点一下就买。野区有红、蓝 BUFF，河道里有小龙和大龙；打掉大龙，三条路会出先锋帮你推塔。</p>
     <button class="btn" id="bHelpOk">知道了</button></div>`;
   $('#bHelpOk').onclick = () => { sfx('click'); show('title'); };
 }
@@ -5715,7 +5935,7 @@ function startLoading() {
     const bar = $('#ldbar'); if (bar) bar.style.width = p + '%';
     const tx = $('#ldtxt'); if (tx) tx.textContent = '加载中 ' + Math.floor(p) + '%';
     if (p < 100 || !G.W) setTimeout(tick, 100);
-    else setTimeout(() => { hideAll(); G.scr = 'game'; G.paused = false; G.last = performance.now(); }, 300);
+    else setTimeout(() => { hideAll(); G.scr = 'game'; G.paused = false; G.perf.warm = 1.5; G.last = performance.now(); }, 300);
   };
   tick();
 }
@@ -5842,13 +6062,12 @@ function handleEvents(W, me, quiet) {
         if (!quiet && me && e.id === me.id) {
           sfx('levelup');
           floatText(me.x, me.y, 175, '升级', C.gold2, { size: 18, dur: 1.2 });
-          const s = SKILL_ORDER[e.lvl - 1]; if (s != null) HUD.lvlFlash[s] = 0.9;
-          if (e.lvl === 2) toast('解锁了第二个技能', C.gold2);
-          if (e.lvl === 4) toast('大招解锁了！', C.gold2);
+          if (me.manual && me.skillPts > 0) toast(e.lvl === 4 || e.lvl === 8 || e.lvl === 12 ? '可以升级大招了：点技能左上角的 +' : '可以升级技能：点技能左上角的 +', C.gold2);
         }
         break;
       }
       case 'atk': {
+        if (me && e.id === me.id) { const t = byId(W, e.tid); if (t && t.kind === 'hero') INP.lock = t.id; }
         if (quiet) break;
         if (e.kind === 'hero') sfx(e.proj === 'arrow' ? 'shoot' : e.proj === 'orb' ? 'magic' : e.proj === 'heart' ? 'heart' : 'swing', e.x, e.y, 0.7);
         else if (e.kind === 'tower' || e.kind === 'crystal') sfx('tower', e.x, e.y, 0.8);
@@ -5876,10 +6095,11 @@ function handleEvents(W, me, quiet) {
       case 'tower': if (!quiet) { const mine = e.team === 0; announce(mine ? '我方防御塔被摧毁了' : '摧毁一座敌方防御塔', mine ? C.red : C.gold, { voice: mine ? 'towerLost' : 'towerKill' }); } break;
       case 'dragon': if (!quiet) { const ours = e.team === 0, big = e.mt === 'lord'; announce(`${ours ? '我方' : '敌方'}击败了${big ? '大龙' : '小龙'}`, ours ? C.gold : C.red, { voice: (big ? 'lord' : 'drake') + (ours ? 'B' : 'R'), sub: big ? (ours ? '三条路出现了我方先锋' : '小心敌方先锋') : (ours ? '全队金币 +' + MONSTER.drake.teamGold : '') }); } break;
       case 'dragonSpawn': if (!quiet && W.t > 5) announce(e.mt === 'lord' ? '大龙出现了' : '小龙出现了', '#D8B0FF', { voice: e.mt === 'lord' ? 'lordUp' : 'drakeUp', dur: 2 }); break;
-      case 'say': if (!quiet) { if (e.k === 'welcome') announce('欢迎来到峡谷争锋', C.gold, { voice: 'welcome', dur: 2.6 }); else if (e.k === 'five') announce('敌军还有 5 秒到达战场', C.gold, { voice: 'five' }); else if (e.k === 'go') { announce('全军出击', C.gold, { voice: 'go', dur: 1.8 }); sfx('wave'); } } break;
+      case 'say': if (!quiet) { if (e.k === 'welcome') { announce('欢迎来到峡谷争锋', C.gold, { voice: 'welcome', dur: 2.6 }); if (me && me.manual) setTimeout(() => toast('点技能左上角的 + 学技能', C.gold2), 2600); } else if (e.k === 'five') announce('敌军还有 5 秒到达战场', C.gold, { voice: 'five' }); else if (e.k === 'go') { announce('全军出击', C.gold, { voice: 'go', dur: 1.8 }); sfx('wave'); } } break;
       case 'recall': if (!quiet && me && e.id === me.id) sfx('recall'); break;
       case 'buy': if (!quiet && me && e.id === me.id) { toast('购买了 ' + ITEMS[e.item].name, C.gold2); sfx('coin'); } break;
       case 'respawn': fx3Unit(W, e); break;
+      case 'skillUp': if (!quiet && me && e.id === me.id) { HUD.lvlFlash[e.s] = 0.9; sfx('coin', null, null, 0.8); } break;
       case 'end': R3.shake = 9; break;
     }
   }
@@ -5903,20 +6123,32 @@ function killEvent(W, me, e) {
   if (e.ace) announce('团灭', col, { voice: 'ace', dur: 2, sub: ours ? '趁现在去推塔！' : '守住高地！' });
 }
 
-/* ---------- 帧率跟不上：降清晰度，再关实时影子 ---------- */
+/* ---------- 帧率：跟不上就降清晰度、再关实时影子；很流畅就往上加清晰度 ---------- */
+// 手机起步 1.5 倍（电脑 2 倍），1.5 秒看一次：低于 48 帧降一档，之后就不再往上加；连着两次 57 帧以上、没降过，加 0.25（最多到设备的像素比，封顶 2）
 function perfTick(dt) {
   const P = G.perf;
   if (P.off) return;
+  if (P.warm > 0) { P.warm -= dt; P.t = 0; P.n = 0; return; }   // 刚换画面、刚编译完着色器的那一下不算
   P.t += dt; P.n++;
-  if (P.t < 2.5) return;
+  if (P.t < 1.5) return;
   const fps = P.n / P.t;
   P.t = 0; P.n = 0;
-  if (fps > 45) return;
-  if (G.dprGL > 1.01) { G.dprGL = Math.max(1, G.dprGL - 0.25); layout(); }
-  else if (S3.sun.castShadow) {
-    S3.sun.castShadow = false; S3.r.shadowMap.enabled = false;
-    S3.scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.needsUpdate = true; }); });
-  } else if (G.dprGL > 0.76) { G.dprGL = Math.max(0.75, G.dprGL - 0.25); layout(); }
+  if (fps < 48) {
+    P.capped = true; P.good = 0;
+    if (G.dprGL > 1.01) { G.dprGL = Math.max(1, G.dprGL - 0.25); layout(); }
+    else if (S3.sun.castShadow) {
+      S3.sun.castShadow = false; S3.r.shadowMap.enabled = false;
+      S3.scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.needsUpdate = true; }); });
+    } else if (G.dprGL > 0.76) { G.dprGL = Math.max(0.75, G.dprGL - 0.25); layout(); }
+    P.warm = 0.5;
+  } else if (fps > 57 && !P.capped && G.dprGL < G.dprMax - 0.01) {
+    if (++P.good >= 2) { P.good = 0; G.dprGL = Math.min(G.dprMax, G.dprGL + 0.25); layout(); P.warm = 0.5; }
+  }
+}
+// 每一步模拟之前记下位置，画的时候在两步之间插值
+function savePrev(W) {
+  for (const u of W.units) { u._px = u.x; u._py = u.y; }
+  for (const p of W.projs) { p._px = p.x; p._py = p.y; }
 }
 
 /* ---------- 主循环 ---------- */
@@ -5933,11 +6165,12 @@ function frame(now) {
       playerCmd(W, G.me);
       G.acc += dt;
       let n = 0;
-      while (G.acc >= STEP && n < 4) { step(W, STEP); G.acc -= STEP; n++; }
+      while (G.acc >= STEP && n < 4) { savePrev(W); step(W, STEP); G.acc -= STEP; n++; }
       if (n === 4) G.acc = 0;
+      R3.alpha = clamp(G.acc / STEP, 0, 1);
       handleEvents(W, G.me, false);
       perfTick(dt);
-    }
+    } else R3.alpha = 1;
     if (W.winner >= 0 && !G.endShown) {
       G.endShown = true;
       const cr = W.units.find(u => u.kind === 'crystal' && u.team !== W.winner);
@@ -5957,8 +6190,10 @@ function frame(now) {
     const D = G.demo;
     G.acc += dt;
     let n = 0;
-    while (!G.freeze && G.acc >= 1 / 30 && n < 3) { step(D, 1 / 30); G.acc -= 1 / 30; n++; }
+    while (!G.freeze && G.acc >= 1 / 30 && n < 3) { savePrev(D); step(D, 1 / 30); G.acc -= 1 / 30; n++; }
     if (n === 3) G.acc = 0;
+    R3.alpha = G.freeze ? 1 : clamp(G.acc * 30, 0, 1);
+    if (G.scr === 'title') perfTick(dt);
     handleEvents(D, null, true);
     G.demoT += dt;
     if (!G.freeze && (G.demoT > 9 || G.demoCam.dead)) {        // 换一个英雄跟拍，挑离敌人最近的（有架打）
@@ -5999,7 +6234,7 @@ function bindInput() {
     if (G.scr === 'game' && !G.paused) {
       if (ev.code === 'KeyP' || ev.code === 'Escape') { openPause(); return; }
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(ev.code)) ev.preventDefault();
-      if (!ev.repeat) onKey(G.W, G.me, ev.code, true);
+      if (!ev.repeat) onKey(G.W, G.me, ev.code, true, ev.shiftKey);
       else INP.keys[ev.code] = true;
     } else if (G.scr === 'pause' && (ev.code === 'KeyP' || ev.code === 'Escape')) closePause();
     else if (G.scr === 'shop' && ev.code === 'Escape') { hideAll(); G.scr = 'game'; }
@@ -6040,7 +6275,8 @@ function boot(data) {
   if (data.hero && HERO_BY_ID[data.hero]) G.hero = data.hero;
   if (data.diff != null) G.diff = data.diff;
   HUD.keyboard = !(('ontouchstart' in window) || navigator.maxTouchPoints > 0);
-  G.dprGL = Math.min(window.devicePixelRatio || 1, 2);
+  G.dprMax = Math.min(window.devicePixelRatio || 1, 2);
+  G.dprGL = HUD.keyboard ? G.dprMax : Math.min(G.dprMax, 1.5);
   HUD.cv = $('#hud'); HUD.g = HUD.cv.getContext('2d');
   try { initRenderer($('#gl')); } catch (e) { if (bootTxt) bootTxt.textContent = '这个浏览器不支持 WebGL，玩不了三维画面。'; return; }
   layout();

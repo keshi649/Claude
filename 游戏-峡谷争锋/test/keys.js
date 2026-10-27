@@ -1,4 +1,4 @@
-// 电脑上的操作：WASD 走、J 普攻、1 2 3 朝鼠标放技能、F 朝鼠标闪现、H 恢复、B 回城、P 暂停。每一步检查对局状态。
+// 电脑上的操作：WASD 走、Shift+1 2 3 升级技能、K 补刀、L 推塔、1 2 3 朝鼠标放技能、F 朝鼠标闪现、H 恢复、B 回城、P 暂停。每一步检查对局状态。
 // 用法：node test/keys.js [输出目录]
 const path = require('path'), fs = require('fs');
 const { ROOT, launch, watchErrors } = require('./lib');
@@ -15,11 +15,22 @@ const { ROOT, launch, watchErrors } = require('./lib');
   await click('#bStart'); await page.waitForSelector('#select:not([hidden])');
   await click('.card[data-h="mage"]'); await click('#bGo');
   await page.waitForFunction(() => G.scr === 'game', null, { timeout: 30000 });
-  await page.evaluate(() => { for (let i = 0; i < 60 * 30; i++) { step(G.W, 1 / 60); G.W.ev.length = 0; } G.me.lvl = 4; applySkillRanks(G.me); });
+  await page.evaluate(() => { for (let i = 0; i < 60 * 30; i++) { step(G.W, 1 / 60); G.W.ev.length = 0; } G.me.lvl = 4; G.me.skillPts = 4; });
   const run = s => page.evaluate(s => { for (let i = 0; i < s * 60; i++) { playerCmd(G.W, G.me); step(G.W, 1 / 60); G.W.ev.length = 0; } }, s);
   const st = () => page.evaluate(() => ({ x: Math.round(G.me.x), y: Math.round(G.me.y), cd: G.me.sk.map(k => +k.cd.toFixed(1)), flash: Math.round(G.me.flashCd), heal: Math.round(G.me.healCd), recall: G.me.recall, scr: G.scr, kb: HUD.keyboard }));
   const res = [];
   const ok = (name, cond, info) => { res.push(!!cond); console.log((cond ? 'OK  ' : 'FAIL') + ' ' + name + (info ? '  ' + JSON.stringify(info) : '')); };
+  for (const k of ['1', '2', '3']) await page.keyboard.press('Shift+Digit' + k);
+  let sr = await page.evaluate(() => ({ rank: G.me.sk.map(k => k.rank), pts: G.me.skillPts }));
+  ok('Shift+1 2 3：三个技能各升一级', sr.rank.join() === '1,1,1' && sr.pts === 1, sr);
+  await page.keyboard.down('KeyK'); await run(0.05);
+  sr = await page.evaluate(() => G.me.cmd.atkMode + '/' + G.me.cmd.atkAuto);
+  await page.keyboard.up('KeyK');
+  ok('K：补刀（只打小兵野怪）', sr === 'minion/true', sr);
+  await page.keyboard.down('KeyL'); await run(0.05);
+  sr = await page.evaluate(() => G.me.cmd.atkMode + '/' + G.me.cmd.atkAuto);
+  await page.keyboard.up('KeyL');
+  ok('L：推塔（只打塔）', sr === 'tower/true', sr);
   let s0 = await st();
   await page.keyboard.down('KeyD'); await page.keyboard.down('KeyW');
   await run(1.5);

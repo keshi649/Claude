@@ -19,6 +19,7 @@ const { ROOT, launch, watchErrors } = require('./lib');
   await p1.evaluate(() => { document.querySelector('.card[data-h="mage"]').click(); document.querySelector('#bGo').click(); });
   await p1.waitForFunction(() => G.scr === 'game', null, { timeout: 30000 });
   const snap = await p1.evaluate(() => {
+    G.me.manual = false; applySkillRanks(G.me);
     for (let i = 0; i < 120 * 60; i++) { aiUpdate(G.W, G.me, 1 / 60); step(G.W, 1 / 60); G.W.ev.length = 0; }
     const d = window.__snap();
     return { d, t: G.W.t, lvl: G.me.lvl, kills: G.W.kills.slice(), size: d.save ? d.save.length : 0 };

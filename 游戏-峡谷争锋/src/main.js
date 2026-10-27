@@ -5,7 +5,8 @@
 
 const STEP = 1 / 60;
 const G = { scr: 'boot', W: null, me: null, demo: null, demoCam: null, demoT: 0, diff: 1, hero: 'warrior', paused: false, acc: 0, last: 0,
-  endShown: false, crystalWarnT: -99, stats: { win: 0, lose: 0 }, img: {}, sc: null, dprGL: 1, perf: { t: 0, n: 0, off: false }, rotate: false, freeze: false };
+  endShown: false, crystalWarnT: -99, stats: { win: 0, lose: 0 }, img: {}, sc: null, dprGL: 1, dprMax: 1,
+  perf: { t: 0, n: 0, off: false, warm: 1, good: 0, capped: false }, rotate: false, freeze: false };
 const $ = s => document.querySelector(s);
 const STORE = 'xgzf-v1';
 function loadPrefs() {
@@ -19,7 +20,7 @@ function layout() {
   resize3D(w, h, G.dprGL);
   const cs = getComputedStyle(document.documentElement);
   const px = v => parseFloat(cs.getPropertyValue(v)) || 0;
-  HUD.ins = { l: px('--sal'), r: px('--sar'), t: 0, b: px('--sab') * 0.5 };
+  HUD.ins = { l: px('--sal'), r: px('--sar'), t: 0, b: px('--sab') };   // 底下一排按钮让开 iPhone 的横条（回到桌面的手势区）
   hudResize(w, h, Math.min(window.devicePixelRatio || 1, 2));
   G.rotate = h > w * 1.05;
   $('#rotate').classList.toggle('on', G.rotate && G.scr !== 'boot');
@@ -29,7 +30,7 @@ function layout() {
 /* ---------- 画面切换 ---------- */
 function show(id) {
   for (const el of document.querySelectorAll('.scr')) el.hidden = el.id !== id;
-  G.scr = id;
+  G.scr = id; G.perf.warm = 1;
   $('#rotate').classList.toggle('on', G.rotate && id !== 'boot');
 }
 function hideAll() { for (const el of document.querySelectorAll('.scr')) el.hidden = true; }
@@ -57,9 +58,11 @@ function buildTitle() {
   h.innerHTML = `<div class="box">
     <div class="hd">怎么玩</div>
     <p>你在<b class="b">蓝方</b>（左下），和 4 个电脑队友一起推掉右上角<b class="r">红方的水晶</b>就赢。三条路每路三座塔，一座一座推过去；小兵每 30 秒出一波。</p>
-    <p><b>手机</b>（横着拿）：左手按住左下就是摇杆；右手按住大圆键普攻，自动打身边的敌人（英雄优先）。技能键点一下自动放；按住拖动自己瞄，地上会出现范围和方向，拖到右上的“取消施法”松手就不放。左上的小地图按住能看别处。</p>
-    <p><b>电脑</b>：WASD 移动，J 或空格普攻，1 2 3 放技能（朝鼠标的方向），F 闪现，H 恢复，B 回城，P 暂停。</p>
-    <p>左边的金币是商店，金币够了下面的推荐装备会亮，点一下就买。2 级解锁第二个技能，4 级解锁大招。野区有红、蓝 BUFF，河道里有小龙和大龙；打掉大龙，三条路会出先锋帮你推塔。</p>
+    <p><b>手机</b>（横着拿）：左下按住是摇杆。右下大圆键普攻，按住一直打（英雄优先）；旁边两个小键：左下<b>补刀</b>只打小兵野怪，右上<b>推塔</b>只打塔。</p>
+    <p><b>技能</b>：开局先点技能左上角的金色“+”学技能，升级了再点。技能键点一下自动放；按住拖动自己瞄，拖到右上的“取消施法”松手就不放。</p>
+    <p><b>锁定</b>：普攻打到的敌方英雄会自动锁定；点屏幕上的敌人、或技能上方的敌方头像也能锁定，之后普攻和技能都先打它，点空地取消。</p>
+    <p><b>电脑</b>：WASD 移动，J 或空格普攻，K 补刀，L 推塔，1 2 3 放技能（朝鼠标），Shift+1 2 3 升级技能，F 闪现，H 恢复，B 回城，P 暂停。</p>
+    <p>左边的金币是商店，推荐装备钱够了会亮，点一下就买。野区有红、蓝 BUFF，河道里有小龙和大龙；打掉大龙，三条路会出先锋帮你推塔。</p>
     <button class="btn" id="bHelpOk">知道了</button></div>`;
   $('#bHelpOk').onclick = () => { sfx('click'); show('title'); };
 }
@@ -166,7 +169,7 @@ function startLoading() {
     const bar = $('#ldbar'); if (bar) bar.style.width = p + '%';
     const tx = $('#ldtxt'); if (tx) tx.textContent = '加载中 ' + Math.floor(p) + '%';
     if (p < 100 || !G.W) setTimeout(tick, 100);
-    else setTimeout(() => { hideAll(); G.scr = 'game'; G.paused = false; G.last = performance.now(); }, 300);
+    else setTimeout(() => { hideAll(); G.scr = 'game'; G.paused = false; G.perf.warm = 1.5; G.last = performance.now(); }, 300);
   };
   tick();
 }
@@ -293,13 +296,12 @@ function handleEvents(W, me, quiet) {
         if (!quiet && me && e.id === me.id) {
           sfx('levelup');
           floatText(me.x, me.y, 175, '升级', C.gold2, { size: 18, dur: 1.2 });
-          const s = SKILL_ORDER[e.lvl - 1]; if (s != null) HUD.lvlFlash[s] = 0.9;
-          if (e.lvl === 2) toast('解锁了第二个技能', C.gold2);
-          if (e.lvl === 4) toast('大招解锁了！', C.gold2);
+          if (me.manual && me.skillPts > 0) toast(e.lvl === 4 || e.lvl === 8 || e.lvl === 12 ? '可以升级大招了：点技能左上角的 +' : '可以升级技能：点技能左上角的 +', C.gold2);
         }
         break;
       }
       case 'atk': {
+        if (me && e.id === me.id) { const t = byId(W, e.tid); if (t && t.kind === 'hero') INP.lock = t.id; }
         if (quiet) break;
         if (e.kind === 'hero') sfx(e.proj === 'arrow' ? 'shoot' : e.proj === 'orb' ? 'magic' : e.proj === 'heart' ? 'heart' : 'swing', e.x, e.y, 0.7);
         else if (e.kind === 'tower' || e.kind === 'crystal') sfx('tower', e.x, e.y, 0.8);
@@ -327,10 +329,11 @@ function handleEvents(W, me, quiet) {
       case 'tower': if (!quiet) { const mine = e.team === 0; announce(mine ? '我方防御塔被摧毁了' : '摧毁一座敌方防御塔', mine ? C.red : C.gold, { voice: mine ? 'towerLost' : 'towerKill' }); } break;
       case 'dragon': if (!quiet) { const ours = e.team === 0, big = e.mt === 'lord'; announce(`${ours ? '我方' : '敌方'}击败了${big ? '大龙' : '小龙'}`, ours ? C.gold : C.red, { voice: (big ? 'lord' : 'drake') + (ours ? 'B' : 'R'), sub: big ? (ours ? '三条路出现了我方先锋' : '小心敌方先锋') : (ours ? '全队金币 +' + MONSTER.drake.teamGold : '') }); } break;
       case 'dragonSpawn': if (!quiet && W.t > 5) announce(e.mt === 'lord' ? '大龙出现了' : '小龙出现了', '#D8B0FF', { voice: e.mt === 'lord' ? 'lordUp' : 'drakeUp', dur: 2 }); break;
-      case 'say': if (!quiet) { if (e.k === 'welcome') announce('欢迎来到峡谷争锋', C.gold, { voice: 'welcome', dur: 2.6 }); else if (e.k === 'five') announce('敌军还有 5 秒到达战场', C.gold, { voice: 'five' }); else if (e.k === 'go') { announce('全军出击', C.gold, { voice: 'go', dur: 1.8 }); sfx('wave'); } } break;
+      case 'say': if (!quiet) { if (e.k === 'welcome') { announce('欢迎来到峡谷争锋', C.gold, { voice: 'welcome', dur: 2.6 }); if (me && me.manual) setTimeout(() => toast('点技能左上角的 + 学技能', C.gold2), 2600); } else if (e.k === 'five') announce('敌军还有 5 秒到达战场', C.gold, { voice: 'five' }); else if (e.k === 'go') { announce('全军出击', C.gold, { voice: 'go', dur: 1.8 }); sfx('wave'); } } break;
       case 'recall': if (!quiet && me && e.id === me.id) sfx('recall'); break;
       case 'buy': if (!quiet && me && e.id === me.id) { toast('购买了 ' + ITEMS[e.item].name, C.gold2); sfx('coin'); } break;
       case 'respawn': fx3Unit(W, e); break;
+      case 'skillUp': if (!quiet && me && e.id === me.id) { HUD.lvlFlash[e.s] = 0.9; sfx('coin', null, null, 0.8); } break;
       case 'end': R3.shake = 9; break;
     }
   }
@@ -354,20 +357,32 @@ function killEvent(W, me, e) {
   if (e.ace) announce('团灭', col, { voice: 'ace', dur: 2, sub: ours ? '趁现在去推塔！' : '守住高地！' });
 }
 
-/* ---------- 帧率跟不上：降清晰度，再关实时影子 ---------- */
+/* ---------- 帧率：跟不上就降清晰度、再关实时影子；很流畅就往上加清晰度 ---------- */
+// 手机起步 1.5 倍（电脑 2 倍），1.5 秒看一次：低于 48 帧降一档，之后就不再往上加；连着两次 57 帧以上、没降过，加 0.25（最多到设备的像素比，封顶 2）
 function perfTick(dt) {
   const P = G.perf;
   if (P.off) return;
+  if (P.warm > 0) { P.warm -= dt; P.t = 0; P.n = 0; return; }   // 刚换画面、刚编译完着色器的那一下不算
   P.t += dt; P.n++;
-  if (P.t < 2.5) return;
+  if (P.t < 1.5) return;
   const fps = P.n / P.t;
   P.t = 0; P.n = 0;
-  if (fps > 45) return;
-  if (G.dprGL > 1.01) { G.dprGL = Math.max(1, G.dprGL - 0.25); layout(); }
-  else if (S3.sun.castShadow) {
-    S3.sun.castShadow = false; S3.r.shadowMap.enabled = false;
-    S3.scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.needsUpdate = true; }); });
-  } else if (G.dprGL > 0.76) { G.dprGL = Math.max(0.75, G.dprGL - 0.25); layout(); }
+  if (fps < 48) {
+    P.capped = true; P.good = 0;
+    if (G.dprGL > 1.01) { G.dprGL = Math.max(1, G.dprGL - 0.25); layout(); }
+    else if (S3.sun.castShadow) {
+      S3.sun.castShadow = false; S3.r.shadowMap.enabled = false;
+      S3.scene.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.needsUpdate = true; }); });
+    } else if (G.dprGL > 0.76) { G.dprGL = Math.max(0.75, G.dprGL - 0.25); layout(); }
+    P.warm = 0.5;
+  } else if (fps > 57 && !P.capped && G.dprGL < G.dprMax - 0.01) {
+    if (++P.good >= 2) { P.good = 0; G.dprGL = Math.min(G.dprMax, G.dprGL + 0.25); layout(); P.warm = 0.5; }
+  }
+}
+// 每一步模拟之前记下位置，画的时候在两步之间插值
+function savePrev(W) {
+  for (const u of W.units) { u._px = u.x; u._py = u.y; }
+  for (const p of W.projs) { p._px = p.x; p._py = p.y; }
 }
 
 /* ---------- 主循环 ---------- */
@@ -384,11 +399,12 @@ function frame(now) {
       playerCmd(W, G.me);
       G.acc += dt;
       let n = 0;
-      while (G.acc >= STEP && n < 4) { step(W, STEP); G.acc -= STEP; n++; }
+      while (G.acc >= STEP && n < 4) { savePrev(W); step(W, STEP); G.acc -= STEP; n++; }
       if (n === 4) G.acc = 0;
+      R3.alpha = clamp(G.acc / STEP, 0, 1);
       handleEvents(W, G.me, false);
       perfTick(dt);
-    }
+    } else R3.alpha = 1;
     if (W.winner >= 0 && !G.endShown) {
       G.endShown = true;
       const cr = W.units.find(u => u.kind === 'crystal' && u.team !== W.winner);
@@ -408,8 +424,10 @@ function frame(now) {
     const D = G.demo;
     G.acc += dt;
     let n = 0;
-    while (!G.freeze && G.acc >= 1 / 30 && n < 3) { step(D, 1 / 30); G.acc -= 1 / 30; n++; }
+    while (!G.freeze && G.acc >= 1 / 30 && n < 3) { savePrev(D); step(D, 1 / 30); G.acc -= 1 / 30; n++; }
     if (n === 3) G.acc = 0;
+    R3.alpha = G.freeze ? 1 : clamp(G.acc * 30, 0, 1);
+    if (G.scr === 'title') perfTick(dt);
     handleEvents(D, null, true);
     G.demoT += dt;
     if (!G.freeze && (G.demoT > 9 || G.demoCam.dead)) {        // 换一个英雄跟拍，挑离敌人最近的（有架打）
@@ -450,7 +468,7 @@ function bindInput() {
     if (G.scr === 'game' && !G.paused) {
       if (ev.code === 'KeyP' || ev.code === 'Escape') { openPause(); return; }
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(ev.code)) ev.preventDefault();
-      if (!ev.repeat) onKey(G.W, G.me, ev.code, true);
+      if (!ev.repeat) onKey(G.W, G.me, ev.code, true, ev.shiftKey);
       else INP.keys[ev.code] = true;
     } else if (G.scr === 'pause' && (ev.code === 'KeyP' || ev.code === 'Escape')) closePause();
     else if (G.scr === 'shop' && ev.code === 'Escape') { hideAll(); G.scr = 'game'; }
@@ -491,7 +509,8 @@ function boot(data) {
   if (data.hero && HERO_BY_ID[data.hero]) G.hero = data.hero;
   if (data.diff != null) G.diff = data.diff;
   HUD.keyboard = !(('ontouchstart' in window) || navigator.maxTouchPoints > 0);
-  G.dprGL = Math.min(window.devicePixelRatio || 1, 2);
+  G.dprMax = Math.min(window.devicePixelRatio || 1, 2);
+  G.dprGL = HUD.keyboard ? G.dprMax : Math.min(G.dprMax, 1.5);
   HUD.cv = $('#hud'); HUD.g = HUD.cv.getContext('2d');
   try { initRenderer($('#gl')); } catch (e) { if (bootTxt) bootTxt.textContent = '这个浏览器不支持 WebGL，玩不了三维画面。'; return; }
   layout();

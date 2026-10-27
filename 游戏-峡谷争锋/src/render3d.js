@@ -6,11 +6,20 @@
 
 const MSCALE = 1.22;                         // 小兵放大
 const R3 = {
-  scene: null, t: 0, camX: 2500, camY: 2500, shake: 0, peek: null, aimCam: null,
+  scene: null, t: 0, alpha: 1, camX: 2500, camY: 2500, shake: 0, peek: null, aimCam: null,
   heroes: new Map(), monsters: new Map(), structs: new Map(), minion: {}, mcache: new Map(), corpses: [],
   projs: new Map(), pool: {}, fx: [], decals: [], bars: [], W: null, me: null, tex: {}, view: [0, 0, L, L],
   towerRing: null, aimG: null,
 };
+
+/* ---------- 插值：模拟固定 60 步/秒，画面按屏幕刷新；画的时候取上一步和这一步之间的位置，走起来不一顿一顿 ---------- */
+const _ip = [0, 0];
+function ip(u) {
+  const a = R3.alpha;
+  if (u._px == null || a >= 1 || Math.abs(u.x - u._px) + Math.abs(u.y - u._py) > 200) { _ip[0] = u.x; _ip[1] = u.y; }
+  else { _ip[0] = u._px + (u.x - u._px) * a; _ip[1] = u._py + (u.y - u._py) * a; }
+  return _ip;
+}
 
 /* ---------- 画布贴图：圈、实心圆、虚线圈、箭头、刀光、光点 ---------- */
 function decalTex(kind) {
@@ -182,15 +191,21 @@ function init3D(scene) {
     for (const g of [P.body, P.legL, P.legR]) {
       const m = new THREE.InstancedMesh(g, VCOL(), max);
       m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-      m.count = 0; m.frustumCulled = false; m.castShadow = true; m.visible = false;
+      m.count = 0; m.frustumCulled = false; m.castShadow = false; m.visible = false;
       scene.add(m);
       ent.meshes.push(m);
     }
     ent.max = max;
     R3.minion[mt + team] = ent;
   }
-  // 敌方塔的攻击范围圈
+  // 小兵脚下的淡影子（一块实例化的软圆片）
+  const bm = new THREE.InstancedMesh(_decalGeo, new THREE.MeshBasicMaterial({ map: decalTex('soft'), color: '#000000', transparent: true, opacity: 0.35, depthWrite: false }), 260);
+  bm.instanceMatrix.setUsage(THREE.DynamicDrawUsage); bm.frustumCulled = false; bm.count = 0; bm.renderOrder = 1;
+  scene.add(bm);
+  R3.blob = { mesh: bm, n: 0, max: 260 };
+  // 敌方塔的攻击范围圈；锁定目标脚下的红圈
   R3.towerRing = decal('dash', '#FF4A3A', { op: 0.85 }); freeDecal(R3.towerRing); R3.towerRing.used = true;
+  R3.lockRing = decal('ring', '#FF3A2E', { op: 0.95 }); freeDecal(R3.lockRing); R3.lockRing.used = true;
 }
 // 换一局：清掉上一局的英雄、塔、特效
 function reset3D() {
@@ -201,7 +216,7 @@ function reset3D() {
   R3.heroes.clear(); R3.monsters.clear(); R3.structs.clear(); R3.projs.clear(); R3.mcache.clear(); R3.corpses.length = 0;
   for (const f of R3.fx) endFx(f);
   R3.fx.length = 0;
-  for (const d of R3.decals) if (d !== R3.towerRing) freeDecal(d);
+  for (const d of R3.decals) if (d !== R3.towerRing && d !== R3.lockRing) freeDecal(d);
   R3.pa.n = 0; R3.pn.n = 0;
 }
 
@@ -251,7 +266,7 @@ function faceYaw(W, u, v, dt) {
     if (t) want = Math.atan2(t.x - u.x, t.y - u.y);
   }
   if (want == null && d > 0.6 && d < 120) want = Math.atan2(dx, dy);
-  if (want != null) v.yaw = angLerp(v.yaw, want, 1 - Math.exp(-dt * 16));
+  if (want != null) v.yaw = angLerp(v.yaw, want, 1 - Math.exp(-dt * 24));
   v.lx = u.x; v.ly = u.y;
 }
 function syncHero(W, u, v, me, dt, vis) {
@@ -261,8 +276,9 @@ function syncHero(W, u, v, me, dt, vis) {
   root.visible = show;
   if (!show) { v.ring.mesh.visible = false; if (v.shield) v.shield.visible = false; if (v.stars) v.stars.visible = false; if (v.recall) v.recall.visible = false; if (v.extra) v.extra.mesh.visible = false; return; }
   faceYaw(W, u, v, dt);
-  const gh = groundH(u.x, u.y);
-  root.position.set(u.x, gh + (u.z || 0), u.y);
+  const P = ip(u), px = P[0], py = P[1];
+  const gh = groundH(px, py);
+  root.position.set(px, gh + (u.z || 0), py);
   root.rotation.y = v.yaw;
   const spin = fxOn(u, 'spin');
   animHero(v.rig, {
@@ -284,7 +300,7 @@ function syncHero(W, u, v, me, dt, vis) {
   const isMe = me && u.id === me.id;
   ring.mesh.material.color.set(isMe ? '#7CFF6A' : TEAM_RING[u.team]);
   ring.mesh.material.opacity = isMe ? 0.95 : 0.75;
-  placeDecal(ring, u.x, u.y, isMe ? 92 : 84, null, 0, 3);
+  placeDecal(ring, px, py, isMe ? 92 : 84, null, 0, 3);
   // 护盾：一个半透明的泡泡
   const sh = !u.dead && shieldOf(u) > 0;
   if (sh && !v.shield) {
@@ -293,7 +309,7 @@ function syncHero(W, u, v, me, dt, vis) {
   }
   if (v.shield) {
     v.shield.visible = sh;
-    if (sh) { v.shield.position.set(u.x, gh + 62, u.y); v.shield.scale.set(64, 76, 64); v.shield.material.opacity = 0.16 + 0.06 * Math.sin(R3.t * 6); }
+    if (sh) { v.shield.position.set(px, gh + 62, py); v.shield.scale.set(64, 76, 64); v.shield.material.opacity = 0.16 + 0.06 * Math.sin(R3.t * 6); }
   }
   // 眩晕：头顶转圈的星星
   const st = !u.dead && fxOn(u, 'stun');
@@ -304,11 +320,11 @@ function syncHero(W, u, v, me, dt, vis) {
   }
   if (v.stars) {
     v.stars.visible = !!st;
-    if (st) { v.stars.position.set(u.x, gh + (u.z || 0) + 150, u.y); v.stars.children.forEach((s, i) => { const a = R3.t * 5 + i * 2.09; s.position.set(Math.cos(a) * 22, Math.sin(R3.t * 7 + i) * 3, Math.sin(a) * 22); s.rotation.y = R3.t * 4; }); }
+    if (st) { v.stars.position.set(px, gh + (u.z || 0) + 150, py); v.stars.children.forEach((s, i) => { const a = R3.t * 5 + i * 2.09; s.position.set(Math.cos(a) * 22, Math.sin(R3.t * 7 + i) * 3, Math.sin(a) * 22); s.rotation.y = R3.t * 4; }); }
   }
   // 被冻住 / 缠住：脚下一圈
   const rt = !u.dead && fxOn(u, 'root');
-  if (rt) { if (!v.extra) v.extra = decal('ring', '#9CE8FF', { add: true }); placeDecal(v.extra, u.x, u.y, 70 + Math.sin(R3.t * 10) * 4, null, 0, 4); v.extra.mesh.visible = true; }
+  if (rt) { if (!v.extra) v.extra = decal('ring', '#9CE8FF', { add: true }); placeDecal(v.extra, px, py, 70 + Math.sin(R3.t * 10) * 4, null, 0, 4); v.extra.mesh.visible = true; }
   else if (v.extra) { freeDecal(v.extra); v.extra = null; }
   // 回城：一根蓝色光柱
   if (!u.dead && u.recall) {
@@ -317,7 +333,7 @@ function syncHero(W, u, v, me, dt, vis) {
       R3.scene.add(v.recall);
     }
     const k = clamp01((W.t - u.recall) / RECALL_T);
-    v.recall.visible = true; v.recall.position.set(u.x, gh + 130, u.y); v.recall.scale.set(1 - k * 0.4, 0.3 + k * 0.7, 1 - k * 0.4);
+    v.recall.visible = true; v.recall.position.set(px, gh + 130, py); v.recall.scale.set(1 - k * 0.4, 0.3 + k * 0.7, 1 - k * 0.4);
     if (Math.random() < 0.5) part(true, u.x + (Math.random() - 0.5) * 70, gh + 10, u.y + (Math.random() - 0.5) * 70, 0, 120 + k * 120, 0, 0.8, 18, '#9CC8FF', 0);
   } else if (v.recall) v.recall.visible = false;
   // 红蓝 buff：身上冒一点红 / 蓝的火星
@@ -343,7 +359,8 @@ function syncMonster(W, u, v, dt) {
   if (v.spd < 5 && !u.aggro && !u.dead) {       // 没事的时候朝营地外面（朝地图中间）
     v.yaw = angLerp(v.yaw, Math.atan2(L / 2 - u.x, L / 2 - u.y), 0.02);
   }
-  root.position.set(u.x, groundH(u.x, u.y) - (u.dead ? deadT * 20 : 0), u.y);
+  const P = ip(u);
+  root.position.set(P[0], groundH(P[0], P[1]) - (u.dead ? deadT * 20 : 0), P[1]);
   root.rotation.y = v.yaw;
   animMonster(v.rig, { move: clamp01(v.spd / 150), atk: W.t - u.atkT < 0.5 ? W.t - u.atkT : -1, dead: deadT }, R3.t + u.id);
   const mat = v.rig.mats.lit;
@@ -358,16 +375,23 @@ function syncMonster(W, u, v, dt) {
 const _m4 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p3 = new THREE.Vector3(), _s3 = new THREE.Vector3(), _lm = new THREE.Matrix4(), _fm = new THREE.Matrix4();
 function syncMinions(W, dt) {
   for (const k in R3.minion) R3.minion[k].n = 0;
+  R3.blob.n = 0;
   const [x0, y0, x1, y1] = R3.view;
   const seen = new Set();
   const put = (u, yaw, ph, mv, fall, sink) => {
     const ent = R3.minion[u.mt + u.team];
     if (!ent || ent.n >= ent.max) return;
     const i = ent.n++;
-    const gh = groundH(u.x, u.y) - sink;
+    const P = u.kind === 'minion' ? ip(u) : [u.x, u.y], ux = P[0], uy = P[1];
+    const gh = groundH(ux, uy) - sink;
     const bob = Math.abs(Math.sin(ph)) * 2.5 * mv;
+    if (R3.blob.n < R3.blob.max && sink < 1) {
+      const sz = u.mt === 'vanguard' ? 120 : u.mt === 'siege' ? 80 : u.mt === 'super' ? 70 : 52;
+      _m4.makeScale(sz, 1, sz); _m4.setPosition(ux + 6, groundH(ux, uy) + 1.5, uy - 4);
+      R3.blob.mesh.setMatrixAt(R3.blob.n++, _m4);
+    }
     _e.set(fall, yaw, 0, 'YXZ'); _q.setFromEuler(_e);
-    _p3.set(u.x, gh + bob, u.y); _s3.set(MSCALE, MSCALE, MSCALE);
+    _p3.set(ux, gh + bob, uy); _s3.set(MSCALE, MSCALE, MSCALE);
     _m4.compose(_p3, _q, _s3);
     ent.meshes[0].setMatrixAt(i, _m4);
     for (let j = 0; j < 2; j++) {
@@ -403,6 +427,7 @@ function syncMinions(W, dt) {
     const ent = R3.minion[k];
     for (const m of ent.meshes) { m.count = ent.n; m.visible = ent.n > 0; m.instanceMatrix.needsUpdate = true; }
   }
+  R3.blob.mesh.count = R3.blob.n; R3.blob.mesh.visible = R3.blob.n > 0; R3.blob.mesh.instanceMatrix.needsUpdate = true;
   if (R3.mcache.size > 400) for (const id of R3.mcache.keys()) if (!seen.has(id)) R3.mcache.delete(id);
 }
 function minionDiedVis(e) {
@@ -514,7 +539,8 @@ function syncProjs(W, dt) {
       h = th + (e.h0 - th) * f + Math.sin(f * Math.PI) * (p.vis === 'shell' ? 80 : 20);
     } else if (p.vis === 'bigarrow') h = 70;
     const o = e.obj;
-    o.position.set(p.x, groundH(p.x, vz) + h, vz);
+    const PP = ip(p), pxx = PP[0], vzz = vz + (PP[1] - p.y);
+    o.position.set(pxx, groundH(pxx, vzz) + h, vzz);
     const dir = p.kind === 'home' ? (p.ang != null ? p.ang : 0) : Math.atan2(p.dy, p.dx);
     o.rotation.set(0, Math.atan2(Math.cos(dir), Math.sin(dir)), 0);
     _qi.setFromEuler(o.rotation).invert();
@@ -730,10 +756,11 @@ function render3D(W, follow, me, dt, aim) {
   S3.uWind.value = R3.t;
   if (S3.water) S3.water.material.uniforms.uT.value = R3.t;
   // 镜头
-  let tx = follow ? follow.x : R3.camX, ty = follow ? follow.y : R3.camY;
+  const FP = follow ? ip(follow) : null;
+  let tx = FP ? FP[0] : R3.camX, ty = FP ? FP[1] : R3.camY;
   if (R3.peek) { tx = R3.peek[0]; ty = R3.peek[1]; }
   else if (R3.aimCam) { tx += R3.aimCam[0]; ty += R3.aimCam[1]; }
-  const kk = R3.peek ? 1 - Math.exp(-dt * 14) : 1 - Math.exp(-dt * 7);
+  const kk = R3.peek ? 1 - Math.exp(-dt * 16) : R3.aimCam ? 1 - Math.exp(-dt * 8) : 1 - Math.exp(-dt * 22);
   R3.camX += (tx - R3.camX) * kk; R3.camY += (ty - R3.camY) * kk;
   R3.camX = clamp(R3.camX, 300, L - 300); R3.camY = clamp(R3.camY, 380, L - 200);
   R3.shake = Math.max(0, R3.shake - dt * 18);
@@ -817,6 +844,13 @@ function render3D(W, follow, me, dt, aim) {
       if (tgt && Math.random() < 0.3) part(true, me.x, groundH(me.x, me.y) + 4, me.y, 0, 0, 0, 0.3, 120, '#FF3A2A', 0, -0.3);
     }
   }
+  // 锁定的目标：脚下一个转着的红圈
+  const lr = R3.lockRing, lk = me && INP.lock ? byId(W, INP.lock) : null;
+  if (lk && !lk.dead && canSee(W, me.team, lk)) {
+    const P = ip(lk);
+    placeDecal(lr, P[0], P[1], lk.r * 2 + 46 + Math.sin(R3.t * 6) * 6, null, R3.t * 1.5, 4);
+    lr.mesh.visible = true;
+  } else lr.mesh.visible = false;
   syncAim(me, aim);
   stepFx(dt);
   stepParticles(R3.pa, dt);

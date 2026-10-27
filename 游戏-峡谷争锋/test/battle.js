@@ -17,6 +17,7 @@ const { ROOT, launch, watchErrors } = require('./lib');
     G.perf.off = true; G.hero = h;
     const { blue, red } = rosters(h, 4242);
     prepGame(blue, red, 4242); hideAll(); G.scr = 'game'; G.paused = false;
+    G.me.manual = false; applySkillRanks(G.me);   // 电脑替玩家打：技能按推荐顺序自动升
     window.ffwd = (maxT) => {        // 电脑替玩家打，直到身边有架打
       const W = G.W, me = G.me, t0 = W.t;
       while (W.t - t0 < maxT && W.winner < 0) {

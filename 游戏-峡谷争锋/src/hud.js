@@ -6,32 +6,40 @@
 const FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC","WenQuanYi Zen Hei",sans-serif';
 const C = { gold: '#F4C85A', gold2: '#FFE7A0', red: '#FF5A4E', blue: '#4AA8FF', green: '#6CF06C', dim: '#B8B4C8', ink: '#0B0A14', white: '#F6F4EE' };
 const HUD = { cv: null, g: null, w: 1, h: 1, dpr: 1, L: null, ins: { l: 0, r: 0, t: 0, b: 0 }, floats: [], ann: [], feed: [], toasts: [], portraits: {},
-  nb: null, lvlFlash: [0, 0, 0], keyboard: false, mini: null, press: {}, t: 0 };
+  nb: null, lvlFlash: [0, 0, 0], readyFlash: [0, 0, 0], cdPrev: null, foes: [], keyboard: false, mini: null, press: {}, t: 0 };
 
 function hudResize(w, h, dpr) {
   HUD.w = w; HUD.h = h; HUD.dpr = dpr;
   HUD.cv.width = Math.round(w * dpr); HUD.cv.height = Math.round(h * dpr);
   HUD.cv.style.width = w + 'px'; HUD.cv.style.height = h + 'px';
   HUD.L = hudLayout();
+  if (typeof TAG_CACHE !== 'undefined') { TAG_CACHE.clear(); DISC_CACHE.clear(); }   // 缓存的小图按像素比画的，换了就重画
 }
+// u：界面缩放（主要按屏幕高，宽屏不缩）。按钮的位置照王者：普攻大圆键在右下，三个技能围着它，补刀键在普攻左下、推塔键在右上，
+// 技能左上角是升级用的“+”，再往左一排回城、恢复、闪现；敌方英雄靠近时，技能上方出一排头像，点一下锁定
 function hudLayout() {
   const W = HUD.w, H = HUD.h, I = HUD.ins;
-  const u = Math.max(0.72, Math.min(H / 400, W / 860, 1.45));
+  const u = Math.max(0.8, Math.min(H / 400, W / 720, 1.45));
   const L2 = { u };
   L2.mini = { x: I.l + 6 * u, y: 6 * u, s: Math.round(124 * u) };
-  const ax = W - I.r - 82 * u, ay = H - 84 * u - I.b;
-  L2.atk = { x: ax, y: ay, r: 47 * u };
-  const sk = [[190, 108], [142, 112], [94, 112]];
-  L2.s = sk.map(([a, d]) => ({ x: ax + Math.cos(a * Math.PI / 180) * d * u, y: ay - Math.sin(a * Math.PI / 180) * d * u, r: 31 * u }));
-  L2.flash = { x: ax - 214 * u, y: H - 32 * u - I.b, r: 23 * u };
-  L2.heal = { x: ax - 268 * u, y: H - 30 * u - I.b, r: 20 * u };
-  L2.recall = { x: ax - 316 * u, y: H - 30 * u - I.b, r: 20 * u };
+  const ax = W - I.r - 84 * u, ay = H - 92 * u - I.b;
+  L2.atk = { x: ax, y: ay, r: 48 * u };
+  const at = (a, d, r) => ({ x: ax + Math.cos(a * Math.PI / 180) * d * u, y: ay - Math.sin(a * Math.PI / 180) * d * u, r: r * u });
+  L2.s = [at(190, 110, 31), at(142, 114, 31), at(94, 114, 31)];
+  L2.up = L2.s.map(b => ({ x: b.x - (b.r + 6 * u) * 0.72, y: b.y - (b.r + 6 * u) * 0.72, r: 11 * u }));
+  L2.lasthit = at(236, 78, 19);
+  L2.tower = at(50, 78, 19);
+  L2.foes = [0, 1, 2].map(i => ({ x: ax - (75 + i * 42) * u, y: ay - 135 * u, r: 17 * u }));
+  L2.flash = { x: ax - 214 * u, y: H - 36 * u - I.b, r: 23 * u };
+  L2.heal = { x: ax - 268 * u, y: H - 34 * u - I.b, r: 20 * u };
+  L2.recall = { x: ax - 316 * u, y: H - 34 * u - I.b, r: 20 * u };
   L2.cancel = { x: W - I.r - 66 * u, y: 116 * u, r: 34 * u };
   L2.pause = { x: W - I.r - 22 * u, y: 22 * u, r: 17 * u };
   L2.score = { x: W - I.r - 50 * u, y: 8 * u, h: 28 * u };
   L2.shop = { x: I.l + 34 * u, y: L2.mini.y + L2.mini.s + 36 * u, r: 25 * u };
   L2.buy = { x: I.l + 34 * u, y: L2.shop.y + 70 * u, r: 27 * u };
-  L2.joy = { x: I.l + 118 * u, y: H - 104 * u - I.b, r: 60 * u, knob: 26 * u };
+  L2.joy = { x: I.l + 120 * u, y: H - 108 * u - I.b, r: 64 * u, knob: 27 * u };
+  L2.wheel = 66 * u;                          // 技能轮盘的半径：手指离开技能键这么远就是瞄满
   return L2;
 }
 
@@ -79,6 +87,38 @@ function circ(g, x, y, r, fill, stroke, lw) {
 function rrect(g, x, y, w, h, r) {
   g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
 }
+const TAG_CACHE = new Map(), DISC_CACHE = new Map();
+function nameTag(text, col, size) {
+  const key = text + col + size;
+  let c = TAG_CACHE.get(key);
+  if (!c) {
+    const d = HUD.dpr, f = `600 ${size}px ${FONT}`;
+    const m = mkc(1, 1).getContext('2d'); m.font = f;
+    const w = Math.ceil(m.measureText(text).width + size * 0.6), h = Math.ceil(size * 1.5);
+    c = mkc(Math.ceil(w * d), Math.ceil(h * d));
+    const g = c.getContext('2d'); g.scale(d, d);
+    txt(g, text, w / 2, h / 2, size, col, { w: 600 });
+    c.cw = w; c.ch = h;
+    if (TAG_CACHE.size > 300) TAG_CACHE.clear();
+    TAG_CACHE.set(key, c);
+  }
+  return c;
+}
+function drawTag(g, text, x, y, size, col) { const c = nameTag(text, col, Math.round(size * 2) / 2); g.drawImage(c, x - c.cw / 2, y - c.ch / 2, c.cw, c.ch); }
+function portraitDisc(hid, r, ring, dim) {
+  const key = hid + '|' + r + '|' + ring + '|' + (dim ? 1 : 0);
+  let c = DISC_CACHE.get(key);
+  if (!c) {
+    const d = HUD.dpr, N = Math.ceil((r * 2 + 4) * d);
+    c = mkc(N, N);
+    const g = c.getContext('2d'); g.scale(d, d);
+    portrait(g, hid, r + 2, r + 2, r, ring, dim);
+    if (DISC_CACHE.size > 200) DISC_CACHE.clear();
+    DISC_CACHE.set(key, c);
+  }
+  return c;
+}
+function drawDisc(g, hid, x, y, r, ring, dim) { const c = portraitDisc(hid, Math.round(r * 2) / 2, ring, dim); g.drawImage(c, x - r - 2, y - r - 2, r * 2 + 4, r * 2 + 4); }
 function portrait(g, hid, x, y, r, ring, dim) {
   const p = HUD.portraits[hid];
   g.save(); g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.clip();
@@ -122,6 +162,18 @@ function drawHUD(W, me, dt, mode) {
   drawBars(g, W, me, u);
   drawFloats(g, dt);
   if (mode === 'demo') return;
+  if (me && !me.dead && me.hp < me.maxHp * 0.3) {      // 残血：屏幕四周一圈红，一跳一跳
+    const a = (0.35 + 0.25 * Math.sin(HUD.t * 6)) * (1 - me.hp / (me.maxHp * 0.3) * 0.6);
+    const gr = g.createRadialGradient(HUD.w / 2, HUD.h / 2, Math.min(HUD.w, HUD.h) * 0.42, HUD.w / 2, HUD.h / 2, Math.max(HUD.w, HUD.h) * 0.62);
+    gr.addColorStop(0, 'rgba(200,20,20,0)'); gr.addColorStop(1, `rgba(200,20,20,${a.toFixed(3)})`);
+    g.fillStyle = gr; g.fillRect(0, 0, HUD.w, HUD.h);
+  }
+  if (me && !me.dead && me.recall) {
+    const k = clamp01((W.t - me.recall) / RECALL_T), w = 150 * u, y = HUD.h - HUD.ins.b - 84 * u;
+    drawTag(g, '回城中', HUD.w / 2, y - 12 * u, 13 * u, '#CFE4FF');
+    g.fillStyle = 'rgba(10,8,18,0.8)'; g.fillRect(HUD.w / 2 - w / 2 - 1, y - 1, w + 2, 7 * u + 2);
+    g.fillStyle = '#7FB4FF'; g.fillRect(HUD.w / 2 - w / 2, y, w * k, 7 * u);
+  }
   if (me && me.dead) {
     g.fillStyle = 'rgba(28,30,44,0.42)'; g.fillRect(0, 0, HUD.w, HUD.h);
     const left = Math.max(0, Math.ceil(me.respawnAt - W.t));
@@ -139,9 +191,11 @@ function drawHUD(W, me, dt, mode) {
   drawToasts(g, dt, u);
 }
 function drawBars(g, W, me, u) {
+  const lock = me ? INP.lock : 0;
   for (const b of R3.bars) {
     if (b.dead) continue;
-    worldToScreen(b.x, groundH(b.x, b.y) + unitTop(b), b.y, _sp);
+    const p = ip(b);
+    worldToScreen(p[0], groundH(p[0], p[1]) + unitTop(b), p[1], _sp);
     if (_sp[2] > 1 || _sp[0] < -80 || _sp[0] > HUD.w + 80 || _sp[1] < -40 || _sp[1] > HUD.h + 40) continue;
     const x = Math.round(_sp[0]), y = Math.round(_sp[1]);
     const k = b.hp / b.maxHp;
@@ -160,13 +214,8 @@ function drawBars(g, W, me, u) {
       // 等级
       const lx = x0 - 9 * u;
       g.fillStyle = 'rgba(10,8,18,0.9)'; g.fillRect(lx - 7.5 * u, y - 2 * u, 15 * u, h + 4 * u);
-      txt(g, String(b.lvl), lx, y + h / 2 + 0.5, 10.5 * u, C.gold2, { ol: false });
-      txt(g, HERO_BY_ID[b.hid].name + (isMe ? '' : ''), x + 4 * u, y - 9 * u, 10.5 * u, isMe ? '#C8FFC8' : ally ? '#CFE6FF' : '#FFD0C8', { w: 600 });
-      if (isMe && b.recall) {
-        const p = clamp01((W.t - b.recall) / RECALL_T);
-        g.fillStyle = 'rgba(10,8,18,0.85)'; g.fillRect(x0 - 1, y + h + 3 * u, w + 2, 5 * u);
-        g.fillStyle = '#7FB4FF'; g.fillRect(x0, y + h + 3 * u + 1, w * p, 5 * u - 2);
-      }
+      drawTag(g, String(b.lvl), lx, y + h / 2 + 0.5, 10.5 * u, C.gold2);
+      drawTag(g, HERO_BY_ID[b.hid].name, x + 4 * u, y - 9 * u, 10.5 * u, isMe ? '#C8FFC8' : ally ? '#CFE6FF' : '#FFD0C8');
     } else if (b.kind === 'minion') {
       const ally = me ? b.team === me.team : b.team === 0;
       const big = b.mt === 'siege' || b.mt === 'super' || b.mt === 'vanguard';
@@ -178,14 +227,19 @@ function drawBars(g, W, me, u) {
       const w = (big ? 110 : buff ? 64 : 46) * u, h = (big ? 9 : 6) * u;
       g.fillStyle = 'rgba(10,8,18,0.85)'; g.fillRect(x - w / 2 - 1, y - 1, w + 2, h + 2);
       g.fillStyle = big ? '#C86AFF' : '#F0A830'; g.fillRect(x - w / 2, y, w * k, h);
-      if (big || buff) txt(g, MONSTER[b.mt].name, x, y - 9 * u, 11 * u, big ? '#E8C8FF' : '#FFE0A0', { w: 600 });
+      if (big || buff) drawTag(g, MONSTER[b.mt].name, x, y - 9 * u, 11 * u, big ? '#E8C8FF' : '#FFE0A0');
     } else {
       const ally = me ? b.team === me.team : b.team === 0;
       const w = (b.kind === 'crystal' ? 110 : 90) * u, h = 9 * u;
       g.fillStyle = 'rgba(10,8,18,0.85)'; g.fillRect(x - w / 2 - 1, y - 1, w + 2, h + 2);
       g.fillStyle = ally ? '#3D8BFF' : '#E8463C'; g.fillRect(x - w / 2, y, w * k, h);
       g.fillStyle = 'rgba(255,255,255,0.22)'; g.fillRect(x - w / 2, y, w * k, h * 0.4);
-      if (b.inv) txt(g, '无敌', x, y - 9 * u, 10 * u, C.dim, { w: 600 });
+      if (b.inv) drawTag(g, '无敌', x, y - 9 * u, 10 * u, C.dim);
+    }
+    if (lock && b.id === lock) {                          // 锁定：头顶一个红色倒三角，一上一下地跳
+      const yy = y - (b.kind === 'hero' ? 24 : 14) * u - Math.abs(Math.sin(HUD.t * 5)) * 4 * u;
+      g.fillStyle = '#FF3A2E'; g.strokeStyle = 'rgba(20,4,4,0.9)'; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(x - 8 * u, yy - 9 * u); g.lineTo(x + 8 * u, yy - 9 * u); g.lineTo(x, yy); g.closePath(); g.fill(); g.stroke();
     }
   }
 }
@@ -236,7 +290,7 @@ function drawMinimap(g, W, me, m) {
   for (const h of W._heroes) {
     if (h.dead || !canSee(W, myTeam, h)) continue;
     const [x, y] = P(h.x, h.y), isMe = me && h.id === me.id;
-    portrait(g, h.hid, x, y, isMe ? 8.5 : 7, isMe ? '#7CFF6A' : h.team === myTeam ? '#4AA8FF' : '#FF5A4E');
+    drawDisc(g, h.hid, x, y, isMe ? 8.5 : 7, isMe ? '#7CFF6A' : h.team === myTeam ? '#4AA8FF' : '#FF5A4E');
   }
   g.restore();
 }
@@ -292,22 +346,34 @@ function cdOverlay(g, x, y, r, frac, secs, u) {
 }
 function drawControls(g, W, me, u, L2) {
   if (!me) return;
-  const dead = me.dead;
-  // 摇杆
+  const dead = me.dead, stun = !dead && !!fxOn(me, 'stun');
+  // 摇杆：推的方向那一段圈亮起来
   const J = L2.joy, j = INP.joy;
   const bx = j ? j.bx : J.x, by = j ? j.by : J.y;
-  circ(g, bx, by, J.r, 'rgba(20,24,40,0.28)', 'rgba(220,230,255,0.45)', 2);
-  circ(g, bx, by, J.r * 0.62, null, 'rgba(220,230,255,0.16)', 1.5);
+  circ(g, bx, by, J.r, 'rgba(20,24,40,0.26)', 'rgba(220,230,255,0.42)', 2);
+  circ(g, bx, by, J.r * 0.62, null, 'rgba(220,230,255,0.14)', 1.5);
   const kx = j ? j.x : bx, ky = j ? j.y : by;
+  if (j && Math.hypot(kx - bx, ky - by) > 6) {
+    const a = Math.atan2(ky - by, kx - bx);
+    g.save(); g.strokeStyle = 'rgba(140,210,255,0.95)'; g.lineWidth = 5 * u; g.lineCap = 'round';
+    g.shadowColor = '#6FC0FF'; g.shadowBlur = 10;
+    g.beginPath(); g.arc(bx, by, J.r, a - 0.55, a + 0.55); g.stroke(); g.restore();
+  }
   const kg = g.createRadialGradient(kx - 6 * u, ky - 6 * u, 2, kx, ky, J.knob);
-  kg.addColorStop(0, 'rgba(255,255,255,0.95)'); kg.addColorStop(1, 'rgba(160,190,230,0.75)');
-  circ(g, kx, ky, J.knob, kg, 'rgba(255,255,255,0.8)', 1.5);
-  // 普攻
-  const A = L2.atk, pressed = INP.atk != null || INP.keyAtk;
+  kg.addColorStop(0, j ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.7)'); kg.addColorStop(1, j ? 'rgba(160,200,240,0.8)' : 'rgba(160,190,230,0.45)');
+  circ(g, kx, ky, J.knob, kg, 'rgba(255,255,255,0.7)', 1.5);
+  // 普攻、补刀、推塔
+  const mode = INP.atk != null || INP.keyAtk ? (INP.atkMode || 'hero') : null;
+  const A = L2.atk, hitting = !dead && W.t - me.atkT < 0.18;
   g.save(); g.globalAlpha = dead ? 0.45 : 1;
-  const ar = A.r * (pressed ? 0.94 : 1);
+  const ar = A.r * (mode === 'hero' ? 0.93 : 1);
   g.drawImage(skillIcon('atk', 128), A.x - ar, A.y - ar, ar * 2, ar * 2);
-  circ(g, A.x, A.y, ar, null, pressed ? '#FFF2C0' : C.gold, 3);
+  circ(g, A.x, A.y, ar, null, mode === 'hero' || hitting ? '#FFF2C0' : C.gold, mode === 'hero' ? 4 : 3);
+  for (const [k, b, icon] of [['minion', L2.lasthit, 'lasthit'], ['tower', L2.tower, 'tower']]) {
+    const on = mode === k, r = b.r * (on ? 0.92 : 1);
+    g.drawImage(skillIcon(icon, 64), b.x - r, b.y - r, r * 2, r * 2);
+    circ(g, b.x, b.y, r, null, on ? '#FFF2C0' : 'rgba(244,200,90,0.85)', on ? 3 : 1.8);
+  }
   g.restore();
   // 三个技能
   const hd = HERO_BY_ID[me.hid];
@@ -318,37 +384,74 @@ function drawControls(g, W, me, u, L2) {
     g.save();
     g.globalAlpha = dead ? 0.45 : 1;
     g.drawImage(skillIcon(def.id, 96), b.x - r, b.y - r, r * 2, r * 2);
-    if (!st.rank) { circ(g, b.x, b.y, r, 'rgba(10,10,20,0.68)'); txt(g, s === 2 ? '4级' : '2级', b.x, b.y, 11 * u, C.dim, { w: 700 }); }
+    if (!st.rank) circ(g, b.x, b.y, r, 'rgba(10,10,20,0.7)');
     else if (st.cd > 0) cdOverlay(g, b.x, b.y, r, st.cd / cdOf(me, s), st.cd, u);
-    circ(g, b.x, b.y, r, null, st.rank && st.cd <= 0 ? C.gold : 'rgba(150,140,120,0.8)', 2.2);
+    else if (stun) circ(g, b.x, b.y, r, 'rgba(60,60,70,0.6)');
+    const ready = st.rank && st.cd <= 0 && !stun;
+    circ(g, b.x, b.y, r, null, ready ? C.gold : 'rgba(150,140,120,0.8)', 2.2);
+    // 冷却刚好：亮一下
+    if (ready && HUD.cdPrev && HUD.cdPrev[s] > 0) HUD.readyFlash[s] = 0.5;
+    if (HUD.readyFlash[s] > 0) circ(g, b.x, b.y, r + (0.5 - HUD.readyFlash[s]) * 18 * u, null, `rgba(255,240,180,${HUD.readyFlash[s] * 2})`, 3);
     // 技能等级：下面一排小点
     const n = def.cd.length;
     for (let i = 0; i < n; i++) {
       const a = Math.PI / 2 + (i - (n - 1) / 2) * 0.24;
       circ(g, b.x + Math.cos(a) * (r + 5 * u), b.y + Math.sin(a) * (r + 5 * u), 2.2 * u, i < st.rank ? '#FFD86A' : 'rgba(40,36,50,0.9)');
     }
-    if (HUD.lvlFlash[s] > 0) { circ(g, b.x, b.y, r + 4 * u, null, `rgba(255,230,120,${HUD.lvlFlash[s]})`, 4); }
+    if (HUD.lvlFlash[s] > 0) circ(g, b.x, b.y, r + 4 * u, null, `rgba(255,230,120,${HUD.lvlFlash[s]})`, 4);
     g.restore();
+    // 能升级：左上角一个金色的“+”
+    if (canUpgrade(me, s)) {
+      const p = L2.up[s], pr = p.r * (1 + 0.12 * Math.sin(HUD.t * 7));
+      g.save(); g.shadowColor = '#FFD86A'; g.shadowBlur = 12;
+      circ(g, p.x, p.y, pr, '#F6C445', '#FFF4C8', 1.5); g.restore();
+      g.fillStyle = '#4A2A06'; g.fillRect(p.x - pr * 0.55, p.y - pr * 0.15, pr * 1.1, pr * 0.3); g.fillRect(p.x - pr * 0.15, p.y - pr * 0.55, pr * 0.3, pr * 1.1);
+    }
   }
-  for (let s = 0; s < 3; s++) HUD.lvlFlash[s] = Math.max(0, HUD.lvlFlash[s] - 1 / 60);
+  HUD.cdPrev = me.sk.map(k => k.cd);
+  for (let s = 0; s < 3; s++) { HUD.lvlFlash[s] = Math.max(0, HUD.lvlFlash[s] - 1 / 60); HUD.readyFlash[s] = Math.max(0, HUD.readyFlash[s] - 1 / 60); }
   // 回城、恢复、闪现
   const small = [['recall', L2.recall, me.recall ? 1 : 0, 0], ['heal', L2.heal, me.healCd, HEAL_CD], ['flash', L2.flash, me.flashCd, FLASH_CD]];
   for (const [id, b, cd, max] of small) {
     g.save(); g.globalAlpha = dead ? 0.45 : 1;
-    g.drawImage(skillIcon(id, 64), b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
-    if (id !== 'recall' && cd > 0) cdOverlay(g, b.x, b.y, b.r, cd / max, cd, u);
-    circ(g, b.x, b.y, b.r, null, id === 'recall' && cd ? '#9CC8FF' : 'rgba(244,200,90,0.85)', 1.8);
+    const r = b.r * (INP.aim && INP.aim.s === id ? 1.08 : 1);
+    g.drawImage(skillIcon(id, 64), b.x - r, b.y - r, r * 2, r * 2);
+    if (id !== 'recall' && cd > 0) cdOverlay(g, b.x, b.y, r, cd / max, cd, u);
+    circ(g, b.x, b.y, r, null, id === 'recall' && cd ? '#9CC8FF' : 'rgba(244,200,90,0.85)', 1.8);
     g.restore();
   }
-  // 瞄准中：取消施法
+  // 身边的敌方英雄：头像排在技能上方，点一下锁定
+  if (!dead && !INP.aim) {
+    HUD.foes = nearFoes(W, me);
+    HUD.foes.forEach((e, i) => {
+      const b = L2.foes[i], locked = INP.lock === e.id;
+      drawDisc(g, e.hid, b.x, b.y, b.r, locked ? '#FF3A2E' : 'rgba(255,120,110,0.9)');
+      if (locked) circ(g, b.x, b.y, b.r + 3 * u, null, '#FF3A2E', 2.5);
+      const k = e.hp / e.maxHp;
+      g.fillStyle = 'rgba(10,8,18,0.85)'; g.fillRect(b.x - b.r, b.y + b.r + 2 * u, b.r * 2, 3.5 * u);
+      g.fillStyle = '#E8463C'; g.fillRect(b.x - b.r, b.y + b.r + 2 * u, b.r * 2 * k, 3.5 * u);
+    });
+  } else HUD.foes = [];
+  // 瞄准中：技能轮盘（技能键外一圈，手指拖到哪儿圈里的小圆就到哪儿）+ 取消施法
   if (INP.aim) {
-    const c = L2.cancel, on = INP.aim.cancel;
+    const a = INP.aim, R = L2.wheel;
+    circ(g, a.x0, a.y0, R, 'rgba(30,60,120,0.22)', a.cancel ? 'rgba(255,90,80,0.7)' : 'rgba(150,200,255,0.75)', 2);
+    const fd = Math.hypot(a.fx, a.fy), kk = fd > R ? R / fd : 1;
+    circ(g, a.x0 + a.fx * kk, a.y0 + a.fy * kk, 16 * u, a.cancel ? 'rgba(255,90,80,0.8)' : 'rgba(200,230,255,0.85)', '#FFFFFF', 1.5);
+    const c = L2.cancel, on = a.cancel;
     circ(g, c.x, c.y, c.r * (on ? 1.12 : 1), on ? 'rgba(220,50,40,0.75)' : 'rgba(20,16,30,0.7)', on ? '#FFB0A8' : 'rgba(255,120,110,0.85)', 2.5);
     g.strokeStyle = '#FFFFFF'; g.lineWidth = 3 * u; g.lineCap = 'round';
     g.beginPath(); g.moveTo(c.x - 9 * u, c.y - 9 * u); g.lineTo(c.x + 9 * u, c.y + 9 * u); g.moveTo(c.x + 9 * u, c.y - 9 * u); g.lineTo(c.x - 9 * u, c.y + 9 * u); g.stroke();
-    txt(g, '取消施法', c.x, c.y + c.r + 11 * u, 11 * u, '#FFD0C8', { w: 700 });
+    drawTag(g, '取消施法', c.x, c.y + c.r + 11 * u, 11 * u, '#FFD0C8');
   }
-  if (HUD.keyboard) txt(g, 'WASD 移动 · J/空格 普攻 · 1 2 3 技能 · F 闪现 · H 恢复 · B 回城 · P 暂停', HUD.w / 2, HUD.h - 10 * u, 10 * u, 'rgba(230,226,240,0.75)', { w: 500 });
+  if (HUD.keyboard) drawTag(g, 'WASD 移动 · J/空格 普攻 · K 补刀 · L 推塔 · 1 2 3 技能 · Shift+1 2 3 升级 · F 闪现 · H 恢复 · B 回城 · P 暂停', HUD.w / 2, HUD.h - 10 * u, 10 * u, 'rgba(230,226,240,0.75)');
+}
+// 身边看得见的敌方英雄（最多 3 个，近的在前）
+function nearFoes(W, me) {
+  const out = [];
+  for (const e of W._heroes) if (e.team !== me.team && !e.dead && canSee(W, me.team, e) && !untarg(e) && Math.hypot(e.x - me.x, e.y - me.y) < 1000) out.push(e);
+  out.sort((a, b) => Math.hypot(a.x - me.x, a.y - me.y) - Math.hypot(b.x - me.x, b.y - me.y));
+  return out.slice(0, 3);
 }
 function drawAnn(g, W, dt, u) {
   if (!HUD.ann.length) return;
@@ -376,7 +479,7 @@ function drawAnn(g, W, dt, u) {
 function drawFeed(g, dt, u, L2) {
   let y = L2.score.y + L2.score.h + 10 * u;
   const x1 = L2.score.x - 18 * u;
-  for (let i = 0; i < HUD.feed.length && i < 4; i++) {
+  for (let i = 0; i < HUD.feed.length && i < 3; i++) {
     const f = HUD.feed[i];
     f.t += dt;
     if (f.t > 7) { HUD.feed.length = i; break; }
@@ -384,9 +487,9 @@ function drawFeed(g, dt, u, L2) {
     g.save(); g.globalAlpha = a;
     const w = 92 * u, h = 22 * u, x0 = x1 - w;
     g.fillStyle = 'rgba(10,10,24,0.6)'; g.fillRect(x0, y, w, h);
-    if (f.k) portrait(g, f.k, x0 + 14 * u, y + h / 2, 9 * u, f.kt === 0 ? '#4AA8FF' : '#FF5A4E');
-    txt(g, '⚔', x0 + w / 2, y + h / 2, 11 * u, C.gold2, { ol: false });
-    portrait(g, f.v, x1 - 14 * u, y + h / 2, 9 * u, f.vt === 0 ? '#4AA8FF' : '#FF5A4E', true);
+    if (f.k) drawDisc(g, f.k, x0 + 14 * u, y + h / 2, 9 * u, f.kt === 0 ? '#4AA8FF' : '#FF5A4E');
+    drawTag(g, '⚔', x0 + w / 2, y + h / 2, 11 * u, C.gold2);
+    drawDisc(g, f.v, x1 - 14 * u, y + h / 2, 9 * u, f.vt === 0 ? '#4AA8FF' : '#FF5A4E', true);
     g.restore();
     y += h + 4 * u;
   }
