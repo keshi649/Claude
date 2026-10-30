@@ -1,0 +1,24 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[
+    width=118mm, height=58mm, xmin=-0.3, xmax=10.5, ymin=-2.3, ymax=2.3, axis equal image,
+    xlabel={x（米）}, ylabel={y（米）}, label style={font=\scriptsize},
+    tick label style={font=\scriptsize}, axis lines=left, axis line style={ink},
+    legend style={font=\scriptsize, draw=none, fill=white, fill opacity=0.9, text opacity=1, at={(0.5,1.02)}, anchor=south, legend columns=4},
+    every axis plot/.append style={line width=1.0pt},
+  ]
+    \fill[soft] (axis cs:5,0) circle[radius=1];
+    \node[font=\scriptsize] at (axis cs:5,0) {障碍};
+    \fill[ink] (axis cs:10,0) circle[radius=0.12];
+    \node[font=\scriptsize, anchor=north] at (axis cs:10,-0.2) {目标};
+    \addplot[soft, densely dashed, line width=0.7pt] table[x=x, y=y, col sep=comma] {data/p6_expert_+1.0.csv}; \addlegendentry{两种专家示范}
+    \addplot[soft, densely dashed, line width=0.7pt, forget plot] table[x=x, y=y, col sep=comma] {data/p6_expert_-1.0.csv};
+    \addplot[ink, line width=1.4pt] table[x=x, y=y, col sep=comma] {data/p6_mse_+0.0.csv}; \addlegendentry{均方误差回归}
+    \addplot[mid, dashed] table[x=x, y=y, col sep=comma] {data/p6_classify_+0.0.csv}; \addlegendentry{方向分类}
+    \addplot[ink, densely dotted, line width=1.3pt] table[x=x, y=y, col sep=comma] {data/p6_chunk_+0.0.csv}; \addlegendentry{动作段分类}
+    \node[font=\scriptsize, anchor=north east] at (axis cs:3.9,-0.1) {撞上};
+  \end{axis}
+\end{tikzpicture}
+\end{document}

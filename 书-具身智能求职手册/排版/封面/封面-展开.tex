@@ -1,0 +1,46 @@
+% 印刷用全展开封面：封底 + 书脊 + 正封，四周各 3 mm 出血
+% 书脊宽度 \spinew（mm）由 排版/封面/做封面.sh 按页数算好后写入
+\documentclass[tikz,border=0pt]{standalone}
+\input{排版/封面/公共.tex}
+\input{排版/build/封面/书脊宽度.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \pgfmathsetmacro{\S}{\spinew}
+  \useasboundingbox (-3,-3) rectangle (343+\S,243);
+  % ---------- 封底（x: 0–170） ----------
+  \fill[cbg] (-3,-3) rectangle (170,243);
+  \begin{scope}
+    \clip (-3,-3) rectangle (170,243);
+    \draw[cline!35, line width=0.15pt] (-3,-3) grid[step=10] (170,243);
+  \end{scope}
+  \node[anchor=north west, font=\heiti\bfseries\fontsize{17}{22}\selectfont, text=cink] at (18,222) {一条招聘启事，你能看懂几行？};
+  \draw[cacc, line width=1.8pt] (18,211) -- (44,211);
+  \node[anchor=north west, text width=134mm, font=\songti\fontsize{10.5}{19}\selectfont, text=cink, align=justify] at (18,205)
+    {具身智能的招聘启事里满是缩写：WBC、Sim2Real、VLA。这本书按求职的顺序写：先看清谁在招人、有哪些岗位、每个岗位要什么；再按岗位补能力，76 道常见面试题都给了参考答案和“考官想听到什么”；然后用 6 个只要一台笔记本电脑就能跑的项目，做出能在面试里讲清楚的作品集；最后是简历、面试、谈 offer，和一份 90 天行动计划。};
+  \node[anchor=north west, font=\heiti\bfseries\fontsize{12}{14}\selectfont, text=cink] at (18,152) {你会得到};
+  \foreach \t [count=\i] in {一张二十多个岗位的地图，和给自己打分的办法,76 道面试题的参考答案和考官视角,6 个不买真机的作品集项目，代码和结果都能复现,一个把招聘启事拆成差距清单的小脚本,简历、复盘表、offer 比较表等模板} {
+    \fill[cacc] (19,144-\i*9+1.6) rectangle (21.6,144-\i*9+4.2);
+    \node[anchor=west, font=\songti\fontsize{10.5}{13}\selectfont, text=cink] at (24,144-\i*9+2.9) {\t};
+  }
+  \node[anchor=north west, font=\heiti\bfseries\fontsize{12}{14}\selectfont, text=cink] at (18,84) {适合谁读};
+  \node[anchor=north west, text width=134mm, font=\songti\fontsize{10.5}{17}\selectfont, text=cink] at (18,77)
+    {想从自动驾驶、互联网、电机电控、工业自动化等行业转进具身智能的工程师；机器人、自动化、计算机方向的在读学生和应届生。};
+  % 条码区
+  \fill[white] (112,10) rectangle (160,40);
+  \draw[cline, line width=0.4pt] (112,10) rectangle (160,40);
+  \node[font=\heiti\fontsize{8}{10}\selectfont, text=cline, align=center] at (136,25) {ISBN 条码区\\（出版时放置）};
+  \node[anchor=south west, font=\heiti\fontsize{8.5}{10}\selectfont, text=cink!80, align=left] at (18,30) {上架建议：职场 / 求职 / 人工智能 / 机器人};
+  \node[anchor=south west, font=\heiti\fontsize{8.5}{10}\selectfont, text=cink!80] at (18,23) {定价：（待定）};
+  \node[anchor=south west, text width=88mm, font=\heiti\fontsize{7}{9}\selectfont, text=cink!65, align=left] at (18,10) {本书为独立写作，与书中提到的任何公司无隶属、授权或赞助关系。书中的招聘启事和面试题是按常见写法改写的示例，不是任何公司的原题。};
+  % ---------- 正封（x: 170+S – 340+S） ----------
+  \begin{scope}[shift={(170+\S,0)}]
+    \input{排版/封面/正面.tex}
+  \end{scope}
+  % ---------- 书脊（x: 170–170+S），最后画，盖在正封出血上面 ----------
+  \fill[cink] (170,-3) rectangle (170+\S,243);
+  \fill[cacc] (170,228) rectangle (170+\S,234);
+  \node[anchor=north, text width=\S mm, align=center, font=\heitiblack\fontsize{14}{16.5}\selectfont, text=white] at (170+\S/2,222) {具\\身\\智\\能\\求\\职\\手\\册};
+  \node[anchor=north, text width=\S mm, align=center, font=\heiti\fontsize{7}{8.4}\selectfont, text=white!85] at (170+\S/2,150) {岗\\位\\~\\面\\试\\题\\~\\作\\品\\集};
+  \node[anchor=south, text width=\S mm, align=center, font=\heiti\bfseries\fontsize{10}{12}\selectfont, text=white] at (170+\S/2,14) {甜\\菜\\著};
+\end{tikzpicture}
+\end{document}

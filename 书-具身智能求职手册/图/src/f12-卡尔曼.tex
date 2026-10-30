@@ -1,0 +1,21 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[
+    width=118mm, height=60mm, xmin=0, xmax=30, ymode=log, ymin=1e-4, ymax=3,
+    xlabel={时间（秒）}, ylabel={位置误差（米，对数轴）}, label style={font=\scriptsize},
+    tick label style={font=\scriptsize}, axis lines=left, axis line style={ink},
+    ymajorgrids, grid style={black!12},
+    legend style={font=\scriptsize, draw=none, at={(0.5,1.03)}, anchor=south, legend columns=3},
+    every axis plot/.append style={line width=0.9pt},
+  ]
+    \foreach \a/\b in {8.0/8.4, 15.0/15.5, 22.0/22.3} {
+      \edef\temp{\noexpand\fill[black!12] (axis cs:\a,1e-4) rectangle (axis cs:\b,3);}\temp
+    }
+    \addplot[soft, densely dotted, line width=1.1pt] table[x=t, y=leg, col sep=comma] {data/p4_err.csv}; \addlegendentry{腿速积分}
+    \addplot[mid, dashed] table[x=t, y=kf, col sep=comma] {data/p4_err.csv}; \addlegendentry{卡尔曼，不设门限}
+    \addplot[ink] table[x=t, y=kfg, col sep=comma] {data/p4_err.csv}; \addlegendentry{卡尔曼 + 卡方门限}
+  \end{axis}
+\end{tikzpicture}
+\end{document}

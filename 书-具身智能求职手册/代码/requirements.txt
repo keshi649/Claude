@@ -1,0 +1,9 @@
+# 书里的结果都是用下面这些版本跑出来的（Python 3.13，Linux，4 核 CPU，没有显卡）。
+# torch 装 CPU 版就够，而且要先装：pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
+# 再 pip install -r requirements.txt。顺序反了，pip 会先从默认源装带 CUDA 的版本（好几 GB）。
+numpy==2.5.4
+scipy==1.18.1
+matplotlib==3.11.2
+mujoco==3.17.0
+gymnasium[mujoco]==1.4.0
+torch==2.15.0
