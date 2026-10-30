@@ -1,0 +1,24 @@
+{
+ "id": "penta",
+ "shown": "五杀",
+ "say": "五杀。",
+ "mode": "instruct-retake",
+ "style": 1,
+ "chars": [
+  [
+   "五",
+   0.09,
+   0.31
+  ],
+  [
+   "杀",
+   0.31,
+   0.485
+  ]
+ ],
+ "asr": "五杀",
+ "cer": 0,
+ "seed": 23475,
+ "last_slope": -463,
+ "last_median": 371
+}

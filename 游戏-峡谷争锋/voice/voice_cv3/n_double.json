@@ -1,0 +1,24 @@
+{
+ "id": "double",
+ "shown": "双杀",
+ "say": "双杀！",
+ "mode": "instruct-retake",
+ "style": 0,
+ "chars": [
+  [
+   "双",
+   0.21,
+   0.45
+  ],
+  [
+   "杀",
+   0.47,
+   0.645
+  ]
+ ],
+ "asr": "双杀",
+ "cer": 0,
+ "seed": 23473,
+ "last_slope": -328,
+ "last_median": 376
+}
