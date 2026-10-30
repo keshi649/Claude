@@ -1,410 +1,259 @@
 'use strict';
-/* MV《后来》像素版 —— 横屏 1920×1080，30fps。frame(t) 只按时间 t（秒）画出一帧，可以并行渲染、单帧预览。
-   core.js：时间轴、工具函数、像素缓冲、像素图元、像素字（1 位、不糊边）、光晕、星空、雨雪、全屏层和后期。 */
-const W = 1920, H = 1080, FPS = 30;
-const TM = window.TIMING, DUR = TM.duration, BEAT = TM.beat, BARLEN = TM.bar;
-const bar = k => TM.bar0 + k * BARLEN;                 // 第 k 小节的第 1 拍（第 0 小节从 0.113 秒开始，人声 12.24 秒开口）
-const LY = TM.lines;                                    // 55 句歌词：text，chars [字, 开口, 结束]
-const ch = (li, ci) => LY[li].chars[ci < 0 ? LY[li].chars.length + ci : ci][1];   // 第 li 句第 ci 个字开口的时刻（负数从后往前数）
-const chE = (li, ci) => LY[li].chars[ci < 0 ? LY[li].chars.length + ci : ci][2];  // 那个字唱完
-const L0 = li => LY[li].chars[0][1];
-const L1 = li => LY[li].chars[LY[li].chars.length - 1][2];
-
-const cv = document.getElementById('c');
-const ctx = cv.getContext('2d');
-function mk(w = W, h = H) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
-
-/* ---------------- 工具 ---------------- */
+/* core.js —— 像素画布上的基础工具：数学、缓动、噪声、颜色、像素图元、抖动渐变、发光、精灵、像素字。
+   整片都画在 480×270 上（成片里一个像素 = 4×4），出片时 ffmpeg 用最近邻放大到 1920×1080，所以画面里没有半个像素。
+   每一帧只由时刻 t 决定（不攒状态），哪一帧都能单独画。 */
+const W = 480, H = 270, FPS = 30;
 const TAU = Math.PI * 2, PI = Math.PI;
+const TM = window.TIMING, DUR = 315.4667, BEAT = TM.beat, BAR = TM.bar;
+const bar = k => TM.bar0 + k * TM.bar;                 // 第 k 小节第一拍
+const LY = TM.lines;
+const ch = (li, ci) => LY[li].chars[ci][1];             // 第 li 句第 ci 个字开口的时刻
+const lineEnd = li => LY[li].chars[LY[li].chars.length - 1][2];
+
+const cv = document.getElementById('cv'); cv.width = W; cv.height = H;
+const ctx = cv.getContext('2d', { willReadFrequently: true });
+
+/* ---------------- 数学 ---------------- */
 const clamp = (x, a = 0, b = 1) => x < a ? a : x > b ? b : x;
 const lerp = (a, b, u) => a + (b - a) * u;
 const seg = (t, a, b) => clamp((t - a) / (b - a));
-const ri = Math.round;
-/* 先升后降：a→b 从 0 升到 1，c→d 从 1 降到 0 */
 const env = (t, a, b, c, d) => Math.min(seg(t, a, b), 1 - seg(t, c, d));
+const mod = (a, n) => ((a % n) + n) % n;
+const ri = Math.round, fl = Math.floor;
 const E = {
-  io: u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2,
-  out: u => 1 - Math.pow(1 - u, 3),
-  out2: u => 1 - (1 - u) * (1 - u),
-  in: u => u * u * u,
-  in2: u => u * u,
-  sine: u => -(Math.cos(Math.PI * u) - 1) / 2,
-  back: u => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); },
+  in2: u => u * u, in3: u => u * u * u, out: u => 1 - (1 - u) * (1 - u), out3: u => 1 - Math.pow(1 - u, 3),
+  io: u => u < .5 ? 2 * u * u : 1 - 2 * (1 - u) * (1 - u), sine: u => .5 - .5 * Math.cos(PI * u),
+  back: u => { const c = 1.7; return 1 + (c + 1) * Math.pow(u - 1, 3) + c * Math.pow(u - 1, 2); },
 };
-function R(seed) { let s = seed >>> 0; return () => { s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function hash(a, b = 0, c = 0) { let h = (a * 374761393 + b * 668265263 + c * 2147483647) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
-const mod = (k, n) => ((k % n) + n) % n;
-/* 颜色（#rrggbb） */
-function hex2rgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
-function rgb2hex(r, g, b) { return '#' + [r, g, b].map(v => clamp(ri(v), 0, 255).toString(16).padStart(2, '0')).join(''); }
-function mix(a, b, u) { const A = hex2rgb(a), B = hex2rgb(b); return rgb2hex(lerp(A[0], B[0], u), lerp(A[1], B[1], u), lerp(A[2], B[2], u)); }
-function shade(hex, k) { const [r, g, b] = hex2rgb(hex); return k < 1 ? rgb2hex(r * k, g * k, b * k) : rgb2hex(r + (255 - r) * (k - 1), g + (255 - g) * (k - 1), b + (255 - b) * (k - 1)); }
-function rgba(hex, a) { const [r, g, b] = hex2rgb(hex); return `rgba(${r},${g},${b},${a})`; }
-/* 按一串色标取色：stops [[u, '#hex'], ...] */
-function ramp(stops, u) {
-  if (u <= stops[0][0]) return stops[0][1];
-  for (let i = 0; i < stops.length - 1; i++) { const [a, ca] = stops[i], [b, cb] = stops[i + 1]; if (u <= b) return mix(ca, cb, (u - a) / Math.max(1e-6, b - a)); }
-  return stops[stops.length - 1][1];
+function hash(a, b = 0, c = 0) {
+  let h = Math.imul(a | 0, 0x27d4eb2d) ^ Math.imul((b | 0) + 0x3c6ef372, 0x165667b1) ^ Math.imul((c | 0) + 0x5bd1e995, 0x9e3779b1);
+  h = Math.imul(h ^ (h >>> 15), 0x85ebca6b); h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35); h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
 }
+const hr = (i, s, a, b) => a + (b - a) * hash(i, s);     // 第 i 个东西的第 s 个随机数，落在 a~b
+function noise1(x, s = 0) { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return lerp(hash(i, s), hash(i + 1, s), u); }
+function noise2(x, y, s = 0) {
+  const i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j, ux = fx * fx * (3 - 2 * fx), uy = fy * fy * (3 - 2 * fy);
+  return lerp(lerp(hash(i, j, s), hash(i + 1, j, s), ux), lerp(hash(i, j + 1, s), hash(i + 1, j + 1, s), ux), uy);
+}
+const fbm = (x, y, s = 0) => noise2(x, y, s) * .55 + noise2(x * 2.1, y * 2.1, s + 7) * .3 + noise2(x * 4.3, y * 4.3, s + 13) * .15;
+/* 小节、拍子上的冲击：拍点后 0~1 衰减（做闪光、镜头一顿） */
+const beatHit = (t, k = 6) => Math.exp(-k * mod(t - TM.bar0, BEAT));
 
-/* ---------------- 像素缓冲：世界按"像素"画在小画布上，再最近邻放大 P 倍 ---------------- */
-const BUF = {};
-function pbuf(name, w, h) {
-  let b = BUF[name];
-  if (!b || b.width !== w || b.height !== h) b = BUF[name] = mk(w, h);
-  const g = b.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-  g.imageSmoothingEnabled = false; g.filter = 'none'; g.clearRect(0, 0, w, h);
+/* ---------------- 颜色 ---------------- */
+const HEXC = {};
+function rgb(h) { let c = HEXC[h]; if (c) return c; const n = parseInt(h.slice(1, 7), 16); return (HEXC[h] = [n >> 16 & 255, n >> 8 & 255, n & 255]); }
+const hex = (r, g, b) => '#' + ((1 << 24) | (clamp(ri(r), 0, 255) << 16) | (clamp(ri(g), 0, 255) << 8) | clamp(ri(b), 0, 255)).toString(16).slice(1);
+function mix(a, b, u) { const A = rgb(a), B = rgb(b); return hex(lerp(A[0], B[0], u), lerp(A[1], B[1], u), lerp(A[2], B[2], u)); }
+const dk = (c, k) => mix(c, '#120A2E', k);                // 暗部往蓝紫偏（像素画的色相偏移）
+const lt = (c, k) => mix(c, '#FFF6DA', k);                // 亮部往暖白偏
+function rgba(c, a) { const A = rgb(c); return `rgba(${A[0]},${A[1]},${A[2]},${a})`; }
+function mixN(cols, u) { u = clamp(u) * (cols.length - 1); const i = Math.min(cols.length - 2, fl(u)); return mix(cols[i], cols[i + 1], u - i); }
+
+/* ---------------- 画布 ---------------- */
+function mk(w, h) { const c = document.createElement('canvas'); c.width = Math.max(1, w | 0); c.height = Math.max(1, h | 0); return c; }
+const CACHE = new Map();
+function cached(key, w, h, draw) {
+  let c = CACHE.get(key); if (c) return c;
+  c = mk(w, h); const g = c.getContext('2d'); g.imageSmoothingEnabled = false; draw(g, c);
+  if (CACHE.size > 6000) CACHE.delete(CACHE.keys().next().value);
+  CACHE.set(key, c); return c;
+}
+const LAYER = {};
+function layer(name, w = W, h = H, clear = true) {
+  let c = LAYER[name]; if (!c || c.width !== w || c.height !== h) c = LAYER[name] = mk(w, h);
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.imageSmoothingEnabled = false; g.filter = 'none';
+  if (clear) g.clearRect(0, 0, w, h);
   return g;
 }
-/* 把缓冲贴到屏幕：每个缓冲像素放大成 P 个屏幕像素。camX/camY 是视野左上角（缓冲坐标，可以带小数：按屏幕像素平滑移动） */
-function blit(g, name, P, camX = 0, camY = 0, alpha = 1) {
-  const b = BUF[name]; g.save(); g.imageSmoothingEnabled = false; g.globalAlpha *= alpha;
-  g.drawImage(b, ri(-camX * P), ri(-camY * P), b.width * P, b.height * P);
-  g.restore();
-}
-/* 缓冲按任意比例贴（推镜头）：以缓冲里的 (fx, fy) 为中心放大 s 倍、放到屏幕 (sx, sy) */
-function blitZoom(g, name, P, fx, fy, s, sx = W / 2, sy = H / 2, alpha = 1) {
-  const b = BUF[name], k = P * s; g.save(); g.imageSmoothingEnabled = false; g.globalAlpha *= alpha;
-  g.drawImage(b, sx - fx * k, sy - fy * k, b.width * k, b.height * k);
-  g.restore();
-}
-/* 静态的东西只画一次 */
-const CACHE = {};
-function cached(name, w, h, fn) { if (!CACHE[name]) { const c = mk(w, h), g = c.getContext('2d'); g.imageSmoothingEnabled = false; fn(g, c); CACHE[name] = c; } return CACHE[name]; }
-/* 全屏的离屏层（转场、后期用） */
-const LAYER = {};
-function layer(name, w = W, h = H) {
-  let c = LAYER[name];
-  if (!c || c.width !== w || c.height !== h) c = LAYER[name] = mk(w, h);
-  const g = c.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
-  g.imageSmoothingEnabled = false; g.clearRect(0, 0, w, h); return g;
-}
 
-/* ---------------- 像素图元（坐标取整，落在像素格上） ---------------- */
-function prect(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(ri(x), ri(y), ri(w), ri(h)); }
-function pdot(g, x, y, c) { g.fillStyle = c; g.fillRect(ri(x), ri(y), 1, 1); }
-function pdisc(g, cx, cy, r, c) {
-  g.fillStyle = c; cx = ri(cx); cy = ri(cy); r = Math.max(0, r);
-  for (let dy = -Math.floor(r); dy <= Math.floor(r); dy++) { const dx = Math.floor(Math.sqrt(Math.max(0, r * r - dy * dy)) + .35); g.fillRect(cx - dx, cy + dy, dx * 2 + 1, 1); }
-}
-function pell(g, cx, cy, rx, ry, c) {
-  g.fillStyle = c; cx = ri(cx); cy = ri(cy); ry = Math.max(1, ry);
-  for (let dy = -Math.floor(ry); dy <= Math.floor(ry); dy++) { const dx = Math.floor(rx * Math.sqrt(Math.max(0, 1 - dy * dy / (ry * ry))) + .35); g.fillRect(cx - dx, cy + dy, dx * 2 + 1, 1); }
-}
-/* 空心椭圆 */
-function pring(g, cx, cy, rx, ry, c) {
-  g.fillStyle = c; const n = Math.max(12, ri((rx + ry) * 3));
-  let px = null, py = null;
-  for (let i = 0; i <= n; i++) { const a = i / n * TAU, x = ri(cx + Math.cos(a) * rx), y = ri(cy + Math.sin(a) * ry); if (x !== px || y !== py) g.fillRect(x, y, 1, 1); px = x; py = y; }
-}
-function pline(g, x0, y0, x1, y1, c) {
+/* ---------------- 像素图元（坐标都取整） ---------------- */
+function R(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(ri(x), ri(y), ri(w), ri(h)); }
+function P(g, x, y, c) { g.fillStyle = c; g.fillRect(ri(x), ri(y), 1, 1); }
+function line(g, x0, y0, x1, y1, c) {
   x0 = ri(x0); y0 = ri(y0); x1 = ri(x1); y1 = ri(y1); g.fillStyle = c;
-  const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
-  let err = dx + dy, i = 0;
-  for (; ;) {
-    g.fillRect(x0, y0, 1, 1);
-    if (x0 === x1 && y0 === y1) break;
-    const e2 = 2 * err; if (e2 >= dy) { err += dy; x0 += sx; } if (e2 <= dx) { err += dx; y0 += sy; }
-    if (++i > 4000) break;
+  const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1; let e = dx + dy, n = 0;
+  for (; n < 4000; n++) { g.fillRect(x0, y0, 1, 1); if (x0 === x1 && y0 === y1) break; const e2 = 2 * e; if (e2 >= dy) { e += dy; x0 += sx; } if (e2 <= dx) { e += dx; y0 += sy; } }
+}
+function disc(g, cx, cy, r, c) {
+  g.fillStyle = c; cx = ri(cx); cy = ri(cy); const n = fl(r);
+  for (let dy = -n; dy <= n; dy++) { const hw = ri(Math.sqrt(Math.max(0, r * r - dy * dy))); g.fillRect(cx - hw, cy + dy, hw * 2 + 1, 1); }
+}
+function ell(g, cx, cy, rx, ry, c) {
+  g.fillStyle = c; cx = ri(cx); cy = ri(cy); const n = fl(ry);
+  for (let dy = -n; dy <= n; dy++) { const hw = ri(rx * Math.sqrt(Math.max(0, 1 - dy * dy / (ry * ry)))); g.fillRect(cx - hw, cy + dy, hw * 2 + 1, 1); }
+}
+function ring(g, cx, cy, r, c) {
+  g.fillStyle = c; cx = ri(cx); cy = ri(cy); r = ri(r); let x = r, y = 0, e = 1 - r;
+  while (x >= y) {
+    [[x, y], [y, x], [-y, x], [-x, y], [-x, -y], [-y, -x], [y, -x], [x, -y]].forEach(([a, b]) => g.fillRect(cx + a, cy + b, 1, 1));
+    y++; if (e < 0) e += 2 * y + 1; else { x--; e += 2 * (y - x) + 1; }
   }
 }
-/* 多边形（扫描线填充，整像素） */
-function ppoly(g, pts, c) {
-  g.fillStyle = c;
-  let y0 = Infinity, y1 = -Infinity; pts.forEach(p => { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); });
-  for (let y = Math.floor(y0); y <= Math.ceil(y1); y++) {
-    const xs = [], yc = y + .5;
-    for (let i = 0; i < pts.length; i++) {
-      const [ax, ay] = pts[i], [bx, by] = pts[(i + 1) % pts.length];
-      if ((ay <= yc && by > yc) || (by <= yc && ay > yc)) xs.push(ax + (yc - ay) / (by - ay) * (bx - ax));
+function poly(g, pts, c) {                               // 扫描线填多边形（奇偶规则），边缘不发虚
+  g.fillStyle = c; let y0 = 1e9, y1 = -1e9; pts.forEach(p => { y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); });
+  for (let y = Math.ceil(y0 - .5); y <= fl(y1 - .5); y++) {
+    const yc = y + .5, xs = [];
+    for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+      const [ax, ay] = pts[i], [bx, by] = pts[j];
+      if ((ay <= yc) !== (by <= yc)) xs.push(ax + (yc - ay) / (by - ay) * (bx - ax));
     }
     xs.sort((a, b) => a - b);
-    for (let i = 0; i + 1 < xs.length; i += 2) { const a = ri(xs[i]), b = ri(xs[i + 1]); if (b > a) g.fillRect(a, y, b - a, 1); }
+    for (let k = 0; k + 1 < xs.length; k += 2) { const a = ri(xs[k]), b = ri(xs[k + 1]); if (b > a) g.fillRect(a, y, b - a, 1); }
   }
 }
-/* 4×4 Bayer 抖动：level 0..1 */
-const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
-function pdither(g, x, y, w, h, c, level) {
-  if (level <= 0) return;
-  g.fillStyle = c; x = ri(x); y = ri(y); w = ri(w); h = ri(h);
-  if (level >= 1) { g.fillRect(x, y, w, h); return; }
-  const th = level * 16;
-  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (BAYER[((y + j) & 3) * 4 + ((x + i) & 3)] < th) g.fillRect(x + i, y + j, 1, 1);
+/* Bayer 4×4 抖动：按比例 a 铺一层颜色（图案固定在画布上，平移时不跟着走） */
+const BAYER4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+const PAT = {};
+function dpat(c, lv) {
+  const k = c + ':' + lv; let p = PAT[k]; if (p) return p;
+  const t = mk(4, 4), q = t.getContext('2d'); q.fillStyle = c;
+  for (let i = 0; i < 16; i++) if (BAYER4[i] < lv) q.fillRect(i & 3, i >> 2, 1, 1);
+  return (PAT[k] = ctx.createPattern(t, 'repeat'));
 }
-/* 平滑的竖直渐变天空（按 8 级色阶量化，交界处抖一行，保持像素感） */
-function psky(g, w, h, stops, y0 = 0) {
-  for (let y = 0; y < h; y++) {
-    const u = y / Math.max(1, h - 1);
-    let i = 0; while (i < stops.length - 2 && u > stops[i + 1][0]) i++;
-    const [u0, c0] = stops[i], [u1, c1] = stops[i + 1];
-    const v = clamp((u - u0) / Math.max(1e-6, u1 - u0));
-    const q = Math.floor(v * 8) / 8, fr = v * 8 - Math.floor(v * 8);
-    const ca = mix(c0, c1, q), cb = mix(c0, c1, Math.min(1, q + 1 / 8));
-    prect(g, 0, y0 + y, w, 1, ca);
-    if (fr > .2) pdither(g, 0, y0 + y, w, 1, cb, fr);
+function dith(g, x, y, w, h, c, a) {
+  const lv = ri(clamp(a) * 16); if (lv <= 0) return;
+  if (lv >= 16) { R(g, x, y, w, h, c); return; }
+  g.fillStyle = dpat(c, lv); g.fillRect(ri(x), ri(y), ri(w), ri(h));
+}
+/* 竖直渐变：stops = [[0,色],[.4,色],…]；z 抖动过渡带占每段的比例（1 = 全程抖动，小 = 一条条色带） */
+function vgrad(g, x, y, w, h, stops, z = 1) {
+  for (let j = 0; j < h; j++) {
+    const u = (j + .5) / h; let k = 0; while (k < stops.length - 2 && u > stops[k + 1][0]) k++;
+    const [u0, c0] = stops[k], [u1, c1] = stops[k + 1]; let f = clamp((u - u0) / (u1 - u0));
+    if (z < 1) f = clamp((f - .5) / z + .5);
+    R(g, x, y + j, w, 1, c0); if (f > 0) dith(g, x, y + j, w, 1, c1, f);
   }
 }
-/* 柔和的光锥（不用抖动）：从 (cx, y0) 宽 w0 到 y1 宽 w1，一行一行画，透明度按 1/24 量化，screen 叠上去 */
-function pcone(g, cx, y0, y1, w0, w1, col, a0, a1) {
-  const [r, gg, b] = hex2rgb(col);
-  g.save(); g.globalCompositeOperation = 'screen';
-  for (let y = ri(y0); y < ri(y1); y++) {
-    const u = (y - y0) / Math.max(1, y1 - y0), hw = lerp(w0, w1, u) / 2, a = Math.round(lerp(a0, a1, u) * 24) / 24;
-    if (a <= 0) continue;
-    g.fillStyle = `rgba(${r},${gg},${b},${a})`; g.fillRect(ri(cx - hw), y, ri(hw * 2), 1);
-  }
-  g.restore();
-}
-/* 圆形的柔光斑（按圈量化透明度），screen 叠 */
-function pglow(g, cx, cy, r, col, a) {
-  const [rr, gg, bb] = hex2rgb(col);
-  g.save(); g.globalCompositeOperation = 'screen';
-  for (let k = 4; k >= 1; k--) { g.fillStyle = `rgba(${rr},${gg},${bb},${(a * (1 - (k - 1) / 4) * .45).toFixed(3)})`; pdisc(g, cx, cy, r * k / 4, g.fillStyle); }
-  g.restore();
-}
-/* 精灵：整数坐标贴图，k 倍、可水平翻转 */
-function pspr(g, spr, x, y, k = 1, flip = false) {
-  if (!spr) return;
-  x = ri(x); y = ri(y);
-  if (!flip) { g.drawImage(spr, x, y, spr.width * k, spr.height * k); return; }
-  g.save(); g.translate(x + spr.width * k, y); g.scale(-1, 1); g.drawImage(spr, 0, 0, spr.width * k, spr.height * k); g.restore();
-}
-/* 精灵按颜色相乘（夜里偏蓝），结果缓存 */
-const TINT = new Map();
-function tinted(spr, col, key) {
-  if (!col) return spr;
-  const k = key + '|' + col;
-  if (TINT.has(k)) return TINT.get(k);
-  const c = mk(spr.width, spr.height), g = c.getContext('2d');
-  g.drawImage(spr, 0, 0); g.globalCompositeOperation = 'multiply'; g.fillStyle = col; g.fillRect(0, 0, c.width, c.height);
-  g.globalCompositeOperation = 'destination-in'; g.drawImage(spr, 0, 0);
-  TINT.set(k, c); return c;
-}
-/* 精灵整块换成一个颜色（剪影、半透明的鬼影用） */
-const SIL = new Map();
-function silhouette(spr, col, key) {
-  const k = key + '|sil|' + col;
-  if (SIL.has(k)) return SIL.get(k);
-  const c = mk(spr.width, spr.height), g = c.getContext('2d');
-  g.drawImage(spr, 0, 0); g.globalCompositeOperation = 'source-in'; g.fillStyle = col; g.fillRect(0, 0, c.width, c.height);
-  SIL.set(k, c); return c;
-}
-
-/* ---------------- 光晕：亮的东西另画一层，模糊后叠回去（screen） ---------------- */
-function glowBuf(name, w, h) { return pbuf('glow_' + name, w, h); }
-function glowBlit(g, name, P, camX = 0, camY = 0, amt = 1, rad = 3) {
-  const b = BUF['glow_' + name]; if (!b) return;
-  const t = pbuf('glowtmp_' + name, b.width, b.height);
-  t.filter = `blur(${rad}px)`; t.drawImage(b, 0, 0); t.filter = 'none';
-  g.save(); g.globalCompositeOperation = 'screen'; g.globalAlpha = amt; g.imageSmoothingEnabled = true;
-  g.drawImage(BUF['glowtmp_' + name], ri(-camX * P), ri(-camY * P), b.width * P, b.height * P);
-  t.clearRect(0, 0, b.width, b.height); t.filter = `blur(${rad * 3}px)`; t.drawImage(b, 0, 0); t.filter = 'none';
-  g.globalAlpha = amt * .6;
-  g.drawImage(BUF['glowtmp_' + name], ri(-camX * P), ri(-camY * P), b.width * P, b.height * P);
-  g.restore();
-}
-function glowBlitZoom(g, name, P, fx, fy, s, sx = W / 2, sy = H / 2, amt = 1, rad = 3) {
-  const b = BUF['glow_' + name]; if (!b) return;
-  const t = pbuf('glowtmp_' + name, b.width, b.height), k = P * s;
-  t.filter = `blur(${rad}px)`; t.drawImage(b, 0, 0); t.filter = 'none';
-  g.save(); g.globalCompositeOperation = 'screen'; g.globalAlpha = amt; g.imageSmoothingEnabled = true;
-  g.drawImage(BUF['glowtmp_' + name], sx - fx * k, sy - fy * k, b.width * k, b.height * k);
-  t.clearRect(0, 0, b.width, b.height); t.filter = `blur(${rad * 3}px)`; t.drawImage(b, 0, 0); t.filter = 'none';
-  g.globalAlpha = amt * .6; g.drawImage(BUF['glowtmp_' + name], sx - fx * k, sy - fy * k, b.width * k, b.height * k);
-  g.restore();
-}
-
-/* ---------------- 星空：固定的星星（按种子），一闪一闪；piano 每个起音点亮一批 ---------------- */
-/* o: {n 数量, seed, tw 闪烁强度, cols 颜色表, big 大星（十字）比例, y1 只画到这一行} */
-function starfield(g, t, w, h, o = {}) {
-  const n = o.n || 160, seed = o.seed || 7, cols = o.cols || ['#FFFFFF', '#CFE0FF', '#FFE9C2', '#FFD0E4'];
-  const y1 = o.y1 ?? h, tw = o.tw ?? .5, big = o.big ?? .06;
-  for (let i = 0; i < n; i++) {
-    const x = ri(hash(i, seed, 1) * w), y = ri(hash(i, seed, 2) * y1);
-    const ph = hash(i, seed, 3) * TAU, sp = 1.2 + 2.5 * hash(i, seed, 4);
-    let a = 1 - tw * (.5 + .5 * Math.sin(t * sp + ph));
-    if (o.appear) a *= o.appear(i, x, y);
-    if (a <= .05) continue;
-    const c = cols[i % cols.length];
-    g.globalAlpha = clamp(a);
-    if (hash(i, seed, 5) < big) {            // 大星：十字
-      pdot(g, x, y, '#FFFFFF'); pdot(g, x - 1, y, c); pdot(g, x + 1, y, c); pdot(g, x, y - 1, c); pdot(g, x, y + 1, c);
-      if (a > .8) { g.globalAlpha = (a - .8) * 3; pdot(g, x - 2, y, c); pdot(g, x + 2, y, c); pdot(g, x, y - 2, c); pdot(g, x, y + 2, c); }
-    } else pdot(g, x, y, c);
-  }
-  g.globalAlpha = 1;
-}
-/* 流星：从 (x0,y0) 往 (dx,dy) 方向划过，u 0..1 */
-function meteor(g, x0, y0, dx, dy, u, len = 14, col = '#FFFFFF') {
-  if (u <= 0 || u >= 1) return;
-  const hx = x0 + dx * u, hy = y0 + dy * u, L = Math.hypot(dx, dy);
-  for (let k = 0; k < len; k++) {
-    const a = (1 - k / len) * Math.sin(u * PI);
-    g.globalAlpha = clamp(a); pdot(g, hx - dx / L * k, hy - dy / L * k, k < 2 ? '#FFFFFF' : col);
-  }
-  g.globalAlpha = 1;
-}
-/* 银河：一条斜着的淡淡光带 + 密一些的小星（缓存） */
-function milkyWay(w, h, seed, x0, y0, x1, y1, width, col = '#8C7BD6') {
-  return cached(`milky|${w}|${h}|${seed}|${x0}|${y0}|${x1}|${y1}|${width}`, w, h, g => {
-    const r = R(seed), dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy), nx = -dy / L, ny = dx / L;
-    for (let i = 0; i < 2600; i++) {
-      const u = r(), v = (r() + r() + r() - 1.5) / 1.5;
-      const x = ri(x0 + dx * u + nx * v * width), y = ri(y0 + dy * u + ny * v * width);
-      const a = (1 - Math.abs(v)) * .5;
-      g.fillStyle = r() < .15 ? `rgba(255,255,255,${a})` : rgba(r() < .5 ? col : '#C9B8FF', a * .7);
-      g.fillRect(x, y, 1, 1);
+/* 发光：一圈圈台阶状的光晕（像素画里的灯光），lighter 叠上去 */
+function glowSpr(r, c, steps = 4, pow = 1.6) {
+  r = Math.max(1, ri(r));
+  return cached(`glow:${r}:${c}:${steps}:${pow}`, 2 * r + 1, 2 * r + 1, g => {
+    const A = rgb(c);
+    for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
+      const d = Math.sqrt(x * x + y * y) / r; if (d >= 1) continue;
+      const v = Math.ceil(Math.pow(1 - d, pow) * steps) / steps;
+      g.fillStyle = `rgba(${A[0]},${A[1]},${A[2]},${v.toFixed(3)})`; g.fillRect(x + r, y + r, 1, 1);
     }
   });
 }
-/* 萤火虫：在 (x0..x1, y0..y1) 范围里飘，亮暗呼吸；画到场景和光层 */
-function fireflies(b, gl, t, n, x0, y0, x1, y1, seed = 3, col = '#E8FF8A') {
-  for (let i = 0; i < n; i++) {
-    const px = x0 + (x1 - x0) * hash(i, seed, 1), py = y0 + (y1 - y0) * hash(i, seed, 2);
-    const x = px + Math.sin(t * (.5 + hash(i, seed, 3)) + i) * 6, y = py + Math.cos(t * (.4 + hash(i, seed, 4)) + i * 2) * 4 - (t * 1.5 * hash(i, seed, 6)) % 8;
-    const a = .5 + .5 * Math.sin(t * (1.5 + hash(i, seed, 5) * 2) + i * 3);
-    if (a < .2) continue;
-    b.globalAlpha = a; pdot(b, x, y, col); b.globalAlpha = 1;
-    if (gl) { gl.globalAlpha = a; prect(gl, x - 1, y - 1, 3, 3, col); gl.globalAlpha = 1; }
-  }
+function glow(g, x, y, r, c, a = 1, steps = 4) {
+  if (a <= 0 || r < 1) return;
+  if (r > 14) steps = Math.max(steps, Math.min(10, ri(r / 4)));   // 大光晕台阶多一点，不像一个个圆盘
+  const s = glowSpr(r, c, steps); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = clamp(a);
+  g.drawImage(s, ri(x) - ri(r), ri(y) - ri(r)); g.restore();
+}
+/* 柔光（不分台阶），做大片的光晕、光束底 */
+function sglow(g, x, y, r, c, a = 1, op = 'lighter') {
+  if (a <= 0 || r < 1) return;
+  const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, rgba(c, a)); gr.addColorStop(1, rgba(c, 0));
+  g.save(); g.globalCompositeOperation = op; g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r); g.restore();
 }
 
-/* ---------------- 雨、雪 ---------------- */
-function rain(g, t, w, h, o = {}) {
-  const n = o.n || 120, v = o.v || 260, len = o.len || 6, sl = o.slant ?? .25, col = o.col || 'rgba(150,175,235,.55)', seed = o.seed || 1;
-  g.fillStyle = col;
-  for (let i = 0; i < n; i++) {
-    const sp = v * (.8 + .4 * hash(i, seed, 1)), L = Math.max(2, ri(len * (.7 + .6 * hash(i, seed, 2))));
-    const span = (o.ground ?? h) + L + 20;
-    const y = ((t * sp + hash(i, seed, 3) * span) % span) - 10;
-    const x = hash(i, seed, 4) * (w + 60) - 30 + (y - h / 2) * sl;
-    for (let k = 0; k < L; k++) { const yy = ri(y - k), xx = ri(x - k * sl); if (yy >= 0 && yy < (o.ground ?? h)) g.fillRect(xx, yy, 1, 1); }
-  }
-  if (o.ground != null) {
-    g.fillStyle = o.splashCol || 'rgba(190,210,255,.6)';
-    const m = o.splashes || 26;
-    for (let i = 0; i < m; i++) {
-      const per = .35 + .3 * hash(i, seed, 5), ph = hash(i, seed, 6) * per, k = Math.floor((t + ph) / per), u = ((t + ph) % per) / per;
-      if (u > .22) continue;
-      const x = ri(hash(i, k, seed) * w), y = ri(o.ground + (o.groundDepth || 0) * hash(i, k, seed + 7));
-      const r = u < .11 ? 1 : 2;
-      g.fillRect(x - r, y - 1, 1, 1); g.fillRect(x + r, y - 1, 1, 1); if (r === 1) g.fillRect(x, y - 2, 1, 1);
-    }
-  }
+/* ---------------- 精灵 ---------------- */
+/* 字符画转精灵：rows 每行一个字符串，pal 字符 → 颜色（'.' 和没定义的是透明） */
+function spr(rows, pal, key) {
+  return cached('S:' + (key || rows.join('/') + JSON.stringify(pal)), rows.reduce((m, r) => Math.max(m, r.length), 0), rows.length, g => {
+    rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) { const c = pal[row[x]]; if (c) R(g, x, y, 1, 1, c); } });
+  });
 }
-function snow(g, t, w, h, o = {}) {
-  const n = o.n || 80, v = o.v || 14, seed = o.seed || 5, col = o.col || '#FFFFFF';
-  for (let i = 0; i < n; i++) {
-    const sp = v * (.6 + .8 * hash(i, seed, 1)), span = h + 10;
-    const y = ((t * sp + hash(i, seed, 2) * span) % span) - 5;
-    const x = mod(hash(i, seed, 3) * w + Math.sin(t * .8 + i) * 3 + (o.drift || 0) * t, w);
-    g.globalAlpha = .55 + .45 * hash(i, seed, 4);
-    if (hash(i, seed, 5) < .25) prect(g, x, y, 2, 2, col); else pdot(g, x, y, col);
-  }
-  g.globalAlpha = 1;
+function blit(g, s, x, y, o = {}) {
+  if (!s) return; const a = o.a ?? 1; if (a <= 0) return;
+  g.save(); if (a < 1) g.globalAlpha *= a; if (o.op) g.globalCompositeOperation = o.op;
+  if (o.flip) { g.translate(ri(x) + s.width * (o.k || 1), ri(y)); g.scale(-1, 1); g.drawImage(s, 0, 0, s.width * (o.k || 1), s.height * (o.k || 1)); }
+  else g.drawImage(s, ri(x), ri(y), s.width * (o.k || 1), s.height * (o.k || 1));
+  g.restore();
+}
+/* 精灵整个换成一种颜色（剪影、影子、倒影） */
+function tint(s, c) {
+  const key = 'T:' + c; s._t = s._t || {}; if (s._t[key]) return s._t[key];
+  const t = mk(s.width, s.height), q = t.getContext('2d'); q.drawImage(s, 0, 0); q.globalCompositeOperation = 'source-in'; q.fillStyle = c; q.fillRect(0, 0, s.width, s.height);
+  return (s._t[key] = t);
+}
+/* 描边：精灵外面一圈 1 像素（outline 色），返回新精灵（宽高各 +2） */
+function outlined(s, c) {
+  const key = 'O:' + c; s._t = s._t || {}; if (s._t[key]) return s._t[key];
+  const t = mk(s.width + 2, s.height + 2), q = t.getContext('2d'), sil = tint(s, c);
+  [[0, 1], [2, 1], [1, 0], [1, 2]].forEach(([dx, dy]) => q.drawImage(sil, dx, dy)); q.drawImage(s, 1, 1);
+  return (s._t[key] = t);
 }
 
-/* ---------------- 像素字：12px 像素字体先画到小画布，按 alpha 二值化（不糊边），再整数倍放大 ---------------- */
-const GLYPH = new Map();
-const FONT = '12px "Pix"';
-const _mg = mk(8, 8).getContext('2d');
-function textW12(s) { _mg.font = FONT; return Math.ceil(_mg.measureText(s).width); }
-/* 返回一块 1 位的文字画布（高 17），颜色 col；ol 给描边色时外圈加 1 像素描边 */
-function glyphs(s, col, ol = null) {
-  const key = s + '|' + col + '|' + ol;
-  if (GLYPH.has(key)) return GLYPH.get(key);
-  const w = textW12(s) + 4, h = 17;
-  const c = mk(w, h), g = c.getContext('2d');
-  g.font = FONT; g.textBaseline = 'top'; g.fillStyle = '#fff'; g.fillText(s, 2, 2);
-  const id = g.getImageData(0, 0, w, h), d = id.data, on = new Uint8Array(w * h);
-  for (let i = 0; i < w * h; i++) on[i] = d[i * 4 + 3] > 110 ? 1 : 0;
-  const out = g.createImageData(w, h), od = out.data;
-  const [r, gg, b] = hex2rgb(col), O = ol ? hex2rgb(ol) : null;
+/* ---------------- 像素字：缝合像素 12px（中文）+ 3×5 小字（数字、字母） ---------------- */
+const FONT = '12px FusionPixel';
+const GLY = {};
+let GLYOFF = null;                                        // 字形在 12px 格子里的竖直偏移（用"国""了"量出来）
+function glyphRaw(chr) {
+  const c = mk(16, 24), q = c.getContext('2d'); q.font = FONT; q.textBaseline = 'alphabetic'; q.fillStyle = '#FFFFFF'; q.fillText(chr, 0, 16);
+  return { d: q.getImageData(0, 0, 16, 24).data, w: Math.max(1, ri(q.measureText(chr).width)) };
+}
+function glyph(chr) {
+  let gl = GLY[chr]; if (gl) return gl;
+  if (GLYOFF === null) {
+    let y0 = 99, y1 = -1;
+    ['国', '了', '爱', '口', 'g', 'y', 'H'].forEach(ch2 => { const r = glyphRaw(ch2); for (let y = 0; y < 24; y++) for (let x = 0; x < 16; x++) if (r.d[(y * 16 + x) * 4 + 3] > 110) { y0 = Math.min(y0, y); y1 = Math.max(y1, y); } });
+    GLYOFF = Math.max(0, y1 - 11);                         // 让最低的笔画落在第 12 行
+  }
+  const r = glyphRaw(chr), w = r.w, o = mk(w, 12), oq = o.getContext('2d'); oq.fillStyle = '#FFFFFF';
+  const bits = [];
+  for (let y = 0; y < 12; y++) for (let x = 0; x < w; x++) { const on = r.d[((y + GLYOFF) * 16 + x) * 4 + 3] > 110; if (on) oq.fillRect(x, y, 1, 1); bits.push(on ? 1 : 0); }
+  return (GLY[chr] = { c: o, w, bits });
+}
+const textW = s => [...s].reduce((m, chr) => m + glyph(chr).w, 0);
+/* o：align 'c' | 'r'，k 整数倍放大，ol 描边色，sh 影子色（往右下错 k），a 透明度，sp 字距 */
+function txt(g, str, x, y, c, o = {}) {
+  const k = o.k || 1, a = o.a ?? 1, sp = o.sp || 0; if (a <= 0) return;
+  const chars = [...str], w = (textW(str) + sp * (chars.length - 1)) * k;
+  let x0 = o.align === 'c' ? x - w / 2 : o.align === 'r' ? x - w : x; x0 = ri(x0); y = ri(y);
+  g.save(); g.globalAlpha *= a;
+  const pass = (col, dx, dy) => { let xx = x0; chars.forEach(chr => { const gl = glyph(chr); g.drawImage(tint(gl.c, col), xx + dx, y + dy, gl.w * k, 12 * k); xx += (gl.w + sp) * k; }); };
+  if (o.sh) pass(o.sh, k, k);
+  if (o.ol) [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([dx, dy]) => pass(o.ol, dx * k, dy * k));
+  pass(c, 0, 0);
+  g.restore(); return w;
+}
+/* Scale2x（EPX）把像素字放大一倍，斜边不长锯齿：做大标题 */
+function epx(bits, w, h) {
+  const o = new Array(w * h * 4).fill(0), at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? 0 : bits[y * w + x];
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const i = y * w + x;
-    if (on[i]) { od[i * 4] = r; od[i * 4 + 1] = gg; od[i * 4 + 2] = b; od[i * 4 + 3] = 255; }
-    else if (O) {
-      let near = false;
-      for (let dy = -1; dy <= 1 && !near; dy++) for (let dx = -1; dx <= 1; dx++) { const xx = x + dx, yy = y + dy; if (xx >= 0 && yy >= 0 && xx < w && yy < h && on[yy * w + xx]) { near = true; break; } }
-      if (near) { od[i * 4] = O[0]; od[i * 4 + 1] = O[1]; od[i * 4 + 2] = O[2]; od[i * 4 + 3] = 255; }
-    }
+    const p = at(x, y), A = at(x, y - 1), B = at(x + 1, y), C = at(x - 1, y), D = at(x, y + 1);
+    let e0 = p, e1 = p, e2 = p, e3 = p;
+    if (C === A && C !== D && A !== B) e0 = A; if (A === B && A !== C && B !== D) e1 = B;
+    if (D === C && D !== B && C !== A) e2 = C; if (B === D && B !== A && D !== C) e3 = D;
+    const W2 = w * 2; o[(2 * y) * W2 + 2 * x] = e0; o[(2 * y) * W2 + 2 * x + 1] = e1; o[(2 * y + 1) * W2 + 2 * x] = e2; o[(2 * y + 1) * W2 + 2 * x + 1] = e3;
   }
-  g.clearRect(0, 0, w, h); g.putImageData(out, 0, 0);
-  const res = { c, w, h, tw: w - 4, on, ow: w };
-  GLYPH.set(key, res); return res;
+  return o;
 }
-/* 画像素字：(x, y) 是文字左上角（align='center' 时 x 是中线），k 倍放大 */
-function ptext(g, s, x, y, k, col, o = {}) {
-  const G = glyphs(s, col, o.ol || null);
-  const tw = G.tw * k;
-  let x0 = o.align === 'center' ? x - tw / 2 : o.align === 'right' ? x - tw : x;
-  if (o.snap !== false) { x0 = ri(x0 / k) * k; y = ri(y / k) * k; }
-  g.save(); g.imageSmoothingEnabled = false; if (o.alpha != null) g.globalAlpha *= o.alpha;
-  if (o.shadow) { const S = glyphs(s, o.shadow, o.ol ? o.shadow : null); g.drawImage(S.c, x0 - k, y - k, S.w * k, S.h * k); }
-  g.drawImage(G.c, x0 - 2 * k, y - 2 * k, G.w * k, G.h * k);
-  g.restore();
-  return tw;
+/* 大字：n 次 Scale2x（1 → 24px，2 → 48px），返回白色精灵 */
+function bigGlyph(chr, n = 1) {
+  return CACHE.get('BG:' + chr + n) || (() => {
+    const gl = glyph(chr); let bits = gl.bits, w = gl.w, h = 12;
+    for (let i = 0; i < n; i++) { bits = epx(bits, w, h); w *= 2; h *= 2; }
+    const c = mk(w, h), q = c.getContext('2d'); q.fillStyle = '#FFFFFF';
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (bits[y * w + x]) q.fillRect(x, y, 1, 1);
+    c._bits = bits; CACHE.set('BG:' + chr + n, c); return c;
+  })();
 }
-/* 一串字的 1 位点阵（片名由粒子拼出来用）：返回 [{x, y}]，坐标是字形像素（左上角 0,0），和宽高 */
-function glyphBits(s) {
-  const G = glyphs(s, '#FFFFFF'), pts = [];
-  for (let y = 0; y < G.h; y++) for (let x = 0; x < G.ow; x++) if (G.on[y * G.ow + x]) pts.push({ x: x - 2, y: y - 2 });
-  return { pts, w: G.tw, h: 13 };
-}
-
-/* ---------------- 后期 ---------------- */
-const VIG = {};
-function vignette(g, a) {
-  if (a <= 0) return;
-  if (!VIG.c) {
-    const c = mk(), q = c.getContext('2d'), gr = q.createRadialGradient(W / 2, H / 2, 480, W / 2, H / 2, 1200);
-    gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,1)'); q.fillStyle = gr; q.fillRect(0, 0, W, H); VIG.c = c;
+/* 3×5 小字：数字和大写字母（招牌、日期戳、站牌） */
+const TINY = {
+  '0': '111101101101111', '1': '010110010010111', '2': '111001111100111', '3': '111001111001111', '4': '101101111001001',
+  '5': '111100111001111', '6': '111100111101111', '7': '111001010010010', '8': '111101111101111', '9': '111101111001111',
+  'A': '010101111101101', 'B': '110101110101110', 'C': '011100100100011', 'D': '110101101101110', 'E': '111100110100111',
+  'F': '111100110100100', 'G': '011100101101011', 'H': '101101111101101', 'I': '111010010010111', 'J': '001001001101010',
+  'K': '101101110101101', 'L': '100100100100111', 'M': '101111111101101', 'N': '110101101101101', 'O': '010101101101010',
+  'P': '110101110100100', 'Q': '010101101110011', 'R': '110101110101101', 'S': '011100010001110', 'T': '111010010010010',
+  'U': '101101101101111', 'V': '101101101101010', 'W': '101101111111101', 'X': '101101010101101', 'Y': '101101010010010',
+  'Z': '111001010100111', ':': '000010000010000', '.': '000000000000010', "'": '010010000000000', '-': '000000111000000',
+  '/': '001001010100100', '!': '010010010000010', '+': '000010111010000', '%': '101001010100101', ' ': '000000000000000',
+  '♥': '000101111111010', '>': '100010001010100', '<': '001010100010001', '?': '111001010000010', '#': '101111101111101',
+};
+function tinyW(s) { return s.length * 4 - 1; }
+function tiny(g, s, x, y, c, o = {}) {
+  const k = o.k || 1; let x0 = o.align === 'c' ? x - tinyW(s) * k / 2 : o.align === 'r' ? x - tinyW(s) * k : x; x0 = ri(x0); y = ri(y);
+  g.fillStyle = c;
+  for (const chr of s.toUpperCase()) {
+    const m = TINY[chr]; if (m) for (let i = 0; i < 15; i++) if (m[i] === '1') g.fillRect(x0 + (i % 3) * k, y + fl(i / 3) * k, k, k);
+    x0 += 4 * k;
   }
-  g.save(); g.globalAlpha = a; g.drawImage(VIG.c, 0, 0); g.restore();
 }
-/* 液晶屏的格子：每 p 个屏幕像素一道细暗线（随缓冲一起移动：ox/oy 是格子的偏移） */
-function lcdGrid(g, p, a, ox = 0, oy = 0, x0 = 0, y0 = 0, w = W, h = H) {
-  if (a <= 0 || p < 4) return;
-  g.save(); g.beginPath(); g.rect(x0, y0, w, h); g.clip();
-  g.fillStyle = `rgba(0,0,0,${a})`;
-  const lw = Math.max(1, ri(p / 7));
-  for (let x = x0 + mod(ox, p) - p; x < x0 + w; x += p) g.fillRect(ri(x), y0, lw, h);
-  for (let y = y0 + mod(oy, p) - p; y < y0 + h; y += p) g.fillRect(x0, ri(y), w, lw);
-  g.restore();
-}
-/* 画面打碎成马赛克：src 缩到每 block 像素一格再放大 */
-function mosaic(g, src, block, alpha = 1) {
-  const w = Math.max(1, Math.ceil(W / block)), h = Math.max(1, Math.ceil(H / block)), q = layer('mosaicTmp', w, h);
-  q.imageSmoothingEnabled = true; q.drawImage(src, 0, 0, w, h);
-  g.save(); g.imageSmoothingEnabled = false; g.globalAlpha = alpha; g.drawImage(LAYER.mosaicTmp, 0, 0, w * block, h * block); g.restore();
-}
-/* 故障：横条错开 + 红蓝分离（amt 0..1） */
-function glitch(g, src, amt, seed) {
-  if (amt <= 0) { g.drawImage(src, 0, 0); return; }
-  const r = R(seed), q = layer('glitchTmp');
-  q.drawImage(src, 0, 0);
-  g.save();
-  g.drawImage(LAYER.glitchTmp, 0, 0);
-  // 红蓝错位
-  g.globalCompositeOperation = 'screen'; g.globalAlpha = .55 * amt;
-  const off = ri(18 * amt);
-  g.filter = 'none';
-  const rq = layer('glitchR'); rq.drawImage(LAYER.glitchTmp, 0, 0); rq.globalCompositeOperation = 'multiply'; rq.fillStyle = '#FF2040'; rq.fillRect(0, 0, W, H);
-  g.drawImage(LAYER.glitchR, off, 0);
-  const bq = layer('glitchB'); bq.drawImage(LAYER.glitchTmp, 0, 0); bq.globalCompositeOperation = 'multiply'; bq.fillStyle = '#2050FF'; bq.fillRect(0, 0, W, H);
-  g.drawImage(LAYER.glitchB, -off, 0);
-  g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
-  // 横条
-  const n = ri(3 + 9 * amt);
-  for (let i = 0; i < n; i++) {
-    const y = ri(r() * H / 8) * 8, h = ri(8 + r() * 90 * amt), dx = ri((r() - .5) * 160 * amt);
-    g.drawImage(LAYER.glitchTmp, 0, y, W, h, dx, y, W, h);
-  }
-  g.restore();
-}
-
-/* ---------------- 字体就绪 ---------------- */
-async function fontsReady(sample) {
-  await document.fonts.load(FONT, sample);
-  await document.fonts.ready;
-}
+function fontsReady(text) { return document.fonts.load(FONT, text).then(() => { [...new Set(text)].forEach(glyph); }); }
