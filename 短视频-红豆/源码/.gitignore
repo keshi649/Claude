@@ -1,0 +1,6 @@
+fonts/
+out/
+audio/
+__pycache__/
+*.mp4
+*.wav

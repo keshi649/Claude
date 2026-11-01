@@ -1,0 +1,28 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[
+    width=112mm, height=62mm,
+    xmin=2022.6, xmax=2025.4, ymin=0, ymax=4.6,
+    xtick={2023,2024,2025}, xticklabels={2023 年,2024 年,2025 年},
+    ytick={0,1,2,3,4}, ylabel={万元／台}, ylabel style={font=\scriptsize},
+    tick label style={font=\scriptsize}, axis lines=left, axis line style={ink},
+    ymajorgrids, grid style={black!12},
+    legend style={font=\scriptsize, draw=none, at={(0.98,0.98)}, anchor=north east, cells={anchor=west}},
+    every axis plot/.append style={line width=1.2pt},
+  ]
+    \addplot[ink, mark=*, mark options={fill=ink}] coordinates {(2023,3.83) (2024,3.23) (2025,3.03)};
+    \addlegendentry{平均售价}
+    \addplot[mid, dashed, mark=square*, mark options={solid, fill=white}] coordinates {(2023,2.15) (2024,1.56) (2025,1.31)};
+    \addlegendentry{平均成本（推算）}
+    \node[font=\scriptsize, anchor=south] at (axis cs:2023,3.88) {3.83};
+    \node[font=\scriptsize, anchor=south] at (axis cs:2024,3.28) {3.23};
+    \node[font=\scriptsize, anchor=south] at (axis cs:2025,3.08) {3.03};
+    \node[font=\scriptsize, anchor=north, text=mid] at (axis cs:2023,2.08) {约 2.15};
+    \node[font=\scriptsize, anchor=north, text=mid] at (axis cs:2024,1.49) {约 1.56};
+    \node[font=\scriptsize, anchor=north, text=mid] at (axis cs:2025,1.24) {约 1.31};
+    \node[font=\scriptsize, text=ink, align=center] at (axis cs:2024.55,2.35) {毛利率\\43.7\% → 51.7\% → 56.7\%};
+  \end{axis}
+\end{tikzpicture}
+\end{document}

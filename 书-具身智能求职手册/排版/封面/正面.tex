@@ -1,0 +1,71 @@
+% 正封图案：画在 (0,0)–(170,240)（单位 mm，不含出血），被 封面-*.tex 引用
+% 颜色：cbg 底色、cink 墨色、cacc 橙色、cline 线条灰
+% 插图：把一家机器人公司的七层岗位（第 2 章的岗位地图）画成“拆开的一摞板子”，
+% 和《拆解宇树》正封的关节爆炸图是同一个画法；两块橙色的是读者选出的两个目标岗位。
+\begin{scope}
+  % 底色（向外多铺 3 mm 出血）
+  \fill[cbg] (-3,-3) rectangle (173,243);
+  \begin{scope}
+    \clip (-3,-3) rectangle (173,243);
+    \draw[cline!35, line width=0.15pt] (-3,-3) grid[step=10] (173,243);
+  \end{scope}
+  % 顶部小字
+  \node[anchor=north west, font=\heiti\fontsize{10.5}{12}\selectfont, text=cink!85] at (16,227) {从看懂招聘启事，到拿下第一个 offer};
+  \draw[cacc, line width=1.8pt] (16,219.5) -- (42,219.5);
+  % 书名（两行）
+  \node[anchor=north west, inner sep=0, font=\heitiblack\fontsize{76}{80}\selectfont, text=cink] at (14,213) {具身智能};
+  \node[anchor=north west, inner sep=0, font=\heitiblack\fontsize{76}{80}\selectfont, text=cink] at (14,183.5) {求职手册};
+  % 副书名
+  \node[anchor=north west, inner sep=0, font=\heiti\bfseries\fontsize{16}{19}\selectfont, text=cacc] at (16,150) {岗位、面试题和不买真机的作品集};
+
+  % ===== 岗位地图：七层板子，从下往上 =====
+  % \slab{底边 y}{顶面色}{正面色}{侧面色}
+  \def\sW{72}\def\sDX{24}\def\sDY{14}\def\sT{4.6}\def\sX{20}
+  \newcommand{\slab}[4]{%
+    \filldraw[fill=#4, draw=cink, line width=0.6pt, line join=round]
+      (\sX+\sW,#1) -- (\sX+\sW+\sDX,#1+\sDY) -- (\sX+\sW+\sDX,#1+\sDY-\sT) -- (\sX+\sW,#1-\sT) -- cycle;
+    \filldraw[fill=#3, draw=cink, line width=0.6pt, line join=round]
+      (\sX,#1) -- (\sX+\sW,#1) -- (\sX+\sW,#1-\sT) -- (\sX,#1-\sT) -- cycle;
+    \filldraw[fill=#2, draw=cink, line width=0.6pt, line join=round]
+      (\sX,#1) -- (\sX+\sW,#1) -- (\sX+\sW+\sDX,#1+\sDY) -- (\sX+\sDX,#1+\sDY) -- cycle;}
+  \tikzset{lay/.style={font=\heiti\bfseries\fontsize{9}{10}\selectfont, text=cink, anchor=south west, inner sep=0},
+           role/.style={font=\heiti\fontsize{6.8}{8}\selectfont, text=cink!70, anchor=north west, inner sep=0}}
+  \foreach \i/\lname/\lroles/\cTop/\cFront/\cSide in {
+      0/本体/机械 · 关节 · 电控 · 嵌入式/white/cink!78/cink!58,
+      1/小脑/运动控制 · 强化学习/white/cink!78/cink!58,
+      2/感知/SLAM 定位 · 视觉感知/cacc/cacc!80!black/cacc!62!black,
+      3/大脑/具身大模型 · 世界模型/white/cink!78/cink!58,
+      4/数据/数据采集 · 数据管线 · AI Infra/white/cink!78/cink!58,
+      5/软件/系统软件 · 应用开发/cacc!38/cacc!62!black/cacc!48!black,
+      6/交付/测试 · 技术支持 · 解决方案/white/cink!78/cink!58} {
+    \pgfmathsetmacro{\yb}{36+\i*12}
+    \slab{\yb}{\cTop}{\cFront}{\cSide}
+    % 引线和名字
+    \draw[cink!70, line width=0.4pt] (\sX+\sW+\sDX+1.2,\yb+\sDY/2-\sT/2) -- (125,\yb+\sDY/2-\sT/2);
+    \fill[cink] (\sX+\sW+\sDX+1.2,\yb+\sDY/2-\sT/2) circle (0.55);
+    \node[lay] at (127,\yb+\sDY/2-\sT/2+0.6) {\lname};
+    \node[role] at (127,\yb+\sDY/2-\sT/2-1.2) {\lroles};
+  }
+  % 两个目标岗位的小标记
+  \node[font=\heiti\bfseries\fontsize{7.5}{9}\selectfont, text=white, fill=cacc, rounded corners=1pt, inner sep=1.2pt, anchor=east]
+    at (\sX-1.5,36+2*12-\sT/2) {目标一};
+  \node[font=\heiti\bfseries\fontsize{7.5}{9}\selectfont, text=cink, fill=cacc!38, rounded corners=1pt, inner sep=1.2pt, anchor=east]
+    at (\sX-1.5,36+5*12-\sT/2) {目标二};
+
+  % ===== 顶上站一只机器狗（和《拆解宇树》封面是同一只） =====
+  \begin{scope}[shift={(\sX+\sW/2+\sDX/2-19,36+6*12+\sDY/2-0.5)}, scale=0.66]
+    \filldraw[fill=cink, draw=cink, rounded corners=3pt] (0,20) rectangle (46,32);
+    \filldraw[fill=cink, draw=cink, rounded corners=2pt] (44,26) rectangle (57,36);
+    \fill[cacc] (53,31) circle (1.7);
+    \foreach \x in {10,20,34,44} {
+      \draw[cink, line width=3pt, line cap=round] (\x,21) -- (\x-6,10) -- (\x,0);
+      \filldraw[fill=cacc, draw=cink, line width=0.6pt] (\x-6,10) circle (2);
+      \fill[cink] (\x,0) circle (2.2);
+    }
+  \end{scope}
+
+  % 作者和系列
+  \draw[cink, line width=0.8pt] (16,24.5) -- (154,24.5);
+  \node[anchor=south west, font=\heiti\bfseries\fontsize{15}{18}\selectfont, text=cink] at (16,11) {甜菜　著};
+  \node[anchor=south east, font=\heiti\fontsize{9}{11}\selectfont, text=cink!80] at (154,12) {《拆解宇树》姊妹篇};
+\end{scope}

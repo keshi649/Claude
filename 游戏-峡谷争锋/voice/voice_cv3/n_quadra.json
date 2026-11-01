@@ -1,0 +1,24 @@
+{
+ "id": "quadra",
+ "shown": "四杀",
+ "say": "四杀！",
+ "mode": "instruct-retake",
+ "style": 1,
+ "chars": [
+  [
+   "四",
+   0.31,
+   0.55
+  ],
+  [
+   "杀",
+   0.59,
+   0.765
+  ]
+ ],
+ "asr": "四杀",
+ "cer": 0,
+ "seed": 7739,
+ "last_slope": -746,
+ "last_median": 326
+}

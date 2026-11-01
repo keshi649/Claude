@@ -1,0 +1,53 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{tag/.style={font=\scriptsize, align=left, text=ink, anchor=west},
+           num/.style={circle, fill=ink, text=white, font=\tiny\bfseries, inner sep=0.6pt, minimum size=3.6mm},
+           lead/.style={mid, line width=0.4pt}}
+  % 半剖视：左右对称的上半部分（y>0），中心线 y=0
+  % 外壳
+  \draw[ink, line width=1pt, fill=black!12] (0,0) -- (0,34) -- (62,34) -- (62,28) -- (70,28) -- (70,0);
+  % 驱动板（左端）
+  \fill[black!55] (3,4) rectangle (6,30);
+  \foreach \yy in {8,13,...,28} \fill[white] (3.6,\yy) rectangle (5.4,\yy+1.6);
+  % 电机侧编码器
+  \fill[black!80] (8,6) rectangle (11,12);
+  % 定子（线圈）
+  \fill[black!35] (14,20) rectangle (36,31);
+  \foreach \xx in {15,19,...,33} \fill[black!65] (\xx,22) rectangle (\xx+2.4,29);
+  % 转子（带磁铁）
+  \fill[black!80] (14,13.5) rectangle (36,19);
+  \fill[black!20] (14,6) rectangle (36,13.5);
+  % 热管 / 散热
+  \draw[ink, line width=1.6pt] (16,32.5) -- (60,32.5);
+  % 行星减速器
+  \fill[black!8] (39,4) rectangle (58,30);
+  \draw[ink, line width=0.6pt] (39,4) rectangle (58,30);
+  \fill[black!45] (40,6) rectangle (57,10);           % 太阳轮
+  \draw[ink, line width=0.6pt, fill=black!25] (48.5,18) circle (5.5);   % 行星轮
+  \fill[black!65] (40,25.5) rectangle (57,29.5);       % 内齿圈
+  % 输出法兰和输出侧编码器
+  \fill[black!70] (60,4) rectangle (64,26);
+  \draw[ink, line width=1pt, fill=black!40] (64,6) rectangle (70,26);
+  \fill[black!80] (66,1.5) rectangle (69,4);
+  % 中空走线
+  \draw[ink, line width=0.6pt, densely dashed] (0,2) -- (72,2);
+  \node[font=\tiny, text=mid, anchor=west] at (72,2) {线缆从中间穿过};
+  % 中心线
+  \draw[mid, line width=0.4pt, dash dot] (-4,0) -- (78,0);
+  % 编号
+  \node[num] (n1) at (4.5,39) {1};  \draw[lead] (n1) -- (4.5,30);
+  \node[num] (n2) at (9.5,39) {2};  \draw[lead] (n2) -- (9.5,12);
+  \node[num] (n3) at (25,39) {3};   \draw[lead] (n3) -- (25,31);
+  \node[num] (n4) at (30,39) {4};   \draw[lead] (n4) -- (30,19);
+  \node[num] (n5) at (48.5,39) {5}; \draw[lead] (n5) -- (48.5,29.5);
+  \node[num] (n6) at (55,39) {6};   \draw[lead] (n6) -- (55,32.5);
+  \node[num] (n7) at (67,39) {7};   \draw[lead] (n7) -- (67,26);
+  \node[num] (n8) at (75,9) {8};    \draw[lead] (n8) -- (69,3);
+  % 图例
+  \node[tag] at (-2,-8) {①驱动板（FOC）　②电机侧编码器　③定子线圈　④转子和永磁体};
+  \node[tag] at (-2,-13) {⑤行星减速器（太阳轮、行星轮、内齿圈）　⑥散热（导热壳体、热管或风道）};
+  \node[tag] at (-2,-18) {⑦输出法兰：接下一段肢体　⑧输出侧编码器：直接测关节角度};
+\end{tikzpicture}
+\end{document}

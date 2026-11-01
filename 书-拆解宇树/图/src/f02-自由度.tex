@@ -1,0 +1,62 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{
+    bone/.style={line width=2.2pt, ink, line cap=round},
+    j/.style={circle, draw=ink, fill=white, line width=0.8pt, minimum size=4.4mm, inner sep=0pt, font=\tiny\bfseries},
+    jo/.style={circle, draw=mid, fill=white, densely dashed, line width=0.7pt, minimum size=4.4mm, inner sep=0pt, font=\tiny\bfseries, text=mid},
+    tag/.style={font=\scriptsize, align=center, text=ink},
+    tagl/.style={font=\scriptsize, align=left, text=ink, anchor=west},
+    lead/.style={mid, line width=0.4pt},
+  }
+  % 头和躯干
+  \draw[ink, line width=0.8pt, fill=pale] (0,79) circle (5.5);
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=2pt] (-9,46) rectangle (9,71);
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=2pt] (-8,38) rectangle (8,44.5);
+  % 手臂水平张开
+  \draw[bone] (-9,67) -- (-45,67);
+  \draw[bone] (9,67) -- (45,67);
+  % 腿
+  \draw[bone] (-5,38) -- (-6,22) -- (-6,6);
+  \draw[bone] (5,38) -- (6,22) -- (6,6);
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=1pt] (-11,1.5) rectangle (-1,4.5);
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=1pt] (1,1.5) rectangle (11,4.5);
+  % 手臂关节
+  \foreach \s in {-1,1} {
+    \node[j] at (\s*9,67) {3};
+    \node[j] at (\s*20,67) {1};
+    \node[j] at (\s*30,67) {1};
+    \node[jo] at (\s*37,67) {+2};
+    \node[jo] at (\s*45,67) {+7};
+  }
+  % 腰、腿关节
+  \node[j] (wa) at (0,41.2) {1};
+  \node[jo] (wa2) at (0,50) {+2};
+  \node[j] (lhip) at (-5,35) {3}; \node[j] (rhip) at (5,35) {3};
+  \node[j] (lk) at (-6,22) {1};   \node[j] (rk) at (6,22) {1};
+  \node[j] (la) at (-6,8.5) {2};  \node[j] (ra) at (6,8.5) {2};
+  % 手臂标注（在左臂上方）
+  \node[tag] at (-9,75) {肩 3};
+  \node[tag] at (-20,73) {肘 1};
+  \node[tag] at (-30,73) {腕 1};
+  \node[tag, text=mid] at (-37,77) {腕 +2};
+  \node[tag, text=mid] at (-46,73) {手 +7};
+  \draw[lead] (-37,75.5) -- (-37,69.4);
+  \node[font=\tiny, text=mid, align=center] at (-41,60) {（EDU 可选的\\三指灵巧手）};
+  % 右侧标注
+  \node[tagl, text=mid] (u0) at (24,52) {腰 +2（EDU）};
+  \node[tagl] (u1) at (24,41.2) {腰 1};
+  \node[tagl] (u2) at (24,33) {髋 3};
+  \node[tagl] (u3) at (24,22) {膝 1};
+  \node[tagl] (u4) at (24,8.5) {踝 2\\（两个电机在小腿上，\\用拉杆并联驱动）};
+  \draw[lead] (u0.west) -- (wa2.east); \draw[lead] (u1.west) -- (wa.east);
+  \draw[lead] (u2.west) -- (rhip.east); \draw[lead] (u3.west) -- (rk.east);
+  \draw[lead] (u4.west) -- (ra.east);
+  % 图例和合计
+  \node[j, minimum size=3mm] at (-44,-6) {}; \node[tagl] at (-42,-6) {基础款关节};
+  \node[jo, minimum size=3mm] at (-20,-6) {}; \node[tagl] at (-18,-6) {EDU 可选};
+  \node[tagl] at (2,-4) {基础款：6×2 + 1 + 5×2 = 23};
+  \node[tagl] at (2,-9.5) {加满：23 + 2 + (2 + 7)×2 = 43};
+\end{tikzpicture}
+\end{document}

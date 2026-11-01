@@ -1,0 +1,3 @@
+# three.js 只在本地测试时用（网页里从 cdnjs 加载）；test/lib.js 会自己下载并校验 sha256
+vendor/
+__pycache__/

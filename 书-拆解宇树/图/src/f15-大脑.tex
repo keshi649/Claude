@@ -1,0 +1,23 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{st/.style={box, minimum height=12mm, font=\scriptsize, align=center},
+           inp/.style={boxw, minimum height=12mm, font=\scriptsize, align=center}}
+  % VLA
+  \node[font=\small\bfseries, anchor=west] at (-6,20) {VLA：直接从“看到的、听到的”算出动作};
+  \node[inp] (i1) at (8,8) {相机画面\\+ 一句指令};
+  \node[st, minimum width=30mm] (vlm) at (44,8) {视觉语言模型\\（互联网图文预训练\\+ 机器人数据继续训练）};
+  \node[st, minimum width=20mm] (head) at (80,8) {动作头\\（扩散 / 流匹配）};
+  \node[dark, minimum height=12mm, font=\scriptsize, align=center] (act) at (108,8) {未来一秒的\\动作块};
+  \draw[arr] (i1) -- (vlm); \draw[arr] (vlm) -- (head); \draw[arr] (head) -- (act);
+  % 世界模型
+  \node[font=\small\bfseries, anchor=west] at (-6,-12) {世界模型：先在“脑子里”预演动作的后果};
+  \node[inp] (w1) at (8,-26) {当前画面\\+ 几个候选动作};
+  \node[st, minimum width=30mm] (wm) at (44,-26) {世界模型\\预测接下来会看到什么};
+  \node[st, minimum width=20mm] (fut) at (80,-26) {预测的\\未来画面};
+  \node[dark, minimum height=12mm, font=\scriptsize, align=center] (pick) at (108,-26) {挑结果最好的\\那个动作去做};
+  \draw[arr] (w1) -- (wm); \draw[arr] (wm) -- (fut); \draw[arr] (fut) -- (pick);
+  \node[font=\tiny, text=mid, align=left, anchor=west] at (-6,-38) {宇树两条路并行：UnifoLM-VLA-0（2026 年 1 月开源）、UnifoLM-WMA-0（2025 年 9 月开源）};
+\end{tikzpicture}
+\end{document}

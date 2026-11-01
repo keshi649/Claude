@@ -18,7 +18,7 @@ LN = {l['id']: l for l in tl['lines']}
 SC = {s['name']: s for s in tl['scenes']}
 mmss = lambda x: f'{int(x) // 60}:{int(x) % 60:02d}'
 vals = {
-    'DUR': f"{int(tl['duration']) // 60} 分 {int(tl['duration']) % 60} 秒",
+    'DUR': f"{round(tl['duration']) // 60} 分 {round(tl['duration']) % 60} 秒",      # 四舍五入，和 ⟨SEC⟩ 对得上
     'SEC': f"{tl['duration']:.0f}",
     'NLINES': str(sum(1 for l in tl['lines'] if l['kind'] == 'N')),
 }

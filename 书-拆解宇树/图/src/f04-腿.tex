@@ -1,0 +1,47 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{motor/.style={circle, draw=ink, fill=black!70, minimum size=9mm, inner sep=0pt, text=white, font=\tiny\bfseries},
+           motor2/.style={circle, draw=ink, fill=black!35, minimum size=7mm, inner sep=0pt, text=white, font=\tiny\bfseries},
+           tag/.style={font=\scriptsize, align=left, text=ink},
+           lead/.style={mid, line width=0.4pt}}
+  % 机身
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=3pt] (-40,50) rectangle (20,66);
+  \node[font=\scriptsize, text=mid] at (-15,58) {机身：电池、主控、传感器};
+  % 髋侧摆电机（在机身上）
+  \node[motor] (hab) at (12,58) {侧摆};
+  % 髋前摆 + 膝电机（同轴放在髋部）
+  \node[motor] (hfl) at (12,44) {髋};
+  \node[motor2] (kn) at (18,40) {膝};
+  % 大腿
+  \draw[ink, line width=5pt, line cap=round] (12,44) -- (30,22);
+  \draw[white, line width=3.4pt, line cap=round] (12.5,43.4) -- (29.5,22.6);
+  % 连杆（大腿里）
+  \draw[ink, line width=1pt, densely dashed] (18,40) -- (33,24);
+  \fill[ink] (18,40) circle (0.8); \fill[ink] (33,24) circle (0.8);
+  % 膝关节
+  \draw[ink, line width=0.8pt, fill=white] (30,22) circle (3);
+  \fill[ink] (30,22) circle (0.8);
+  % 小腿
+  \draw[ink, line width=3.2pt, line cap=round] (30,22) -- (14,2);
+  % 足端
+  \draw[ink, line width=0.8pt, fill=black!55] (13,1) circle (2.8);
+  % 地面
+  \draw[mid, line width=0.6pt] (-40,-2) -- (45,-2);
+  \foreach \x in {-38,-34,...,44} \draw[mid, line width=0.4pt] (\x,-2) -- (\x-2,-4.5);
+  % 标注
+  \node[tag, anchor=west] (a) at (36,60) {髋关节侧摆电机（装在机身上）};
+  \node[tag, anchor=west] (b) at (36,49) {髋关节前摆电机};
+  \node[tag, anchor=west] (c) at (42,40) {膝关节电机：挪到髋部附近};
+  \node[tag, anchor=west] (d) at (42,30) {连杆（藏在大腿里）\\把电机的力传到膝盖};
+  \node[tag, anchor=west] (e) at (36,18) {膝关节：这里没有电机};
+  \node[tag, anchor=west] (f) at (24,4) {小腿和足端：越轻越好};
+  \draw[lead] (a.west) -- (hab.east); \draw[lead] (b.west) -- (hfl.east);
+  \draw[lead] (c.west) -- (kn.east); \draw[lead] (d.west) -- (26,31.5);
+  \draw[lead] (e.west) -- (33,22); \draw[lead] (f.west) -- (20,8);
+  % 重量分布提示
+  \draw[arr, mid] (-30,44) -- (-30,10);
+  \node[font=\scriptsize, text=mid, align=center, anchor=east] at (-32,27) {越往下\\越轻};
+\end{tikzpicture}
+\end{document}
