@@ -16,8 +16,10 @@ wait
 : > build/full/list.txt
 for j in 0 1 2 3; do echo "file 'seg$j.mp4'" >> build/full/list.txt; done
 ffmpeg -y -loglevel error -f concat -safe 0 -i build/full/list.txt -c copy build/full/video.mp4
-ffmpeg -y -loglevel error -i build/full/video.mp4 -i build/audio.wav -map 0:v -map 1:a \
-  -c:v libx264 -preset slow -crf 19 -maxrate 9M -bufsize 18M -profile:v high -pix_fmt yuv420p \
+# 两遍编码，平均 4.8 Mbps：成片约 48 MB（CRF 19 是 89 MB，SSIM 只高 0.01，主要差在颗粒）
+V=(-c:v libx264 -preset slow -b:v 4800k -maxrate 9000k -bufsize 12000k -profile:v high -pix_fmt yuv420p)
+ffmpeg -y -loglevel error -i build/full/video.mp4 "${V[@]}" -pass 1 -passlogfile build/x264 -an -f mp4 /dev/null
+ffmpeg -y -loglevel error -i build/full/video.mp4 -i build/audio.wav -map 0:v -map 1:a "${V[@]}" -pass 2 -passlogfile build/x264 \
   -color_primaries bt709 -color_trc bt709 -colorspace bt709 -movflags +faststart \
   -c:a aac -b:a 256k -ar 48000 -shortest ../成片/拆解宇树-宣传片.mp4
 ffprobe -v error -show_entries format=duration,size,bit_rate -of default=nw=1 ../成片/拆解宇树-宣传片.mp4
