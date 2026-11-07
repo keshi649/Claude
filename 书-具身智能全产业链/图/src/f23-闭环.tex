@@ -1,0 +1,18 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  st/.style={boxw, font=\tiny, minimum width=26mm, minimum height=10mm, align=center},
+  sd/.style={dark, font=\tiny, minimum width=26mm, minimum height=10mm, align=center},
+]
+  \def\R{26}
+  \node[sd] (a) at (90:\R) {在客户现场干活\\（MES、WMS 下发任务）};
+  \node[st] (b) at (30:\R) {检测失败\\（自己判断或监控发现）};
+  \node[st] (c) at (-30:\R) {自己重试\\或人工接管（现场、远程）};
+  \node[st] (d) at (-90:\R) {记录数据\\（含失败和人工纠正）};
+  \node[st] (e) at (-150:\R) {再训练、测试\\（仿真和真机）};
+  \node[st] (f) at (150:\R) {空中升级（OTA）\\推送新模型};
+  \foreach \p/\q in {a/b,b/c,c/d,d/e,e/f,f/a} {\draw[arr] (\p) to[bend left=14] (\q);}
+  \node[font=\tiny, text=mid, align=center] at (0,0) {关键指标：\\人工干预率\\能否持续下降};
+\end{tikzpicture}
+\end{document}
