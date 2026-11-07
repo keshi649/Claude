@@ -1,0 +1,41 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  n/.style={boxw, font=\tiny, inner sep=1.6pt, minimum height=8mm, text width=15mm},
+  nd/.style={box, font=\tiny, inner sep=1.6pt, minimum height=8mm, text width=15mm},
+  src/.style={font=\scriptsize\bfseries, text=ink, anchor=west},
+]
+  % 三条源头
+  \node[src] at (0,57) {① 静态稳定：零力矩点（日本）};
+  \node[n] (z1) at (9,49) {1968–72\\ZMP 判据};
+  \node[n] (z2) at (28,49) {1973\\WABOT-1};
+  \node[n] (z3) at (47,49) {1996\\本田 P2};
+  \node[n] (z4) at (66,49) {2000\\ASIMO};
+  \node[lbl, anchor=north] at (z4.south) {2018 年停止开发};
+  \draw[arr] (z1) -- (z2); \draw[arr] (z2) -- (z3); \draw[arr] (z3) -- (z4);
+
+  \node[src] at (0,37) {② 动态平衡：一直在倒、一直在接（美国）};
+  \node[n] (r1) at (9,29) {1983\\雷伯特\\单腿跳跃};
+  \node[n] (r2) at (28,29) {1992\\波士顿动力};
+  \node[n] (r3) at (47,29) {2005\\BigDog\\（液压）};
+  \node[n] (r4) at (66,29) {2013\\Atlas\\（液压）};
+  \node[n] (r5) at (85,29) {2019\\Spot\\（电动）};
+  \draw[arr] (r1) -- (r2); \draw[arr] (r2) -- (r3); \draw[arr] (r3) -- (r4); \draw[arr] (r4) -- (r5);
+
+  \node[src] at (0,17) {③ 便宜柔顺的关节＋仿真强化学习};
+  \node[n] (q1) at (9,9) {2015–18\\XDog、\\MIT Cheetah};
+  \node[n] (q2) at (28,9) {2018–19\\准直驱关节\\Mini Cheetah};
+  \node[n] (q3) at (47,9) {2019\\ANYmal\\仿真训练上真机};
+  \node[n] (q4) at (66,9) {2021\\legged\_gym\\几分钟学会走};
+  \node[n] (q5) at (85,9) {2022\\Cassie\\百米纪录};
+  \draw[arr] (q1) -- (q2); \draw[arr] (q2) -- (q3); \draw[arr] (q3) -- (q4); \draw[arr] (q4) -- (q5);
+
+  % 汇合
+  \node[dark, font=\scriptsize, text width=20mm, minimum height=30mm] (m) at (114,25) {2023–2026\\\vspace{1mm}低价四足、\\电动人形\\（Go2、G1、\\电动 Atlas 等）};
+  \draw[arr] (r5.east) -- (m.west |- r5);
+  \draw[arr] (q5.east) -- (m.west |- q5);
+  \draw[arr, mid, densely dotted] (z4.east) .. controls (98,49) and (100,40) .. (m.north west);
+  \node[lbl, anchor=south west] at (76,50.5) {步态规划思想保留};
+\end{tikzpicture}
+\end{document}

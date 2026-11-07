@@ -1,0 +1,34 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+% 横轴：2022-01 到 2024-12，每月 2.5 mm；节点左边缘对齐发布月份
+\pgfmathdeclarefunction{mo}{2}{\pgfmathparse{30+((#1-2022)*12+(#2-1))*2.5}}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  w/.style={boxw, font=\tiny, inner sep=1.1pt, minimum height=4.2mm, anchor=west, align=center},
+  rowl/.style={font=\tiny\bfseries, text=ink, anchor=east, align=right},
+]
+  \foreach \y/\n in {63/语言做规划,53/通用策略（探索与开放）,43/大规模真机多任务策略,33/视觉语言动作模型（VLA）,23/跨机器人数据集,13/动作生成方法,3/低成本采集与开放生态} {
+    \draw[pale, line width=9pt] (29,\y) -- (121,\y);
+    \node[rowl] at (28,\y) {\n};
+  }
+  \foreach \yr in {2022,2023,2024} {
+    \pgfmathsetmacro\xx{mo(\yr,1)}
+    \draw[soft] (\xx,-3) -- (\xx,68);
+    \node[font=\tiny, text=mid, anchor=north west] at (\xx,-3.2) {\yr};
+  }
+  % 节点：年、月、行内偏移（正上负下）、行、名字
+  \foreach \yr/\m/\dy/\y/\t in {
+      2022/4/2.3/63/SayCan, 2022/7/-2.3/63/Inner Monologue, 2022/9/2.3/63/Code as Policies,
+      2022/5/0/53/Gato, 2022/10/0/53/VIMA, 2024/5/0/53/Octo,
+      2022/12/0/43/RT-1,
+      2023/3/0/33/PaLM-E, 2023/7/0/33/RT-2, 2024/6/0/33/OpenVLA,
+      2023/10/2.3/23/Open X-Embodiment, 2024/3/-2.3/23/DROID,
+      2023/3/2.3/13/Diffusion Policy, 2023/4/-2.3/13/ACT,
+      2023/4/0/3/ALOHA, 2024/1/2.3/3/Mobile ALOHA, 2024/2/-2.3/3/UMI} {
+    \pgfmathsetmacro\xx{mo(\yr,\m)}
+    \node[w] at (\xx,\y+\dy) {\t};
+  }
+  \node[w] at ({mo(2024,5)},0.7) {LeRobot};
+  \node[font=\tiny, text=mid, anchor=west] at (29,-8.5) {每一行是一个层次：数据集、模型、方法和硬件各自演进、互相借用，不是一代接一代的升级。};
+\end{tikzpicture}
+\end{document}
