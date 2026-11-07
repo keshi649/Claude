@@ -1,0 +1,34 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  cellbg/.style={fill=pale, draw=white, line width=1pt, minimum width=22.5mm, minimum height=15mm},
+  co/.style={font=\tiny, text=ink, align=center},
+  hd/.style={font=\tiny\bfseries, text=ink, anchor=south, align=center},
+  rl/.style={font=\tiny\bfseries, text=ink, anchor=east, align=right},
+]
+  \foreach \i/\h in {0/模型优先\\（不造本体，见第 31 章）,1/本体与模型全栈,2/工业部署优先,3/制造与\\垂直整合优先,4/研究出身＋\\母公司场景} {
+    \node[hd] at ({22+\i*22.5},53) {\h};
+  }
+  \foreach \j/\r in {0/美国,1/中国,2/欧洲、日本、韩国} {\node[rl] at (9.8,{44-\j*15}) {\r};}
+  \foreach \i in {0,...,4} {\foreach \j in {0,1,2} {\node[cellbg] at ({22+\i*22.5},{44-\j*15}) {};}}
+  % 美国
+  \node[co] at (22,44) {Physical Intelligence\\Skild AI\\Generalist AI};
+  \node[co] at (44.5,44) {Figure\\1X};
+  \node[co] at (67,44) {Agility\\Apptronik};
+  \node[co] at (89.5,44) {特斯拉};
+  \node[co] at (112,44) {波士顿动力\\（现代汽车集团）};
+  % 中国
+  \node[co] at (22,29) {（各家多自研模型；\\宇树、智元开源）};
+  \node[co] at (44.5,29) {智元\\银河通用等};
+  \node[co] at (67,29) {优必选};
+  \node[co] at (89.5,29) {宇树\\小鹏、小米等车企};
+  \node[co] at (112,29) {—};
+  % 欧日韩
+  \node[co] at (22,14) {—};
+  \node[co] at (44.5,14) {Neura Robotics};
+  \node[co] at (67,14) {ANYbotics（四足）};
+  \node[co] at (89.5,14) {—};
+  \node[co] at (112,14) {三星（Rainbow\\Robotics）};
+\end{tikzpicture}
+\end{document}
