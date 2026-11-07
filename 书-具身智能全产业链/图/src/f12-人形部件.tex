@@ -1,0 +1,62 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  bone/.style={line width=3.2pt, ink, line cap=round},
+  jt/.style={circle, draw=ink, fill=white, line width=0.8pt, inner sep=1.5pt},
+  jl/.style={rectangle, draw=ink, fill=soft, line width=0.6pt, minimum width=2.6mm, minimum height=4mm, inner sep=0pt},
+  call/.style={font=\tiny, text=ink, align=left, text width=32mm, inner sep=1pt},
+  callr/.style={font=\tiny, text=ink, align=left, text width=33mm, inner sep=1pt},
+  ln/.style={mid, thin},
+]
+  \def\cx{66}
+  % 头
+  \draw[ink, line width=0.9pt, fill=pale] (\cx,86) ellipse (5 and 6);
+  \fill[ink] (\cx-2.5,87) rectangle (\cx+2.5,88.6);
+  % 躯干
+  \draw[ink, line width=0.9pt, fill=pale, rounded corners=2pt] (\cx-9,52) rectangle (\cx+9,78);
+  \draw[ink, fill=white] (\cx-6,58) rectangle (\cx+6,67); \node[font=\tiny] at (\cx,62.5) {电池};
+  \draw[ink, fill=white] (\cx-6,69) rectangle (\cx+6,75); \node[font=\tiny] at (\cx,72) {计算};
+  % 腰
+  \node[jt] (waist) at (\cx,50) {};
+  % 手臂
+  \draw[bone] (\cx-9,76) -- (\cx-16,62) -- (\cx-19,48);
+  \draw[bone] (\cx+9,76) -- (\cx+16,62) -- (\cx+19,48);
+  \node[jt] (ls) at (\cx-9,76) {}; \node[jt] (le) at (\cx-16,62) {}; \node[jt] (lw) at (\cx-19,48) {};
+  \node[jt] (rs) at (\cx+9,76) {}; \node[jt] (re) at (\cx+16,62) {}; \node[jt] (rw) at (\cx+19,48) {};
+  % 手
+  \draw[ink, line width=0.9pt, fill=pale] (\cx+19,44.5) ellipse (2.4 and 3.2);
+  \foreach \dx in {-1.6,-0.5,0.6,1.7} {\draw[ink, line width=0.9pt, line cap=round] (\cx+19+\dx,42) -- (\cx+19+\dx*1.2,38.8);}
+  \draw[ink, line width=0.9pt, fill=pale] (\cx-19,44.5) ellipse (2.4 and 3.2);
+  % 腿
+  \draw[bone] (\cx-5,50) -- (\cx-6,30) -- (\cx-6,8);
+  \draw[bone] (\cx+5,50) -- (\cx+6,30) -- (\cx+6,8);
+  \node[jt] at (\cx-5,50) {}; \node[jt] at (\cx+5,50) {};
+  \node[jt] at (\cx-6,30) {}; \node[jt] at (\cx+6,30) {};
+  \node[jl] at (\cx-8.6,40) {}; \node[jl] at (\cx+8.6,40) {};
+  \node[jt] at (\cx-6,8) {}; \node[jt] at (\cx+6,8) {};
+  \fill[ink] (\cx-11,3) rectangle (\cx-2,6); \fill[ink] (\cx+2,3) rectangle (\cx+11,6);
+  \draw[soft] (20,2.5) -- (112,2.5);
+
+  % 左侧标注
+  \node[call, anchor=east] (c1) at (36,88) {\textbf{头}：RGB 摄像头、深度相机，有的加激光雷达和麦克风};
+  \draw[ln] (c1.east) -- (\cx-5.2,87);
+  \node[call, anchor=east] (c2) at (36,70) {\textbf{躯干}：电池（续航 2–5 小时），主控计算机，惯性测量单元};
+  \draw[ln] (c2.east) -- (\cx-9.2,70);
+  \node[call, anchor=east] (c3) at (36,51) {\textbf{腰}：1–3 个旋转关节，转身、弯腰};
+  \draw[ln] (c3.east) -- (waist.west);
+  \node[call, anchor=east] (c4) at (36,36) {\textbf{髋、膝、踝}：大扭矩旋转关节；部分机型的腿用直线关节（电机＋行星滚柱丝杠，图中方块）};
+  \draw[ln] (c4.east) -- (\cx-9.9,40);
+  \node[call, anchor=east] (c5) at (36,13) {\textbf{脚}：足底力传感器，判断着地和受力};
+  \draw[ln] (c5.east) -- (\cx-10,5);
+
+  % 右侧标注
+  \node[callr, anchor=west] (d1) at (92,76) {\textbf{肩、肘}：旋转关节＝电机＋减速器（谐波或行星）＋编码器＋驱动器，一条手臂通常 7 个};
+  \draw[ln] (d1.west) -- (\cx+9.8,76);
+  \node[callr, anchor=west] (d2) at (92,58) {\textbf{腕}：2–3 个小关节};
+  \draw[ln] (d2.west) -- (\cx+19.8,48.5);
+  \node[callr, anchor=west] (d3) at (92,42) {\textbf{手}：每只 6 到 20 多个自由度；微型电机、连杆或腱绳；指尖和手掌的触觉传感器。最贵也最容易坏的部分};
+  \draw[ln] (d3.west) -- (\cx+21.6,43);
+  \node[callr, anchor=west] (d4) at (92,20) {\textbf{合计}：不算手，全身 25–35 个关节左右；算上两只手可到 50 个以上。比较前先问算没算手};
+\end{tikzpicture}
+\end{document}

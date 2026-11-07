@@ -1,0 +1,71 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  link/.style={line width=2.6pt, ink, line cap=round},
+  thin/.style={line width=1.2pt, ink, line cap=round},
+  jt/.style={circle, draw=ink, fill=white, line width=0.8pt, inner sep=1.4pt},
+  base/.style={fill=mid, draw=none},
+  capt/.style={font=\scriptsize\bfseries, text=ink, anchor=north},
+  sub/.style={font=\tiny, text=mid, anchor=north, align=center, text width=29mm},
+  rot/.style={-{Stealth[length=1.3mm]}, mid, semithick},
+]
+  % 地面
+  \draw[soft] (-2,0) -- (130,0);
+
+  % ① 六轴关节臂
+  \begin{scope}[shift={(15,0)}]
+    \fill[base] (-6,0) rectangle (6,3);
+    \draw[link] (0,3) -- (0,10);
+    \draw[link] (0,10) -- (8,24);
+    \draw[link] (8,24) -- (20,20);
+    \draw[thin] (20,20) -- (23,15);
+    \draw[thin] (21.5,13.5) -- (23,15) -- (24.5,13.5);
+    \node[jt] at (0,10) {}; \node[jt] at (8,24) {}; \node[jt] at (20,20) {}; \node[jt] at (23,15) {};
+    \draw[rot] (-4,6) arc (200:340:4 and 1.4);
+    \node[capt] at (7,-2) {六轴关节臂};
+    \node[sub] at (7,-6) {通用；焊接、搬运、喷涂\\负载几公斤到上千公斤};
+  \end{scope}
+
+  % ② SCARA
+  \begin{scope}[shift={(47,0)}]
+    \fill[base] (-5,0) rectangle (5,3);
+    \draw[link] (0,3) -- (0,20);
+    \draw[link] (0,20) -- (12,20);
+    \draw[link] (12,20) -- (22,20);
+    \draw[thin] (22,20) -- (22,9);
+    \node[jt] at (0,20) {}; \node[jt] at (12,20) {};
+    \draw[rot] (8,23.5) arc (160:20:4 and 1.2);
+    \draw[rot] (18,23.5) arc (160:20:3 and 1);
+    \draw[{Stealth[length=1.3mm]}-{Stealth[length=1.3mm]}, mid, semithick] (25,10) -- (25,17);
+    \node[capt] at (9,-2) {SCARA};
+    \node[sub] at (9,-6) {水平面上快而准\\电子装配、拧螺丝};
+  \end{scope}
+
+  % ③ Delta 并联臂
+  \begin{scope}[shift={(80,0)}]
+    \fill[base] (-9,27) rectangle (9,30);
+    \foreach \a/\b in {-7/-2.2, 0/0, 7/2.2} {
+      \draw[link] (\a,27) -- ({\a*0.75},19);
+      \draw[thin] ({\a*0.75},19) -- (\b,8);
+      \node[jt] at ({\a*0.75},19) {};
+    }
+    \draw[ink, fill=pale, line width=0.8pt] (-3,6.5) rectangle (3,8.5);
+    \node[capt] at (0,-2) {Delta 并联臂};
+    \node[sub] at (0,-6) {电机都在顶上，运动部分极轻\\包装线上的高速分拣};
+  \end{scope}
+
+  % ④ 协作臂
+  \begin{scope}[shift={(108,0)}]
+    \fill[base] (-4,0) rectangle (4,2.5);
+    \draw[line width=3.4pt, mid, line cap=round] (0,2.5) -- (0,9) -- (6,19) -- (14,16);
+    \draw[thin] (14,16) -- (15.5,11);
+    \foreach \p in {(0,9),(6,19),(14,16)} {\node[jt] at \p {};}
+    % 人
+    \draw[ink, line width=0.9pt] (22,24) circle (2);
+    \draw[ink, line width=1.6pt, line cap=round] (22,21.5) -- (22,11) (22,11) -- (20,0.5) (22,11) -- (24,0.5) (22,19) -- (16.5,13.5) (22,19) -- (25,13);
+    \node[capt] at (8,-2) {协作臂};
+    \node[sub] at (8,-6) {关节测力、碰到就停、可手拖示教\\不用围栏，和人同处};
+  \end{scope}
+\end{tikzpicture}
+\end{document}
