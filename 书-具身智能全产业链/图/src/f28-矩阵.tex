@@ -1,0 +1,43 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  c/.style={minimum width=19.5mm, minimum height=7mm, draw=white, line width=0.9pt, inner sep=0pt, font=\tiny, align=center},
+  rl/.style={font=\tiny\bfseries, text=ink, anchor=east, align=right},
+  hd/.style={font=\tiny\bfseries, text=ink, anchor=south, align=center},
+]
+  \definecolor{sM}{gray}{0.22}
+  \definecolor{sL}{gray}{0.45}
+  \definecolor{sP}{gray}{0.68}
+  \definecolor{sD}{gray}{0.84}
+  \definecolor{sR}{gray}{0.93}
+  \definecolor{sN}{gray}{1.0}
+  \tikzset{tM/.style={fill=sM, text=white}, tL/.style={fill=sL, text=white}, tP/.style={fill=sP, text=ink},
+           tD/.style={fill=sD, text=ink}, tR/.style={fill=sR, text=ink}, tN/.style={fill=sN, text=ink}}
+  \foreach \i/\h in {0/机械臂,1/轮式移动\\（AMR、扫地等）,2/四足、轮足,3/人形\\（含轮式半人形）,4/专用机械、\\无人机等} {\node[hd] at ({30+\i*20},71) {\h};}
+  % 每行：名字 / 五列的阶段（M L P D R N）/ 五列的说明
+  \foreach \r/\n/\a/\b/\cc/\d/\e/\ta/\tb/\tc/\td/\te in {
+      0/汽车和电子制造/M/M/N/P/M/规模运营/规模运营/—/试点/数控等专用设备,
+      1/仓储物流/M/M/N/L/M/拣选、卸货臂/货到人/—/少量生产作业/立体仓等,
+      2/电力化工巡检/N/M/L/R/M/—/轮式巡检/近两千台 Spot 等/研究/巡检无人机,
+      3/矿山/N/N/N/N/M/—/—/—/—/无人驾驶矿卡,
+      4/农业/P/N/N/N/M/采摘试点/—/—/—/自动导航农机、植保,
+      5/建筑/P/P/L/R/P/钻孔等试点/放样等试点/工地扫描/研究/专用施工机器人,
+      6/医疗/N/L/N/R/M/—/医院物流/—/研究/手术机器人,
+      7/商业服务/N/M/L/L/N/—/送餐、导览/表演/展示、导览/—,
+      8/家庭/N/M/L/D/N/—/扫地、割草/消费级四足/演示、预订/—} {
+    \pgfmathsetmacro\yy{64-\r*7}
+    \node[rl] at (18.8,\yy) {\n};
+    \node[c, t\a] at (30,\yy) {\ta};
+    \node[c, t\b] at (50,\yy) {\tb};
+    \node[c, t\cc] at (70,\yy) {\tc};
+    \node[c, t\d] at (90,\yy) {\td};
+    \node[c, t\e] at (110,\yy) {\te};
+  }
+  % 图例
+  \foreach \k/\s/\t/\w in {0/M/规模运营/0,1/L/交付（生产作业为主）/14,2/P/试点/41,3/D/演示、测试/57,4/R/研究/79,5/N/少见或不适用/95} {
+    \node[c, fill=s\s, draw=mid, line width=0.3pt, minimum width=4mm, minimum height=3.2mm] at ({22+\w},2) {};
+    \node[font=\tiny, anchor=west] at ({24.6+\w},2) {\t};
+  }
+\end{tikzpicture}
+\end{document}
