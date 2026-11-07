@@ -1,0 +1,16 @@
+{
+  "name": "style-samples",
+  "private": true,
+  "type": "module",
+  "description": "风格样张：每种视频风格的一帧示例，用 HTML/SVG/Canvas/WebGL 画，Playwright 截图",
+  "dependencies": {
+    "@fontsource/noto-serif-sc": "5.3.1",
+    "@fontsource/noto-sans-sc": "5.3.1",
+    "@fontsource/ma-shan-zheng": "5.3.1",
+    "@fontsource/zcool-kuaile": "5.3.0",
+    "@fontsource/long-cang": "5.3.0",
+    "@fontsource/lxgw-wenkai": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@fontsource/playfair-display": "5.3.0"
+  }
+}

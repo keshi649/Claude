@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>风格样张总览</title>
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/900.css">
+<style>
+  html, body { margin: 0; background: #efebe4; font-family: "Noto Sans SC", sans-serif; color: #1d1b18; }
+  .wrap { width: 1560px; height: 1640px; box-sizing: border-box; padding: 56px 40px 0; }
+  h1 { margin: 0 0 6px; font-size: 52px; font-weight: 900; letter-spacing: 1px; }
+  .sub { margin: 0 0 40px; font-size: 24px; color: #6b655c; }
+  .grid { display: grid; grid-template-columns: repeat(4, 340px); gap: 40px 40px; }
+  figure { margin: 0; }
+  img { width: 340px; height: 604px; display: block; border-radius: 14px; box-shadow: 0 10px 28px rgba(40,30,20,0.22); }
+  figcaption { margin-top: 14px; }
+  .n { font-size: 26px; font-weight: 900; }
+  .ep { font-size: 19px; color: #6b655c; margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>镜头拍不到的东西 · 8 种画法</h1>
+  <p class="sub">每张都是用代码逐帧画出来的竖屏画面（1080×1920），同一套方法可以直接出片</p>
+  <div class="grid" id="g"></div>
+</div>
+<script>
+const items = [
+  ['01-蓝图拆解', '蓝图拆解', '拉链为什么一拉就合上？'],
+  ['02-水墨国风', '水墨国风', '一千四百年前的石桥为什么还没塌？'],
+  ['03-微观发光', '微观发光', '咖啡为什么让你不困？'],
+  ['04-等距剖面', '等距剖面', '冲完马桶，水去哪了？'],
+  ['05-杂志信息图', '杂志信息图', '如果地球只活了一天'],
+  ['06-剪纸分层', '剪纸分层', '候鸟凭什么不迷路？'],
+  ['07-电影感宇宙', '电影感宇宙', '掉进黑洞会看到什么？'],
+  ['08-孔版颗粒插画', '孔版颗粒插画', '为什么洗澡时最容易想到好点子？'],
+];
+const g = document.getElementById('g');
+let left = items.length;
+for (const [file, name, ep] of items) {
+  const f = document.createElement('figure');
+  f.innerHTML = `<img src="out/${file}.png"><figcaption><div class="n">${file.slice(0, 2)} ${name}</div><div class="ep">${ep}</div></figcaption>`;
+  f.querySelector('img').onload = () => { if (--left === 0) document.fonts.ready.then(() => { window.__done = true; }); };
+  g.appendChild(f);
+}
+</script>
+</body>
+</html>

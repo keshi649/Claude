@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>微观发光 · 咖啡因</title>
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/300.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/900.css">
+<link rel="stylesheet" href="node_modules/@fontsource/ibm-plex-mono/500.css">
+<style>html,body{margin:0;background:#02060f} canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+const W = 1080, H = 1920;
+const cv = document.getElementById('c'), MAIN = cv.getContext('2d', { willReadFrequently: true });
+let ctx = MAIN;
+// 在一张离屏画布上画完，再整张模糊一次叠回来（比每一笔都模糊快得多）
+function withLayer(blur, fn, op = 'lighter') {
+  const off = document.createElement('canvas'); off.width = W; off.height = H;
+  ctx = off.getContext('2d', { willReadFrequently: true }); fn(); ctx = MAIN;
+  MAIN.save(); MAIN.globalCompositeOperation = op; if (blur) MAIN.filter = `blur(${blur}px)`; MAIN.drawImage(off, 0, 0); MAIN.restore();
+}
+const fontsReady = Promise.all([
+  document.fonts.load('900 112px "Noto Sans SC"', '咖啡为什么让你不困？'),
+  document.fonts.load('500 38px "Noto Sans SC"', '它没给你能量，只是堵住了“困”的开关'),
+  document.fonts.load('300 24px "Noto Sans SC"', '醒着越久，攒得越多长得像腺苷占着位置却不开门'),
+  document.fonts.load('500 30px "Noto Sans SC"', '腺苷咖啡因受体醒着越久攒得越多长得像占住位置不开门神经元突触咖啡因长得像腺苷，抢先占住受体，大脑就收不到“该困了”的信号'),
+  document.fonts.load('500 22px "IBM Plex Mono"', 'SYNAPSE x 0123456789'),
+]);
+let seed = 20261107;
+function rnd() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
+const TAU = Math.PI * 2;
+
+/* ---------- 背景 ---------- */
+{
+  const g = ctx.createRadialGradient(540, 820, 50, 540, 900, 1250);
+  g.addColorStop(0, '#0b2446'); g.addColorStop(0.45, '#061630'); g.addColorStop(1, '#010409');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+function glowDot(x, y, r, col, a) {
+  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+  g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(0.35, `rgba(${col},${a * 0.45})`); g.addColorStop(1, `rgba(${col},0)`);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+}
+function bokeh(x, y, r, col, a) {
+  const g = ctx.createRadialGradient(x, y, r * 0.2, x, y, r);
+  g.addColorStop(0, `rgba(${col},${a * 0.55})`); g.addColorStop(0.82, `rgba(${col},${a * 0.75})`); g.addColorStop(0.93, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`);
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+}
+
+/* ---------- 神经元：递归分叉 ---------- */
+function grow(x, y, ang, len, w, depth, out) {
+  const pts = [[x, y]];
+  let a = ang, px = x, py = y;
+  const steps = Math.max(6, Math.round(len / 9));
+  for (let i = 0; i < steps; i++) { a += (rnd() - 0.5) * 0.35; px += Math.cos(a) * len / steps; py += Math.sin(a) * len / steps; pts.push([px, py]); }
+  out.push({ pts, w0: w, w1: w * 0.62, depth });
+  if (depth <= 0 || w < 1.1) return;
+  const kids = depth > 2 ? 2 : (rnd() < 0.7 ? 2 : 1);
+  for (let k = 0; k < kids; k++) {
+    const da = (k === 0 ? -1 : 1) * (0.32 + rnd() * 0.45);
+    grow(px, py, a + da, len * (0.62 + rnd() * 0.2), w * 0.62, depth - 1, out);
+  }
+}
+function neuron(cx, cy, r, arms, opts) {
+  const segs = [];
+  for (let i = 0; i < arms; i++) {
+    const a = opts.angles ? opts.angles[i] : i / arms * TAU + rnd() * 0.5;
+    const k = opts.lens ? opts.lens[i] : 1;
+    grow(cx + Math.cos(a) * r * 0.8, cy + Math.sin(a) * r * 0.8, a, opts.len * k * (0.7 + rnd() * 0.5), opts.w, opts.depth, segs);
+  }
+  return segs;
+}
+function strokeSegs(segs, col, core, scale = 1) {
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const pass of [[3.6, 0.07], [2.0, 0.16], [1.0, 0.5], [0.45, 0.9]]) {
+    for (const s of segs) {
+      const n = s.pts.length;
+      for (let i = 1; i < n; i++) {
+        const t = i / n, w = (s.w0 + (s.w1 - s.w0) * t) * scale;
+        ctx.strokeStyle = pass[0] < 0.5 ? `rgba(${core},${pass[1]})` : `rgba(${col},${pass[1]})`;
+        ctx.lineWidth = Math.max(0.6, w * pass[0]);
+        ctx.beginPath(); ctx.moveTo(s.pts[i - 1][0], s.pts[i - 1][1]); ctx.lineTo(s.pts[i][0], s.pts[i][1]); ctx.stroke();
+      }
+    }
+  }
+  ctx.restore();
+}
+function soma(x, y, r, col, core) {
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  glowDot(x, y, r * 3.2, col, 0.22);
+  glowDot(x, y, r * 1.5, col, 0.55);
+  glowDot(x + r * 0.15, y - r * 0.1, r * 0.75, core, 0.8);
+  ctx.restore();
+}
+
+// 远处虚焦的神经元
+withLayer(7, () => {
+  for (const [x, y, s, col] of [[880, 330, 0.8, '120,110,255'], [140, 1180, 0.9, '60,200,255'], [960, 1500, 0.7, '170,90,255'], [180, 420, 0.6, '80,150,255']]) {
+    const segs = neuron(x, y, 30 * s, 6, { len: 210 * s, w: 7 * s, depth: 3 });
+    strokeSegs(segs, col, '200,220,255', 0.9);
+    soma(x, y, 30 * s, col, '220,230,255');
+  }
+});
+// 散景
+const bk = [];
+for (let k = 0; k < 70; k++) bk.push([rnd() * W, rnd() * H, 6 + Math.pow(rnd(), 2.5) * 60, ['70,220,255', '255,90,200', '255,180,80', '120,140,255'][Math.floor(rnd() * 4)], rnd()]);
+withLayer(3, () => { for (const [x, y, r, col, a] of bk) if (r > 26) bokeh(x, y, r, col, 0.07 + a * 0.06); });
+withLayer(0, () => { for (const [x, y, r, col, a] of bk) if (r <= 26) glowDot(x, y, r, col, 0.25 + a * 0.3); });
+
+// 主神经元（清晰）
+const SX = 330, SY = 850;
+{
+  const segs = neuron(SX, SY, 48, 7, { len: 170, w: 12, depth: 4, angles: [-2.75, -2.0, -1.25, -0.5, 2.2, 2.8, 1.65], lens: [0.85, 0.62, 0.62, 0.8, 1, 1, 0.9] });
+  // 轴突：往右下伸到突触
+  const ax = []; let x = SX + 40, y = SY + 22, a = 0.42;
+  for (let i = 0; i < 60; i++) { a += (rnd() - 0.5) * 0.12 + (Math.atan2(985 - y, 790 - x) - a) * 0.08; x += Math.cos(a) * 8.5; y += Math.sin(a) * 8.5; ax.push([x, y]); if (Math.hypot(790 - x, 985 - y) < 10) break; }
+  segs.push({ pts: [[SX + 30, SY + 15]].concat(ax), w0: 9, w1: 5, depth: 0 });
+  // 树突上的小刺
+  const spines = [];
+  for (const s of segs) if (s.depth >= 1) for (let i = 2; i < s.pts.length; i += 2) {
+    if (rnd() < 0.5) continue;
+    const [px, py] = s.pts[i], [qx, qy] = s.pts[i - 1], a2 = Math.atan2(py - qy, px - qx) + (rnd() < 0.5 ? 1.4 : -1.4), l = 6 + rnd() * 8;
+    spines.push({ pts: [[px, py], [px + Math.cos(a2) * l, py + Math.sin(a2) * l]], w0: 1.6, w1: 1.2, depth: 0 });
+  }
+  strokeSegs(segs, '50,215,255', '225,250,255', 1);
+  strokeSegs(spines, '50,215,255', '225,250,255', 1);
+  soma(SX, SY, 46, '50,215,255', '235,252,255');
+  // 另一个神经元的树突从右边伸过来
+  const other = [];
+  grow(1110, 760, Math.PI * 0.82, 240, 10, 3, other);
+  let ox = 1100, oy = 1130, oa = -2.55; const op = [[ox, oy]];
+  for (let i = 0; i < 26; i++) { oa += (rnd() - 0.5) * 0.15 + (Math.atan2(992 - oy, 800 - ox) - oa) * 0.1; ox += Math.cos(oa) * 12; oy += Math.sin(oa) * 12; op.push([ox, oy]); if (Math.hypot(800 - ox, 992 - oy) < 12) break; }
+  other.push({ pts: op, w0: 11, w1: 7, depth: 0 });
+  strokeSegs(other, '150,120,255', '235,225,255', 1);
+}
+// 突触亮点
+const SYN = [800, 990];
+ctx.save(); ctx.globalCompositeOperation = 'lighter';
+glowDot(SYN[0], SYN[1], 70, '255,120,210', 0.35); glowDot(SYN[0], SYN[1], 22, '255,230,250', 0.9);
+ctx.restore();
+
+/* ---------- 放大圈：受体、咖啡因、腺苷 ---------- */
+const IX = 520, IY = 1300, IR = 262;
+// 放大连线
+{
+  const d = Math.hypot(IX - SYN[0], IY - SYN[1]), base = Math.atan2(IY - SYN[1], IX - SYN[0]), off = Math.asin(IR / d);
+  ctx.save(); ctx.strokeStyle = 'rgba(160,230,255,0.45)'; ctx.lineWidth = 1.5; ctx.setLineDash([8, 7]);
+  for (const s of [-1, 1]) { const a = base + s * off, l = Math.sqrt(d * d - IR * IR);
+    ctx.beginPath(); ctx.moveTo(SYN[0] + Math.cos(a) * 26, SYN[1] + Math.sin(a) * 26); ctx.lineTo(SYN[0] + Math.cos(a) * l, SYN[1] + Math.sin(a) * l); ctx.stroke(); }
+  ctx.restore();
+  ctx.save(); ctx.strokeStyle = 'rgba(255,200,240,0.9)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(SYN[0], SYN[1], 26, 0, TAU); ctx.stroke(); ctx.restore();
+}
+ctx.save();
+ctx.beginPath(); ctx.arc(IX, IY, IR, 0, TAU); ctx.clip();
+{
+  const g = ctx.createRadialGradient(IX, IY - 80, 20, IX, IY, IR);
+  g.addColorStop(0, '#10264a'); g.addColorStop(1, '#040b1a');
+  ctx.fillStyle = g; ctx.fillRect(IX - IR, IY - IR, IR * 2, IR * 2);
+}
+ctx.globalCompositeOperation = 'lighter';
+for (let k = 0; k < 40; k++) glowDot(IX + (rnd() - 0.5) * 2 * IR, IY + (rnd() - 0.5) * 2 * IR, 2 + rnd() * 5, '150,200,255', 0.2 + rnd() * 0.3);
+// 细胞膜：两层磷脂
+const memY = x => IY + 70 + Math.pow((x - IX) / IR, 2) * 40;
+for (const [dy, sc] of [[0, 1], [64, 1]]) {
+  for (let x = IX - IR - 10; x < IX + IR + 10; x += 15) {
+    const y = memY(x) + dy;
+    glowDot(x, y, 11, '120,130,255', 0.32);
+    ctx.fillStyle = 'rgba(190,200,255,0.55)'; ctx.beginPath(); ctx.arc(x, y, 5.2, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(150,160,255,0.22)'; ctx.lineWidth = 1.5;
+    const dir = dy ? -1 : 1;
+    for (const o of [-2.5, 2.5]) { ctx.beginPath(); ctx.moveTo(x + o, y + dir * 6); ctx.quadraticCurveTo(x + o * 2, y + dir * 18, x + o, y + dir * 27); ctx.stroke(); }
+  }
+}
+// 受体（七根螺旋围成一个口袋）
+function receptor(x, scale, occupied) {
+  const top = memY(x) - 58 * scale, bot = memY(x) + 92 * scale;
+  const pos = [-3, -2, -1, 0, 1, 2, 3];
+  for (const i of pos) {
+    const hx = x + i * 15 * scale, depthK = 1 - Math.abs(i) / 5;
+    const ht = top + Math.abs(i) * -6 * scale + (i === 0 ? 26 * scale : 0);
+    const grd = ctx.createLinearGradient(hx - 8 * scale, 0, hx + 8 * scale, 0);
+    grd.addColorStop(0, 'rgba(40,200,255,0.05)'); grd.addColorStop(0.5, `rgba(90,230,255,${0.32 * (0.6 + depthK * 0.5)})`); grd.addColorStop(1, 'rgba(40,200,255,0.05)');
+    ctx.fillStyle = grd;
+    const rr = 8 * scale; ctx.beginPath(); ctx.roundRect(hx - rr, ht, rr * 2, bot - ht, rr); ctx.fill();
+    ctx.strokeStyle = `rgba(150,240,255,${0.5 * (0.6 + depthK * 0.4)})`; ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.roundRect(hx - rr, ht, rr * 2, bot - ht, rr); ctx.stroke();
+    // 螺旋纹
+    ctx.strokeStyle = `rgba(180,245,255,${0.25 * depthK + 0.1})`; ctx.lineWidth = 1;
+    for (let y = ht + 8 * scale; y < bot - 4; y += 9 * scale) { ctx.beginPath(); ctx.moveTo(hx - rr * 0.8, y); ctx.lineTo(hx + rr * 0.8, y + 5 * scale); ctx.stroke(); }
+  }
+  // 口袋
+  glowDot(x, top + 18 * scale, 42 * scale, occupied ? '255,80,190' : '80,230,255', occupied ? 0.4 : 0.25);
+  return [x, top + 10 * scale];
+}
+// 分子：嘌呤骨架
+function purine(ox, oy, s, rot, col, kind) {
+  const P = (x, y) => [ox + (x * Math.cos(rot) - y * Math.sin(rot)) * s, oy + (x * Math.sin(rot) + y * Math.cos(rot)) * s];
+  const hex = [30, 90, 150, 210, 270, 330].map(a => [Math.cos(a * Math.PI / 180), Math.sin(a * Math.PI / 180)]);
+  const pc = [0.866 + 0.688, 0], R5 = 0.8507;
+  const pent = [216, 144, 72, 0, -72].map(a => [pc[0] + R5 * Math.cos(a * Math.PI / 180), R5 * Math.sin(a * Math.PI / 180)]);
+  const bonds = [];
+  for (let i = 0; i < 6; i++) bonds.push([hex[i], hex[(i + 1) % 6]]);
+  for (let i = 1; i < 5; i++) bonds.push([pent[i], pent[(i + 1) % 5]]);
+  const atomsN = [hex[1], hex[3], pent[2], pent[4]];   // N3 N1 N9 N7
+  const atomsO = [];
+  const sub = (p, a, l = 0.95) => { const q = [p[0] + Math.cos(a) * l, p[1] + Math.sin(a) * l]; bonds.push([p, q]); return q; };
+  let extra = [];
+  if (kind === 'caffeine') {
+    atomsO.push(sub(hex[2], 150 * Math.PI / 180), sub(hex[4], -Math.PI / 2));            // C2=O, C6=O
+    sub(hex[3], 210 * Math.PI / 180); sub(hex[1], Math.PI / 2); sub(pent[4], -72 * Math.PI / 180);  // 三个甲基
+  } else {
+    atomsN.push(sub(hex[4], -Math.PI / 2));                                             // C6-NH2
+    const c1 = sub(pent[2], 72 * Math.PI / 180, 1.0);                                   // N9-C1'
+    // 核糖：五元环
+    const rc = [c1[0] + 0.55, c1[1] + 0.78], rR = 0.85;
+    const ring = [0, 1, 2, 3, 4].map(k => [rc[0] + rR * Math.cos((-126 + k * 72) * Math.PI / 180), rc[1] + rR * Math.sin((-126 + k * 72) * Math.PI / 180)]);
+    ring[0] = c1;
+    for (let k = 0; k < 5; k++) bonds.push([ring[k], ring[(k + 1) % 5]]);
+    atomsO.push(ring[1]);
+    atomsO.push(sub(ring[3], 120 * Math.PI / 180, 0.8), sub(ring[4], 40 * Math.PI / 180, 0.8));
+    const c5 = sub(ring[2], 0, 0.9); atomsO.push(sub(c5, -60 * Math.PI / 180, 0.8));
+  }
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+  for (const [w, a] of [[9, 0.08], [5, 0.18], [2.4, 0.9]]) {
+    ctx.strokeStyle = w < 3 ? `rgba(255,245,250,${a})` : `rgba(${col},${a})`; ctx.lineWidth = w;
+    for (const [p, q] of bonds) { const A = P(...p), B = P(...q); ctx.beginPath(); ctx.moveTo(A[0], A[1]); ctx.lineTo(B[0], B[1]); ctx.stroke(); }
+  }
+  for (const a of atomsN) { const [x, y] = P(...a); glowDot(x, y, 10, '110,170,255', 0.9); }
+  for (const a of atomsO) { const [x, y] = P(...a); glowDot(x, y, 10, '255,90,110', 0.9); }
+  const c = P(0.8, 0); glowDot(c[0], c[1], s * 3.2, col, 0.22);
+  ctx.restore();
+}
+const r1 = receptor(IX - 20, 1.05, true);
+const r2 = receptor(IX + 175, 0.82, true);
+const r3 = receptor(IX - 215, 0.82, false);
+purine(r1[0] - 27, r1[1] - 10, 18, -0.15, '255,70,190', 'caffeine');
+purine(r2[0] - 16, r2[1] - 4, 12, 0.25, '255,70,190', 'caffeine');
+// 腺苷：飘在上面，被弹开
+purine(IX - 150, IY - 160, 17, 0.5, '255,170,60', 'adenosine');
+purine(IX + 110, IY - 190, 12, -0.6, '255,170,60', 'adenosine');
+// 弹开的轨迹
+ctx.save(); ctx.strokeStyle = 'rgba(255,190,90,0.7)'; ctx.lineWidth = 2.2; ctx.setLineDash([3, 9]); ctx.lineCap = 'round';
+ctx.beginPath(); ctx.moveTo(IX - 125, IY - 112); ctx.quadraticCurveTo(IX - 60, IY - 40, IX - 40, IY - 10 + 0); ctx.stroke();
+ctx.beginPath(); ctx.moveTo(IX - 40, IY - 14); ctx.quadraticCurveTo(IX - 10, IY - 70, IX + 30, IY - 120); ctx.stroke();
+ctx.restore();
+ctx.restore();   // 结束裁切
+
+// 放大圈的边框 + 刻度
+ctx.save(); ctx.globalCompositeOperation = 'lighter';
+ctx.strokeStyle = 'rgba(140,225,255,0.85)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(IX, IY, IR, 0, TAU); ctx.stroke();
+ctx.strokeStyle = 'rgba(140,225,255,0.25)'; ctx.lineWidth = 14; ctx.beginPath(); ctx.arc(IX, IY, IR + 4, 0, TAU); ctx.stroke();
+for (let k = 0; k < 120; k++) { const a = k / 120 * TAU, l = k % 10 ? 8 : 18;
+  ctx.strokeStyle = `rgba(160,230,255,${k % 10 ? 0.35 : 0.8})`; ctx.lineWidth = k % 10 ? 1 : 2;
+  ctx.beginPath(); ctx.moveTo(IX + Math.cos(a) * (IR + 10), IY + Math.sin(a) * (IR + 10)); ctx.lineTo(IX + Math.cos(a) * (IR + 10 + l), IY + Math.sin(a) * (IR + 10 + l)); ctx.stroke(); }
+ctx.restore();
+
+fontsReady.then(() => {
+  ctx.save();
+  { const g = ctx.createLinearGradient(0, 0, 0, 600); g.addColorStop(0, 'rgba(2,7,18,0.92)'); g.addColorStop(0.7, 'rgba(2,7,18,0.6)'); g.addColorStop(1, 'rgba(2,7,18,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, 600); }
+  // 标题
+  ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  ctx.font = '500 26px "IBM Plex Mono"'; ctx.fillStyle = 'rgba(130,220,255,0.9)';
+  ctx.fillText('INSIDE YOU  /  身体里的一秒', 84, 168);
+  ctx.shadowColor = 'rgba(80,220,255,0.75)'; ctx.shadowBlur = 30;
+  ctx.font = '900 112px "Noto Sans SC"'; ctx.fillStyle = '#f4fbff';
+  ctx.fillText('咖啡为什么', 78, 300); ctx.fillText('让你不困？', 78, 428);
+  ctx.shadowBlur = 0;
+  ctx.font = '500 38px "Noto Sans SC"'; ctx.fillStyle = 'rgba(200,240,255,0.96)';
+  ctx.fillText('它没给你能量，只是堵住了“困”的开关', 84, 500);
+  // 小标注：深色底 + 引线
+  function label(x, y, lines, col, tx, ty, align = 'left') {
+    ctx.font = '500 32px "Noto Sans SC"';
+    const w0 = ctx.measureText(lines[0]).width; ctx.font = '300 24px "Noto Sans SC"';
+    const w = Math.max(w0, ...lines.slice(1).map(t => ctx.measureText(t).width)), h = 44 + (lines.length - 1) * 32;
+    const bx = align === 'left' ? x - 14 : x - w - 14;
+    if (tx !== undefined) { const sx = tx > bx + w + 28 ? bx + w + 28 : tx < bx ? bx : bx + (w + 28) / 2, sy = (tx >= bx && tx <= bx + w + 28) ? (ty > y ? y - 38 + h : y - 38) : y - 38 + h / 2;
+      ctx.strokeStyle = `rgba(${col},0.85)`; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty); ctx.stroke();
+      ctx.fillStyle = `rgb(${col})`; ctx.beginPath(); ctx.arc(tx, ty, 4, 0, TAU); ctx.fill(); }
+    ctx.fillStyle = 'rgba(2,8,22,0.66)'; ctx.beginPath(); ctx.roundRect(bx, y - 38, w + 28, h, 10); ctx.fill();
+    ctx.strokeStyle = `rgba(${col},0.45)`; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.textAlign = 'left'; ctx.shadowColor = `rgba(${col},0.8)`; ctx.shadowBlur = 12;
+    ctx.font = '500 32px "Noto Sans SC"'; ctx.fillStyle = `rgb(${col})`; ctx.fillText(lines[0], bx + 14, y);
+    ctx.shadowBlur = 0; ctx.font = '300 24px "Noto Sans SC"'; ctx.fillStyle = `rgba(${col},0.9)`;
+    lines.slice(1).forEach((t, i) => ctx.fillText(t, bx + 14, y + 34 + i * 32));
+  }
+  label(70, 1120, ['腺苷', '醒着越久，攒得越多'], '255,190,90', 372, 1150);
+  label(70, 1440, ['受体'], '120,230,255', 300, 1420);
+  label(796, 1190, ['咖啡因', '长得像腺苷', '占着位置', '却不开门'], '255,130,215', 690, 1322);
+  label(846, 956, ['突触'], '255,170,230', 812, 978);
+  label(60, 650, ['神经元'], '120,230,255', 300, 812);
+  ctx.font = '500 22px "IBM Plex Mono"'; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(160,230,255,0.85)'; ctx.fillText('SYNAPSE  ×  放大', IX, IY - IR - 38);
+  // 字幕
+  ctx.textAlign = 'center'; ctx.font = '500 42px "Noto Sans SC"';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 12; ctx.fillStyle = '#ffffff';
+  ctx.fillText('咖啡因长得像腺苷，抢先占住受体，', 540, 1676);
+  ctx.fillText('大脑就收不到“该困了”的信号', 540, 1736);
+  ctx.restore();
+  window.__done = true;
+});
+</script>
+</body>
+</html>

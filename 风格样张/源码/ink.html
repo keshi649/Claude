@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>水墨国风 · 赵州桥</title>
+<link rel="stylesheet" href="node_modules/@fontsource/ma-shan-zheng/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-serif-sc/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-serif-sc/600.css">
+<link rel="stylesheet" href="node_modules/@fontsource/lxgw-wenkai/500.css">
+<style>html,body{margin:0;background:#efe6d2} canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+const Wd = 1080, Ht = 1920;
+const fontsReady = Promise.all([
+  document.fonts.load('132px "Ma Shan Zheng"', '千年不倒问古'),
+  document.fonts.load('38px "Noto Serif SC"', '隋·赵州桥'),
+  document.fonts.load('600 46px "Noto Serif SC"', '一千四百年前的一座石桥，为什么到今天还没塌？'),
+  document.fonts.load('500 30px "LXGW WenKai"', '肩上开四个小拱：省石料，洪水还能从中穿过'),
+]);
+const cv = document.getElementById('c'), ctx = cv.getContext('2d');
+
+/* ---------- 噪声 ---------- */
+function hash(x, y, s = 0) {
+  let h = Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263) + Math.imul(s, 2246822519);
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+}
+function vnoise(x, y, s = 0) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash(xi, yi, s), b = hash(xi + 1, yi, s), c = hash(xi, yi + 1, s), d = hash(xi + 1, yi + 1, s);
+  return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+}
+function fbm(x, y, oct = 5, s = 0) { let t = 0, a = 0.5, f = 1, n = 0; for (let i = 0; i < oct; i++) { t += a * vnoise(x * f, y * f, s + i * 17); n += a; f *= 2.03; a *= 0.5; } return t / n; }
+let seed = 12345;
+function rnd() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const smooth = (a, b, v) => { const t = clamp((v - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
+
+/* ---------- 浮点画布：纸 + 太阳 + 远山 ---------- */
+const N = Wd * Ht;
+const R = new Float32Array(N), G = new Float32Array(N), B = new Float32Array(N), PR = new Float32Array(N), PG = new Float32Array(N), PB = new Float32Array(N);
+for (let y = 0; y < Ht; y++) for (let x = 0; x < Wd; x++) {
+  const i = y * Wd + x;
+  const m = fbm(x * 0.0035, y * 0.0035, 4, 1) - 0.5, g = (hash(x, y, 9) - 0.5);
+  const vig = Math.pow(Math.hypot((x - 540) / 760, (y - 900) / 1250), 2.2);
+  const k = 1 + m * 0.07 + g * 0.022 - vig * 0.12;
+  PR[i] = R[i] = 240 * k; PG[i] = G[i] = 231 * k; PB[i] = B[i] = 211 * k;
+}
+function mix(i, r, g, b, a) { R[i] += (r - R[i]) * a; G[i] += (g - G[i]) * a; B[i] += (b - B[i]) * a; }
+// 朱红太阳
+{
+  const sx = 372, sy = 548, sr = 150;
+  for (let y = sy - sr - 8; y < sy + sr + 8; y++) for (let x = sx - sr - 8; x < sx + sr + 8; x++) {
+    const d = Math.hypot(x - sx, y - sy), ang = Math.atan2(y - sy, x - sx);
+    const edge = sr + (fbm(Math.cos(ang) * 3 + 5, Math.sin(ang) * 3 + 5, 3, 4) - 0.5) * 7;
+    const a = smooth(edge + 1.5, edge - 1.5, d) * (0.72 + 0.16 * (fbm(x * 0.02, y * 0.02, 4, 6) - 0.5) - 0.12 * (d / sr) ** 2);
+    if (a > 0) mix(y * Wd + x, 205, 72, 48, a);
+  }
+}
+// 山：一层一层从远到近，山脚是雾（纸色）挡住后面的山
+function ridgeOf(peaks, base, rough, s, freq = 0.006) {
+  const r = new Float32Array(Wd);
+  for (let x = 0; x < Wd; x++) {
+    let y = base;
+    for (const [c, h, w, p] of peaks) { const t = Math.abs(x - c) / w; y -= h / (1 + Math.pow(t, p || 2)); }
+    y += rough * (fbm(x * freq, s, 5, s) - 0.5) * 2 + rough * 0.25 * (fbm(x * freq * 5, s + 3, 3, s) - 0.5);
+    r[x] = y;
+  }
+  return r;
+}
+function mountain(ridge, ink, A, D, streak = 1, depth = 520) {
+  const [ir, ig, ib] = ink;
+  for (let x = 0; x < Wd; x++) {
+    const ry = ridge[x];
+    const slope = x > 0 ? ridge[x] - ridge[x - 1] : 0;
+    for (let y = Math.max(0, Math.floor(ry) - 2); y < Math.min(Ht, ry + depth); y++) {
+      const i = y * Wd + x, d = y - ry;
+      const occ = clamp(d + 1, 0, 1);
+      if (occ <= 0) continue;
+      // 先用纸色把后面的山盖住（山脚的雾）
+      R[i] += (PR[i] - R[i]) * occ; G[i] += (PG[i] - G[i]) * occ; B[i] += (PB[i] - B[i]) * occ;
+      const tex = fbm(x * 0.03, y * 0.011, 4, 21);                   // 皴纹（略竖）
+      const blot = fbm(x * 0.012, y * 0.012, 4, 33);
+      const rn = fbm(x * 0.02, 5.5, 3, 41);
+      const rim = Math.exp(-d / (2.8 + 4 * rn)) * (0.45 + 0.7 * rn);  // 山脊一笔，粗细浓淡随笔变化
+      const body = Math.exp(-d / D) * (0.2 + 1.15 * blot * blot * 1.6) * (0.75 + streak * 0.5 * (tex - 0.45));
+      const cun = Math.exp(-d / (D * 0.5)) * smooth(0.6, 0.78, tex) * 0.45 * streak;
+      let a = A * clamp(rim + body + cun, 0, 1) * (0.85 + 0.3 * Math.min(1, Math.abs(slope) * 0.6));
+      a *= occ;
+      if (a > 0.002) mix(i, ir, ig, ib, clamp(a, 0, 1));
+    }
+  }
+}
+const inkFar = [96, 108, 118], inkMid = [62, 66, 70], inkNear = [30, 30, 28];
+mountain(ridgeOf([[180, 220, 90, 1.6], [470, 150, 120], [760, 300, 70, 1.5], [930, 210, 110]], 820, 26, 3), inkFar, 0.34, 70, 0.4);
+mountain(ridgeOf([[90, 320, 80, 1.5], [330, 160, 130], [640, 120, 150], [1010, 260, 90, 1.6]], 930, 30, 5), inkFar.map(v => v - 22), 0.5, 85, 0.5);
+mountain(ridgeOf([[150, 330, 85, 1.7], [400, 170, 90, 1.7], [830, 360, 80, 1.6], [1060, 200, 120]], 1060, 30, 7), inkMid, 0.66, 95, 0.6);
+// 写回画布
+{
+  const img = ctx.createImageData(Wd, Ht), d = img.data;
+  for (let i = 0; i < N; i++) { d[i * 4] = clamp(R[i], 0, 255); d[i * 4 + 1] = clamp(G[i], 0, 255); d[i * 4 + 2] = clamp(B[i], 0, 255); d[i * 4 + 3] = 255; }
+  ctx.putImageData(img, 0, 0);
+}
+// 雾带
+function mistBand(y, h, a) {
+  const g = ctx.createLinearGradient(0, y - h, 0, y + h);
+  g.addColorStop(0, 'rgba(240,231,211,0)'); g.addColorStop(0.5, `rgba(240,231,211,${a})`); g.addColorStop(1, 'rgba(240,231,211,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, y - h, Wd, 2 * h);
+}
+mistBand(905, 70, 0.55);
+mistBand(1035, 60, 0.5);
+
+/* ---------- 毛笔笔触 ---------- */
+function brush(c, pts, w0, w1, ink = [26, 25, 22], alpha = 0.85, dry = 0.25) {
+  // 沿折线逐点盖章，每一章是若干根“毛”，模拟干湿
+  const L = [0]; for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  const total = L[L.length - 1]; if (!total) return;
+  const bristles = Math.max(4, Math.round(Math.max(w0, w1) * 1.3));
+  const offs = []; for (let k = 0; k < bristles; k++) offs.push([(rnd() - 0.5) * 2, 0.45 + rnd() * 0.55, rnd()]);
+  let j = 1;
+  for (let s = 0; s <= total; s += 0.9) {
+    while (j < L.length - 1 && L[j] < s) j++;
+    const t = (s - L[j - 1]) / (L[j] - L[j - 1] || 1);
+    const ax = pts[j - 1][0], ay = pts[j - 1][1], bx = pts[j][0], by = pts[j][1];
+    const x = ax + (bx - ax) * t, y = ay + (by - ay) * t;
+    const len = Math.hypot(bx - ax, by - ay) || 1, nx = -(by - ay) / len, ny = (bx - ax) / len;
+    const u = s / total, w = (w0 + (w1 - w0) * u) * (0.9 + 0.2 * vnoise(s * 0.05, 3));
+    for (const [o, sz, ph] of offs) {
+      const dryHere = vnoise(s * 0.08 + ph * 50, ph * 9) < dry * (0.4 + u);
+      if (dryHere) continue;
+      c.fillStyle = `rgba(${ink[0]},${ink[1]},${ink[2]},${alpha * (0.35 + 0.4 * sz)})`;
+      c.beginPath(); c.arc(x + nx * o * w * 0.5, y + ny * o * w * 0.5, Math.max(0.5, w * 0.16 * sz), 0, 7); c.fill();
+    }
+  }
+}
+function wobble(pts, amp = 1.2, f = 0.05, s = 0) { return pts.map(([x, y], i) => [x + (vnoise(i * f, s) - 0.5) * amp * 2, y + (vnoise(i * f, s + 7) - 0.5) * amp * 2]); }
+function arcPts(cx, cy, r, a0, a1, n = 80) { const p = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; p.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } return p; }
+
+/* ---------- 赵州桥（立面） ---------- */
+const WL = 1246;                // 水面 / 拱脚
+const bridge = document.createElement('canvas'); bridge.width = Wd; bridge.height = Ht;
+const bc = bridge.getContext('2d');
+{
+  const c = bc;
+  const xa = 282, xb = 798, crownIn = 1146, T = 20;
+  const half = (xb - xa) / 2, rise = WL - crownIn, rr = (half * half + rise * rise) / (2 * rise), ccx = (xa + xb) / 2, ccy = crownIn + rr;
+  const aA = Math.atan2(WL - ccy, xa - ccx), aB = Math.atan2(WL - ccy, xb - ccx);
+  const deckY = x => 1112 + Math.pow((x - 540) / 380, 2) * 34;      // 桥面微微拱起
+  const outer = arcPts(ccx, ccy, rr + T, aA, aB, 160).map(([x, y]) => [x, y]);
+  // 肩上四个小拱
+  const smalls = [[330, 27], [404, 20], [750, 27], [676, 20]].map(([x, r]) => {
+    const yb = ccy - Math.sqrt((rr + T) ** 2 - (x - ccx) ** 2);   // 落在大拱背上
+    return { x, r, yb };
+  });
+  // 拱肩墙体（浅墨）
+  c.save();
+  c.beginPath();
+  c.moveTo(172, deckY(172));
+  for (let x = 172; x <= 908; x += 4) c.lineTo(x, deckY(x));
+  c.lineTo(908, deckY(908) + 34); c.lineTo(xb + 12, WL - 10);
+  for (let i = outer.length - 1; i >= 0; i--) c.lineTo(outer[i][0], outer[i][1]);
+  c.lineTo(xa - 12, WL - 10); c.lineTo(172, deckY(172) + 34); c.closePath();
+  for (const s of smalls) { c.moveTo(s.x + s.r, s.yb); c.arc(s.x, s.yb, s.r, 0, Math.PI, true); c.closePath(); }
+  c.fillStyle = 'rgba(70,68,62,0.20)'; c.fill('evenodd');
+  c.clip('evenodd');
+  // 条石的横缝
+  c.strokeStyle = 'rgba(40,38,34,0.16)'; c.lineWidth = 1.1;
+  for (let y = 1112; y < WL; y += 11) { c.beginPath(); for (let x = 172; x < 910; x += 6) c.lineTo(x, y + (vnoise(x * 0.03, y) - 0.5) * 2); c.stroke(); }
+  for (let k = 0; k < 220; k++) { const x = 172 + rnd() * 736, y = 1110 + Math.floor(rnd() * 12) * 11; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + 11); c.stroke(); }
+  c.restore();
+  // 拱圈：浅墨 + 一块块拱石的缝
+  c.save();
+  c.beginPath();
+  for (const [x, y] of arcPts(ccx, ccy, rr + T, aA, aB, 160)) c.lineTo(x, y);
+  for (const [x, y] of arcPts(ccx, ccy, rr, aB, aA, 160)) c.lineTo(x, y);
+  c.closePath(); c.fillStyle = 'rgba(60,58,52,0.34)'; c.fill();
+  c.restore();
+  for (let a = aA; a <= aB; a += 0.0305) {
+    const p1 = [ccx + rr * Math.cos(a), ccy + rr * Math.sin(a)], p2 = [ccx + (rr + T) * Math.cos(a), ccy + (rr + T) * Math.sin(a)];
+    brush(c, [p1, p2], 1.6, 1.4, [30, 29, 26], 0.55, 0.3);
+  }
+  brush(c, wobble(arcPts(ccx, ccy, rr, aA, aB, 120), 1.1, 0.08, 1), 7, 6, [22, 21, 19], 0.9, 0.18);
+  brush(c, wobble(arcPts(ccx, ccy, rr + T, aA, aB, 120), 1.1, 0.08, 2), 5, 5, [22, 21, 19], 0.85, 0.25);
+  // 小拱
+  for (const s of smalls) {
+    brush(c, wobble(arcPts(s.x, s.yb, s.r, Math.PI, 2 * Math.PI, 40), 0.8, 0.2, s.x), 5, 5, [22, 21, 19], 0.9, 0.15);
+    brush(c, wobble(arcPts(s.x, s.yb, s.r + 7, Math.PI * 1.04, Math.PI * 1.96, 40), 0.8, 0.2, s.x + 3), 3, 3, [22, 21, 19], 0.7, 0.3);
+  }
+  // 桥面 + 栏板 + 望柱
+  const deck = []; for (let x = 168; x <= 912; x += 6) deck.push([x, deckY(x)]);
+  brush(c, wobble(deck, 0.8, 0.1, 5), 6, 6, [22, 21, 19], 0.9, 0.2);
+  const rail = deck.map(([x, y]) => [x, y - 24]);
+  brush(c, wobble(rail, 0.8, 0.1, 6), 4, 4, [22, 21, 19], 0.85, 0.25);
+  for (let x = 180; x <= 900; x += 31) { const y = deckY(x); brush(c, [[x, y - 2], [x, y - 31]], 4, 3.5, [22, 21, 19], 0.85, 0.15); }
+  const under = []; for (let x = 172; x <= 908; x += 6) under.push([x, deckY(x) + 12]);
+  brush(c, wobble(under, 0.6, 0.1, 8), 1.6, 1.6, [30, 29, 26], 0.5, 0.4);
+  // 桥上一个挑担的人
+  {
+    const px = 610, py = deckY(610) - 2;
+    c.fillStyle = 'rgba(20,19,17,0.92)';
+    c.beginPath(); c.ellipse(px, py - 30, 4.2, 4.6, 0, 0, 7); c.fill();                  // 头
+    c.beginPath(); c.moveTo(px - 5, py - 25); c.lineTo(px + 5, py - 25); c.lineTo(px + 7, py - 8); c.lineTo(px - 6, py - 8); c.fill();
+    brush(c, [[px - 3, py - 9], [px - 7, py]], 2.6, 2.4); brush(c, [[px + 3, py - 9], [px + 6, py]], 2.6, 2.4);
+    brush(c, [[px - 24, py - 24], [px + 24, py - 27]], 2, 2);                               // 扁担
+    brush(c, [[px - 22, py - 24], [px - 22, py - 14]], 1, 1); brush(c, [[px + 22, py - 27], [px + 22, py - 16]], 1, 1);
+    c.beginPath(); c.ellipse(px - 22, py - 11, 6, 4.5, 0, 0, 7); c.fill(); c.beginPath(); c.ellipse(px + 22, py - 13, 6, 4.5, 0, 0, 7); c.fill();
+    // 斗笠
+    c.beginPath(); c.moveTo(px - 10, py - 31); c.lineTo(px, py - 39); c.lineTo(px + 10, py - 31); c.closePath(); c.fill();
+  }
+}
+// 倒影：翻过来、横向抖动、淡
+{
+  const tmp = document.createElement('canvas'); tmp.width = Wd; tmp.height = 260;
+  const tc = tmp.getContext('2d');
+  tc.save(); tc.translate(0, 0); tc.scale(1, -1); tc.drawImage(bridge, 0, -WL, Wd, Ht); tc.restore();
+  ctx.save(); ctx.globalCompositeOperation = 'multiply';
+  for (let y = 0; y < 230; y++) {
+    const off = Math.sin(y * 0.55) * (1 + y * 0.03) + (vnoise(y * 0.3, 2) - 0.5) * 4;
+    const a = 0.3 * Math.pow(1 - y / 230, 1.5) * (0.7 + 0.3 * Math.sin(y * 1.7));
+    ctx.globalAlpha = a;
+    ctx.drawImage(tmp, 0, y, Wd, 1, off, WL + y + 2, Wd, 1);
+  }
+  ctx.restore();
+}
+ctx.drawImage(bridge, 0, 0);
+// 两岸：画在桥前面，挡住桥台
+function bank(top0, waterX, side, sd) {
+  // 岸顶加一点起伏
+  const top = []; for (let i = 0; i < top0.length - 1; i++) { const [ax, ay] = top0[i], [bx, by] = top0[i + 1];
+    for (let t = 0; t < 1; t += 0.1) top.push([ax + (bx - ax) * t, ay + (by - ay) * t]); }
+  top.push(top0[top0.length - 1]);
+  for (const p of top) p[1] += (vnoise(p[0] * 0.03, sd) - 0.5) * 12 * (p[1] < 1160 ? 1 : 0.4);
+  const poly = top.concat(side < 0 ? [[waterX + 6, 1272], [0, 1290]] : [[waterX - 6, 1272], [Wd, 1290]]);
+  ctx.save(); ctx.beginPath(); poly.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)); ctx.closePath();
+  const base = ctx.createLinearGradient(0, 1130, 0, 1292); base.addColorStop(0, 'rgba(240,231,211,1)'); base.addColorStop(0.62, 'rgba(240,231,211,1)'); base.addColorStop(1, 'rgba(240,231,211,0)');
+  ctx.fillStyle = base; ctx.fill(); ctx.clip();
+  // 靠岸顶的地方墨浓，往下淡开
+  for (let k = 0; k < 520; k++) {
+    const j = Math.floor(rnd() * (top.length - 1)), [x0, y0] = top[j];
+    const dy = Math.pow(rnd(), 2.2) * 110, x = x0 + (rnd() - 0.5) * 16, y = y0 + dy;
+    ctx.fillStyle = `rgba(30,29,26,${(0.05 + rnd() * 0.12) * (1 - dy / 120)})`;
+    ctx.beginPath(); ctx.ellipse(x, y, 4 + rnd() * 10, 2 + rnd() * 4, rnd() * 0.5 - 0.25, 0, 7); ctx.fill();
+  }
+  for (let k = 0; k < 70; k++) { const j = Math.floor(rnd() * (top.length - 1)), [x, y] = top[j];
+    brush(ctx, [[x, y + 4], [x + (rnd() - 0.5) * 14, y + 14 + rnd() * 26]], 2 + rnd() * 2, 0.8, [30, 29, 26], 0.18 + rnd() * 0.2, 0.5); }
+  ctx.restore();
+  brush(ctx, wobble(top, 1.2, 0.3, side * 5 + 9), 6, 3, [22, 21, 19], 0.88, 0.38);
+  // 岸顶的草和苔点
+  for (let k = 0; k < 46; k++) { const [x, y] = top[Math.floor(rnd() * (top.length - 2))];
+    brush(ctx, [[x, y + 1], [x + (rnd() - 0.5) * 8, y - 6 - rnd() * 12]], 1.6, 0.4, [24, 23, 21], 0.7, 0.2); }
+  for (let k = 0; k < 34; k++) { const [x0, y0] = top[Math.floor(rnd() * (top.length - 1))]; ctx.fillStyle = `rgba(20,20,18,${0.5 + rnd() * 0.4})`;
+    ctx.beginPath(); ctx.ellipse(x0 + (rnd() - 0.5) * 20, y0 + rnd() * 5, 1.5 + rnd() * 2.5, 1 + rnd() * 1.6, rnd() * 3, 0, 7); ctx.fill(); }
+  // 水边两块石头
+  for (let k = 0; k < 2; k++) {
+    const x = waterX + side * (14 + k * 40), y = 1262 + k * 3, w = 26 - k * 8, h = 13 - k * 3;
+    ctx.fillStyle = 'rgba(70,68,62,0.35)'; ctx.beginPath(); ctx.ellipse(x, y, w, h, 0, Math.PI, 0); ctx.fill();
+    brush(ctx, arcPts(x, y, w, Math.PI, Math.PI * 1.9, 20).map(([px, py]) => [px, y + (py - y) * h / w]), 3.5, 2, [22, 21, 19], 0.85, 0.2);
+  }
+}
+bank([[0, 1138], [90, 1142], [174, 1146], [205, 1166], [246, 1202], [290, 1240], [318, 1262]], 318, -1, 3);
+bank([[Wd, 1134], [990, 1140], [906, 1146], [874, 1166], [834, 1202], [790, 1240], [762, 1262]], 762, 1, 8);
+// 水纹
+for (let k = 0; k < 90; k++) {
+  const y = WL + 12 + Math.pow(rnd(), 1.4) * 330, x = 200 + rnd() * 700, len = 20 + rnd() * 80 * (1 + (y - WL) / 300);
+  const pts = []; for (let t = 0; t <= 10; t++) pts.push([x + len * t / 10, y + Math.sin(t * 0.7 + k) * 1.2]);
+  brush(ctx, pts, 1.4, 0.6, [40, 40, 38], 0.32, 0.5);
+}
+// 岸边的树（点叶）
+function tree(x, y, h, s) {
+  const pts = []; for (let t = 0; t <= 12; t++) pts.push([x + Math.sin(t * 0.5 + s) * 3 * t / 12, y - h * t / 12]);
+  brush(ctx, pts, 5, 2, [24, 23, 21], 0.85, 0.2);
+  for (let k = 0; k < 90; k++) {
+    const a = rnd() * Math.PI * 2, r = Math.pow(rnd(), 0.6) * h * 0.42;
+    const px = x + Math.cos(a) * r * 1.1, py = y - h * 0.86 + Math.sin(a) * r * 0.75;
+    ctx.fillStyle = `rgba(24,23,21,${0.35 + rnd() * 0.45})`;
+    ctx.beginPath(); ctx.ellipse(px, py, 2.5 + rnd() * 4, 1.8 + rnd() * 2.6, rnd() * 3, 0, 7); ctx.fill();
+  }
+}
+tree(58, 1152, 92, 1); tree(122, 1150, 62, 2); tree(1010, 1148, 98, 3); tree(952, 1148, 62, 4);
+// 远处的鸟
+for (const [x, y, s] of [[560, 470, 1], [600, 448, 0.8], [628, 486, 0.7], [520, 500, 0.6]]) {
+  brush(ctx, [[x - 12 * s, y - 4 * s], [x - 5 * s, y - 1 * s], [x, y + 2 * s]], 2.4 * s, 1.4 * s, [28, 27, 24], 0.9, 0);
+  brush(ctx, [[x, y + 2 * s], [x + 6 * s, y - 3 * s], [x + 14 * s, y - 6 * s]], 1.6 * s, 2.4 * s, [28, 27, 24], 0.9, 0);
+}
+// 小船 + 渔翁
+{
+  const x = 760, y = 1430;
+  ctx.fillStyle = 'rgba(22,21,19,0.9)';
+  ctx.beginPath(); ctx.moveTo(x - 62, y - 6); ctx.quadraticCurveTo(x, y + 14, x + 66, y - 10); ctx.quadraticCurveTo(x + 4, y + 4, x - 62, y - 6); ctx.fill();
+  brush(ctx, [[x - 66, y - 7], [x - 20, y + 4], [x + 30, y + 2], [x + 70, y - 11]], 5, 3);
+  ctx.beginPath(); ctx.ellipse(x - 4, y - 24, 5, 10, 0.2, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x - 20, y - 31); ctx.lineTo(x - 3, y - 42); ctx.lineTo(x + 14, y - 31); ctx.closePath(); ctx.fill();
+  brush(ctx, [[x + 6, y - 22], [x + 46, y - 70], [x + 92, y - 112]], 2, 1, [22, 21, 19], 0.9, 0.1);
+  brush(ctx, [[x + 92, y - 112], [x + 98, y - 60], [x + 100, y - 8]], 0.8, 0.6, [22, 21, 19], 0.45, 0.2);
+  for (let k = 0; k < 6; k++) brush(ctx, [[x - 90 + k * 30, y + 12 + k % 2 * 4], [x - 60 + k * 34, y + 12 + k % 2 * 4]], 1.2, 0.5, [40, 40, 38], 0.4, 0.4);
+}
+// 左上角伸进来的松枝
+{
+  function bez(p0, p1, p2, n = 24) { const r = []; for (let i = 0; i <= n; i++) { const t = i / n; r.push([(1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * p1[0] + t * t * p2[0], (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * p1[1] + t * t * p2[1]]); } return r; }
+  const main = wobble(bez([-20, 168], [200, 160], [470, 306]), 3, 0.25, 3);
+  brush(ctx, main, 22, 5, [22, 21, 19], 0.92, 0.45);
+  brush(ctx, main.map(([x, y]) => [x + 2, y + 7]), 7, 2, [22, 21, 19], 0.45, 0.6);
+  const b1 = wobble(bez([150, 172], [210, 120], [290, 96]), 2, 0.3, 4); brush(ctx, b1, 9, 3, [22, 21, 19], 0.9, 0.4);
+  const b2 = wobble(bez([300, 232], [360, 214], [420, 190]), 2, 0.3, 5); brush(ctx, b2, 7, 2.5, [22, 21, 19], 0.9, 0.4);
+  const b3 = wobble(bez([90, 172], [110, 230], [70, 280]), 2, 0.3, 6); brush(ctx, b3, 7, 2.5, [22, 21, 19], 0.9, 0.4);
+  function needles(x, y, r, a0 = -Math.PI * 0.95, a1 = -Math.PI * 0.05) {
+    for (let k = 0; k < 30; k++) { const a = a0 + (a1 - a0) * (k + rnd() * 0.6) / 30, l = r * (0.7 + rnd() * 0.4);
+      brush(ctx, [[x, y], [x + Math.cos(a) * l, y + Math.sin(a) * l * 0.62]], 1.8, 0.5, [18, 24, 20], 0.8, 0.1); }
+  }
+  for (const [x, y, r] of [[290, 98, 52], [230, 128, 44], [420, 190, 50], [470, 306, 56], [380, 258, 46], [150, 170, 40], [70, 282, 46], [36, 176, 40]]) needles(x, y, r);
+}
+// 下方两丛芦苇
+function reeds(x0, x1, n, lean, alphaK) {
+  for (let k = 0; k < n; k++) {
+    const x = x0 + rnd() * (x1 - x0), y = 1830 + rnd() * 90, h = 160 + rnd() * 230, bend = lean * (30 + rnd() * 60);
+    const p = []; for (let t = 0; t <= 16; t++) { const u = t / 16; p.push([x - bend * u * u, y - h * u]); }
+    brush(ctx, p, 3, 0.8, [26, 25, 22], (0.5 + rnd() * 0.3) * alphaK, 0.3);
+    if (k % 3 === 0) { const [tx, ty] = p[16]; brush(ctx, [[tx, ty], [tx - lean * 10, ty - 26], [tx - lean * 24, ty - 44]], 6, 1, [60, 58, 52], 0.45 * alphaK, 0.4); }
+  }
+}
+reeds(860, 1080, 26, 1, 1);
+reeds(-20, 160, 14, -1, 0.7);
+
+fontsReady.then(() => {
+/* ---------- 题字、印章、注释、字幕 ---------- */
+function vtext(str, x, y, size, font, color, gap = 1.04) {
+  ctx.fillStyle = color; ctx.font = `${size}px ${font}`; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  [...str].forEach((ch, i) => ctx.fillText(ch, x, y + i * size * gap));
+}
+function seal(x, y, w, h, chars, size) {
+  const s = document.createElement('canvas'); s.width = w; s.height = h; const c = s.getContext('2d');
+  c.fillStyle = '#b8322a'; c.fillRect(0, 0, w, h);
+  c.globalCompositeOperation = 'destination-out';
+  c.fillStyle = '#000'; c.font = `${size}px "Ma Shan Zheng"`; c.textAlign = 'center'; c.textBaseline = 'middle';
+  [...chars].forEach((ch, i) => c.fillText(ch, w / 2, h / (chars.length) * (i + 0.5) + 2));
+  c.lineWidth = 4; c.strokeRect(5, 5, w - 10, h - 10);
+  for (let k = 0; k < 260; k++) { c.globalAlpha = rnd() * 0.8; c.beginPath(); c.arc(rnd() * w, rnd() * h, rnd() * 1.6, 0, 7); c.fill(); }
+  ctx.save(); ctx.globalAlpha = 0.9; ctx.globalCompositeOperation = 'multiply'; ctx.drawImage(s, x, y); ctx.restore();
+}
+ctx.save(); ctx.shadowColor = 'rgba(20,18,15,0.35)'; ctx.shadowBlur = 3;
+vtext('千年不倒', 948, 150, 132, '"Ma Shan Zheng"', 'rgba(22,20,18,0.94)', 1.0);
+ctx.restore();
+vtext('隋·赵州桥', 846, 176, 38, '"Noto Serif SC"', 'rgba(32,30,27,0.85)', 1.18);
+seal(818, 640, 58, 112, '问古', 44);
+
+// 注释：小拱的用处
+ctx.fillStyle = 'rgba(28,26,23,0.86)'; ctx.font = '500 30px "LXGW WenKai"'; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+ctx.fillText('肩上开四个小拱：', 96, 1012);
+ctx.fillText('省石料，洪水还能从中穿过', 96, 1054);
+brush(ctx, [[322, 1068], [327, 1110], [330, 1150]], 1.6, 1, [28, 26, 23], 0.8, 0.1);
+
+// 字幕
+{
+  const g = ctx.createLinearGradient(0, 1548, 0, 1748);
+  g.addColorStop(0, 'rgba(240,231,211,0)'); g.addColorStop(0.25, 'rgba(240,231,211,0.88)'); g.addColorStop(0.75, 'rgba(240,231,211,0.88)'); g.addColorStop(1, 'rgba(240,231,211,0)');
+  ctx.fillStyle = g; ctx.fillRect(0, 1548, Wd, 200);
+  ctx.fillStyle = '#1d1b18'; ctx.font = '600 46px "Noto Serif SC"'; ctx.textAlign = 'center';
+  ctx.fillText('一千四百年前的一座石桥，', 540, 1632);
+  ctx.fillText('为什么到今天还没塌？', 540, 1694);
+}
+window.__done = true;
+});
+</script>
+</body>
+</html>

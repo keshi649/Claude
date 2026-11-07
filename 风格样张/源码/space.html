@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>电影感宇宙 · 掉进黑洞</title>
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/300.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/ibm-plex-mono/500.css">
+<style>html,body{margin:0;background:#000} canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script id="fs" type="x-shader/x-fragment">#version 300 es
+precision highp float;
+out vec4 outColor;
+uniform vec2 res;
+const float RIN = 3.0, ROUT = 15.0;
+
+float hash13(vec3 p) { p = fract(p * 0.1031); p += dot(p, p.zyx + 31.32); return fract((p.x + p.y) * p.z); }
+float noise3(vec3 x) {
+  vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash13(i), hash13(i + vec3(1,0,0)), f.x), mix(hash13(i + vec3(0,1,0)), hash13(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(hash13(i + vec3(0,0,1)), hash13(i + vec3(1,0,1)), f.x), mix(hash13(i + vec3(0,1,1)), hash13(i + vec3(1,1,1)), f.x), f.y), f.z);
+}
+float fbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { s += a * noise3(p); p = p * 2.03 + 7.1; a *= 0.5; } return s; }
+
+vec3 sky(vec3 d) {
+  vec3 col = vec3(0.0);
+  // 淡淡的星云 + 一条银河带
+  float band = exp(-pow(dot(d, normalize(vec3(0.35, 1.0, 0.2))) * 3.2, 2.0));
+  float n1 = fbm(d * 2.6 + 3.0), n2 = fbm(d * 6.0 - 1.0);
+  col += vec3(0.05, 0.08, 0.16) * pow(n1, 3.0) * 0.22;
+  col += vec3(0.16, 0.10, 0.20) * pow(n2, 4.0) * 0.22 * band;
+  col += vec3(0.10, 0.11, 0.14) * band * pow(fbm(d * 14.0), 3.0) * 0.16;
+  // 三种尺度的星星
+  for (int i = 0; i < 4; i++) {
+    float sc = 40.0 * pow(2.2, float(i));
+    vec3 q = d * sc, id = floor(q), f = fract(q) - 0.5;
+    float h = hash13(id);
+    float th = i == 0 ? 0.992 : i == 1 ? 0.975 : i == 2 ? 0.955 - band * 0.03 : 0.94 - band * 0.05;
+    if (h > th) {
+      vec3 off = vec3(hash13(id + 11.0), hash13(id + 23.0), hash13(id + 37.0)) - 0.5;
+      float dd = length(f - off * 0.6);
+      float b = smoothstep(0.11, 0.0, dd) * pow((h - th) / (1.0 - th), 1.5);
+      vec3 tint = mix(vec3(1.0, 0.82, 0.62), vec3(0.68, 0.80, 1.0), hash13(id + 5.0));
+      col += b * tint * (i == 0 ? 9.0 : i == 1 ? 4.5 : 2.6);
+    }
+  }
+  return col;
+}
+
+vec3 tempColor(float t) {   // 0 冷 → 1 热
+  vec3 a = vec3(0.55, 0.08, 0.02), b = vec3(1.0, 0.42, 0.10), c = vec3(1.0, 0.80, 0.52), d = vec3(1.0, 0.97, 0.92);
+  return t < 0.33 ? mix(a, b, t / 0.33) : t < 0.66 ? mix(b, c, (t - 0.33) / 0.33) : mix(c, d, (t - 0.66) / 0.34);
+}
+vec4 disk(vec3 p, vec3 vel) {
+  float r = length(p.xz);
+  float x = RIN / r;
+  float prof = pow(x, 2.6) * (1.0 - sqrt(x)) * 14.0;              // 越靠里越亮，内缘以内为 0
+  float ang = atan(p.z, p.x);
+  float sw = fbm(vec3(r * 2.4, ang * 4.0 - 16.0 / sqrt(r), 0.5));   // 旋涡纹
+  float sw2 = fbm(vec3(r * 6.0, ang * 9.0 - 30.0 / sqrt(r), 3.5));
+  float rings = 0.88 + 0.12 * sin(r * 5.0 + sw * 5.0);
+  float tex = mix(0.35, 1.3, sw) * mix(0.7, 1.2, sw2) * rings;
+  // 多普勒：转向我们的那一侧更亮更白
+  vec3 vdir = normalize(vec3(p.z, 0.0, -p.x));
+  float beta = sqrt(0.5 / r), gam = 1.0 / sqrt(1.0 - beta * beta);
+  float cosT = dot(vdir, -normalize(vel));
+  float D = 1.0 / (gam * (1.0 - beta * cosT));
+  float g = sqrt(max(0.0, 1.0 - 1.0 / r));
+  float f = D * g;
+  float I = prof * tex * pow(f, 2.8);
+  float t = clamp(0.25 + 0.55 * pow(x, 0.9) * f, 0.0, 1.0);
+  float edge = smoothstep(RIN, RIN + 0.35, r) * smoothstep(ROUT, ROUT - 6.0, r);
+  vec3 col = tempColor(t) * I * edge;
+  float a = clamp(edge * (0.55 + 0.45 * sw) * 1.05, 0.0, 0.97);
+  return vec4(col, a);
+}
+vec3 accel(vec3 p, float h2) { float r2 = dot(p, p); return -1.5 * h2 * p / (r2 * r2 * sqrt(r2)); }
+
+void main() {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * res) / res.y;
+  float roll = -0.19;
+  uv = mat2(cos(roll), sin(roll), -sin(roll), cos(roll)) * uv;
+  uv.y -= 0.035;
+  float el = radians(6.2), dist = 34.0;
+  vec3 cam = vec3(0.0, dist * sin(el), -dist * cos(el));
+  vec3 fw = normalize(-cam), rt = normalize(cross(vec3(0.0, 1.0, 0.0), fw)), up = cross(fw, rt);
+  vec3 dir = normalize(fw + (uv.x * rt + uv.y * up) * 0.66);
+  vec3 pos = cam, vel = dir;
+  float h2 = dot(cross(pos, vel), cross(pos, vel));
+  vec3 col = vec3(0.0); float alpha = 0.0; bool hole = false;
+  for (int i = 0; i < 700; i++) {
+    float r = length(pos);
+    float dt = clamp(0.035 * r, 0.012, 1.2);
+    // RK4
+    vec3 k1v = accel(pos, h2), k1p = vel;
+    vec3 k2v = accel(pos + 0.5 * dt * k1p, h2), k2p = vel + 0.5 * dt * k1v;
+    vec3 k3v = accel(pos + 0.5 * dt * k2p, h2), k3p = vel + 0.5 * dt * k2v;
+    vec3 k4v = accel(pos + dt * k3p, h2), k4p = vel + dt * k3v;
+    vec3 np = pos + dt / 6.0 * (k1p + 2.0 * k2p + 2.0 * k3p + k4p);
+    vec3 nv = vel + dt / 6.0 * (k1v + 2.0 * k2v + 2.0 * k3v + k4v);
+    if (pos.y * np.y < 0.0) {
+      float t = pos.y / (pos.y - np.y);
+      vec3 cp = mix(pos, np, t);
+      float cr = length(cp.xz);
+      if (cr > RIN && cr < ROUT) {
+        vec4 dc = disk(cp, mix(vel, nv, t));
+        col += (1.0 - alpha) * dc.rgb * dc.a;
+        alpha += (1.0 - alpha) * dc.a;
+      }
+    }
+    pos = np; vel = nv;
+    float r2 = dot(pos, pos);
+    if (r2 < 1.0) { hole = true; break; }
+    if (r2 > 3600.0 || alpha > 0.995) break;
+  }
+  if (!hole) col += (1.0 - alpha) * sky(normalize(vel));
+  // 胶片感的色调映射
+  col *= 0.62;
+  col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
+  col = pow(clamp(col, 0.0, 1.0), vec3(1.0 / 2.2));
+  outColor = vec4(col, 1.0);
+}
+</script>
+<script>
+const W = 1080, H = 1920;
+const fontsReady = Promise.all([
+  document.fonts.load('300 96px "Noto Sans SC"', '掉进黑洞，会看到什么？'),
+  document.fonts.load('400 36px "Noto Sans SC"', '在远处的人眼里，你永远掉不进去黑洞阴影光子环吸积盘'),
+  document.fonts.load('500 42px "Noto Sans SC"', '你会越掉越慢、越来越红，最后暗到看不见'),
+  document.fonts.load('500 22px "IBM Plex Mono"', 'DEEP SPACE 07 r = 2GM/c2'),
+]);
+// WebGL 渲染黑洞
+const gc = document.createElement('canvas'); gc.width = W; gc.height = H;
+const gl = gc.getContext('webgl2', { preserveDrawingBuffer: true });
+function sh(type, src) { const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+const prog = gl.createProgram();
+gl.attachShader(prog, sh(gl.VERTEX_SHADER, '#version 300 es\nin vec2 p; void main(){ gl_Position = vec4(p, 0.0, 1.0); }'));
+gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, document.getElementById('fs').textContent));
+gl.linkProgram(prog); if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+gl.uniform2f(gl.getUniformLocation(prog, 'res'), W, H);
+gl.viewport(0, 0, W, H);
+// 分块画，避免单次绘制太久
+gl.enable(gl.SCISSOR_TEST);
+const TILE = 240;
+for (let y = 0; y < H; y += TILE) for (let x = 0; x < W; x += TILE) { gl.scissor(x, y, TILE, TILE); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); gl.finish(); }
+
+// 合成：辉光、暗角、颗粒、文字
+const cv = document.getElementById('c'), ctx = cv.getContext('2d', { willReadFrequently: true });
+ctx.drawImage(gc, 0, 0);
+for (const [b, a] of [[3, 0.25], [14, 0.22], [48, 0.2], [120, 0.14]]) {
+  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a; ctx.filter = `blur(${b}px)`; ctx.drawImage(gc, 0, 0); ctx.restore();
+}
+{
+  const g = ctx.createRadialGradient(540, 900, 300, 540, 960, 1250);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,0.75)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const t = ctx.createLinearGradient(0, 0, 0, 560); t.addColorStop(0, 'rgba(0,0,0,0.85)'); t.addColorStop(1, 'rgba(0,0,0,0)'); ctx.fillStyle = t; ctx.fillRect(0, 0, W, 560);
+  const b = ctx.createLinearGradient(0, 1480, 0, H); b.addColorStop(0, 'rgba(0,0,0,0)'); b.addColorStop(1, 'rgba(0,0,0,0.85)'); ctx.fillStyle = b; ctx.fillRect(0, 1480, W, H - 1480);
+}
+// 几颗带十字星芒的亮星（镜头感）
+for (const [x, y, k] of [[936, 262, 1.0], [868, 1452, 0.8], [182, 1520, 0.7], [650, 1388, 0.5], [1010, 1080, 0.6], [300, 1830, 0.6], [80, 1290, 0.45]]) {
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  const g = ctx.createRadialGradient(x, y, 0, x, y, 26 * k); g.addColorStop(0, 'rgba(255,240,225,0.9)'); g.addColorStop(0.2, 'rgba(200,215,255,0.35)'); g.addColorStop(1, 'rgba(200,215,255,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 26 * k, 0, Math.PI * 2); ctx.fill();
+  for (const [dx, dy, l] of [[1, 0, 60], [0, 1, 60], [0.7, 0.7, 22], [0.7, -0.7, 22]]) {
+    const L = l * k, lg = ctx.createLinearGradient(x - dx * L, y - dy * L, x + dx * L, y + dy * L);
+    lg.addColorStop(0, 'rgba(210,225,255,0)'); lg.addColorStop(0.5, 'rgba(235,240,255,0.75)'); lg.addColorStop(1, 'rgba(210,225,255,0)');
+    ctx.strokeStyle = lg; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x - dx * L, y - dy * L); ctx.lineTo(x + dx * L, y + dy * L); ctx.stroke();
+  }
+  ctx.restore();
+}
+// 宇航员：小小一个，被吸积盘的光勾出一道金边
+function astronaut(x, y, s, rot) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s);
+  const body = new Path2D();
+  body.ellipse(0, -30, 14, 13, 0, 0, Math.PI * 2);               // 头盔
+  body.roundRect(-15, -18, 30, 36, 9);                           // 身体
+  body.roundRect(-24, -14, 10, 30, 5);                           // 背包
+  body.roundRect(13, -14, 9, 26, 4.5);                           // 右臂
+  body.roundRect(-14, 16, 11, 26, 5); body.roundRect(3, 16, 11, 24, 5);   // 腿
+  ctx.fillStyle = '#06070a'; ctx.fill(body);
+  ctx.restore();
+  // 金边：身体减去往左下挪一点的身体，剩下右上边一条
+  const off = document.createElement('canvas'); off.width = 200; off.height = 200; const oc = off.getContext('2d');
+  oc.translate(100, 100); oc.rotate(rot); oc.scale(s, s);
+  oc.fillStyle = 'rgba(255,196,120,1)'; oc.fill(body);
+  oc.globalCompositeOperation = 'destination-out'; oc.setTransform(1, 0, 0, 1, 0, 0); oc.translate(100 - 2.6, 100 + 3.2); oc.rotate(rot); oc.scale(s, s); oc.fill(body);
+  ctx.save(); ctx.shadowColor = 'rgba(255,160,70,0.9)'; ctx.shadowBlur = 10; ctx.drawImage(off, x - 100, y - 100); ctx.restore();
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.scale(s, s);
+  ctx.fillStyle = 'rgba(255,205,150,0.55)'; ctx.beginPath(); ctx.ellipse(5, -32, 6.5, 4.5, -0.4, 0, Math.PI * 2); ctx.fill();   // 面罩反光
+  ctx.restore();
+}
+// 越往里越红的拖尾
+{
+  const g = ctx.createLinearGradient(250, 1430, 395, 1290); g.addColorStop(0, 'rgba(255,60,30,0)'); g.addColorStop(1, 'rgba(255,90,50,0.35)');
+  ctx.strokeStyle = g; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(250, 1430); ctx.lineTo(392, 1292); ctx.stroke();
+}
+astronaut(410, 1272, 1.15, 0.6);
+// 颗粒
+{
+  const img = ctx.getImageData(0, 0, W, H), d = img.data; let s = 3;
+  for (let i = 0; i < W * H; i++) { s = (Math.imul(s, 1664525) + 1013904223) >>> 0; const n = (s / 4294967296 - 0.5) * 10; d[i * 4] += n; d[i * 4 + 1] += n; d[i * 4 + 2] += n; }
+  ctx.putImageData(img, 0, 0);
+}
+fontsReady.then(() => {
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = 'rgba(255,214,160,0.9)'; ctx.font = '500 22px "IBM Plex Mono"'; ctx.textAlign = 'left';
+  ctx.letterSpacing = '6px'; ctx.fillText('DEEP SPACE / 07', 84, 160);
+  ctx.letterSpacing = '10px'; ctx.fillStyle = '#ffffff'; ctx.font = '300 96px "Noto Sans SC"';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 20;
+  ctx.fillText('掉进黑洞，', 76, 290); ctx.fillText('会看到什么？', 76, 410);
+  ctx.letterSpacing = '3px'; ctx.font = '400 36px "Noto Sans SC"'; ctx.fillStyle = 'rgba(255,225,190,0.92)';
+  ctx.fillText('在远处的人眼里，你永远掉不进去', 82, 480);
+  ctx.shadowBlur = 0;
+  // HUD 标注
+  function hud(x, y, tx, ty, text, align = 'left') {
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(x, y); ctx.lineTo(x + (align === 'left' ? 46 : -46), y); ctx.stroke();
+    ctx.beginPath(); ctx.arc(tx, ty, 5, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.88)'; ctx.font = '400 28px "Noto Sans SC"'; ctx.letterSpacing = '4px'; ctx.textAlign = align;
+    ctx.fillText(text, x + (align === 'left' ? 56 : -56), y + 10); ctx.textAlign = 'left';
+  }
+  hud(250, 1206, 150, 1040, '吸积盘', 'right');
+  hud(744, 1232, 742, 1010, '光子环', 'left');
+  ctx.textAlign = 'center'; ctx.letterSpacing = '6px';
+  ctx.fillStyle = 'rgba(255,255,255,0.86)'; ctx.font = '400 30px "Noto Sans SC"'; ctx.fillText('黑洞阴影', 527, 812);
+  ctx.letterSpacing = '2px'; ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.font = '300 24px "Noto Sans SC"'; ctx.fillText('连光都逃不出来', 527, 852);
+  // 字幕
+  ctx.letterSpacing = '2px'; ctx.font = '500 42px "Noto Sans SC"'; ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 14;
+  ctx.fillText('你会越掉越慢、越来越红，', 540, 1660); ctx.fillText('最后暗到看不见', 540, 1722);
+  ctx.shadowBlur = 0;
+  window.__done = true;
+});
+</script>
+</body>
+</html>

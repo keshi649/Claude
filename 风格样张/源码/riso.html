@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>孔版颗粒插画 · 洗澡想点子</title>
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/900.css">
+<link rel="stylesheet" href="node_modules/@fontsource/zcool-kuaile/400.css">
+<style>html,body{margin:0;background:#f6f1e6} canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+const W = 1080, H = 1920, TAU = Math.PI * 2;
+const fontsReady = Promise.all([
+  document.fonts.load('900 100px "Noto Sans SC"', '为什么洗澡时最容易冒出好点子？'),
+  document.fonts.load('700 36px "Noto Sans SC"', '关键不在水，在你终于不用专心了日常的科学'),
+  document.fonts.load('700 42px "Noto Sans SC"', '不用专心盯着任何事的时候，大脑反而爱把不相干的念头连起来'),
+  document.fonts.load('44px "ZCOOL KuaiLe"', '走神的时候，大脑也在干活'),
+]);
+let seed = 8;
+function rnd() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
+
+// 三种油墨，各自一张“版”（只存浓度），最后按孔版印刷的方式叠印
+const INKS = {
+  blue:   { rgb: [0, 120, 191],  off: [0, 0] },
+  pink:   { rgb: [255, 72, 176], off: [4, -3] },
+  yellow: { rgb: [255, 232, 0],  off: [-3, 3] },
+};
+for (const k in INKS) { const c = document.createElement('canvas'); c.width = W; c.height = H; INKS[k].cv = c; INKS[k].ctx = c.getContext('2d', { willReadFrequently: true }); }
+// 不透明的东西：先在每张版上把这块挖掉，再按各色浓度填上（遮住后面的东西）
+function paint(shape, dens) {
+  for (const k in INKS) {
+    const c = INKS[k].ctx; c.save(); c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000'; shape(c); c.fill(); c.restore();
+    if (dens[k]) { c.save(); c.fillStyle = `rgba(0,0,0,${dens[k]})`; shape(c); c.fill(); c.restore(); }
+  }
+}
+// 半透明叠印（蒸汽之类）：只往对应的版上加，不挖别的版
+function overprint(shape, dens) { for (const k in dens) { const c = INKS[k].ctx; c.save(); c.fillStyle = `rgba(0,0,0,${dens[k]})`; shape(c); c.fill(); c.restore(); } }
+function line(ink, fn, w = 6, d = 1, dash) {
+  const c = INKS[ink].ctx; c.save(); c.strokeStyle = `rgba(0,0,0,${d})`; c.lineWidth = w; c.lineCap = 'round'; c.lineJoin = 'round'; if (dash) c.setLineDash(dash);
+  c.beginPath(); fn(c); c.stroke(); c.restore();
+}
+function knockout(shape) { for (const k in INKS) { const c = INKS[k].ctx; c.save(); c.globalCompositeOperation = 'destination-out'; c.fillStyle = '#000'; shape(c); c.fill(); c.restore(); } }
+const circle = (x, y, r) => c => { c.beginPath(); c.arc(x, y, r, 0, TAU); };
+const ellipse = (x, y, rx, ry, rot = 0) => c => { c.beginPath(); c.ellipse(x, y, rx, ry, rot, 0, TAU); };
+const rrect = (x, y, w, h, r) => c => { c.beginPath(); c.roundRect(x, y, w, h, r); };
+const cloud = parts => c => { c.beginPath(); for (const [x, y, r] of parts) { c.moveTo(x + r, y); c.arc(x, y, r, 0, TAU); } };
+
+fontsReady.then(() => {
+  /* ---------- 背景：墙砖、地面、地垫 ---------- */
+  for (let x = 48; x < W; x += 96) line('blue', c => { c.moveTo(x, 470); c.lineTo(x, 1420); }, 4, 0.32);
+  for (let y = 470; y < 1420; y += 96) line('blue', c => { c.moveTo(0, y); c.lineTo(W, y); }, 4, 0.32);
+  overprint(c => { c.beginPath(); c.rect(0, 1412, W, H - 1412); }, { blue: 0.28 });
+  paint(rrect(70, 1440, 420, 110, 30), { yellow: 0.9 });
+  for (let i = 0; i < 4; i++) paint(rrect(100 + i * 100, 1440, 40, 110, 0), { yellow: 0.9, pink: 0.85 });
+  // 身后一个大黄圆
+  overprint(circle(540, 900, 330), { yellow: 0.85 });
+
+  /* ---------- 蒸汽 + 点子 ---------- */
+  overprint(cloud([[600, 690, 150], [470, 640, 110], [740, 610, 120], [380, 720, 90], [820, 720, 90], [560, 560, 110]]), { pink: 0.2 });
+  overprint(cloud([[300, 610, 120], [200, 560, 80], [420, 540, 90], [880, 560, 110], [960, 640, 70]]), { yellow: 0.45, pink: 0.08 });
+  // 从头顶往上冒的小泡泡
+  for (const [x, y, r] of [[560, 790, 12], [585, 755, 17], [605, 712, 22]]) { paint(circle(x, y, r), {}); line('blue', c => c.arc(x, y, r, 0, TAU), 4); }
+  // 点子之间连起来的虚线
+  const nodes = { bulb: [610, 610], puzzle: [330, 680], rocket: [850, 660], note: [210, 540], plane: [440, 500] };
+  for (const [a, b] of [['bulb', 'puzzle'], ['bulb', 'rocket'], ['puzzle', 'note'], ['note', 'plane'], ['plane', 'bulb'], ['plane', 'rocket']])
+    line('blue', c => { c.moveTo(...nodes[a]); c.lineTo(...nodes[b]); }, 4, 0.9, [2, 12]);
+  // 灯泡
+  {
+    const [x, y] = nodes.bulb;
+    for (let k = 0; k < 9; k++) { const a = -Math.PI * (0.08 + k * 0.105); line('pink', c => { c.moveTo(x + Math.cos(a) * 70, y + Math.sin(a) * 70); c.lineTo(x + Math.cos(a) * 98, y + Math.sin(a) * 98); }, 8); }
+    paint(c => { c.beginPath(); c.arc(x, y, 52, Math.PI * 0.78, Math.PI * 2.22); c.lineTo(x + 24, y + 70); c.lineTo(x - 24, y + 70); c.closePath(); }, { yellow: 1 });
+    line('blue', c => { c.arc(x, y, 52, Math.PI * 0.78, Math.PI * 2.22); c.lineTo(x + 24, y + 70); c.lineTo(x - 24, y + 70); c.closePath(); }, 6);
+    paint(rrect(x - 26, y + 72, 52, 34, 8), { blue: 1 });
+    knockout(c => { c.beginPath(); c.rect(x - 26, y + 83, 52, 4); c.rect(x - 26, y + 94, 52, 4); });
+    line('blue', c => { c.moveTo(x - 14, y + 34); c.lineTo(x - 6, y - 4); c.lineTo(x + 6, y - 4); c.lineTo(x + 14, y + 34); }, 4);
+  }
+  // 两块拼图（快要拼上了）
+  function piece(c, x, y, s, knobRight) {
+    c.beginPath(); c.moveTo(x, y); c.lineTo(x + s, y);
+    if (knobRight) { c.lineTo(x + s, y + s * 0.32); c.arc(x + s + s * 0.16, y + s / 2, s * 0.2, Math.PI * 1.2, Math.PI * 0.8); c.lineTo(x + s, y + s); }
+    else { c.lineTo(x + s, y + s); }
+    c.lineTo(x, y + s);
+    if (!knobRight) { c.lineTo(x, y + s * 0.68); c.arc(x + s * 0.16, y + s / 2, s * 0.2, Math.PI * 0.8, Math.PI * 1.2, true); }
+    c.closePath();
+  }
+  {
+    const [x, y] = nodes.puzzle;
+    paint(c => piece(c, x - 120, y - 40, 84, true), { pink: 1 });
+    line('blue', c => piece(c, x - 120, y - 40, 84, true), 5);
+    paint(c => piece(c, x + 10, y - 30, 84, false), { blue: 1 });
+  }
+  // 火箭
+  {
+    const [x, y] = nodes.rocket, a = -0.75;
+    const R = (px, py) => [x + px * Math.cos(a) - py * Math.sin(a), y + px * Math.sin(a) + py * Math.cos(a)];
+    const body = c => { c.beginPath(); c.moveTo(...R(70, 0)); c.quadraticCurveTo(...R(40, -30), ...R(-40, -26)); c.lineTo(...R(-40, 26)); c.quadraticCurveTo(...R(40, 30), ...R(70, 0)); c.closePath(); };
+    overprint(c => { c.beginPath(); c.moveTo(...R(-40, -18)); c.lineTo(...R(-100, 0)); c.lineTo(...R(-40, 18)); c.closePath(); }, { yellow: 1, pink: 0.6 });
+    paint(c => { c.beginPath(); c.moveTo(...R(-20, -24)); c.lineTo(...R(-50, -48)); c.lineTo(...R(-44, -20)); c.closePath(); c.moveTo(...R(-20, 24)); c.lineTo(...R(-50, 48)); c.lineTo(...R(-44, 20)); c.closePath(); }, { blue: 1 });
+    paint(body, { pink: 1 });
+    line('blue', body, 5);
+    paint(circle(...R(18, 0), 13), {}); line('blue', c => c.arc(...R(18, 0), 13, 0, TAU), 5);
+  }
+  // 音符
+  {
+    const [x, y] = nodes.note;
+    paint(ellipse(x - 26, y + 40, 17, 12, -0.4), { blue: 1 }); paint(ellipse(x + 30, y + 30, 17, 12, -0.4), { blue: 1 });
+    line('blue', c => { c.moveTo(x - 11, y + 36); c.lineTo(x - 11, y - 34); c.lineTo(x + 45, y - 44); c.lineTo(x + 45, y + 26); }, 7);
+  }
+  // 纸飞机
+  {
+    const [x, y] = nodes.plane;
+    const pl = c => { c.beginPath(); c.moveTo(x + 58, y - 30); c.lineTo(x - 60, y + 4); c.lineTo(x - 14, y + 16); c.closePath(); };
+    paint(pl, {}); line('blue', pl, 5);
+    line('blue', c => { c.moveTo(x + 58, y - 30); c.lineTo(x - 14, y + 16); c.lineTo(x - 8, y + 44); c.lineTo(x + 6, y + 22); }, 5);
+  }
+
+  /* ---------- 泡澡的人 ---------- */
+  const SKIN = { pink: 0.3, yellow: 0.42 };
+  paint(ellipse(520, 1090, 160, 80), SKIN);                 // 肩膀
+  paint(rrect(486, 980, 68, 90, 20), SKIN);                 // 脖子
+  paint(circle(432, 935, 22), SKIN); paint(circle(610, 935, 22), SKIN);   // 耳朵
+  paint(circle(521, 925, 94), SKIN);                        // 头
+  line('blue', c => { c.arc(521, 925, 94, 0, TAU); }, 6);
+  // 毛巾包头
+  const towel = c => { c.beginPath(); c.ellipse(522, 842, 118, 66, 0.05, Math.PI * 0.95, Math.PI * 2.05); c.quadraticCurveTo(560, 900, 522, 896); c.quadraticCurveTo(470, 900, 405, 860); c.closePath(); c.moveTo(612, 776); c.ellipse(572, 776, 46, 40, 0.3, 0, TAU); };
+  paint(towel, { yellow: 1, pink: 0.12 });
+  line('blue', towel, 6);
+  line('blue', c => { c.moveTo(440, 830); c.quadraticCurveTo(520, 860, 610, 816); }, 4);
+  line('blue', c => { c.moveTo(452, 802); c.quadraticCurveTo(520, 828, 600, 794); }, 4);
+  // 闭眼、微笑、脸红
+  overprint(circle(468, 965, 18), { pink: 0.85 }); overprint(circle(576, 965, 18), { pink: 0.85 });
+  line('blue', c => { c.arc(488, 932, 15, 0.15 * Math.PI, 0.85 * Math.PI); }, 6);
+  line('blue', c => { c.arc(556, 932, 15, 0.15 * Math.PI, 0.85 * Math.PI); }, 6);
+  line('blue', c => { c.arc(522, 962, 22, 0.2 * Math.PI, 0.8 * Math.PI); }, 6);
+  // 膝盖露出泡泡
+  paint(circle(730, 1066, 44), SKIN); paint(circle(808, 1056, 40), SKIN);
+  line('blue', c => { c.arc(730, 1066, 44, Math.PI, TAU); }, 6); line('blue', c => { c.arc(808, 1056, 40, Math.PI, TAU); }, 6);
+  // 泡泡（留白，蓝圈）
+  const foam = [[260, 1060, 34], [310, 1040, 40], [370, 1066, 30], [640, 1052, 38], [600, 1074, 30], [690, 1080, 26], [860, 1060, 34], [900, 1074, 26], [430, 1078, 26], [220, 1080, 24]];
+  for (const [x, y, r] of foam) { paint(circle(x, y, r), {}); line('blue', c => c.arc(x, y, r, Math.PI * 0.9, Math.PI * 2.1), 4); }
+  /* ---------- 浴缸 ---------- */
+  const tub = c => { c.beginPath(); c.moveTo(140, 1094); c.lineTo(940, 1094); c.bezierCurveTo(940, 1300, 880, 1404, 720, 1410); c.lineTo(360, 1410); c.bezierCurveTo(200, 1404, 140, 1300, 140, 1094); c.closePath(); };
+  for (const x of [250, 830]) { const ft = c => { c.beginPath(); c.moveTo(x - 30, 1380); c.quadraticCurveTo(x, 1480, x + 34, 1452); c.quadraticCurveTo(x + 10, 1420, x + 30, 1380); c.closePath(); }; paint(ft, { blue: 1 }); }
+  paint(tub, { pink: 1 });
+  line('blue', tub, 6);
+  knockout(c => { c.beginPath(); c.moveTo(196, 1150); c.bezierCurveTo(196, 1260, 230, 1330, 300, 1366); c.lineTo(286, 1376); c.bezierCurveTo(206, 1334, 178, 1260, 180, 1150); c.closePath(); });
+  paint(rrect(108, 1064, 864, 46, 23), { pink: 1, yellow: 0.25 });
+  line('blue', c => c.roundRect(108, 1064, 864, 46, 23), 6);
+  // 搭在浴缸边上的胳膊
+  const arm = c => { c.beginPath(); c.moveTo(410, 1046); c.quadraticCurveTo(300, 1036, 236, 1060); c.lineTo(224, 1112); c.quadraticCurveTo(300, 1086, 404, 1092); c.closePath(); };
+  paint(arm, SKIN); line('blue', arm, 6);
+  paint(circle(222, 1104, 30), SKIN); line('blue', c => c.arc(222, 1104, 30, Math.PI * 0.35, Math.PI * 1.75), 6);
+  // 小黄鸭
+  paint(ellipse(892, 1040, 52, 34), { yellow: 1 }); paint(circle(910, 994, 27), { yellow: 1 });
+  paint(c => { c.beginPath(); c.moveTo(930, 990); c.lineTo(966, 998); c.lineTo(932, 1008); c.closePath(); }, { yellow: 1, pink: 0.85 });
+  line('blue', c => { c.ellipse(892, 1040, 52, 34, 0, 0, TAU); }, 5); line('blue', c => { c.arc(910, 994, 27, 0, TAU); }, 5);
+  paint(circle(916, 986, 4.5), { blue: 1 });
+  line('blue', c => { c.moveTo(870, 1028); c.quadraticCurveTo(892, 1046, 912, 1030); }, 4);
+
+  /* ---------- 字 ---------- */
+  const T = (ink, d, font, text, x, y, align = 'left') => { const c = INKS[ink].ctx; c.save(); c.fillStyle = `rgba(0,0,0,${d})`; c.font = font; c.textAlign = align; c.fillText(text, x, y); c.restore(); };
+  T('pink', 1, '700 30px "Noto Sans SC"', '日常的科学 · NO.08', 76, 150);
+  overprint(c => { c.beginPath(); c.rect(562, 322, 320, 56); }, { pink: 1 });          // “好点子”底下一道荧光粉
+  T('blue', 1, '900 100px "Noto Sans SC"', '为什么洗澡时', 70, 262);
+  T('blue', 1, '900 100px "Noto Sans SC"', '最容易冒出好点子？', 70, 380);
+  T('blue', 0.92, '700 36px "Noto Sans SC"', '关键不在水，在你终于不用专心了', 76, 448);
+  T('pink', 1, '44px "ZCOOL KuaiLe"', '走神的时候，', 60, 880);
+  T('pink', 1, '44px "ZCOOL KuaiLe"', '大脑也在干活', 60, 934);
+  line('pink', c => { c.moveTo(330, 900); c.quadraticCurveTo(370, 880, 400, 866); }, 6);
+  line('pink', c => { c.moveTo(384, 852); c.lineTo(404, 864); c.lineTo(388, 884); }, 6);
+  // 字幕：整块蓝，字留白
+  overprint(rrect(60, 1612, 960, 150, 20), { blue: 1 });
+  knockout(c => { c.font = '700 42px "Noto Sans SC"'; c.textAlign = 'center'; c.beginPath(); c.fillText('不用专心盯着任何事的时候，', 540, 1676); c.fillText('大脑反而爱把不相干的念头连起来', 540, 1734); c.rect(0, 0, 0, 0); });
+
+  /* ---------- 印刷：颗粒 + 套色偏移 + 正片叠底 ---------- */
+  const out = document.getElementById('c').getContext('2d', { willReadFrequently: true });
+  const img = out.createImageData(W, H), D = img.data;
+  const paper = [246, 241, 230];
+  // 纸
+  for (let i = 0; i < W * H; i++) { const g = (rnd() - 0.5) * 10; D[i * 4] = paper[0] + g; D[i * 4 + 1] = paper[1] + g; D[i * 4 + 2] = paper[2] + g; D[i * 4 + 3] = 255; }
+  for (const k of ['yellow', 'pink', 'blue']) {
+    const ink = INKS[k], src = ink.ctx.getImageData(0, 0, W, H).data, [ox, oy] = ink.off;
+    // 2px 一粒的颗粒噪声 + 大块的墨色不匀
+    const gw = W / 2 | 0, gh = H / 2 | 0, grain = new Float32Array(gw * gh);
+    for (let i = 0; i < grain.length; i++) grain[i] = rnd();
+    const lw = Math.ceil(W / 60) + 1, low = new Float32Array(lw * (Math.ceil(H / 60) + 1)); for (let i = 0; i < low.length; i++) low[i] = rnd();
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const sx = x - ox, sy = y - oy; if (sx < 0 || sy < 0 || sx >= W || sy >= H) continue;
+      const d = src[(sy * W + sx) * 4 + 3] / 255; if (d < 0.01) continue;
+      const g = grain[(y >> 1) * gw + (x >> 1)] * 0.7 + rnd() * 0.3;
+      const fx = x / 60, fy = y / 60, ix = fx | 0, iy = fy | 0, tx = fx - ix, ty = fy - iy;
+      const l00 = low[iy * lw + ix], l10 = low[iy * lw + ix + 1] ?? l00, l01 = low[(iy + 1) * lw + ix] ?? l00, l11 = low[(iy + 1) * lw + ix + 1] ?? l00;
+      const sm = v => v * v * (3 - 2 * v), u = 0.91 + 0.09 * (l00 + (l10 - l00) * sm(tx) + (l01 - l00) * sm(ty) + (l00 - l10 - l01 + l11) * sm(tx) * sm(ty));
+      let a = Math.min(1, Math.max(0, (d - g * 0.9 + 0.08) / 0.16)) * u * (d > 0.97 ? 1 : 0.96);
+      if (a <= 0) continue;
+      const i = (y * W + x) * 4;
+      D[i] *= 1 - a + a * ink.rgb[0] / 255; D[i + 1] *= 1 - a + a * ink.rgb[1] / 255; D[i + 2] *= 1 - a + a * ink.rgb[2] / 255;
+    }
+  }
+  out.putImageData(img, 0, 0);
+  window.__done = true;
+});
+</script>
+</body>
+</html>

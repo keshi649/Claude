@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>蓝图拆解 · 拉链</title>
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/900.css">
+<link rel="stylesheet" href="node_modules/@fontsource/ibm-plex-mono/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/zcool-kuaile/400.css">
+<style>
+  html, body { margin: 0; background: #082c5c; }
+  svg { display: block; }
+  .mono { font-family: "IBM Plex Mono", monospace; }
+  .sans { font-family: "Noto Sans SC", sans-serif; }
+  .hand { font-family: "ZCOOL KuaiLe", cursive; }
+</style>
+</head>
+<body>
+<svg id="s" width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="46%" r="75%">
+      <stop offset="0" stop-color="#1767b3"/>
+      <stop offset="0.55" stop-color="#0d4486"/>
+      <stop offset="1" stop-color="#06234a"/>
+    </radialGradient>
+    <pattern id="gridMinor" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#cfe8ff" stroke-opacity="0.07" stroke-width="1"/>
+    </pattern>
+    <pattern id="gridMajor" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M120 0H0V120" fill="none" stroke="#cfe8ff" stroke-opacity="0.16" stroke-width="1"/>
+    </pattern>
+    <pattern id="hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#e9f5ff" stroke-width="1.6" stroke-opacity="0.75"/>
+    </pattern>
+    <pattern id="hatch2" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
+      <line x1="0" y1="0" x2="0" y2="10" stroke="#e9f5ff" stroke-width="1.6" stroke-opacity="0.75"/>
+    </pattern>
+    <pattern id="weave" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(30)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#cfe8ff" stroke-width="1" stroke-opacity="0.13"/>
+    </pattern>
+    <filter id="paper" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="7" result="n"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.09 0"/>
+    </filter>
+    <filter id="mottle" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.004" numOctaves="3" seed="3"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.02  0 0 0 0 0.08  0 0 0 0 0.2  0 0 0 0.55 -0.12"/>
+    </filter>
+    <filter id="glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="2.2" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="marker" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <clipPath id="detailClip"><circle cx="770" cy="1100" r="148"/></clipPath>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12" orient="auto-start-reverse">
+      <path d="M0 1.5 L10 5 L0 8.5 Z" fill="#e9f5ff"/>
+    </marker>
+    <marker id="arrY" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0 0.5 L10 5 L0 9.5" fill="none" stroke="#ffc53d" stroke-width="2.2"/>
+    </marker>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#bg)"/>
+  <rect width="1080" height="1920" filter="url(#mottle)"/>
+  <rect width="1080" height="1920" fill="url(#gridMinor)"/>
+  <rect width="1080" height="1920" fill="url(#gridMajor)"/>
+  <linearGradient id="creaseH" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".07"/><stop offset=".51" stop-color="#000" stop-opacity=".10"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+  <linearGradient id="creaseV" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".06"/><stop offset=".51" stop-color="#000" stop-opacity=".09"/><stop offset="1" stop-color="#000" stop-opacity="0"/></linearGradient>
+  <rect x="0" y="940" width="1080" height="40" fill="url(#creaseH)"/>
+  <rect x="520" y="0" width="40" height="1920" fill="url(#creaseV)"/>
+  <g id="frame"></g>
+  <g id="draw" filter="url(#glow)"></g>
+  <g id="notes"></g>
+  <rect width="1080" height="1920" filter="url(#paper)" style="mix-blend-mode:overlay"/>
+</svg>
+<script>
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs = {}, parent, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  (parent || document.getElementById('draw')).appendChild(e);
+  return e;
+}
+const W = '#e9f5ff';           // 线条白
+const CY = '#9fd3ff';          // 浅青（说明文字）
+const AMBER = '#ffc53d';       // 手写批注
+const frame = document.getElementById('frame');
+const draw = document.getElementById('draw');
+const notes = document.getElementById('notes');
+
+/* ---------- 图纸外框 + 分区刻度 ---------- */
+el('rect', { x: 34, y: 34, width: 1012, height: 1852, fill: 'none', stroke: W, 'stroke-opacity': 0.55, 'stroke-width': 3 }, frame);
+el('rect', { x: 48, y: 48, width: 984, height: 1824, fill: 'none', stroke: W, 'stroke-opacity': 0.35, 'stroke-width': 1.2 }, frame);
+for (let i = 0; i < 6; i++) {
+  const x = 48 + 984 / 6 * (i + 0.5);
+  el('text', { x, y: 44, 'text-anchor': 'middle', 'font-size': 12, fill: CY, 'fill-opacity': .7, class: 'mono' }, frame, String(i + 1));
+  if (i) el('line', { x1: 48 + 984 / 6 * i, y1: 34, x2: 48 + 984 / 6 * i, y2: 48, stroke: W, 'stroke-opacity': .5 }, frame);
+}
+for (let i = 0; i < 10; i++) {
+  const y = 48 + 1824 / 10 * (i + 0.5);
+  el('text', { x: 41, y: y + 4, 'text-anchor': 'middle', 'font-size': 12, fill: CY, 'fill-opacity': .7, class: 'mono' }, frame, 'ABCDEFGHJK'[i]);
+  if (i) el('line', { x1: 34, y1: 48 + 1824 / 10 * i, x2: 48, y2: 48 + 1824 / 10 * i, stroke: W, 'stroke-opacity': .5 }, frame);
+}
+
+/* ---------- 标题 ---------- */
+el('text', { x: 84, y: 150, 'font-size': 28, fill: CY, 'letter-spacing': 3, class: 'sans', 'font-weight': 500 }, notes, '拆开看');
+el('text', { x: 186, y: 150, 'font-size': 26, fill: CY, 'letter-spacing': 5, class: 'mono' }, notes, '/ TEARDOWN NO.01');
+el('rect', { x: 84, y: 168, width: 64, height: 5, fill: AMBER }, notes);
+el('text', { x: 80, y: 290, 'font-size': 112, 'font-weight': 900, fill: '#ffffff', class: 'sans', 'letter-spacing': 2 }, notes, '拉链为什么');
+el('text', { x: 80, y: 418, 'font-size': 112, 'font-weight': 900, fill: '#ffffff', class: 'sans', 'letter-spacing': 2 }, notes, '一拉就合上？');
+el('text', { x: 84, y: 486, 'font-size': 36, 'font-weight': 400, fill: CY, class: 'sans', 'letter-spacing': 1 }, notes, '拆开拉头，里面只有一条 Y 形通道');
+
+/* ---------- 链牙路径 ---------- */
+const cx = 400;
+function bez2(p0, p1, p2, t) { const a = (1 - t) * (1 - t), b = 2 * (1 - t) * t, c = t * t; return [a * p0[0] + b * p1[0] + c * p2[0], a * p0[1] + b * p1[1] + c * p2[1]]; }
+function bez3(p0, p1, p2, p3, t) { const a = (1 - t) ** 3, b = 3 * (1 - t) ** 2 * t, c = 3 * (1 - t) * t * t, d = t ** 3;
+  return [a * p0[0] + b * p1[0] + c * p2[0] + d * p3[0], a * p0[1] + b * p1[1] + c * p2[1] + d * p3[1]]; }
+// 左排中心线：上面张开 → 拉头里收拢 → 下面咬合
+const leftPts = [];
+for (let i = 0; i <= 200; i++) leftPts.push(bez2([cx - 236, 560], [cx - 96, 716], [cx - 72, 884], i / 200));
+for (let i = 1; i <= 200; i++) leftPts.push(bez3([cx - 72, 884], [cx - 66, 950], [cx - 24, 1000], [cx - 24, 1084], i / 200));
+for (let i = 1; i <= 200; i++) leftPts.push([cx - 24, 1084 + 396 * i / 200]);
+function resample(pts) {
+  const s = [0];
+  for (let i = 1; i < pts.length; i++) s.push(s[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  return { pts, s, len: s[s.length - 1] };
+}
+const L = resample(leftPts);
+function at(path, d) {
+  let i = 1; while (i < path.s.length - 1 && path.s[i] < d) i++;
+  const t = (d - path.s[i - 1]) / (path.s[i] - path.s[i - 1] || 1);
+  const a = path.pts[i - 1], b = path.pts[i];
+  const x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t;
+  const tl = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+  return { x, y, tx: (b[0] - a[0]) / tl, ty: (b[1] - a[1]) / tl };
+}
+const P = 34;              // 齿距
+const TH = P * 0.56;       // 牙厚
+const TL = 76;             // 牙长
+function offsetLine(path, off, mirror, d0 = 0, d1 = path.len) {
+  const out = [];
+  for (let d = d0; d <= d1; d += 6) {
+    const q = at(path, d); let nx = q.ty, ny = -q.tx;
+    let x = q.x + nx * off, y = q.y + ny * off;
+    if (mirror) x = 2 * cx - x;
+    out.push([x, y]);
+  }
+  return 'M' + out.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L');
+}
+// 布带
+for (const m of [false, true]) {
+  const outer = offsetLine(L, -150, m, 0, L.len), bead = offsetLine(L, -36, m, 0, L.len);
+  // 布带填充：外沿 + 牙根 围成
+  const a = [], b = [];
+  for (let d = 0; d <= L.len; d += 6) {
+    const q = at(L, d); const nx = q.ty, ny = -q.tx;
+    let x1 = q.x - nx * 150, y1 = q.y - ny * 150, x2 = q.x - nx * 36, y2 = q.y - ny * 36;
+    if (m) { x1 = 2 * cx - x1; x2 = 2 * cx - x2; }
+    a.push([x1, y1]); b.push([x2, y2]);
+  }
+  const poly = a.concat(b.reverse()).map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  el('polygon', { points: poly, fill: 'url(#weave)', stroke: 'none' });
+  el('path', { d: outer, fill: 'none', stroke: W, 'stroke-width': 2.4 });
+  el('path', { d: offsetLine(L, -126, m, 0, L.len), fill: 'none', stroke: W, 'stroke-width': 1.3, 'stroke-dasharray': '7 6', 'stroke-opacity': .7 });
+  el('path', { d: bead, fill: 'none', stroke: W, 'stroke-width': 1.4, 'stroke-dasharray': '12 5 2 5', 'stroke-opacity': .65 });
+}
+// 链牙
+function tooth(q, mirror, hidden) {
+  let nx = q.ty, ny = -q.tx;              // 指向对面那排
+  let { x, y } = q;
+  if (mirror) { x = 2 * cx - x; nx = -nx; }
+  const ang = Math.atan2(ny, nx) * 180 / Math.PI;
+  const g = el('g', { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${ang.toFixed(2)})` });
+  const h = TH / 2, r = h;
+  el('path', { d: `M${-TL / 2} ${-h} H${TL / 2 - r} A${r} ${r} 0 0 1 ${TL / 2 - r} ${h} H${-TL / 2} Z`,
+    fill: '#0d4486', 'fill-opacity': 0.9, stroke: W, 'stroke-width': hidden ? 1.6 : 2.4, 'stroke-dasharray': hidden ? '5 4' : 'none' }, g);
+  el('line', { x1: -TL / 2 + 13, y1: -h, x2: -TL / 2 + 13, y2: h, stroke: W, 'stroke-width': 1.3, 'stroke-opacity': .8 }, g);
+  el('circle', { cx: TL / 2 - 14, cy: 0, r: 4.6, fill: 'none', stroke: W, 'stroke-width': 1.6 }, g);
+}
+const teeth = [];
+for (let d = 10; d < L.len - 6; d += P) teeth.push([d, false]);
+for (let d = 10 + P / 2; d < L.len - 6; d += P) teeth.push([d, true]);
+teeth.sort((a, b) => a[0] - b[0]);
+for (const [d, m] of teeth) { const q = at(L, d); tooth(q, m, q.y > 884 && q.y < 1150); }
+// 上止
+for (const m of [false, true]) {
+  const q = at(L, 0); let nx = q.ty, ny = -q.tx, x = q.x, y = q.y;
+  if (m) { x = 2 * cx - x; nx = -nx; }
+  const ang = Math.atan2(ny, nx) * 180 / Math.PI;
+  const g = el('g', { transform: `translate(${x} ${y}) rotate(${ang})` });
+  el('rect', { x: -58, y: -16, width: 46, height: 14, rx: 3, fill: 'url(#hatch)', stroke: W, 'stroke-width': 2 }, g);
+}
+
+/* ---------- 拉头（假想线外壳 + 内部楔块、通道壁） ---------- */
+const sTop = 884, sBot = 1150;
+el('path', { d: `M${cx - 128} ${sTop + 12} Q${cx - 128} ${sTop} ${cx - 116} ${sTop} H${cx + 116} Q${cx + 128} ${sTop} ${cx + 128} ${sTop + 12}
+  L${cx + 86} ${sBot - 6} Q${cx + 84} ${sBot} ${cx + 78} ${sBot} H${cx - 78} Q${cx - 84} ${sBot} ${cx - 86} ${sBot - 6} Z`,
+  fill: '#0d4486', 'fill-opacity': 0.42, stroke: W, 'stroke-width': 3.2 });
+el('path', { d: `M${cx - 112} ${sTop + 14} L${cx - 74} ${sBot - 12}`, stroke: W, 'stroke-width': 1.2, 'stroke-opacity': .55, fill: 'none' });
+el('path', { d: `M${cx + 112} ${sTop + 14} L${cx + 74} ${sBot - 12}`, stroke: W, 'stroke-width': 1.2, 'stroke-opacity': .55, fill: 'none' });
+// 通道外壁
+for (const s of [-1, 1]) {
+  el('path', { d: `M${cx + s * 118} ${sTop} C${cx + s * 112} ${sTop + 70} ${cx + s * 70} ${sTop + 120} ${cx + s * 68} ${sTop + 200} L${cx + s * 68} ${sBot}`,
+    fill: 'none', stroke: W, 'stroke-width': 2.2 });
+}
+// 楔形隔板（剖面线）
+el('path', { d: `M${cx - 30} ${sTop} H${cx + 30} L${cx + 6} ${sTop + 112} Q${cx} ${sTop + 122} ${cx - 6} ${sTop + 112} Z`,
+  fill: 'url(#hatch)', stroke: W, 'stroke-width': 2.6 });
+// 拉片耳（拉头正面那个桥）
+el('rect', { x: cx - 26, y: sTop + 150, width: 52, height: 92, rx: 14, fill: 'none', stroke: W, 'stroke-width': 2, 'stroke-dasharray': '26 6 4 6' });
+
+/* ---------- 炸开的拉片 ---------- */
+const tabX = 150, tabY = 930;
+el('path', { d: `M${tabX - 38} ${tabY} Q${tabX - 38} ${tabY - 22} ${tabX - 16} ${tabY - 22} H${tabX + 16} Q${tabX + 38} ${tabY - 22} ${tabX + 38} ${tabY}
+  L${tabX + 44} ${tabY + 214} Q${tabX + 44} ${tabY + 240} ${tabX + 18} ${tabY + 240} H${tabX - 18} Q${tabX - 44} ${tabY + 240} ${tabX - 44} ${tabY + 214} Z`,
+  fill: '#0d4486', 'fill-opacity': .6, stroke: W, 'stroke-width': 2.6 });
+el('rect', { x: tabX - 20, y: tabY - 6, width: 40, height: 20, rx: 10, fill: 'none', stroke: W, 'stroke-width': 2.2 });
+el('path', { d: `M${tabX - 26} ${tabY + 44} L${tabX - 30} ${tabY + 210} Q${tabX - 30} ${tabY + 224} ${tabX - 16} ${tabY + 224} H${tabX + 16} Q${tabX + 30} ${tabY + 224} ${tabX + 30} ${tabY + 210} L${tabX + 26} ${tabY + 44} Z`,
+  fill: 'none', stroke: W, 'stroke-width': 1.2, 'stroke-opacity': .6 });
+el('line', { x1: tabX, y1: tabY + 4, x2: cx, y2: sTop + 196, stroke: W, 'stroke-width': 1.3, 'stroke-dasharray': '18 5 3 5', 'stroke-opacity': .8 });
+
+/* ---------- 中心线 ---------- */
+el('line', { x1: cx, y1: 560, x2: cx, y2: 1530, stroke: W, 'stroke-width': 1, 'stroke-dasharray': '30 6 4 6', 'stroke-opacity': .4 });
+
+/* ---------- 尺寸：齿距 p、宽 W ---------- */
+{
+  const x = cx - 205, yA = 1380, yB = 1380 + P;
+  for (const y of [yA, yB]) el('line', { x1: x - 14, y1: y, x2: cx - 160, y2: y, stroke: W, 'stroke-width': 1, 'stroke-opacity': .7 });
+  el('line', { x1: x, y1: yA - 60, x2: x, y2: yA, stroke: W, 'stroke-width': 1.4, 'marker-end': 'url(#arr)' });
+  el('line', { x1: x, y1: yB + 60, x2: x, y2: yB, stroke: W, 'stroke-width': 1.4, 'marker-end': 'url(#arr)' });
+  el('text', { x: x - 16, y: yA - 22, 'text-anchor': 'end', 'font-size': 30, fill: W, class: 'mono', 'font-style': 'italic' }, draw, 'p');
+  // 右排错开 p/2
+  const x2 = cx + 205;
+  const yA2 = 1300, yR = 1300 + P / 2;
+  for (const y of [yA2, yR]) el('line', { x1: cx + 160, y1: y, x2: x2 + 14, y2: y, stroke: W, 'stroke-width': 1, 'stroke-opacity': .7 });
+  el('line', { x1: x2, y1: yA2 - 60, x2: x2, y2: yA2, stroke: W, 'stroke-width': 1.4, 'marker-end': 'url(#arr)' });
+  el('line', { x1: x2, y1: yR + 60, x2: x2, y2: yR, stroke: W, 'stroke-width': 1.4, 'marker-end': 'url(#arr)' });
+  el('text', { x: x2 + 14, y: yR + 52, 'font-size': 30, fill: W, class: 'mono', 'font-style': 'italic' }, draw, 'p/2');
+}
+{
+  const y = 1528, x1 = cx - 62, x2 = cx + 62;
+  for (const x of [x1, x2]) el('line', { x1: x, y1: 1490, x2: x, y2: y + 12, stroke: W, 'stroke-width': 1, 'stroke-opacity': .7 });
+  el('line', { x1: x1 - 50, y1: y, x2: x1, y2: y, stroke: W, 'stroke-width': 1.4, 'marker-end': 'url(#arr)' });
+  el('line', { x1: x2 + 50, y1: y, x2: x2, y2: y, stroke: W, 'stroke-width': 1.4, 'marker-end': 'url(#arr)' });
+  el('text', { x: x2 + 58, y: y + 10, 'font-size': 28, fill: W, class: 'mono', 'font-style': 'italic' }, draw, 'W');
+}
+
+/* ---------- 详图 A：咬合截面（凸点卡进上一颗的凹窝） ---------- */
+const DX = 770, DY = 1100, DR = 148;
+el('circle', { cx: cx, cy: 1118, r: 40, fill: 'none', stroke: W, 'stroke-width': 1.8, 'stroke-dasharray': '10 5' });
+el('rect', { x: cx + 34, y: 1058, width: 30, height: 32, rx: 4, fill: '#0b3c78' });
+el('text', { x: cx + 49, y: 1084, 'text-anchor': 'middle', 'font-size': 26, fill: W, class: 'mono', 'font-weight': 500 }, draw, 'A');
+el('line', { x1: cx + 40, y1: 1114, x2: DX - DR, y2: 1104, stroke: W, 'stroke-width': 1.2, 'stroke-opacity': .8 });
+el('circle', { cx: DX, cy: DY, r: DR, fill: '#0b3c78', 'fill-opacity': .85, stroke: W, 'stroke-width': 2.6 });
+{
+  const g = el('g', { 'clip-path': 'url(#detailClip)' });
+  const bw = 168, bh = 56, rr = 18;
+  for (let i = -3; i <= 3; i++) {
+    const y0 = DY + i * bh - bh / 2, x0 = DX - bw / 2;
+    // 顶面中间鼓一个凸点，底面中间凹一个窝
+    const d = `M${x0} ${y0} H${DX - rr} A${rr} ${rr} 0 0 1 ${DX + rr} ${y0} H${x0 + bw} V${y0 + bh} H${DX + rr} A${rr} ${rr} 0 0 0 ${DX - rr} ${y0 + bh} H${x0} Z`;
+    el('path', { d, fill: i % 2 ? 'url(#hatch)' : 'url(#hatch2)', stroke: W, 'stroke-width': 2.4 }, g);
+  }
+  el('line', { x1: DX - DR, y1: DY, x2: DX + DR, y2: DY, stroke: W, 'stroke-width': 0.8, 'stroke-opacity': .0 }, g);
+}
+// 详图里的标注：小箭头指凸点
+el('text', { x: DX, y: DY + DR + 42, 'text-anchor': 'middle', 'font-size': 27, fill: W, class: 'sans', 'font-weight': 500 }, draw, '凸点卡进上一颗的凹窝');
+el('text', { x: DX, y: DY - DR - 20, 'text-anchor': 'middle', 'font-size': 24, fill: CY, class: 'sans' }, draw, '详图 A · 沿牙头剖开 · 3:1');
+{ const hl = el('g', { filter: 'url(#marker)' }, notes); el('ellipse', { cx: DX, cy: DY - 28, rx: 52, ry: 30, fill: 'none', stroke: AMBER, 'stroke-width': 4.5, 'stroke-dasharray': '300 30' }, hl); }
+
+/* ---------- 编号气泡 ---------- */
+function balloon(n, bx, by, tx, ty, label, anchor = 'start') {
+  el('line', { x1: bx, y1: by, x2: tx, y2: ty, stroke: W, 'stroke-width': 1.3 });
+  el('circle', { cx: tx, cy: ty, r: 4, fill: W });
+  el('circle', { cx: bx, cy: by, r: 21, fill: '#0b3c78', stroke: W, 'stroke-width': 2 });
+  el('text', { x: bx, y: by + 9, 'text-anchor': 'middle', 'font-size': 25, fill: W, class: 'mono', 'font-weight': 500 }, draw, String(n));
+  el('text', { x: anchor === 'start' ? bx + 32 : bx - 32, y: by + 10, 'text-anchor': anchor, 'font-size': 29, fill: W, class: 'sans', 'font-weight': 500 }, draw, label);
+}
+balloon(1, 700, 830, cx + 118, sTop + 60, '拉头');
+balloon(2, 700, 720, cx + 18, sTop + 40, '楔形隔板');
+balloon(3, 700, 610, cx + 162, 660, '链牙');
+balloon(4, 92, 1240, cx - 120, 1230, '布带');
+balloon(5, 120, 860, tabX - 30, tabY + 30, '拉片');
+
+
+/* ---------- 手写批注 ---------- */
+const hn = el('g', { filter: 'url(#marker)' }, notes);
+el('ellipse', { cx: cx, cy: sTop + 70, rx: 150, ry: 92, fill: 'none', stroke: AMBER, 'stroke-width': 5, transform: `rotate(-8 ${cx} ${sTop + 70})`, 'stroke-dasharray': '880 40' }, hn);
+el('text', { x: cx + 14, y: 736, 'text-anchor': 'middle', 'font-size': 58, fill: AMBER, class: 'hand', transform: `rotate(-5 ${cx + 14} 736)` }, hn, '关键！');
+el('path', { d: `M${cx + 4} 768 Q${cx + 14} 812 ${cx + 2} 852`, fill: 'none', stroke: AMBER, 'stroke-width': 4.5, 'marker-end': 'url(#arrY)' }, hn);
+/* 便利贴 */
+{
+  const g = el('g', { transform: 'translate(778 1462) rotate(3)' }, notes);
+  el('rect', { x: -132, y: -74, width: 264, height: 150, fill: '#000', 'fill-opacity': .28, transform: 'translate(6 8)', filter: 'url(#glow)' }, g);
+  el('rect', { x: -132, y: -74, width: 264, height: 150, fill: '#ffd966' }, g);
+  el('rect', { x: -48, y: -88, width: 96, height: 28, fill: '#fff8df', 'fill-opacity': .55, transform: 'rotate(-4)' }, g);
+  el('text', { x: -112, y: -14, 'font-size': 36, fill: '#0b2f63', class: 'hand' }, g, '↑ 往上拉：挤合');
+  el('text', { x: -112, y: 46, 'font-size': 36, fill: '#0b2f63', class: 'hand' }, g, '↓ 往下拉：撬开');
+}
+
+/* ---------- 字幕条 ---------- */
+el('rect', { x: 70, y: 1592, width: 940, height: 132, rx: 10, fill: '#041a38', 'fill-opacity': .78 }, notes);
+el('rect', { x: 70, y: 1592, width: 8, height: 132, fill: AMBER }, notes);
+el('text', { x: 540, y: 1648, 'text-anchor': 'middle', 'font-size': 40, fill: '#ffffff', class: 'sans', 'font-weight': 500 }, notes, '两排牙错开半个齿距，被拉头斜着一挤，');
+el('text', { x: 540, y: 1702, 'text-anchor': 'middle', 'font-size': 40, fill: '#ffffff', class: 'sans', 'font-weight': 500 }, notes, '凸点就一颗颗卡进了凹窝');
+
+/* ---------- 图签 ---------- */
+{
+  const x = 84, y = 1764, w = 560, h = 76;
+  const g = el('g', {}, notes);
+  el('rect', { x, y, width: w, height: h, fill: 'none', stroke: W, 'stroke-opacity': .6, 'stroke-width': 1.5 }, g);
+  el('line', { x1: x, y1: y + h / 2, x2: x + w, y2: y + h / 2, stroke: W, 'stroke-opacity': .4 }, g);
+  for (const xx of [x + 120, x + 330, x + 440]) el('line', { x1: xx, y1: y, x2: xx, y2: y + h, stroke: W, 'stroke-opacity': .4 }, g);
+  const cells = [[x + 12, y + 27, '图名'], [x + 132, y + 27, '拉头工作原理'], [x + 342, y + 27, '比例'], [x + 452, y + 27, '3 : 1'],
+                 [x + 12, y + 65, '图号'], [x + 132, y + 65, 'CK-001'], [x + 342, y + 65, '页'], [x + 452, y + 65, '1 / 1']];
+  for (const [tx, ty, s] of cells) el('text', { x: tx, y: ty, 'font-size': 20, fill: CY, class: /[A-Z0-9]/.test(s) ? 'mono' : 'sans' }, g, s);
+}
+
+document.fonts.ready.then(() => { window.__done = true; });
+</script>
+</body>
+</html>

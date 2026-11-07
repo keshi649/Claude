@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>等距剖面 · 冲马桶</title>
+<link rel="stylesheet" href="node_modules/@fontsource/zcool-kuaile/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/700.css">
+<style>html,body{margin:0;background:#fdf1e6} canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+const W = 1080, H = 1920;
+const cv = document.getElementById('c'), ctx = cv.getContext('2d', { willReadFrequently: true });
+const fontsReady = Promise.all([
+  document.fonts.load('110px "ZCOOL KuaiLe"', '冲完马桶，水去哪了？'),
+  document.fonts.load('500 36px "Noto Sans SC"', '跟着这一冲，走完 6 站路管道都铺得有一点坡度，脏水靠重力一路往下流'),
+  document.fonts.load('700 30px "Noto Sans SC"', '123456马桶化粪池市政污水管提升泵站污水处理厂处理干净再排进河'),
+]);
+let seed = 7;
+function rnd() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
+
+/* ---------- 等距投影 ---------- */
+const U = 54, OX = 540, OY = 700, C30 = 0.8660254;
+const P = (x, y, z = 0) => [OX + (x - y) * U * C30, OY + (x + y) * U * 0.5 - z * U];
+function path(pts) { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.closePath(); }
+function poly(pts3, fill, stroke = 'rgba(40,45,70,0.18)', lw = 1.2) {
+  path(pts3.map(p => P(...p)));
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
+}
+function shade(hex, k) {
+  const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = n >> 8 & 255, b = n & 255;
+  if (k > 0) { r += (255 - r) * k; g += (255 - g) * k; b += (255 - b) * k; } else { r *= 1 + k; g *= 1 + k; b *= 1 + k; }
+  return `rgb(${r | 0},${g | 0},${b | 0})`;
+}
+// 长方体：看得见的三个面（顶、朝 +y 的左前面、朝 +x 的右前面）
+function box(x0, y0, z0, x1, y1, z1, col, o = {}) {
+  if (o.left !== false) poly([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], o.leftCol || shade(col, -0.08));
+  if (o.right !== false) poly([[x1, y1, z0], [x1, y0, z0], [x1, y0, z1], [x1, y1, z1]], o.rightCol || shade(col, -0.22));
+  if (o.top !== false) poly([[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], o.topCol || shade(col, 0.12));
+}
+function ellipsePts(cx, cy, z, r, a0 = 0, a1 = Math.PI * 2, n = 48) { const p = []; for (let i = 0; i <= n; i++) { const a = a0 + (a1 - a0) * i / n; p.push([cx + r * Math.cos(a), cy + r * Math.sin(a), z]); } return p; }
+function cylinder(cx, cy, z0, z1, r, col, topCol) {
+  const a0 = -Math.PI / 4, a1 = Math.PI * 3 / 4;     // 朝向镜头的那半圈
+  const side = ellipsePts(cx, cy, z0, r, a0, a1).concat(ellipsePts(cx, cy, z1, r, a1, a0));
+  path(side.map(p => P(...p)));
+  const A = P(cx + r * Math.cos(a1), cy + r * Math.sin(a1), z0), B = P(cx + r * Math.cos(a0), cy + r * Math.sin(a0), z0);
+  const g = ctx.createLinearGradient(A[0], 0, B[0], 0); g.addColorStop(0, shade(col, 0.02)); g.addColorStop(1, shade(col, -0.28));
+  ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = 'rgba(40,45,70,0.18)'; ctx.lineWidth = 1.2; ctx.stroke();
+  path(ellipsePts(cx, cy, z1, r).map(p => P(...p))); ctx.fillStyle = topCol || shade(col, 0.15); ctx.fill(); ctx.stroke();
+}
+function ball(x, y, z, r, col, lift = 0) {
+  const [sx, sy] = P(x, y, z), R = r * U;
+  const g = ctx.createRadialGradient(sx - R * 0.35, sy - R * 0.4, R * 0.1, sx, sy, R);
+  g.addColorStop(0, shade(col, 0.3 + lift)); g.addColorStop(1, shade(col, -0.18 + lift));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(sx, sy, R, 0, 7); ctx.fill();
+}
+function tree(x, y, s = 1, col = '#6cbf6a') {
+  // 地上一小块影子
+  ctx.fillStyle = 'rgba(40,70,40,0.18)'; const [sx, sy] = P(x + 0.15, y + 0.15, 0); ctx.beginPath(); ctx.ellipse(sx, sy, 22 * s, 11 * s, 0, 0, 7); ctx.fill();
+  cylinder(x, y, 0, 0.55 * s, 0.07 * s, '#9c6b4a');
+  ball(x, y, 0.95 * s, 0.42 * s, col);
+  ball(x - 0.12 * s, y + 0.1 * s, 1.25 * s, 0.28 * s, col, 0.08);
+}
+function person(x, y, col) {
+  cylinder(x, y, 0, 0.32, 0.07, col); ball(x, y, 0.42, 0.085, '#f2c9a0');
+}
+function polyline3(pts, col, w, cap = 'round') {
+  ctx.beginPath(); pts.forEach((p, i) => { const q = P(...p); i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); });
+  ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = cap; ctx.lineJoin = 'round'; ctx.stroke();
+}
+function pipe(pts, flow = '#a5814f', shell = '#8b97a6', w = 15) {
+  polyline3(pts, shade(shell, -0.25), w + 4);
+  polyline3(pts, shell, w);
+  polyline3(pts, flow, w * 0.5);
+}
+function chevrons(pts, every = 0.55, col = '#ffffff') {
+  // 沿管道画小箭头表示流向
+  const sp = pts.map(p => P(...p)), L = [0];
+  for (let i = 1; i < sp.length; i++) L.push(L[i - 1] + Math.hypot(sp[i][0] - sp[i - 1][0], sp[i][1] - sp[i - 1][1]));
+  const step = every * U; let j = 1;
+  for (let s = step * 0.6; s < L[L.length - 1] - 6; s += step) {
+    while (L[j] < s) j++;
+    const t = (s - L[j - 1]) / (L[j] - L[j - 1]), a = sp[j - 1], b = sp[j];
+    const x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t, ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+    ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.strokeStyle = col; ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(-4, -4.5); ctx.lineTo(2, 0); ctx.lineTo(-4, 4.5); ctx.stroke(); ctx.restore();
+  }
+}
+
+/* ---------- 背景 ---------- */
+{
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#fde7d6'); g.addColorStop(0.45, '#f5ecdf'); g.addColorStop(1, '#dcebf0');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(255,255,255,0.75)';
+  for (const [x, y, s] of [[180, 560, 1], [880, 470, 0.8], [960, 1480, 0.9], [120, 1500, 0.7]]) {
+    for (const [dx, dy, r] of [[0, 0, 40], [42, -14, 52], [92, 0, 38], [46, 12, 40]]) { ctx.beginPath(); ctx.arc(x + dx * s, y + dy * s, r * s, 0, 7); ctx.fill(); }
+  }
+  // 地块下的影子
+  const [sx, sy] = P(10, 10, -3.6);
+  const sg = ctx.createRadialGradient(sx, sy + 30, 10, sx, sy + 30, 470);
+  sg.addColorStop(0, 'rgba(70,80,110,0.28)'); sg.addColorStop(1, 'rgba(70,80,110,0)');
+  ctx.fillStyle = sg; ctx.beginPath(); ctx.ellipse(sx, sy + 30, 470, 70, 0, 0, 7); ctx.fill();
+}
+
+/* ---------- 地块剖面 ---------- */
+const D = 3.6;
+const layers = [[0, -0.3, '#7a5a40'], [-0.3, -1.9, '#a7825c'], [-1.9, -D, '#c9a77b']];
+function soilFace(face) {
+  // face: 'L' 是 y=10 那面（左前），'R' 是 x=10 那面（右前）
+  const pt = (t, z) => face === 'L' ? [t, 10, z] : [10, 10 - t, z];
+  for (const [za, zb, col] of layers) {
+    const top = [], bot = [];
+    for (let t = 0; t <= 10.001; t += 0.25) {
+      const wa = za === 0 ? 0 : Math.sin(t * 1.3 + za * 3) * 0.06, wb = zb === -D ? 0 : Math.sin(t * 1.1 + zb * 2) * 0.06;
+      top.push(pt(t, za + wa)); bot.push(pt(t, zb + wb));
+    }
+    poly(top.concat(bot.reverse()), face === 'L' ? col : shade(col, -0.12), null);
+  }
+  // 小石子
+  for (let k = 0; k < 80; k++) {
+    const t = rnd() * 10, z = -0.4 - rnd() * (D - 0.6);
+    const [sx, sy] = P(...pt(t, z));
+    ctx.fillStyle = face === 'L' ? 'rgba(110,90,72,0.55)' : 'rgba(90,72,58,0.55)';
+    ctx.beginPath(); ctx.ellipse(sx, sy, 4 + rnd() * 7, 3 + rnd() * 4, face === 'L' ? -0.5 : 0.5, 0, 7); ctx.fill();
+  }
+  poly([pt(0, 0), pt(10, 0), pt(10, -D), pt(0, -D)], null, 'rgba(60,40,30,0.35)', 2);
+}
+soilFace('L'); soilFace('R');
+
+// 左前面：路面结构（马路下面那一段）
+poly([[4.6, 10, 0], [5.8, 10, 0], [5.8, 10, -0.16], [4.6, 10, -0.16]], '#4d5462', null);
+poly([[4.6, 10, -0.16], [5.8, 10, -0.16], [5.8, 10, -0.42], [4.6, 10, -0.42]], '#b9b1a5', null);
+// 化粪池（左前面）
+{
+  const x0 = 3.45, x1 = 4.75, zt = -0.45, zb = -2.25;
+  poly([[x0 - 0.12, 10, zt + 0.12], [x1 + 0.12, 10, zt + 0.12], [x1 + 0.12, 10, zb - 0.12], [x0 - 0.12, 10, zb - 0.12]], '#d4cec4', 'rgba(40,40,40,0.55)', 2);
+  poly([[x0, 10, -0.75], [x1, 10, -0.75], [x1, 10, zb], [x0, 10, zb]], '#a98c5e', null);
+  poly([[x0, 10, -0.75], [x1, 10, -0.75], [x1, 10, -0.88], [x0, 10, -0.88]], '#8c7148', null);
+  poly([[x0, 10, -1.62], [x1, 10, -1.62], [x1, 10, zb], [x0, 10, zb]], '#6f573a', null);
+  poly([[x0, 10, zt], [x1, 10, zt], [x1, 10, -0.75], [x0, 10, -0.75]], '#e9e2d6', null);
+  // 隔墙
+  poly([[4.07, 10, zt], [4.15, 10, zt], [4.15, 10, -1.45], [4.07, 10, -1.45]], '#d4cec4', null);
+}
+// 提升泵站（右前面）
+{
+  const y0 = 1.45, y1 = 2.9, zt = -0.35, zb = -3.15;
+  const pt = (y, z) => [10, y, z];
+  poly([pt(y1 + 0.1, zt + 0.05), pt(y0 - 0.1, zt + 0.05), pt(y0 - 0.1, zb - 0.1), pt(y1 + 0.1, zb - 0.1)], '#a8a29a', 'rgba(40,40,40,0.3)', 1.5);
+  poly([pt(y1, zt), pt(y0, zt), pt(y0, zb), pt(y1, zb)], '#ddd6ca', null);
+  poly([pt(y1, -2.0), pt(y0, -2.0), pt(y0, zb), pt(y1, zb)], '#9b8058', null);
+  // 水泵
+  const [px, py] = P(10, 2.05, -2.7);
+  ctx.fillStyle = '#f2b134'; ctx.strokeStyle = 'rgba(60,40,20,0.5)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.ellipse(px, py, 20, 24, 0.5, 0, 7); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#7a5a20'; ctx.beginPath(); ctx.arc(px, py, 5, 0, 7); ctx.fill();
+}
+// 河的横截面（右前面，y 0~1.1）
+{
+  const pt = (y, z) => [10, y, z];
+  const bed = []; for (let y = 1.15; y >= -0.001; y -= 0.05) { const t = y / 1.15; bed.push(pt(y, -0.25 - Math.sin(t * Math.PI) * 0.95)); }
+  poly([pt(1.15, -0.25), ...bed, pt(0, -0.25)], '#5fb6d6', null);
+  poly([pt(1.15, -0.25), pt(0, -0.25), pt(0, -0.38), pt(1.15, -0.38)], 'rgba(255,255,255,0.35)', null);
+  // 一条小鱼
+  const [fx, fy] = P(10, 0.55, -0.7);
+  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.ellipse(fx, fy, 11, 6, -0.5, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(fx + 8, fy - 4); ctx.lineTo(fx + 17, fy - 12); ctx.lineTo(fx + 17, fy); ctx.closePath(); ctx.fill();
+}
+// 地下管道：楼里立管 → 化粪池 → 市政管（带坡度）→ 拐角 → 泵站 → 提升到处理厂
+const pStack = [[3.4, 10, 0.02], [3.4, 10, -0.62], [3.5, 10, -0.66]];
+const pMain1 = [[4.75, 10, -0.95], [6.5, 10, -1.2], [10, 10, -1.6]];
+const pMain2 = [[10, 10, -1.6], [10, 2.9, -2.25]];
+const pRiser = [[10, 2.05, -2.45], [10, 2.05, 0.05]];
+pipe(pStack); pipe(pMain1); pipe(pMain2); pipe(pRiser);
+chevrons(pStack); chevrons(pMain1); chevrons(pMain2); chevrons(pRiser.slice().reverse().reverse());
+
+/* ---------- 地面 ---------- */
+poly([[0, 0, 0], [10, 0, 0], [10, 10, 0], [0, 10, 0]], '#a9d98c', 'rgba(60,90,50,0.3)', 2);
+// 草地深浅
+for (let k = 0; k < 60; k++) { const x = rnd() * 10, y = 1.3 + rnd() * 8.6; const [sx, sy] = P(x, y, 0);
+  ctx.fillStyle = 'rgba(120,180,95,0.35)'; ctx.beginPath(); ctx.ellipse(sx, sy, 10 + rnd() * 18, 5 + rnd() * 9, 0, 0, 7); ctx.fill(); }
+// 河
+poly([[0, 0, 0], [10, 0, 0], [10, 1.15, 0], [0, 1.15, 0]], '#8fd0e6', null);
+poly([[0, 0.08, -0.02], [10, 0.08, -0.02], [10, 1.07, -0.02], [0, 1.07, -0.02]], '#62b9da', null);
+for (let k = 0; k < 18; k++) { const x = 0.4 + rnd() * 9, y = 0.25 + rnd() * 0.65; polyline3([[x, y, 0], [x + 0.5, y, 0]], 'rgba(255,255,255,0.65)', 2.2); }
+// 马路 + 人行道
+poly([[4.35, 1.15, 0], [6.05, 1.15, 0], [6.05, 10, 0], [4.35, 10, 0]], '#ece6db', null);
+poly([[4.6, 1.15, 0.01], [5.8, 1.15, 0.01], [5.8, 10, 0.01], [4.6, 10, 0.01]], '#5d6473', null);
+for (let y = 1.5; y < 9.8; y += 0.7) polyline3([[5.2, y, 0.02], [5.2, y + 0.35, 0.02]], '#f8f3e6', 3, 'butt');
+// 井盖
+{ const e = ellipsePts(5.0, 6.2, 0.02, 0.2).map(p => P(...p)); ctx.beginPath(); e.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.fillStyle = '#3e4350'; ctx.fill(); ctx.strokeStyle = '#8d93a1'; ctx.lineWidth = 2; ctx.stroke(); }
+// 化粪池的井盖（院子里）
+{ const e = ellipsePts(4.1, 9.7, 0.01, 0.16).map(p => P(...p)); ctx.beginPath(); e.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.fillStyle = '#8c8f96'; ctx.fill(); }
+// 处理厂地坪
+poly([[6.3, 1.3, 0], [9.95, 1.3, 0], [9.95, 6.7, 0], [6.3, 6.7, 0]], '#dedad2', 'rgba(60,60,60,0.15)');
+
+/* ---------- 地上的东西（从远到近） ---------- */
+// 处理厂：二沉池 ×2（圆）、曝气池（方，冒泡）、控制楼
+function clarifier(cx, cy, r) {
+  cylinder(cx, cy, 0, 0.45, r, '#cfc9bf', '#d7d1c7');
+  const e = ellipsePts(cx, cy, 0.45, r * 0.86).map(p => P(...p)); ctx.beginPath(); e.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p));
+  ctx.fillStyle = '#6cc0d2'; ctx.fill();
+  polyline3([[cx - r * 0.86, cy, 0.5], [cx + r * 0.86, cy, 0.5]], '#6b7280', 4);
+  cylinder(cx, cy, 0.45, 0.62, 0.12, '#9aa1ab');
+  for (let k = 0; k < 5; k++) { const a = rnd() * 6.28, rr = r * 0.4 + rnd() * r * 0.35; polyline3([[cx + Math.cos(a) * rr, cy + Math.sin(a) * rr, 0.46], [cx + Math.cos(a) * rr + 0.2, cy + Math.sin(a) * rr, 0.46]], 'rgba(255,255,255,0.7)', 2); }
+}
+// 出水渠：从二沉池流进河
+// （画在二沉池之后，见下）
+clarifier(9.0, 2.55, 0.62);
+clarifier(7.3, 2.6, 0.78);
+box(9.62, 1.05, 0, 9.95, 2.3, 0.16, '#c9c3b9');
+poly([[9.68, 1.0, 0.17], [9.89, 1.0, 0.17], [9.89, 2.3, 0.17], [9.68, 2.3, 0.17]], '#7fd0ea', null);
+pipe([[9.3, 2.45, 0.35], [9.78, 2.3, 0.3]], '#7fd0ea', '#9aa3ae', 9);
+chevrons([[9.785, 2.25, 0.18], [9.785, 1.0, 0.18]], 0.38, '#ffffff');
+// 提升上来的管子接到曝气池
+pipe([[10, 2.05, 0.05], [10, 2.05, 0.75], [9.7, 3.6, 0.75], [8.6, 4.1, 0.75]], '#a5814f', '#9aa3ae', 12);
+// 曝气池
+box(6.5, 3.8, 0, 8.6, 6.2, 0.62, '#cfc9bf');
+poly([[6.62, 3.92, 0.63], [8.48, 3.92, 0.63], [8.48, 6.08, 0.63], [6.62, 6.08, 0.63]], '#8fbf9a', null);
+for (let k = 0; k < 70; k++) { const x = 6.75 + rnd() * 1.6, y = 4.0 + rnd() * 2.0; const [sx, sy] = P(x, y, 0.64);
+  ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(sx, sy, 2 + rnd() * 3.5, 0, 7); ctx.stroke(); }
+// 控制楼
+box(8.95, 4.55, 0, 9.75, 6.1, 1.05, '#f1ede6');
+for (let i = 0; i < 3; i++) poly([[9.75, 4.75 + i * 0.45, 0.45], [9.75, 4.75 + i * 0.45 + 0.28, 0.45], [9.75, 4.75 + i * 0.45 + 0.28, 0.8], [9.75, 4.75 + i * 0.45, 0.8]], '#8ccbe0', null);
+box(8.9, 4.5, 1.05, 9.8, 6.15, 1.15, '#7d8aa3');
+// 公园和路边的树
+for (const [x, y, s, c] of [[0.8, 1.9, 1.0, '#6cbf6a'], [2.0, 1.7, 0.8, '#8acb5f'], [3.4, 2.1, 1.1, '#5fae63'], [1.2, 3.4, 0.9, '#7cc46a'],
+  [2.8, 3.5, 0.75, '#6cbf6a'], [0.7, 5.0, 1.05, '#5fae63'], [2.1, 5.2, 0.85, '#8acb5f'], [3.6, 4.8, 0.95, '#6cbf6a'], [6.25, 7.3, 0.9, '#7cc46a'], [7.4, 7.8, 1.1, '#5fae63'], [8.8, 7.4, 0.85, '#8acb5f'], [9.3, 8.9, 1.0, '#6cbf6a'], [7.8, 9.2, 0.8, '#7cc46a']]) tree(x, y, s, c);
+// 车
+function car(x, y, col) {
+  box(x, y, 0.05, x + 0.4, y + 0.85, 0.3, col);
+  box(x + 0.04, y + 0.18, 0.3, x + 0.36, y + 0.62, 0.5, col, { topCol: shade(col, 0.2) });
+  poly([[x + 0.36, y + 0.22, 0.32], [x + 0.36, y + 0.58, 0.32], [x + 0.36, y + 0.58, 0.47], [x + 0.36, y + 0.22, 0.47]], '#bfe6f2', null);
+}
+car(4.75, 2.6, '#ef7d5a');
+car(5.3, 7.0, '#5b8def');
+person(6.2, 5.0, '#f2b134'); person(4.15, 8.3, '#e76f8a'); person(1.7, 4.4, '#5b8def');
+
+/* ---------- 住宅楼（剖开，看得见每层的卫生间） ---------- */
+{
+  const x0 = 0.45, x1 = 3.55, y0 = 7.95, y1 = 9.95, FH = 1.35, N = 3, SX = 3.3, SY = 9.78;
+  poly([[x0 - 0.25, y0 - 0.3, 0.005], [x1 + 0.3, y0 - 0.3, 0.005], [x1 + 0.3, 10, 0.005], [x0 - 0.25, 10, 0.005]], '#e9e3d6', null);
+  for (let k = 0; k < N; k++) {
+    const z = k * FH;
+    // 楼板
+    box(x0, y0, z, x1, y1, z + 0.12, '#d9c3a2', { topCol: '#ecdcc0' });
+    // 左墙内表面
+    poly([[x0 + 0.12, y0, z + 0.12], [x0 + 0.12, y1, z + 0.12], [x0 + 0.12, y1, z + FH], [x0 + 0.12, y0, z + FH]], '#efe4d3', null);
+    // 卫生间隔墙（朝右那面贴瓷砖）
+    box(2.0, y0, z + 0.12, 2.1, y1, z + FH, '#efe6d8', { right: false });
+    poly([[2.1, y1, z + 0.12], [2.1, y0, z + 0.12], [2.1, y0, z + FH], [2.1, y1, z + FH]], '#cfe7ef', null);
+    for (let zz = z + 0.32; zz < z + FH; zz += 0.2) polyline3([[2.1, y1, zz], [2.1, y0, zz]], 'rgba(110,150,170,0.5)', 1);
+    for (let yy = y1 - 0.2; yy > y0; yy -= 0.2) polyline3([[2.1, yy, z + 0.12], [2.1, yy, z + FH]], 'rgba(110,150,170,0.5)', 1);
+    // 卫生间地砖
+    poly([[2.1, y0, z + 0.121], [x1 - 0.12, y0, z + 0.121], [x1 - 0.12, y1, z + 0.121], [2.1, y1, z + 0.121]], '#e4eef2', null);
+    // 马桶：水箱靠隔墙，坐圈朝外
+    const tz = z + 0.12, ty = 9.25;
+    box(2.12, ty - 0.24, tz + 0.36, 2.32, ty + 0.24, tz + 0.78, '#ffffff', { leftCol: '#f1f4f7', rightCol: '#dde3ea' });
+    box(2.2, ty - 0.13, tz, 2.62, ty + 0.13, tz + 0.36, '#ffffff', { leftCol: '#f1f4f7', rightCol: '#dde3ea' });
+    cylinder(2.68, ty, tz + 0.2, tz + 0.4, 0.2, '#f6f8fa', '#ffffff');
+    { const e = ellipsePts(2.68, ty, tz + 0.41, 0.13).map(p => P(...p)); ctx.beginPath(); e.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.fillStyle = '#b9e0ec'; ctx.fill(); }
+    // 马桶接到立管
+    pipe([[2.68, ty + 0.18, tz + 0.06], [2.68, SY, tz + 0.06], [SX, SY, tz + 0.04]], '#a5814f', '#9aa3ae', 8);
+    // 起居那一半
+    if (k === 0) { box(0.6, 8.9, z + 0.12, 1.5, 9.45, z + 0.45, '#f29f76'); box(0.6, 8.9, z + 0.45, 0.78, 9.45, z + 0.78, '#f29f76'); person(1.75, 9.5, '#5b8def'); }
+    if (k === 1) { box(0.6, 8.6, z + 0.12, 1.65, 9.5, z + 0.4, '#7fa6e8', { topCol: '#e8eefc' }); box(0.6, 8.6, z + 0.12, 0.74, 9.5, z + 0.78, '#7fa6e8'); }
+    if (k === 2) { cylinder(1.0, 9.3, z + 0.12, z + 0.42, 0.16, '#d98b5f'); ball(1.0, 9.3, z + 0.7, 0.3, '#6cbf6a'); box(1.4, 9.0, z + 0.12, 1.85, 9.6, z + 0.6, '#c9a27a'); }
+    // 立管
+    pipe([[SX, SY, z], [SX, SY, z + FH]], '#a5814f', '#9aa3ae', 13);
+  }
+  // 右外墙（有窗）
+  box(x1 - 0.12, y0, 0, x1, y1, N * FH, '#f4e3cc', { top: false, left: false });
+  for (let k = 0; k < N; k++) for (let i = 0; i < 2; i++) {
+    const z = k * FH + 0.45, y = y0 + 0.3 + i * 0.9;
+    poly([[x1, y, z], [x1, y + 0.55, z], [x1, y + 0.55, z + 0.55], [x1, y, z + 0.55]], '#9fd3e6', 'rgba(80,90,110,0.35)', 1.5);
+  }
+  // 后墙露出来的那一条（楼顶上方看得到）
+  box(x0, y0 - 0.12, 0, x1, y0, N * FH, '#f4e3cc', { left: false, right: false, top: false });
+  // 楼顶
+  box(x0 - 0.05, y0 - 0.12, N * FH, x1 + 0.05, y1, N * FH + 0.16, '#e0795a');
+  pipe([[SX, SY, N * FH + 0.1], [SX, SY, N * FH + 0.55]], '#9aa3ae', '#9aa3ae', 13);  // 通气管
+  ctx.strokeStyle = 'rgba(60,50,40,0.35)'; ctx.lineWidth = 2;
+  path([P(x0, y1, 0), P(x0, y1, N * FH + 0.16), P(x1, y1, N * FH + 0.16), P(x1, y1, 0)]); ctx.stroke();
+}
+// 立管穿出楼底进到剖面上的那一小段（与左前面的管子接上）
+pipe([[3.4, 10, 0.05], [3.4, 10, -0.05]]);
+
+/* ---------- 文字 ---------- */
+fontsReady.then(() => {
+  ctx.textBaseline = 'alphabetic';
+  ctx.font = '110px "ZCOOL KuaiLe"'; ctx.fillStyle = '#2c3a5a'; ctx.textAlign = 'left';
+  ctx.fillText('冲完马桶，', 74, 262); ctx.fillText('水去哪了？', 74, 392);
+  ctx.fillStyle = '#f2b134'; ctx.beginPath(); ctx.roundRect(78, 420, 420, 58, 29); ctx.fill();
+  ctx.font = '500 34px "Noto Sans SC"'; ctx.fillStyle = '#2c3a5a'; ctx.fillText('跟着这一冲，走完 6 站路', 102, 461);
+  // 编号标签
+  function tag(n, x, y, text, tx, ty, col = '#2c3a5a') {
+    ctx.strokeStyle = col; ctx.lineWidth = 2.4; ctx.setLineDash([2, 6]); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(tx, ty); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(tx, ty, 5, 0, 7); ctx.fill();
+    ctx.font = '700 30px "Noto Sans SC"'; const w = ctx.measureText(text).width;
+    ctx.fillStyle = 'rgba(40,50,80,0.18)'; ctx.beginPath(); ctx.roundRect(x - 26 + 3, y - 26 + 5, w + 76, 52, 26); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.roundRect(x - 26, y - 26, w + 76, 52, 26); ctx.fill();
+    ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 19, 0, 7); ctx.fill();
+    ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center'; ctx.fillText(String(n), x, y + 10);
+    ctx.fillStyle = col; ctx.textAlign = 'left'; ctx.fillText(text, x + 30, y + 10);
+  }
+  const at = (x, y, z) => P(x, y, z);
+  tag(1, 90, 610, '马桶', ...at(2.6, 9.25, 1.35 + 0.5));
+  tag(2, 90, 1460, '化粪池', ...at(4.1, 10, -1.4));
+  tag(3, 330, 1540, '市政污水管', ...at(7.2, 10, -1.35));
+  tag(4, 760, 1390, '提升泵站', ...at(10, 2.05, -2.6));
+  tag(5, 640, 560, '污水处理厂', ...at(7.6, 5.0, 0.7));
+  tag(6, 820, 680, '排进河', ...at(9.78, 1.3, 0.2));
+  // 字幕
+  ctx.textAlign = 'center'; ctx.font = '500 42px "Noto Sans SC"';
+  ctx.lineWidth = 10; ctx.strokeStyle = 'rgba(255,255,255,0.95)'; ctx.lineJoin = 'round';
+  ctx.strokeText('管道都铺得有一点坡度，', 540, 1680); ctx.strokeText('脏水靠重力一路往下流', 540, 1742);
+  ctx.fillStyle = '#2c3a5a'; ctx.fillText('管道都铺得有一点坡度，', 540, 1680); ctx.fillText('脏水靠重力一路往下流', 540, 1742);
+  window.__done = true;
+});
+</script>
+</body>
+</html>

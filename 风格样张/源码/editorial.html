@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>杂志信息图 · 地球的一天</title>
+<link rel="stylesheet" href="node_modules/@fontsource/noto-serif-sc/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-serif-sc/900.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/900.css">
+<style>
+  html, body { margin: 0; background: #f3eee4; }
+  svg { display: block; }
+  .serif { font-family: "Noto Serif SC", serif; }
+  .sans { font-family: "Noto Sans SC", sans-serif; }
+  .tab { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<svg id="s" width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="4"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 0 0.2  0 0 0 0.06 0"/>
+    </filter>
+  </defs>
+  <rect width="1080" height="1920" fill="#f3eee4"/>
+  <g id="g"></g>
+  <rect width="1080" height="1920" filter="url(#grain)"/>
+</svg>
+<script>
+const NS = 'http://www.w3.org/2000/svg', root = document.getElementById('g');
+function el(tag, a = {}, parent = root, text) { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); if (text !== undefined) e.textContent = text; parent.appendChild(e); return e; }
+// 颜色：文字只用墨色三档；数据色 = 一条暖灰序数色阶 + 一个红色强调（已用 dataviz 校验脚本过检）
+const INK = '#1d1b18', INK2 = '#5a554d', INK3 = '#8a8478', SURF = '#f3eee4', HAIR = '#cfc7b9';
+const EON = ['#5f584e', '#878071', '#aca393', '#d23a1e'];   // 冥古宙 太古宙 元古宙 显生宙
+const RED = '#d23a1e';
+
+/* ---------- 刊头 + 标题 ---------- */
+el('rect', { x: 80, y: 96, width: 16, height: 16, fill: RED });
+el('text', { x: 108, y: 112, 'font-size': 26, fill: INK2, class: 'sans', 'font-weight': 500, 'letter-spacing': 2 }, root, '数据故事 · 时间尺度');
+el('text', { x: 1000, y: 112, 'text-anchor': 'end', 'font-size': 24, fill: INK3, class: 'sans tab', 'font-weight': 500, 'letter-spacing': 2 }, root, 'NO.05');
+el('line', { x1: 80, y1: 140, x2: 1000, y2: 140, stroke: INK, 'stroke-width': 2 });
+el('line', { x1: 80, y1: 146, x2: 1000, y2: 146, stroke: INK, 'stroke-width': 1 });
+el('text', { x: 76, y: 262, 'font-size': 90, fill: INK, class: 'serif', 'font-weight': 900 }, root, '如果地球只活了一天，');
+// “6 秒”下面一道红色记号笔
+el('rect', { x: 640, y: 346, width: 186, height: 22, fill: RED, opacity: 0.85 });
+el('text', { x: 76, y: 372, 'font-size': 90, fill: INK, class: 'serif', 'font-weight': 900 }, root, '人类只露面了 6 秒');
+el('text', { x: 80, y: 446, 'font-size': 34, fill: INK2, class: 'serif' }, root, '46 亿年压进 24 小时，1 秒钟 ≈ 5.3 万年');
+
+/* ---------- 最后 10 秒放大条 ---------- */
+const BX0 = 80, BX1 = 1000, BY = 560, BH = 24, perS = (BX1 - BX0) / 10;   // 23:59:50 → 24:00:00
+const SAP = 10 - 0.3e6 / (4.6e9 / 86400);     // 智人约 30 万年前 → 离午夜 5.63 秒
+const WRIT = 5000 / (4.6e9 / 86400);          // 有文字约 5000 年 → 0.094 秒
+el('text', { x: BX0, y: 512, 'font-size': 26, fill: INK, class: 'sans', 'font-weight': 700 }, root, '最后 10 秒，放大看');
+el('rect', { x: BX0, y: BY, width: BX1 - BX0, height: BH, fill: EON[3], opacity: 0.12 });
+el('path', { d: `M${BX0 + SAP * perS} ${BY} H${BX1 - 4} Q${BX1} ${BY} ${BX1} ${BY + 4} V${BY + BH - 4} Q${BX1} ${BY + BH} ${BX1 - 4} ${BY + BH} H${BX0 + SAP * perS} Z`, fill: RED });
+el('rect', { x: BX1 - WRIT * perS - 2, y: BY - 10, width: WRIT * perS + 2, height: BH + 20, fill: INK });
+for (let s = 0; s <= 10; s++) {
+  const x = BX0 + s * perS;
+  el('line', { x1: x, y1: BY + BH + 4, x2: x, y2: BY + BH + (s % 2 ? 10 : 16), stroke: INK3, 'stroke-width': 1 });
+  if (s % 2 === 0) el('text', { x: s === 10 ? x : x, y: BY + BH + 42, 'text-anchor': s === 0 ? 'start' : s === 10 ? 'end' : 'middle', 'font-size': 22, fill: INK3, class: 'sans tab' }, root, s === 10 ? '24:00' : `23:59:${50 + s}`);
+}
+{ // 智人标注
+  const x = BX0 + SAP * perS;
+  el('circle', { cx: x, cy: BY + BH / 2, r: 8, fill: RED, stroke: SURF, 'stroke-width': 2 });
+  el('text', { x: x + 16, y: BY - 14, 'font-size': 24, fill: INK, class: 'sans', 'font-weight': 700 }, root, '23:59:54 智人出现');
+  el('line', { x1: BX1 - 4, y1: BY - 12, x2: BX1 - 4, y2: BY - 44, stroke: INK, 'stroke-width': 1 });
+  el('text', { x: BX1 - 14, y: BY - 48, 'text-anchor': 'end', 'font-size': 22, fill: INK2, class: 'sans' }, root, '有文字的历史：最后不到 0.1 秒');
+}
+
+/* ---------- 24 小时表盘 ---------- */
+const CX = 540, CY = 1000, R = 290, RW = 34, RM = R - RW / 2;
+const ang = h => (h / 24) * Math.PI * 2 - Math.PI / 2;
+const pt = (h, r) => [CX + r * Math.cos(ang(h)), CY + r * Math.sin(ang(h))];
+function arc(h0, h1, r0, r1) {
+  const a = pt(h0, r1), b = pt(h1, r1), c = pt(h1, r0), d = pt(h0, r0), large = (h1 - h0) > 12 ? 1 : 0;
+  return `M${a[0]} ${a[1]} A${r1} ${r1} 0 ${large} 1 ${b[0]} ${b[1]} L${c[0]} ${c[1]} A${r0} ${r0} 0 ${large} 0 ${d[0]} ${d[1]} Z`;
+}
+const hOf = ga => (4.6 - ga) / 4.6 * 24;      // 距今多少亿年(Ga) → 钟面上的小时
+const eons = [[0, hOf(4.0), '冥古宙', '00:00–03:08'], [hOf(4.0), hOf(2.5), '太古宙', '03:08–10:57'], [hOf(2.5), hOf(0.5388), '元古宙', '10:57–21:11'], [hOf(0.5388), 24, '显生宙', '21:11–24:00']];
+// 放大连线（表盘顶点 → 放大条两端）
+el('path', { d: `M${CX} ${CY - R - 4} L${BX0} ${BY + BH + 56} M${CX} ${CY - R - 4} L${BX1} ${BY + BH + 56}`, stroke: HAIR, 'stroke-width': 1.5, fill: 'none' });
+// 小时刻度
+for (let h = 0; h < 24; h++) {
+  const major = h % 6 === 0, [x1, y1] = pt(h, R + 6), [x2, y2] = pt(h, R + (major ? 22 : 14));
+  el('line', { x1, y1, x2, y2, stroke: major ? INK2 : INK3, 'stroke-width': 1 });
+}
+for (const [h, t] of [[6, '6 时'], [12, '12 时'], [18, '18 时']]) {
+  const [x, y] = pt(h, R + 46);
+  el('text', { x, y: y + 8, 'text-anchor': 'middle', 'font-size': 22, fill: INK3, class: 'sans' }, root, t);
+}
+// 四个宙：段与段之间留 2px 纸色缝
+const gapH = 2 / (2 * Math.PI * RM) * 24;
+eons.forEach(([h0, h1], i) => el('path', { d: arc(h0 + gapH / 2, h1 - gapH / 2, R - RW, R), fill: EON[i] }));
+// 恐龙那一段（表盘内侧的括弧）
+{
+  const h0 = hOf(0.23), h1 = hOf(0.066), r = R - RW - 16;
+  const a = pt(h0, r), b = pt(h1, r);
+  el('path', { d: `M${a[0]} ${a[1]} A${r} ${r} 0 0 1 ${b[0]} ${b[1]}`, stroke: INK, 'stroke-width': 2, fill: 'none' });
+  for (const h of [h0, h1]) { const [x1, y1] = pt(h, r - 7), [x2, y2] = pt(h, r + 7); el('line', { x1, y1, x2, y2, stroke: INK, 'stroke-width': 2 }); }
+  const m = pt((h0 + h1) / 2, r - 10);
+  el('line', { x1: m[0], y1: m[1], x2: 474, y2: m[1] + 44, stroke: INK, 'stroke-width': 1 });
+  el('text', { x: 474, y: m[1] + 72, 'text-anchor': 'middle', 'font-size': 24, fill: INK, class: 'sans tab', 'font-weight': 700 }, root, '22:48–23:39');
+  el('text', { x: 474, y: m[1] + 104, 'text-anchor': 'middle', 'font-size': 24, fill: INK2, class: 'sans' }, root, '恐龙称霸约 51 分钟');
+}
+// 事件点 + 引线
+function ev(h, label, sub, lx, ly, anchor, above = false) {
+  const [x, y] = pt(h, RM);
+  el('line', { x1: x, y1: y, x2: lx, y2: ly, stroke: INK, 'stroke-width': 1 });
+  el('circle', { cx: x, cy: y, r: 7, fill: INK, stroke: SURF, 'stroke-width': 2 });
+  const tx = anchor === 'start' ? lx + 10 : anchor === 'end' ? lx - 10 : lx;
+  const y1 = above ? ly - 44 : ly + (anchor === 'middle' ? 34 : 8), y2 = above ? ly - 12 : ly + (anchor === 'middle' ? 66 : 40);
+  el('text', { x: tx, y: y1, 'text-anchor': anchor, 'font-size': 26, fill: INK, class: 'sans tab', 'font-weight': 700 }, root, label);
+  el('text', { x: tx, y: y2, 'text-anchor': anchor, 'font-size': 24, fill: INK2, class: 'sans' }, root, sub);
+}
+ev(0.0, '00:00', '地球诞生', 568, 772, 'start');
+ev(hOf(3.8), '04:10', '最早的生命', 862, 870, 'start');
+ev(hOf(2.4), '11:29', '空气里开始有氧气', 566, 1222, 'middle', true);
+ev(hOf(0.5388), '21:11', '寒武纪生命大爆发', 250, 806, 'end');
+// 表盘中心
+el('text', { x: CX, y: CY - 6, 'text-anchor': 'middle', 'font-size': 76, fill: INK, class: 'sans', 'font-weight': 900 }, root, '24 小时');
+el('text', { x: CX, y: CY + 44, 'text-anchor': 'middle', 'font-size': 28, fill: INK2, class: 'sans' }, root, '= 地球的 46 亿年');
+// 图例（四个宙）
+eons.forEach(([, , name, span], i) => {
+  const x = 80 + i * 236, y = 1400;
+  el('rect', { x, y: y - 20, width: 22, height: 22, rx: 4, fill: EON[i] });
+  el('text', { x: x + 32, y, 'font-size': 26, fill: INK, class: 'sans', 'font-weight': 700 }, root, name);
+  el('text', { x: x + 32, y: y + 32, 'font-size': 21, fill: INK3, class: 'sans tab' }, root, span);
+});
+el('line', { x1: 80, y1: 1462, x2: 1000, y2: 1462, stroke: HAIR, 'stroke-width': 1 });
+
+/* ---------- 主数字 ---------- */
+el('rect', { x: 80, y: 1500, width: 10, height: 104, fill: RED });
+el('text', { x: 112, y: 1592, 'font-size': 118, fill: INK, class: 'sans', 'font-weight': 900 }, root, '0.0015 秒');
+el('text', { x: 114, y: 1640, 'font-size': 28, fill: INK2, class: 'sans' }, root, '你的一辈子（按 80 岁算）在这一天里只有这么长');
+
+/* ---------- 字幕条 + 注 ---------- */
+el('rect', { x: 0, y: 1688, width: 1080, height: 92, fill: INK });
+el('text', { x: 540, y: 1747, 'text-anchor': 'middle', 'font-size': 40, fill: '#ffffff', class: 'sans', 'font-weight': 500 }, root, '恐龙称霸了将近一个小时，人类才露面 6 秒');
+el('text', { x: 80, y: 1826, 'font-size': 20, fill: INK3, class: 'sans' }, root, '注：按地球约 46 亿岁、智人约 30 万年、文字约 5000 年估算，时间取整到分钟');
+
+document.fonts.ready.then(() => { window.__done = true; });
+</script>
+</body>
+</html>

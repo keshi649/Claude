@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>剪纸分层 · 候鸟认路</title>
+<link rel="stylesheet" href="node_modules/@fontsource/lxgw-wenkai/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/lxgw-wenkai/700.css">
+<style>html,body{margin:0;background:#10163a} canvas{display:block}</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+const W = 1080, H = 1920;
+const cv = document.getElementById('c'), ctx = cv.getContext('2d', { willReadFrequently: true });
+const fontsReady = Promise.all([
+  document.fonts.load('700 98px "LXGW WenKai"', '候鸟飞几千公里，凭什么不迷路？北极星地磁场北斗'),
+  document.fonts.load('500 40px "LXGW WenKai"', '答案有一半写在夜空里夜里飞的鸟会看星星：整片星空都绕着北极星转指向'),
+]);
+let seed = 99;
+function rnd() { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }
+const TAU = Math.PI * 2;
+function shadow(on, blur = 20, oy = -7, a = 0.5) {
+  if (!on) { ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; return; }
+  ctx.shadowColor = `rgba(4,6,20,${a})`; ctx.shadowBlur = blur; ctx.shadowOffsetX = 0; ctx.shadowOffsetY = oy;
+}
+function mixHex(a, b, t) {
+  const pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+  const r = (pa >> 16) + ((pb >> 16) - (pa >> 16)) * t, g = (pa >> 8 & 255) + ((pb >> 8 & 255) - (pa >> 8 & 255)) * t, bl = (pa & 255) + ((pb & 255) - (pa & 255)) * t;
+  return `rgb(${r | 0},${g | 0},${bl | 0})`;
+}
+
+/* ---------- 天空：一圈圈纸做的星轨，圆心是北极星 ---------- */
+const PX = 790, PY = 440;
+{
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#0e1436'); g.addColorStop(1, '#2a3878');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const radii = []; for (let r = 1560; r > 70; r -= 66 + (r > 600 ? 10 : 0)) radii.push(r);
+  radii.forEach((r, i) => {
+    const t = i / (radii.length - 1);
+    ctx.beginPath();
+    // 手剪的边：半径带一点抖动
+    for (let k = 0; k <= 240; k++) { const a = k / 240 * TAU, rr = r + Math.sin(a * 7 + i) * 1.6 + Math.sin(a * 13 + i * 2) * 1.1; ctx.lineTo(PX + Math.cos(a) * rr, PY + Math.sin(a) * rr); }
+    ctx.closePath();
+    shadow(true, 18, 0, 0.55);
+    ctx.fillStyle = mixHex('#121a46', '#3d4fa0', Math.pow(t, 1.4));
+    ctx.fill();
+  });
+  shadow(false);
+}
+// 星轨的虚线弧 + 星星（纸上打的小孔）
+ctx.save();
+for (let k = 0; k < 46; k++) {
+  const r = 110 + rnd() * 1100, a0 = rnd() * TAU, len = 0.15 + rnd() * 0.45;
+  ctx.strokeStyle = `rgba(246,232,200,${0.25 + rnd() * 0.35})`; ctx.lineWidth = 2; ctx.setLineDash([2, 7]); ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(PX, PY, r, a0, a0 + len); ctx.stroke();
+}
+ctx.setLineDash([]);
+for (let k = 0; k < 160; k++) {
+  const x = rnd() * W, y = rnd() * 1150, r = 0.8 + Math.pow(rnd(), 3) * 3;
+  ctx.fillStyle = `rgba(250,240,215,${0.45 + rnd() * 0.5})`; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+}
+ctx.restore();
+function sparkle(x, y, r, col = '#f7ecd2', glow = 0) {
+  if (glow) { const g = ctx.createRadialGradient(x, y, 0, x, y, glow); g.addColorStop(0, 'rgba(255,236,180,0.55)'); g.addColorStop(1, 'rgba(255,236,180,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, glow, 0, TAU); ctx.fill(); }
+  ctx.beginPath();
+  for (let k = 0; k < 8; k++) { const a = k / 8 * TAU - Math.PI / 2, rr = k % 2 ? r * 0.28 : r; ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); }
+  ctx.closePath(); shadow(true, 8, 3, 0.5); ctx.fillStyle = col; ctx.fill(); shadow(false);
+}
+// 北斗七星 + 指极线
+{
+  const D = [640, 600], u = [(PX - 640) / Math.hypot(PX - 640, PY - 600), (PY - 600) / Math.hypot(PX - 640, PY - 600)], sep = Math.hypot(PX - 640, PY - 600) / 5;
+  const M = [D[0] - u[0] * sep, D[1] - u[1] * sep];
+  const stars = [D, M, [M[0] - 70, M[1] - 6], [D[0] - 62, D[1] - 22], [D[0] - 120, D[1] - 34], [D[0] - 170, D[1] - 30], [D[0] - 222, D[1] + 4]];
+  ctx.strokeStyle = 'rgba(240,206,140,0.75)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(...stars[0]); ctx.lineTo(...stars[1]); ctx.lineTo(...stars[2]); ctx.lineTo(...stars[3]); ctx.closePath(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(...stars[3]); ctx.lineTo(...stars[4]); ctx.lineTo(...stars[5]); ctx.lineTo(...stars[6]); ctx.stroke();
+  ctx.setLineDash([3, 9]); ctx.lineWidth = 2.4; ctx.strokeStyle = 'rgba(240,206,140,0.9)';
+  ctx.beginPath(); ctx.moveTo(...M); ctx.lineTo(PX - u[0] * 40, PY - u[1] * 40); ctx.stroke(); ctx.setLineDash([]);
+  stars.forEach(([x, y], i) => sparkle(x, y, i < 2 ? 15 : 12));
+  window.__dipper = stars;
+}
+sparkle(PX, PY, 34, '#fff3d6', 110);
+ctx.strokeStyle = 'rgba(255,236,190,0.7)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(PX, PY, 58, 0, TAU); ctx.stroke();
+// 一弯月亮
+{
+  const m = document.createElement('canvas'); m.width = 160; m.height = 160; const mc = m.getContext('2d');
+  mc.fillStyle = '#f6e7c1'; mc.beginPath(); mc.arc(80, 80, 54, 0, TAU); mc.fill();
+  mc.globalCompositeOperation = 'destination-out'; mc.beginPath(); mc.arc(104, 66, 50, 0, TAU); mc.fill();
+  ctx.save(); shadow(true, 14, 5, 0.55); ctx.drawImage(m, 150 - 80, 560 - 80); ctx.restore();
+}
+// 地磁场：像缝在纸上的线
+const fieldArcs = [[[-60, 1180], [420, 640], [1140, 760]], [[-60, 1060], [480, 560], [1140, 640]], [[-60, 1300], [360, 760], [1140, 900]]];
+for (const [a, c, b] of fieldArcs) {
+  ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 3.4; ctx.setLineDash([16, 11]); ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(a[0], a[1] + 3); ctx.quadraticCurveTo(c[0], c[1] + 3, b[0], b[1] + 3); ctx.stroke();
+  ctx.strokeStyle = 'rgba(244,214,150,0.85)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.quadraticCurveTo(c[0], c[1], b[0], b[1]); ctx.stroke();
+}
+ctx.setLineDash([]);
+
+/* ---------- 雁阵 ---------- */
+function bird(x, y, s, ang, flap) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.scale(s, s);
+  ctx.beginPath();
+  // 身体朝 +x；两只翅膀往后掠
+  ctx.moveTo(26, 0); ctx.quadraticCurveTo(20, -5, 10, -4);
+  ctx.quadraticCurveTo(0, -10 - flap, -14, -34 - flap); ctx.quadraticCurveTo(-6, -14, -10, -4);
+  ctx.lineTo(-24, -6); ctx.lineTo(-30, 0); ctx.lineTo(-24, 6); ctx.lineTo(-10, 4);
+  ctx.quadraticCurveTo(-6, 14, -14, 34 + flap); ctx.quadraticCurveTo(0, 10 + flap, 10, 4);
+  ctx.quadraticCurveTo(20, 5, 26, 0); ctx.closePath();
+  shadow(true, 12, 8, 0.55); ctx.fillStyle = '#f4e6c6'; ctx.fill(); shadow(false);
+  ctx.fillStyle = '#2a3770'; ctx.beginPath(); ctx.arc(19, -1.5, 1.8, 0, TAU); ctx.fill();
+  ctx.restore();
+}
+{
+  const L = [742, 905], f = [0.87, -0.49], back = [-f[0], -f[1]], ang = Math.atan2(f[1], f[0]);
+  const rot = (v, a) => [v[0] * Math.cos(a) - v[1] * Math.sin(a), v[0] * Math.sin(a) + v[1] * Math.cos(a)];
+  const armA = rot(back, 0.42), armB = rot(back, -0.42);
+  bird(L[0], L[1], 1.15, ang, 0);
+  for (let k = 1; k <= 4; k++) bird(L[0] + armA[0] * 78 * k, L[1] + armA[1] * 78 * k, 1.12 - k * 0.05, ang, (k % 2) * 6);
+  for (let k = 1; k <= 3; k++) bird(L[0] + armB[0] * 78 * k, L[1] + armB[1] * 78 * k, 1.12 - k * 0.05, ang, ((k + 1) % 2) * 6);
+}
+
+/* ---------- 山、湖、树、小屋（从远到近，每层纸往上投影） ---------- */
+function ridge(base, amp, seedK, fn) {
+  const pts = [];
+  for (let x = -20; x <= W + 20; x += 8) {
+    let y = base - amp * (0.55 * Math.sin(x * 0.006 + seedK) + 0.3 * Math.sin(x * 0.017 + seedK * 2.3) + 0.15 * Math.sin(x * 0.041 + seedK * 4.1));
+    if (fn) y += fn(x);
+    y += (rnd() - 0.5) * 2.2;
+    pts.push([x, y]);
+  }
+  return pts;
+}
+function layer(pts, col, bottom = H + 20, sh = [22, -8, 0.55]) {
+  ctx.beginPath(); ctx.moveTo(-20, bottom); pts.forEach(p => ctx.lineTo(p[0], p[1])); ctx.lineTo(W + 20, bottom); ctx.closePath();
+  shadow(true, ...sh); ctx.fillStyle = col; ctx.fill(); shadow(false);
+}
+function pine(x, y, h, col) {
+  ctx.beginPath();
+  const w = h * 0.42;
+  ctx.moveTo(x, y - h);
+  for (let t = 0; t < 3; t++) { const yy = y - h + (t + 1) * h * 0.3, ww = w * (0.45 + t * 0.28); ctx.lineTo(x + ww, yy); ctx.lineTo(x + ww * 0.45, yy - h * 0.04); }
+  ctx.lineTo(x + w * 0.1, y); ctx.lineTo(x - w * 0.1, y);
+  for (let t = 2; t >= 0; t--) { const yy = y - h + (t + 1) * h * 0.3, ww = w * (0.45 + t * 0.28); ctx.lineTo(x - ww * 0.45, yy - h * 0.04); ctx.lineTo(x - ww, yy); }
+  ctx.closePath(); shadow(true, 14, -5, 0.5); ctx.fillStyle = col; ctx.fill(); shadow(false);
+}
+layer(ridge(1170, 120, 1.3, x => -Math.exp(-(((x - 250) / 120) ** 2)) * 90), '#4a5aa2');
+layer(ridge(1260, 100, 2.1, x => -Math.exp(-(((x - 880) / 140) ** 2)) * 110), '#3b4889');
+layer(ridge(1350, 70, 3.7), '#2e3a73');
+// 湖面（倒映着天）
+{
+  ctx.beginPath(); ctx.moveTo(-20, 1440); for (let x = -20; x <= W + 20; x += 20) ctx.lineTo(x, 1428 + Math.sin(x * 0.01) * 8); ctx.lineTo(W + 20, 1620); ctx.lineTo(-20, 1620); ctx.closePath();
+  shadow(true, 18, -6, 0.5); const g = ctx.createLinearGradient(0, 1430, 0, 1600); g.addColorStop(0, '#5465ad'); g.addColorStop(1, '#3a4a8f'); ctx.fillStyle = g; ctx.fill(); shadow(false);
+  ctx.strokeStyle = 'rgba(246,232,200,0.55)'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+  for (let k = 0; k < 16; k++) { const x = 60 + rnd() * 940, y = 1450 + rnd() * 120, l = 30 + rnd() * 90; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + l, y); ctx.stroke(); }
+  // 北极星的倒影
+  ctx.fillStyle = 'rgba(255,240,200,0.8)'; for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(PX, 1470 + k * 18, 22 - k * 3, 3, 0, 0, TAU); ctx.fill(); }
+}
+// 近处的小山 + 树
+{
+  const pts = ridge(1560, 40, 5.2, x => -Math.exp(-(((x - 160) / 170) ** 2)) * 60 - Math.exp(-(((x - 930) / 160) ** 2)) * 70);
+  layer(pts, '#1f2856');
+  const yAt = x => pts[Math.max(0, Math.min(pts.length - 1, Math.round((x + 20) / 8)))][1];
+  for (const [x, h] of [[60, 170], [130, 120], [210, 150], [300, 90], [760, 100], [990, 160], [1050, 120]]) pine(x, yAt(x) + 6, h, '#1a2149');
+}
+// 最近的一层 + 大松树 + 亮灯的小屋
+{
+  const pts = ridge(1700, 34, 6.6, x => -Math.exp(-(((x - 860) / 220) ** 2)) * 80);
+  layer(pts, '#121838');
+  const yAt = x => pts[Math.max(0, Math.min(pts.length - 1, Math.round((x + 20) / 8)))][1];
+  pine(40, yAt(40) + 10, 330, '#0d1230'); pine(150, yAt(150) + 10, 230, '#0d1230'); pine(1040, yAt(1040) + 10, 260, '#0d1230');
+  // 小屋
+  const hx = 820, hy = yAt(820) + 6;
+  ctx.beginPath(); ctx.rect(hx - 60, hy - 76, 120, 76); shadow(true, 16, -6, 0.55); ctx.fillStyle = '#0f1534'; ctx.fill(); shadow(false);
+  ctx.beginPath(); ctx.moveTo(hx - 78, hy - 70); ctx.lineTo(hx, hy - 132); ctx.lineTo(hx + 78, hy - 70); ctx.closePath(); shadow(true, 16, -6, 0.55); ctx.fillStyle = '#0b102c'; ctx.fill(); shadow(false);
+  const g = ctx.createRadialGradient(hx - 18, hy - 42, 4, hx - 18, hy - 42, 120); g.addColorStop(0, 'rgba(255,204,110,0.55)'); g.addColorStop(1, 'rgba(255,204,110,0)');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(hx - 18, hy - 42, 120, 0, TAU); ctx.fill();
+  ctx.fillStyle = '#ffcf6b'; ctx.fillRect(hx - 38, hy - 58, 34, 30); ctx.fillStyle = '#0f1534'; ctx.fillRect(hx - 22.5, hy - 58, 3, 30); ctx.fillRect(hx - 38, hy - 44.5, 34, 3);
+  ctx.fillStyle = '#ffcf6b'; ctx.fillRect(hx + 14, hy - 44, 22, 44);
+  ctx.strokeStyle = 'rgba(246,232,200,0.5)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(hx + 40, hy - 112); ctx.bezierCurveTo(hx + 30, hy - 140, hx + 60, hy - 160, hx + 46, hy - 190); ctx.stroke();
+}
+
+/* ---------- 纸纹 ---------- */
+{
+  const img = ctx.getImageData(0, 0, W, H), d = img.data;
+  for (let i = 0; i < W * H; i++) {
+    const n = (rnd() - 0.5) * 14;
+    d[i * 4] += n; d[i * 4 + 1] += n; d[i * 4 + 2] += n;
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+/* ---------- 文字（像剪下来贴上去的纸） ---------- */
+fontsReady.then(() => {
+  ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
+  shadow(true, 12, 7, 0.6);
+  ctx.font = '700 98px "LXGW WenKai"'; ctx.fillStyle = '#f7ecd2';
+  ctx.fillText('候鸟飞几千公里，', 70, 250); ctx.fillText('凭什么不迷路？', 70, 370);
+  shadow(true, 8, 4, 0.5);
+  ctx.font = '500 40px "LXGW WenKai"'; ctx.fillStyle = '#f0ce8c';
+  ctx.fillText('答案有一半写在夜空里', 76, 446);
+  shadow(false);
+  function tagLabel(x, y, text, rot, tx, ty) {
+    // 细线吊着的小纸签
+    ctx.strokeStyle = 'rgba(246,232,200,0.75)'; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(x, y); ctx.stroke();
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+    ctx.font = '700 32px "LXGW WenKai"'; const w = ctx.measureText(text).width + 40;
+    ctx.beginPath(); ctx.roundRect(-w / 2, 0, w, 52, 8); shadow(true, 10, 5, 0.55); ctx.fillStyle = '#f4e6c6'; ctx.fill(); shadow(false);
+    ctx.fillStyle = '#2a3770'; ctx.beginPath(); ctx.arc(0, 9, 4, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#26305f'; ctx.textAlign = 'center'; ctx.fillText(text, 0, 40);
+    ctx.restore();
+  }
+  tagLabel(900, 520, '北极星', 0.06, PX + 40, PY + 40);
+  const st = window.__dipper; tagLabel(470, 650, '北斗', -0.08, st[5][0], st[5][1] + 6);
+  tagLabel(160, 1000, '地磁场', -0.1, 170, 862);
+  // 字幕：一条纸丝带
+  const y0 = 1736;
+  ctx.beginPath(); ctx.moveTo(60, y0); ctx.lineTo(1020, y0); ctx.lineTo(990, y0 + 64); ctx.lineTo(1020, y0 + 128); ctx.lineTo(60, y0 + 128); ctx.lineTo(90, y0 + 64); ctx.closePath();
+  shadow(true, 16, 8, 0.6); ctx.fillStyle = '#f4e6c6'; ctx.fill(); shadow(false);
+  ctx.font = '700 40px "LXGW WenKai"'; ctx.fillStyle = '#26305f'; ctx.textAlign = 'center';
+  ctx.fillText('夜里飞的鸟会看星星认方向：', 540, y0 + 54); ctx.fillText('整片星空都绕着北极星转', 540, y0 + 106);
+  window.__done = true;
+});
+</script>
+</body>
+</html>
