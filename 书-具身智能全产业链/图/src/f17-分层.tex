@@ -1,0 +1,32 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+% 横轴：频率对数坐标，0.1 Hz 到 100 kHz，每个数量级 13 mm
+\pgfmathdeclarefunction{lf}{1}{\pgfmathparse{(#1+1)*13}}% 参数是 log10(频率)
+\begin{tikzpicture}[x=1mm,y=1mm,
+  bar/.style={draw=ink, line width=0.6pt, rounded corners=1pt, minimum height=5.5mm},
+  rl/.style={font=\tiny\bfseries, text=ink, anchor=east, align=right},
+  wh/.style={font=\tiny, text=mid, anchor=west, align=left},
+]
+  \foreach \f/\t in {-1/0.1 Hz,0/1 Hz,1/10 Hz,2/100 Hz,3/1 kHz,4/10 kHz,5/100 kHz} {
+    \pgfmathsetmacro\xx{lf(\f)}
+    \draw[soft] (\xx,-1) -- (\xx,50);
+    \node[font=\tiny, text=mid, anchor=north] at (\xx,-1.2) {\t};
+  }
+  \node[font=\tiny, text=mid, anchor=north] at (39,-5.5) {每秒做几次决定（对数刻度）};
+  % 各层：y、名字、低频、高频、在哪里运行、填充
+  \foreach \y/\n/\lo/\hi/\w/\c in {
+      44/任务规划、具身推理/-1/0.301/机载或云端；大模型/white,
+      35/动作策略（VLA 动作块）/0.699/1.699/机载 GPU（如 Orin、Thor）/pale,
+      26/全身控制、行走策略/1.699/2.699/机载实时处理器/soft,
+      17/关节位置、力矩环/2.699/3.301/驱动器、实时控制器/soft,
+      8/电机电流环/4/4.602/关节驱动器里的微控制器/mid} {
+    \pgfmathsetmacro\xa{lf(\lo)} \pgfmathsetmacro\xb{lf(\hi)}
+    \node[bar, fill=\c, minimum width={(\xb-\xa)*1mm}, anchor=west] at (\xa,\y) {};
+    \node[rl] at (-2,\y) {\n};
+    \node[wh] at ({\xb+1.5},\y) {\w};
+  }
+  \draw[arr, mid] (-30,4) -- (-30,48);
+  \node[font=\tiny, text=mid, rotate=90, anchor=south] at (-31,26) {越往上越“聪明”、越慢};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,52 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  blk/.style={draw=ink, line width=0.7pt, align=center, font=\tiny, minimum height=30mm, inner sep=1pt},
+  ttl/.style={font=\scriptsize\bfseries, text=ink, anchor=south},
+  note/.style={font=\tiny, text=mid, align=center, anchor=north},
+]
+  % ===== 左：一个关节的组成（剖面示意） =====
+  \node[ttl] at (25,40) {一个旋转关节的组成};
+  \node[blk, fill=white, minimum width=7mm] (enc1) at (3,20) {电\\机\\端\\编\\码\\器};
+  \node[blk, fill=pale, minimum width=9mm, right=0mm of enc1] (drv) {驱\\动\\器\\(FOC)};
+  \node[blk, fill=soft, minimum width=12mm, right=0mm of drv] (mot) {无框\\永磁\\电机\\（定子＋\\转子）};
+  \node[blk, fill=pale, minimum width=11mm, right=0mm of mot] (red) {减速器\\（谐波\\RV\\行星）};
+  \node[blk, fill=white, minimum width=8mm, right=0mm of red] (brg) {交叉\\滚子\\轴承};
+  \node[blk, fill=white, minimum width=7mm, right=0mm of brg] (enc2) {输\\出\\端\\编\\码\\器};
+  \draw[arr] (enc2.east) ++(0.5,0) -- ++(6,0) node[right, font=\tiny, align=left] {输出\\（接连杆）};
+  \draw[mid, densely dashed] (-1,20) -- (54,20);
+  \node[note] at (25,3.5) {高速、小力矩 → 低速、大力矩\\中间留空心走线};
+
+  % ===== 右：三种减速器 =====
+  % 谐波
+  \begin{scope}[shift={(76,27)}]
+    \node[ttl] at (0,11) {谐波};
+    \draw[ink, line width=0.9pt] (0,0) circle (8.5);           % 刚轮
+    \draw[ink, line width=0.7pt, fill=pale] (0,0) ellipse (7.8 and 6.2); % 柔轮
+    \draw[ink, line width=0.7pt, fill=white] (0,0) ellipse (6.4 and 4.6); % 波发生器
+    \fill[ink] (0,0) circle (0.8);
+    \node[font=\tiny, text=mid] at (0,-1.9) {波发生器};
+    \node[note] at (0,-10) {轻、精度高、背隙小\\手臂、腕部};
+  \end{scope}
+  % RV
+  \begin{scope}[shift={(96,27)}]
+    \node[ttl] at (0,11) {RV};
+    \draw[ink, line width=0.9pt] (0,0) circle (8.5);
+    \foreach \a in {0,20,...,340} {\fill[ink] (\a:8.5) circle (0.45);}  % 针齿
+    \draw[ink, line width=0.7pt, fill=pale, shift={(0.7,0)}] plot[domain=0:360, samples=120, smooth] (\x:{6.8+0.5*cos(17*\x)});
+    \foreach \a in {0,120,240} {\draw[ink, fill=white] (\a:3.6) circle (1.1);}
+    \fill[ink] (0,0) circle (0.8);
+    \node[note] at (0,-10) {刚度高、抗冲击\\工业机器人大关节};
+  \end{scope}
+  % 行星
+  \begin{scope}[shift={(116,27)}]
+    \node[ttl] at (0,11) {行星};
+    \draw[ink, line width=0.9pt] (0,0) circle (8.5);
+    \draw[ink, line width=0.7pt, fill=pale] (0,0) circle (3);
+    \foreach \a in {90,210,330} {\draw[ink, line width=0.7pt, fill=white] (\a:5.5) circle (2.6);}
+    \node[font=\tiny] at (0,0) {太阳轮};
+    \node[note] at (0,-10) {简单、可做小减速比\\腿式准直驱关节};
+  \end{scope}
+\end{tikzpicture}
+\end{document}
