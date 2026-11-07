@@ -1,0 +1,27 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  layer/.style={dark, minimum width=24mm, minimum height=9mm, font=\footnotesize\bfseries},
+  q/.style={boxw, minimum width=58mm, text width=56mm, minimum height=9mm, font=\scriptsize, align=left},
+  ref/.style={lbl, text width=20mm, align=left},
+]
+  \node[title, anchor=west] at (0,73) {叠一件衬衫，机器要回答的问题};
+  \node[lbl, anchor=west] at (27,67.5) {这一层要回答的问题};
+  \node[lbl, anchor=west] at (88,67.5) {本书在哪里讲};
+  \foreach \y/\name/\q/\r in {
+     0/身体/{两只各有六到七个关节的手臂、能捏起布料的夹爪；够不够得着、捏不捏得起}/{第三部（机器）\\第四部（部件）},
+    11/感知/{衬衫在哪？衣角朝哪？手指捏住了几层布？}/{第 16 章},
+    22/状态估计/{左袖口在桌子哪里、被什么压着？（软的东西状态几乎无穷维）}/{第 4、16 章},
+    33/控制/{七个关节以什么速度、多大力气动，才能捏住、提起、不扯坏？}/{第 5、9、17 章},
+    44/决策与学习/{先抓哪个角？袖子缠住了、衣服滑了怎么办？从示范和失败里学}/{第五部},
+    55/部署与运维/{多久坏一次、谁来修、碰到人怎么办、一小时多少钱？}/{第 23 章、第六部}} {
+    \node[layer] (L\y) at (12,\y) {\name};
+    \node[q, anchor=west] (Q\y) at (27,\y) {\q};
+    \node[ref, anchor=west] at (88,\y) {\r};
+  }
+  % 端到端合并的括号
+  \draw[decorate, decoration={brace, amplitude=1.8mm, mirror}, semithick, mid] (-1.5,6) -- (-1.5,49)
+    node[midway, left=2.5mm, lbl, text width=13mm, align=right] {2024 年后\\常被合进\\一个模型};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,36 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  pt/.style={circle, fill=ink, inner sep=1.3pt},
+  pto/.style={circle, draw=ink, fill=white, inner sep=1.3pt},
+  tag/.style={font=\scriptsize, text=ink, align=left, inner sep=1pt},
+]
+  % 网格：横轴 7 级部署阶段，纵轴 4 级生产规模
+  \foreach \i/\s/\n in {0/R/研究,1/D/演示,2/T/测试,3/P/试点,4/O/订单,5/L/交付,6/M/规模运营} {
+    \draw[soft, densely dotted] ({20+\i*14},2) -- ({20+\i*14},70);
+    \node[font=\footnotesize\bfseries] at ({20+\i*14},-3) {\s};
+    \node[lbl] at ({20+\i*14},-7.5) {\n};
+  }
+  \foreach \j/\n in {0/样机,1/小批\\（百台级）,2/批量\\（千台级）,3/规模量产\\（万台级以上）} {
+    \draw[soft, densely dotted] (12,{8+\j*19}) -- (110,{8+\j*19});
+    \node[lbl, anchor=east, align=right] at (11,{8+\j*19}) {\n};
+  }
+  \draw[arr] (12,-0.5) -- (111,-0.5) node[right, lbl] {用得怎样};
+  \draw[arr] (12,-0.5) -- (12,74) node[above, lbl] {造了多少};
+
+  % 产品位置（截至 2026-11，本书判断；空心点表示位置不确定）
+  \node[pt]  at (104,70) {}; \node[tag, anchor=east] at (102.5,70) {工业机械臂（整体）};
+  \node[pt]  at (104,65.5) {}; \node[tag, anchor=east] at (102.5,65.5) {Amazon 仓储机器人（整体）};
+  \node[pt]  at (90,61) {};  \node[tag, anchor=east] at (88.5,61) {宇树四足（科研、消费、巡检）};
+  \node[pt]  at (90,49) {};  \node[tag, anchor=east] at (88.5,49) {宇树人形（科研、展示等）};
+  \node[pto] at (90,43) {};  \node[tag, anchor=east] at (88.5,43) {优必选、智元人形（用途构成未公开）};
+  \node[pt]  at (90,27) {};  \node[tag, anchor=west] at (91.5,27) {Agility Digit v4\\（生产作业）};
+  \node[pt]  at (62,24) {};  \node[tag, anchor=east] at (60.5,23) {Figure（宝马单工位试点）};
+  \node[pto] at (34,30) {};  \node[tag, anchor=west] at (35.5,30) {Tesla Optimus（内部使用）};
+  \node[pto] at (34,10) {};  \node[tag, anchor=west] at (35.5,10) {1X NEO（可退订金预订）};
+  \node[pto] at (90,8) {};   \node[tag, anchor=west] at (91.5,8) {Atlas 产品版\\（交付母公司等）};
+  \node[pt]  at (76,8) {};   \node[tag, anchor=east] at (74.5,6.5) {Digit v5（有条件订单）};
+  \node[lbl, anchor=west] at (14,-14) {实心点：位置有监管文件或客户公开说明支撑；空心点：数量或用途未公开，位置不确定};
+\end{tikzpicture}
+\end{document}

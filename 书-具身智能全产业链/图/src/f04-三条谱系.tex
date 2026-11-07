@@ -1,0 +1,56 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+% 分段时间轴：1945–2000 每年 0.5 mm，2000–2027 每年 3.1 mm
+\pgfmathdeclarefunction{yr}{1}{%
+  \pgfmathparse{#1<2000 ? (#1-1945)*0.5 : 27.5+(#1-2000)*3.1}%
+}
+% 标签位置：1 上、2 更上、3 下、4 更下
+\newcommand{\lab}[4]{% x, lane y, level, text
+  \ifcase#3\or \node[t, anchor=south] at (#1,#2+1.8) {#4};
+  \or \node[t, anchor=south] at (#1,#2+7.2) {#4}; \draw[soft] (#1,#2+1.2) -- (#1,#2+7.0);
+  \or \node[t, anchor=north] at (#1,#2-1.8) {#4};
+  \or \node[t, anchor=north] at (#1,#2-7.2) {#4}; \draw[soft] (#1,#2-1.2) -- (#1,#2-7.0);
+  \fi}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  ev/.style={circle, fill=ink, inner sep=1.1pt},
+  evo/.style={circle, draw=ink, fill=white, inner sep=1.1pt},
+  t/.style={font=\tiny, text=ink, align=center, inner sep=0.5pt},
+  lane/.style={font=\scriptsize\bfseries, text=ink, anchor=east, align=right},
+]
+  % 时间轴
+  \draw[mid] (0,0) -- (112,0);
+  \foreach \y in {1950,1960,1970,1980,1990} {\pgfmathsetmacro\xx{yr(\y)} \draw[mid] (\xx,0) -- (\xx,-1) node[below, font=\tiny, text=mid] {\y};}
+  \foreach \y in {2000,2005,2010,2015,2020,2025} {\pgfmathsetmacro\xx{yr(\y)} \draw[mid] (\xx,0) -- (\xx,-1) node[below, font=\tiny, text=mid] {\y};}
+  \pgfmathsetmacro\xb{yr(2000)}
+  \draw[mid, densely dashed] (\xb,-0.5) -- (\xb,5); \draw[mid, densely dashed] (\xb,59) -- (\xb,64);
+  \node[font=\tiny, text=mid, anchor=south west] at (\xb,64) {时间轴在此放大};
+  % 三条泳道
+  \foreach \yy/\nm in {52/控制与身体,32/感知与环境,12/学习与数据} {
+    \draw[soft, line width=3.2pt] (0,\yy) -- (112,\yy);
+    \node[lane] at (-1.5,\yy) {\nm};
+  }
+  % 控制与身体
+  \foreach \y/\lv/\txt in {1948/1/控制论, 1961/3/Unimate, 1974/1/全电动臂, 1985/3/阻抗控制, 1996/1/本田 P2, 2005/3/BigDog, 2008/1/协作臂 UR5, 2013/3/Atlas（液压）, 2019/1/准直驱\\Mini Cheetah, 2024/3/电动 Atlas, 2026/1/学习型\\全身控制} {
+    \pgfmathsetmacro\xx{yr(\y)}
+    \node[ev] at (\xx,52) {};
+    \lab{\xx}{52}{\lv}{\txt}
+  }
+  % 感知与环境
+  \foreach \y/\lv/\txt in {1966/1/Shakey, 1979/3/Stanford\\Cart, 1986/1/EKF-SLAM\\包容式架构, 1999/3/蒙特卡洛\\定位, 2002/1/FastSLAM, 2005/3/DARPA\\Stanley, 2010/1/Kinect\\ROS 1.0, 2012/3/深度视觉, 2015/1/ORB-SLAM, 2023/3/开放词汇\\感知, 2026/1/具身推理\\世界模型} {
+    \pgfmathsetmacro\xx{yr(\y)}
+    \node[ev] at (\xx,32) {};
+    \lab{\xx}{32}{\lv}{\txt}
+  }
+  % 学习与数据
+  \foreach \y/\lv/\txt in {1989/1/ALVINN\\行为克隆, 2011/3/DAgger, 2016/1/视觉运动\\策略, 2017/3/域随机化, 2018/2/QT-Opt, 2019/4/Dactyl, 2021/1/legged\_gym, 2022/3/SayCan\\RT-1, 2023/2/RT-2、OXE\\Diffusion Policy, 2024/4/π0, 2026/1/π0.7} {
+    \pgfmathsetmacro\xx{yr(\y)}
+    \node[ev] at (\xx,12) {};
+    \lab{\xx}{12}{\lv}{\txt}
+  }
+  % 交汇：仿真强化学习让腿走起来
+  \pgfmathsetmacro\xa{yr(2021)}
+  \draw[arr, mid, densely dotted] (\xa-0.8,18.6) to[bend left=10] (\xa-0.8,50.4);
+  \node[t, text=mid, anchor=east] at (\xa-2.2,40.5) {仿真强化学习\\让腿走起来};
+\end{tikzpicture}
+\end{document}
