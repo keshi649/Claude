@@ -1,0 +1,46 @@
+% 印刷用全展开封面：封底 + 书脊 + 正封，四周各 3 mm 出血
+% 书脊宽度 \spinew（mm）由 排版/封面/做封面.sh 按页数算好后写入
+\documentclass[tikz,border=0pt]{standalone}
+\input{排版/封面/公共.tex}
+\input{排版/build/封面/书脊宽度.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \pgfmathsetmacro{\S}{\spinew}
+  \useasboundingbox (-3,-3) rectangle (343+\S,243);
+  % ---------- 封底（x: 0–170） ----------
+  \fill[cbg] (-3,-3) rectangle (170,243);
+  \begin{scope}
+    \clip (-3,-3) rectangle (170,243);
+    \draw[cline!35, line width=0.15pt] (-3,-3) grid[step=10] (170,243);
+  \end{scope}
+  \node[anchor=north west, font=\heiti\bfseries\fontsize{17}{22}\selectfont, text=cink] at (18,222) {这条机器人新闻，走到了哪一步？};
+  \draw[cacc, line width=1.8pt] (18,211) -- (44,211);
+  \node[anchor=north west, text width=134mm, font=\songti\fontsize{10.5}{19}\selectfont, text=cink, align=justify] at (18,205)
+    {“人形机器人进厂打工”“斩获亿元大单”“学会了从没教过的任务”——这些话可能都是真的，说的却是完全不同的事。这本书从 1961 年的第一台工业机器人讲到 2026 年的机器人基础模型，把具身智能的技术谱系、机器、部件、供应链、模型、应用场景和全球公司放进同一张地图，并给每一个产品标出它走到了哪一步：研究、演示、测试、试点、订单、交付，还是规模运营。};
+  \node[anchor=north west, font=\heiti\bfseries\fontsize{12}{14}\selectfont, text=cink] at (18,146) {你会得到};
+  \foreach \t [count=\i] in {一把尺子：七级证据阶段、四级生产规模和一张断言—证据对照表,八十年的四条技术谱系：控制、感知、学习与数据、腿,从电机、减速器到机器人大模型的一张全产业链地图,中、美、日、欧的供应链格局和公司牌桌,每章的证据阶段表，书后的时间线、公司表和待核实清单} {
+    \fill[cacc] (19,138-\i*9+1.6) rectangle (21.6,138-\i*9+4.2);
+    \node[anchor=west, font=\songti\fontsize{10.5}{13}\selectfont, text=cink] at (24,138-\i*9+2.9) {\t};
+  }
+  \node[anchor=north west, font=\heiti\bfseries\fontsize{12}{14}\selectfont, text=cink] at (18,78) {适合谁读};
+  \node[anchor=north west, text width=134mm, font=\songti\fontsize{10.5}{17}\selectfont, text=cink] at (18,71)
+    {懂一点 AI、软件、硬件或商业，想看懂机器人和具身智能这个行业的工程师、产品经理、投资人、研究员、记者、政府和园区工作人员，以及相关专业的学生。};
+  % 条码区
+  \fill[white] (112,10) rectangle (160,40);
+  \draw[cline, line width=0.4pt] (112,10) rectangle (160,40);
+  \node[font=\heiti\fontsize{8}{10}\selectfont, text=cline, align=center] at (136,25) {ISBN 条码区\\（出版时放置）};
+  \node[anchor=south west, font=\heiti\fontsize{8.5}{10}\selectfont, text=cink!80, align=left] at (18,30) {上架建议：科技 / 人工智能 / 机器人 / 产业经济};
+  \node[anchor=south west, font=\heiti\fontsize{8.5}{10}\selectfont, text=cink!80] at (18,23) {定价：（待定）};
+  \node[anchor=south west, text width=88mm, font=\heiti\fontsize{7}{9}\selectfont, text=cink!65, align=left] at (18,10) {本书为独立写作，与书中提到的任何公司无隶属、授权或赞助关系，不构成投资建议。资料截至 2026 年 11 月 7 日。};
+  % ---------- 正封（x: 170+S – 340+S） ----------
+  \begin{scope}[shift={(170+\S,0)}]
+    \input{排版/封面/正面.tex}
+  \end{scope}
+  % ---------- 书脊（x: 170–170+S），最后画，盖在正封出血上面 ----------
+  \fill[cink] (170,-3) rectangle (170+\S,243);
+  \fill[cacc] (170,228) rectangle (170+\S,234);
+  \node[anchor=north, text width=\S mm, align=center, font=\heitiblack\fontsize{17}{20}\selectfont, text=white] at (170+\S/2,220) {具\\身\\智\\能};
+  \node[anchor=north, text width=\S mm, align=center, font=\heiti\fontsize{8}{9.6}\selectfont, text=white!85] at (170+\S/2,136) {机\\器\\·\\部\\件\\·\\全\\产\\业\\链};
+  \node[anchor=south, text width=\S mm, align=center, font=\heiti\bfseries\fontsize{10}{12}\selectfont, text=white] at (170+\S/2,14) {甜\\菜\\著};
+\end{tikzpicture}
+\end{document}

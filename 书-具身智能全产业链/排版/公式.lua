@@ -12,7 +12,7 @@ if FORMAT:match('latex') then return {} end
 local dir = '排版/build/公式'
 local body_pt = 10.5
 local display_scale = 1.15   -- 行间公式放大一点，手机上分式才看得清
-local box_bg = {engineer = 'F3F3F3', examiner = 'F3F3F3', try = 'ECECEC'}   -- 和 epub.css 一致
+local box_bg = {engineer = 'F3F3F3', misread = 'ECECEC'}   -- 和 epub.css 一致
 
 local preamble = [[
 \documentclass[border=0pt]{standalone}
@@ -69,7 +69,7 @@ end
 
 -- 行内公式里有这些命令就排成图：分式、根号、求和认不出来；\\dot、\\ddot（导数的点）和矩阵，
 -- pandoc 转不成文字，会把 TeX 原样露出来
-local image_cmds = {'\\frac', '\\sqrt', '\\sum', '\\dot', '\\ddot', '\\begin'}
+local image_cmds = {'\\frac', '\\sqrt', '\\sum', '\\dot', '\\ddot', '\\begin', '\\overline', '\\int', '\\mid'}
 
 local function to_image(el, bg)
   local display = el.mathtype == 'DisplayMath'
