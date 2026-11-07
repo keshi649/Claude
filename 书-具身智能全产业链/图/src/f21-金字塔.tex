@@ -1,0 +1,31 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  lvl/.style={font=\tiny\bfseries, text=ink, align=center},
+  ex/.style={font=\tiny, text=mid, anchor=west, align=left},
+]
+  % 五层梯形：底宽 96 mm，顶宽 16 mm，高 60 mm
+  \def\H{60}
+  \foreach \i/\c in {0/pale,1/soft!60,2/soft,3/mid!70,4/mid} {
+    \pgfmathsetmacro\ya{\i*12} \pgfmathsetmacro\yb{(\i+1)*12}
+    \pgfmathsetmacro\wa{36-\i*6.4} \pgfmathsetmacro\wb{36-(\i+1)*6.4}
+    \filldraw[fill=\c, draw=white, line width=1pt] ({37-\wa},\ya) -- ({37+\wa},\ya) -- ({37+\wb},\yb) -- ({37-\wb},\yb) -- cycle;
+  }
+  \node[lvl] at (37,6) {网络图文和视频};
+  \node[lvl] at (37,18) {人类第一视角视频\\动作捕捉};
+  \node[lvl] at (37,30) {仿真数据};
+  \node[lvl, text=white] at (37,42) {遥操作示范};
+  \node[lvl, text=white] at (37,54) {真实场景\\自主数据};
+  % 右侧举例
+  \node[ex] at (78,6) {量几乎无限；教会常识，但没有动作};
+  \node[ex] at (78,18) {人的手怎么动；要“翻译”到机器人，看不到力};
+  \node[ex] at (78,30) {无限、标注准；手和软物体的仿真不准};
+  \node[ex] at (78,42) {质量高、直接可用；慢、贵，要先有机器人};
+  \node[ex] at (78,54) {最接近需要；要先部署出去才有};
+  \foreach \y in {6,18,30,42,54} {\draw[soft] ({37+36-(\y)/12*6.4+0.5},\y) -- (77,\y);}
+  % 左侧箭头
+  \draw[arr, mid] (-4,0) -- (-4,60);
+  \node[font=\tiny, text=mid, rotate=90, anchor=south] at (-5,30) {越往上：越接近需要、越少、越贵};
+\end{tikzpicture}
+\end{document}

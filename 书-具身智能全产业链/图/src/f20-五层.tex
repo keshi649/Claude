@@ -1,0 +1,49 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  lay/.style={dark, font=\tiny\bfseries, text width=24mm, minimum height=11mm, align=center},
+  op/.style={draw=ink, fill=white, font=\tiny, rounded corners=1pt, inner sep=1.3pt, minimum height=4.6mm},
+  pa/.style={draw=ink, fill=soft, font=\tiny, rounded corners=1pt, inner sep=1.3pt, minimum height=4.6mm},
+  cl/.style={draw=ink, fill=ink, text=white, font=\tiny, rounded corners=1pt, inner sep=1.3pt, minimum height=4.6mm},
+]
+  \foreach \y in {56,43,30,17,4} {\fill[pale] (27,\y-5.5) rectangle (131,\y+5.5);}
+  \node[lay] at (13,56) {具身推理\\{\normalfont 看懂空间、做计划}};
+  \node[lay] at (13,43) {世界模型\\{\normalfont 预测接下来会怎样}};
+  \node[lay] at (13,30) {动作策略\\{\normalfont 直接输出动作}};
+  \node[lay] at (13,17) {集成具身系统\\{\normalfont 模型＋身体＋全身控制}};
+  \node[lay] at (13,4) {基础设施与服务\\{\normalfont 权重、接口、工具链}};
+
+  % 具身推理
+  \node[pa, anchor=west] at (29,56) {Gemini Robotics-ER 2};
+  \node[op, anchor=west] at (63,56) {Cosmos Reason 2};
+  \node[op, anchor=west] at (90,56) {UnifoLM-ER-1};
+  % 世界模型
+  \node[op, anchor=west] at (29,43) {Cosmos 3};
+  \node[op, anchor=west] at (46,43) {V-JEPA 2-AC};
+  \node[op, anchor=west] at (68,43) {UnifoLM-WMA-0};
+  % 动作策略
+  \node[op, anchor=west] at (29,32.5) {π0、π0.5};
+  \node[cl, anchor=west] at (45,32.5) {π\textsuperscript{*}0.6、π0.7};
+  \node[op, anchor=west] at (68,32.5) {GR00T N1.6};
+  \node[op, anchor=west] at (88,32.5) {OpenVLA};
+  \node[cl, anchor=west] at (29,27.3) {Gemini Robotics 2};
+  \node[pa, anchor=west] at (60,27.3) {UnifoLM-WLA-1.0};
+  % 集成具身系统
+  \node[cl, anchor=west] at (29,17) {Figure Helix 02};
+  \node[cl, anchor=west] at (55,17) {Gemini Robotics 2 ＋ Apollo 2};
+  \node[cl, anchor=west] at (97,17) {1X NEO ＋ Redwood};
+  % 基础设施与服务
+  \node[op, anchor=west] at (29,6.5) {openpi};
+  \node[pa, anchor=west] at (43,6.5) {Pi API 测试版};
+  \node[pa, anchor=west] at (65,6.5) {Gemini API};
+  \node[pa, anchor=west] at (85,6.5) {Isaac 工具链};
+  \node[op, anchor=west] at (29,1.3) {LeRobot};
+  \node[op, anchor=west] at (45,1.3) {宇树、智元开源代码和数据};
+
+  % 图例
+  \node[op, anchor=west] at (29,-8) {\hphantom{x}}; \node[font=\tiny, anchor=west] at (33,-8) {开放权重或代码};
+  \node[pa, anchor=west] at (58,-8) {\hphantom{x}}; \node[font=\tiny, anchor=west] at (62,-8) {接口调用或部分开放};
+  \node[cl, anchor=west] at (92,-8) {\hphantom{x}}; \node[font=\tiny, anchor=west] at (96,-8) {不开放或仅合作伙伴};
+\end{tikzpicture}
+\end{document}
