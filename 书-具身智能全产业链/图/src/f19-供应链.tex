@@ -1,0 +1,40 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  cell/.style={minimum width=21mm, minimum height=5.4mm, draw=white, line width=0.8pt, inner sep=0pt},
+  rl/.style={font=\tiny\bfseries, text=ink, anchor=east, align=right},
+  hd/.style={font=\scriptsize\bfseries, text=ink, anchor=south},
+]
+  \definecolor{s0}{gray}{0.97}
+  \definecolor{s1}{gray}{0.84}
+  \definecolor{s2}{gray}{0.58}
+  \definecolor{s3}{gray}{0.25}
+  \foreach \i/\h in {0/中国,1/日本,2/欧洲,3/美国} {\node[hd] at ({30+\i*21},63) {\h};}
+  % 行：名字/中/日/欧/美
+  \foreach \r/\n/\a/\b/\c/\d in {
+      0/精密减速器/2/3/1/0,
+      1/电机和驱动器/3/3/2/1,
+      2/丝杠和轴承/1/3/3/1,
+      3/激光雷达/3/0/0/1,
+      4/深度相机/2/0/0/2,
+      5/力和触觉传感器/2/1/1/2,
+      6/机器人芯片/1/0/0/3,
+      7/电池（日本列含韩国）/3/2/0/0,
+      8/仿真和软件/1/0/1/3,
+      9/机器人基础模型/2/0/0/3,
+      10/整机制造/3/2/2/2} {
+    \pgfmathsetmacro\yy{58-\r*5.4}
+    \node[rl] at (18.5,\yy) {\n};
+    \node[cell, fill=s\a] at (30,\yy) {};
+    \node[cell, fill=s\b] at (51,\yy) {};
+    \node[cell, fill=s\c] at (72,\yy) {};
+    \node[cell, fill=s\d] at (93,\yy) {};
+  }
+  % 图例
+  \foreach \k/\t in {0/少或无,1/有一定基础,2/较强,3/领先} {
+    \node[cell, fill=s\k, minimum width=6mm, minimum height=3.6mm] at ({110},{50-\k*6}) {};
+    \node[font=\tiny, text=ink, anchor=west] at (114,{50-\k*6}) {\t};
+  }
+\end{tikzpicture}
+\end{document}
