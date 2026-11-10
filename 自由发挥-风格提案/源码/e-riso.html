@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/900.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/700.css">
+<style>
+  html, body { margin: 0; }
+  body { width: 1080px; height: 1920px; overflow: hidden; background: #f2e9d6; position: relative;
+         font-family: "Noto Sans SC", sans-serif; }
+  canvas, .ink, svg.grain { position: absolute; left: 0; top: 0; mix-blend-mode: multiply; }
+  .ink { width: 1080px; height: 1920px; }
+  .title { position: absolute; left: 0; width: 1080px; text-align: center; font-weight: 900; font-size: 214px; line-height: 214px;
+           letter-spacing: 6px; white-space: nowrap; }
+  .tag { position: absolute; left: 350px; top: 124px; font-weight: 900; font-size: 44px; letter-spacing: 6px; }
+  .sub { position: absolute; left: 0; width: 1080px; top: 1716px; text-align: center; font-weight: 900; font-size: 58px; letter-spacing: 4px; }
+</style>
+</head>
+<body>
+<canvas id="cy" width="1080" height="1920"></canvas>
+<canvas id="cp" width="1080" height="1920"></canvas>
+<canvas id="cb" width="1080" height="1920"></canvas>
+
+<!-- 粉色版的字：故意套歪一点 -->
+<div class="ink" style="color:#ff4f6d; transform: translate(9px, 8px);">
+  <div class="title" style="top:986px">如果月亮</div>
+  <div class="title" style="top:1202px">突然消失</div>
+</div>
+<!-- 蓝色版的字 -->
+<div class="ink" style="color:#263da8;">
+  <div class="title" style="top:986px">如果月亮</div>
+  <div class="title" style="top:1202px">突然消失</div>
+  <div class="tag">脑洞实验室<span style="display:inline-block; width:22px"></span>第 12 期</div>
+</div>
+<div class="ink" id="subwrap" style="color:#f2e9d6; mix-blend-mode: normal;">
+  <div class="sub">第一个发现不对劲的，是海。</div>
+</div>
+
+<svg class="grain" width="1080" height="1920">
+  <filter id="g1" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="7"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 0.9 -0.28"/>
+  </filter>
+  <filter id="g2" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="3" seed="21"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0.55  0 0 0 0 0.45  0 0 0 0 0.3  0 0 0 0.9 -0.36"/>
+  </filter>
+  <rect width="1080" height="1920" filter="url(#g1)" opacity="0.55"/>
+  <rect width="1080" height="1920" filter="url(#g2)" opacity="0.35"/>
+</svg>
+
+<script>
+let seed = 77;
+function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+function rr(a, b) { return a + (b - a) * rnd(); }
+const W = 1080, H = 1920;
+const PINK = '#ff4f6d', BLUE = '#263da8', YEL = '#ffc42e';
+const cy = document.getElementById('cy').getContext('2d');
+const cp = document.getElementById('cp').getContext('2d');
+const cb = document.getElementById('cb').getContext('2d');
+
+// 月亮
+const MX = 540, MY = 622, MR = 300;
+
+// ---------- 黄色版 ----------
+cy.fillStyle = YEL;
+cy.beginPath(); cy.arc(MX - 26, MY + 22, MR + 46, 0, 6.2832); cy.fill();
+// 海面上的黄条（原本的月光倒影）
+for (let i = 0; i < 9; i++) {
+  const y = 1530 + i * 24, w = 300 - i * 26 + rr(-20, 20);
+  cy.fillRect(MX - w / 2 + rr(-14, 14), y, w, 9);
+}
+// 黄星星
+function star(c, x, y, r) {
+  c.beginPath();
+  for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rad = i % 2 ? r * 0.32 : r; c.lineTo(x + Math.cos(a) * rad, y + Math.sin(a) * rad); }
+  c.closePath(); c.fill();
+}
+[[150, 420, 20], [930, 860, 16], [960, 330, 12], [110, 900, 13]].forEach(([x, y, r]) => star(cy, x, y, r));
+
+// ---------- 粉色版：网点月亮，右半边散成点飞走 ----------
+cp.fillStyle = PINK;
+const pitch = 15, ang = Math.PI / 6, ca = Math.cos(ang), sa = Math.sin(ang);
+for (let u = -80; u <= 80; u++) for (let v = -80; v <= 80; v++) {
+  const gx = (u * ca - v * sa) * pitch, gy = (u * sa + v * ca) * pitch;   // 相对月心
+  const d = Math.hypot(gx, gy);
+  if (d > MR) continue;
+  // 明暗：左上亮，右下暗
+  const nx = gx / MR, ny = gy / MR, nz = Math.sqrt(Math.max(0, 1 - nx * nx - ny * ny));
+  let lit = nx * -0.55 + ny * -0.5 + nz * 0.67;         // 光照
+  let dark = 0.9 - 0.62 * Math.max(0, lit);            // 越暗点越大
+  dark = Math.min(1, Math.max(0.2, dark));
+  let r = pitch * 0.72 * Math.sqrt(dark);
+  let x = MX + gx, y = MY + gy;
+  // 消散：越靠右越容易飞走
+  const t = (nx + 0.12) / 1.12;                           // -.. ~ 1
+  if (t > 0) {
+    const p = Math.pow(t, 1.5);
+    if (rnd() < p * 1.05) {
+      const far = Math.pow(rnd(), 1.6) * (140 + 620 * p);
+      x += far * rr(0.75, 1.05); y -= far * rr(0.18, 0.52);
+      r *= Math.max(0.16, 1 - far / 560);
+      if (rnd() < p * 0.42) continue;                    // 有些点干脆没了
+    }
+  }
+  cp.beginPath(); cp.arc(x, y, r, 0, 6.2832); cp.fill();
+}
+// 标签块
+cp.fillStyle = PINK;
+cp.fillRect(70, 120, 250, 72);
+
+// ---------- 蓝色版 ----------
+cb.fillStyle = BLUE; cb.strokeStyle = BLUE;
+// 环形山（蓝网点，和粉点叠出紫色），只留在还没散掉的左半边
+const craters = [[-150, -84, 58], [-66, 76, 80], [-204, 66, 36], [-44, -172, 44], [36, -40, 30], [-116, 190, 34]];
+const p2 = 7.5, a2 = Math.PI * 0.42, c2 = Math.cos(a2), s2 = Math.sin(a2);
+for (let u = -90; u <= 90; u++) for (let v = -90; v <= 90; v++) {
+  const gx = (u * c2 - v * s2) * p2, gy = (u * s2 + v * c2) * p2;
+  if (Math.hypot(gx, gy) > MR - 6) continue;
+  for (const [cx0, cy0, cr] of craters) {
+    const dd = Math.hypot(gx - cx0, gy - cy0);
+    if (dd < cr) {
+      const rim = dd / cr;
+      const sh = 0.5 + 0.5 * ((gx - cx0) * -0.7 + (gy - cy0) * -0.7) / cr;   // 左上的坑壁更暗
+      cb.beginPath(); cb.arc(MX + gx, MY + gy, p2 * (0.16 + 0.22 * rim * rim + 0.2 * Math.max(0, sh)), 0, 6.2832); cb.fill();
+    }
+  }
+}
+// 月亮原来的位置：虚线圈
+cb.lineWidth = 6; cb.setLineDash([22, 18]);
+cb.beginPath(); cb.arc(MX, MY, MR + 14, -Math.PI * 0.58, Math.PI * 0.56); cb.stroke();
+cb.setLineDash([]);
+// 问号
+cb.font = '900 150px "Noto Sans SC"'; cb.textAlign = 'center';
+cb.fillText('？', MX + 196, MY + 60);
+// 星星
+for (let i = 0; i < 46; i++) {
+  const x = rr(40, 1040), y = rr(230, 1000);
+  if (Math.hypot(x - MX, y - MY) < MR + 70) continue;
+  if (rnd() < 0.3) { cb.fillRect(x - 9, y - 1.5, 18, 3); cb.fillRect(x - 1.5, y - 9, 3, 18); }
+  else { cb.beginPath(); cb.arc(x, y, rr(2, 4.5), 0, 6.2832); cb.fill(); }
+}
+// 标签块里的字（镂空成纸色）
+cb.globalCompositeOperation = 'source-over';
+
+// 海：几层波浪
+const seaTop = 1500;
+function wave(y0, amp, len, ph) {
+  cb.beginPath(); cb.moveTo(0, H);
+  for (let x = 0; x <= W; x += 6) cb.lineTo(x, y0 + Math.sin(x / len + ph) * amp + Math.sin(x / (len * 0.37) + ph * 2.1) * amp * 0.35);
+  cb.lineTo(W, H); cb.closePath();
+}
+// 第一层：网点（浅）
+cb.save(); wave(seaTop, 10, 90, 0.4); cb.clip();
+for (let y = seaTop - 30; y < H; y += 12) for (let x = (Math.round(y / 12) % 2) * 6; x < W; x += 12) {
+  const k = Math.min(1, (y - seaTop + 30) / 150);
+  cb.beginPath(); cb.arc(x, y, 1.6 + 3.4 * k, 0, 6.2832); cb.fill();
+}
+cb.restore();
+// 第二层：横线
+cb.save(); wave(seaTop + 96, 13, 120, 1.7); cb.clip();
+cb.clearRect(0, 0, W, H);
+for (let y = seaTop + 70; y < H; y += 13) cb.fillRect(0, y, W, 7.5);
+cb.restore();
+// 第三层：实底
+cb.save(); wave(seaTop + 190, 15, 150, 3.1); cb.clip(); cb.clearRect(0, 0, W, H); cb.fillRect(0, 0, W, H); cb.restore();
+// 实底上的白浪线（镂空）
+cb.globalCompositeOperation = 'destination-out';
+cb.lineWidth = 5; cb.lineCap = 'round';
+for (let i = 0; i < 16; i++) {
+  const x = rr(30, 1000), y = rr(seaTop + 330, H - 30), w = rr(40, 130);
+  cb.beginPath(); cb.moveTo(x, y); cb.quadraticCurveTo(x + w / 2, y - 12, x + w, y); cb.stroke();
+}
+cb.globalCompositeOperation = 'source-over';
+
+// 礁石和小人
+cb.fillStyle = BLUE;
+cb.beginPath(); cb.moveTo(742, 1668); cb.lineTo(770, 1588); cb.lineTo(820, 1556); cb.lineTo(884, 1550); cb.lineTo(930, 1580); cb.lineTo(972, 1668); cb.closePath(); cb.fill();
+// 小人：仰头看天
+const px = 846, py = 1552;
+cb.beginPath(); cb.arc(px + 2, py - 96, 13, 0, 6.2832); cb.fill();                 // 头
+cb.beginPath(); cb.moveTo(px - 13, py - 78); cb.lineTo(px + 13, py - 80); cb.lineTo(px + 18, py - 30); cb.lineTo(px - 18, py - 30); cb.closePath(); cb.fill(); // 身子
+cb.fillRect(px - 13, py - 32, 9, 34); cb.fillRect(px + 4, py - 32, 9, 34);         // 腿
+cb.lineWidth = 7; cb.lineCap = 'round';
+cb.beginPath(); cb.moveTo(px + 12, py - 72); cb.lineTo(px + 34, py - 104); cb.stroke();   // 抬手指天
+
+// ---------- 油墨不匀：每一版随机掉一些小白点 ----------
+function mottle(c, n) {
+  c.globalCompositeOperation = 'destination-out';
+  for (let i = 0; i < n; i++) {
+    c.globalAlpha = rr(0.25, 0.85);
+    const s = rnd() < 0.95 ? rr(0.5, 1.5) : rr(1.8, 3);
+    c.beginPath(); c.arc(rr(0, W), rr(0, H), s, 0, 6.2832); c.fill();
+  }
+  c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+}
+mottle(cy, 3600); mottle(cp, 3600); mottle(cb, 6500);
+
+// 标签上的字、底下一行字：纸色，盖在最上面
+const lab = document.createElement('div');
+lab.style.cssText = 'position:absolute; left:70px; top:120px; width:250px; height:72px; line-height:72px; text-align:center; color:#f2e9d6; font-weight:900; font-size:44px; letter-spacing:8px;';
+lab.textContent = '如果……';
+document.body.insertBefore(lab, document.querySelector('svg.grain'));
+
+document.fonts.load('900 100px "Noto Sans SC"', '如果月亮突然消失脑洞实验室第期一个发现不对劲的是海？').then(() => {
+  // 字体到了以后重画问号
+  window.__ready = true;
+});
+</script>
+</body>
+</html>

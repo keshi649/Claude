@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="node_modules/@fontsource/long-cang/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/zcool-kuaile/400.css">
+<style>
+  html, body { margin: 0; }
+  body { width: 1080px; height: 1920px; overflow: hidden; background: #1f3029; }
+  svg { display: block; }
+  text { font-family: "Long Cang", "ZCOOL KuaiLe", sans-serif; }
+  .num { font-family: "ZCOOL KuaiLe", sans-serif; }
+</style>
+</head>
+<body>
+<svg id="s" width="1080" height="1920" viewBox="0 0 1080 1920" xmlns="http://www.w3.org/2000/svg"></svg>
+<script>
+// 固定种子的随机数，保证每次渲染一样
+let seed = 20261110;
+function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+function rr(a, b) { return a + (b - a) * rnd(); }
+
+const C = { white: '#f4f1e6', yellow: '#ffd75e', pink: '#ff8fa3', blue: '#7fd0ff', green: '#9be28a' };
+const layerColor = [C.white, C.yellow, C.pink, C.blue, C.green];
+
+let o = '';
+o += `<defs>
+  <radialGradient id="bg" cx="50%" cy="42%" r="75%">
+    <stop offset="0" stop-color="#2c4a3f"/><stop offset="0.6" stop-color="#22382f"/><stop offset="1" stop-color="#16241e"/>
+  </radialGradient>
+  <filter id="dust" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.0045 0.012" numOctaves="4" seed="11" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.93  0 0 0 0 0.95  0 0 0 0 0.9  1.5 0 0 0 -0.62"/>
+  </filter>
+  <filter id="speck" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="5" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  3 0 0 0 -1.95"/>
+  </filter>
+  <filter id="chalk" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="3" result="warp"/>
+    <feDisplacementMap in="SourceGraphic" in2="warp" scale="7" xChannelSelector="R" yChannelSelector="G" result="d"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="2" seed="8" result="grain"/>
+    <feColorMatrix in="grain" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  4.6 0 0 0 -1.45" result="mask"/>
+    <feComposite in="d" in2="mask" operator="in" result="c"/>
+    <feGaussianBlur in="d" stdDeviation="5" result="glow"/>
+    <feColorMatrix in="glow" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.16 0" result="g2"/>
+    <feMerge><feMergeNode in="g2"/><feMergeNode in="c"/></feMerge>
+  </filter>
+  <filter id="smear" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="26"/></filter>
+  <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98652"/><stop offset="0.25" stop-color="#9c6c3e"/><stop offset="1" stop-color="#6b4424"/>
+  </linearGradient>
+  <filter id="woodgrain" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.004 0.2" numOctaves="3" seed="4" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.2  0 0 0 0 0.1  0 0 0 0 0.03  0 0 0 1.4 -0.45"/>
+    <feComposite in2="SourceGraphic" operator="in"/>
+  </filter>
+</defs>`;
+
+// 黑板底
+o += `<rect width="1080" height="1920" fill="url(#bg)"/>`;
+o += `<rect width="1080" height="1920" filter="url(#dust)" opacity="0.13"/>`;
+// 擦过的痕迹
+const smears = [[260, 330, 420, 60, -8], [760, 1520, 380, 70, 6], [520, 980, 560, 90, -3], [860, 420, 260, 50, 12], [200, 1640, 300, 55, -10]];
+for (const [x, y, w, h, a] of smears)
+  o += `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${h}" fill="#e8efe6" opacity="0.045" filter="url(#smear)" transform="rotate(${a} ${x} ${y})"/>`;
+o += `<rect width="1080" height="1920" filter="url(#speck)" opacity="0.10"/>`;
+
+// 手抖的线：把一条折线抖一抖
+function wob(pts, amp = 2.2) {
+  let d = '';
+  pts.forEach(([x, y], i) => { d += (i ? 'L' : 'M') + (x + rr(-amp, amp)).toFixed(1) + ' ' + (y + rr(-amp, amp)).toFixed(1) + ' '; });
+  return d;
+}
+function line(x1, y1, x2, y2, n = 8, amp = 2.2) {
+  const pts = [];
+  for (let i = 0; i <= n; i++) pts.push([x1 + (x2 - x1) * i / n, y1 + (y2 - y1) * i / n]);
+  return wob(pts, amp);
+}
+
+// ---------- 标题 ----------
+o += `<g filter="url(#chalk)">`;
+o += `<text x="80" y="215" font-size="48" fill="${C.yellow}" stroke="${C.yellow}" stroke-width="1.2" letter-spacing="4">看得见的数学 · 第 <tspan class="num" font-size="40">7</tspan> 题</text>`;
+o += `<path d="${line(80, 240, 520, 236, 10, 2)}" stroke="${C.yellow}" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.8"/>`;
+o += `<text x="80" y="340" font-size="80" fill="${C.white}" stroke="${C.white}" stroke-width="1.8">从 <tspan class="num" font-size="70">1</tspan> 开始的奇数加起来，</text>`;
+o += `<text x="80" y="446" font-size="80" fill="${C.white}" stroke="${C.white}" stroke-width="1.8">为什么总是个平方数？</text>`;
+o += `</g>`;
+
+// ---------- 5×5 点阵 ----------
+const N = 5, cell = 138, gx = 195, gy = 572;          // 网格左上角
+const cx = i => gx + cell * (i + 0.5);
+const cy = j => gy + cell * (N - 1 - j + 0.5);        // j=0 在最下面
+
+o += `<g filter="url(#chalk)">`;
+for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+  const k = Math.max(i, j), col = layerColor[k];
+  const x = cx(i) + rr(-4, 4), y = cy(j) + rr(-4, 4), r = 46 + rr(-3, 3);
+  const id = `c${i}${j}`;
+  o += `<clipPath id="${id}"><circle cx="${x}" cy="${y}" r="${r}"/></clipPath>`;
+  // 斜线涂满
+  o += `<g clip-path="url(#${id})" stroke="${col}" stroke-width="9" stroke-linecap="round" opacity="0.92">`;
+  for (let t = -r * 1.5; t < r * 1.5; t += 10.5) {
+    const a = rr(-3, 3);
+    o += `<path d="${line(x + t - r + a, y + r + 4, x + t + r + a, y - r - 4, 4, 1.6)}" fill="none"/>`;
+  }
+  o += `</g>`;
+  // 圈
+  const pts = [];
+  const a0 = rr(0, 6.28);
+  for (let s = 0; s <= 26; s++) { const a = a0 + s / 24 * 6.283; pts.push([x + Math.cos(a) * (r + rr(-1, 1)), y + Math.sin(a) * (r + rr(-1, 1))]); }
+  o += `<path d="${wob(pts, 1.2)}" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round"/>`;
+}
+// 每一层之间的折线（L 形）
+for (let k = 1; k < N; k++) {
+  const x = gx + cell * k, y = gy + cell * (N - k);
+  const pts = [];
+  for (let s = 0; s <= 10; s++) pts.push([gx - 14 + (x - gx + 14) * s / 10, y]);
+  for (let s = 1; s <= 10; s++) pts.push([x, y + (gy + cell * N + 14 - y) * s / 10]);
+  o += `<path d="${wob(pts, 2.4)}" fill="none" stroke="${C.white}" stroke-width="4" stroke-dasharray="16 15" stroke-linecap="round" opacity="0.6"/>`;
+}
+o += `</g>`;
+
+// ---------- 两边的"5 个" ----------
+o += `<g filter="url(#chalk)" fill="none" stroke="${C.white}" stroke-width="5" stroke-linecap="round">`;
+// 左边
+const bx = gx - 52, by1 = gy + 8, by2 = gy + cell * N - 8;
+o += `<path d="${line(bx, by1, bx, (by1 + by2) / 2 - 58, 8)}"/><path d="${line(bx, (by1 + by2) / 2 + 58, bx, by2, 8)}"/>`;
+o += `<path d="${line(bx - 16, by1, bx + 16, by1, 3, 1.5)}"/><path d="${line(bx - 16, by2, bx + 16, by2, 3, 1.5)}"/>`;
+// 上边
+const ty = gy - 48, tx1 = gx + 8, tx2 = gx + cell * N - 8;
+o += `<path d="${line(tx1, ty, (tx1 + tx2) / 2 - 62, ty, 8)}"/><path d="${line((tx1 + tx2) / 2 + 62, ty, tx2, ty, 8)}"/>`;
+o += `<path d="${line(tx1, ty - 16, tx1, ty + 16, 3, 1.5)}"/><path d="${line(tx2, ty - 16, tx2, ty + 16, 3, 1.5)}"/>`;
+o += `</g>`;
+o += `<g filter="url(#chalk)" fill="${C.white}" text-anchor="middle">`;
+o += `<text class="num" x="${bx}" y="${(by1 + by2) / 2 + 24}" font-size="68">5</text>`;
+o += `<text class="num" x="${(tx1 + tx2) / 2}" y="${ty + 24}" font-size="68">5</text>`;
+o += `</g>`;
+
+// ---------- 点阵底下：每一列脚下正好是 1 3 5 7 9 ----------
+const ey = gy + cell * N + 122;
+o += `<g filter="url(#chalk)" text-anchor="middle">`;
+[1, 3, 5, 7, 9].forEach((v, k) => {
+  o += `<text class="num" x="${cx(k)}" y="${ey}" font-size="104" fill="${layerColor[k]}">${v}</text>`;
+  if (k < 4) o += `<text class="num" x="${cx(k) + cell / 2}" y="${ey - 6}" font-size="70" fill="${C.white}" opacity="0.9">+</text>`;
+});
+o += `</g>`;
+
+// ---------- 结论 ----------
+const ry = ey + 176;
+o += `<g filter="url(#chalk)">`;
+o += `<text x="540" y="${ry}" font-size="150" fill="${C.white}" text-anchor="middle"><tspan class="num">= 5 × 5 = 25</tspan></text>`;
+// 波浪下划线
+const wpts = [];
+for (let s = 0; s <= 60; s++) wpts.push([190 + s * 11.7, ry + 46 + Math.sin(s * 0.9) * 9]);
+o += `<path d="${wob(wpts, 1.5)}" fill="none" stroke="${C.yellow}" stroke-width="7" stroke-linecap="round"/>`;
+o += `<text x="540" y="${ry + 142}" font-size="64" fill="${C.yellow}" stroke="${C.yellow}" stroke-width="1.4" text-anchor="middle">不用算，摆一摆就看出来了</text>`;
+o += `</g>`;
+
+// ---------- 粉笔槽 ----------
+const wy = 1812;
+o += `<rect x="0" y="${wy - 10}" width="1080" height="14" fill="#0e1713" opacity="0.6"/>`;
+o += `<rect x="0" y="${wy}" width="1080" height="108" fill="url(#wood)"/>`;
+o += `<rect x="0" y="${wy}" width="1080" height="108" fill="#3a2412" filter="url(#woodgrain)" opacity="0.55"/>`;
+o += `<rect x="0" y="${wy}" width="1080" height="5" fill="#dcae78" opacity="0.7"/>`;
+// 粉笔灰
+o += `<rect x="0" y="${wy - 2}" width="1080" height="26" fill="#f4f1e6" filter="url(#speck)" opacity="0.5"/>`;
+// 几根粉笔
+function stick(x, y, len, col, rot) {
+  return `<g transform="rotate(${rot} ${x} ${y})"><rect x="${x + 3}" y="${y + 6}" width="${len}" height="24" rx="6" fill="#000" opacity="0.28"/>` +
+         `<rect x="${x}" y="${y}" width="${len}" height="24" rx="6" fill="${col}"/>` +
+         `<rect x="${x + 4}" y="${y + 3}" width="${len - 8}" height="6" rx="3" fill="#fff" opacity="0.45"/></g>`;
+}
+o += stick(92, wy + 26, 128, C.white, -3);
+o += stick(250, wy + 34, 96, C.yellow, 4);
+o += stick(382, wy + 28, 74, C.pink, -6);
+o += stick(820, wy + 32, 110, C.blue, 2);
+// 板擦
+o += `<g transform="rotate(-2 640 ${wy + 30})"><rect x="566" y="${wy + 16}" width="170" height="52" rx="8" fill="#000" opacity="0.3"/>` +
+     `<rect x="560" y="${wy + 6}" width="170" height="34" rx="6" fill="#5a3a22"/><rect x="560" y="${wy + 36}" width="170" height="22" rx="5" fill="#d9d4c6"/>` +
+     `<rect x="560" y="${wy + 36}" width="170" height="22" rx="5" fill="#fff" filter="url(#speck)" opacity="0.6"/></g>`;
+
+document.getElementById('s').innerHTML = o;
+document.fonts.load('60px "Long Cang"', '看得见的数学从开始的奇数加起来为什么总是个平方数不用算摆一摆就看出来了第题').then(() =>
+  document.fonts.load('60px "ZCOOL KuaiLe"', '0123456789+=×')).then(() => { window.__ready = true; });
+</script>
+</body>
+</html>

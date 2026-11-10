@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/900.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/500.css">
+<style>
+  html, body { margin: 0; }
+  body { width: 2000px; height: 1960px; background: #17181c; color: #f2efe8; font-family: "Noto Sans SC", sans-serif; overflow: hidden; }
+  .grid { display: grid; grid-template-columns: repeat(4, 452px); gap: 40px 36px; padding: 48px 42px; }
+  .cell img { width: 452px; height: 804px; display: block; border-radius: 14px; }
+  .cell .n { margin-top: 16px; font-weight: 900; font-size: 34px; letter-spacing: 2px; }
+  .cell .n b { color: #ffcf5a; margin-right: 12px; }
+  .cell .s { margin-top: 4px; font-weight: 500; font-size: 25px; color: #a9a59b; letter-spacing: 1px; }
+  .head { display: flex; flex-direction: column; justify-content: center; height: 804px; }
+  .head h1 { margin: 0; font-weight: 900; font-size: 84px; line-height: 108px; letter-spacing: 4px; }
+  .head h1 em { font-style: normal; color: #ffcf5a; }
+  .head p { margin: 36px 0 0; font-weight: 500; font-size: 30px; line-height: 50px; color: #a9a59b; }
+</style>
+</head>
+<body>
+<div class="grid">
+  <div class="cell"><img src="out/a-flow.png"><div class="n"><b>1</b>流光数据</div><div class="s">《看不见的东西》</div></div>
+  <div class="cell"><img src="out/b-chalk.png"><div class="n"><b>2</b>黑板粉笔</div><div class="s">《看得见的数学》</div></div>
+  <div class="cell"><img src="out/c-ink.png"><div class="n"><b>3</b>水墨留白</div><div class="s">《字里山河》</div></div>
+  <div class="cell"><img src="out/d-iso.png"><div class="n"><b>4</b>微缩模型</div><div class="s">《它是怎么来的》</div></div>
+  <div class="cell"><img src="out/e-riso.png"><div class="n"><b>5</b>孔版印刷海报</div><div class="s">《脑洞实验室》</div></div>
+  <div class="cell"><img src="out/f-paper.png"><div class="n"><b>6</b>剪纸灯箱</div><div class="s">《睡前一分钟》</div></div>
+  <div class="cell"><img src="out/g-type.png"><div class="n"><b>7</b>极简大字</div><div class="s">《AI 视角》</div></div>
+  <div class="cell head"><h1>七个<em>内容</em><br>七种<em>画风</em></h1><p>每个系列配一种画面风格<br>每张都是 1080×1920 的示例帧</p></div>
+</div>
+<script>
+Promise.all([...document.images].map(i => i.decode())).then(() => document.fonts.load('900 40px "Noto Sans SC"', '七个内容种画风流光数据黑板粉笔水墨留白微缩模型孔版印刷海报剪纸灯箱极简大字1234567'))
+  .then(() => document.fonts.load('500 26px "Noto Sans SC"', '《看不见的东西》得数学字里山河它是怎么来脑洞实验室睡前一分钟AI视角每个系列配种画面风格张都示例帧1080×1920')).then(() => { window.__ready = true; });
+</script>
+</body>
+</html>

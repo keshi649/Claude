@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="node_modules/@fontsource/ma-shan-zheng/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-serif-sc/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-serif-sc/700.css">
+<style>
+  html, body { margin: 0; }
+  body { width: 1080px; height: 1920px; overflow: hidden; background: #efe7d6; position: relative; font-family: "Noto Serif SC", serif; color: #1c1b1a; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  .vt { position: absolute; writing-mode: vertical-rl; font-family: "Ma Shan Zheng", serif; }
+  .title { right: 70px; top: 150px; font-size: 104px; letter-spacing: 8px; line-height: 1.12; color: #171615; }
+  .ser { left: 70px; top: 160px; font-family: "Noto Serif SC", serif; font-size: 30px; letter-spacing: 12px; color: #6d655a; }
+  .cap { position: absolute; left: 0; width: 1080px; top: 1338px; text-align: center; font-size: 42px; letter-spacing: 5px; color: #2a2826; font-weight: 700; }
+  .lab { position: absolute; top: 1688px; width: 200px; margin-left: -100px; text-align: center; font-size: 30px; letter-spacing: 8px; color: #7a7164; }
+  .kai { position: absolute; top: 1466px; width: 240px; margin-left: -120px; text-align: center; font-family: "Ma Shan Zheng", serif; font-size: 184px; line-height: 1; color: #171615; }
+  .seal { position: absolute; right: 200px; top: 520px; width: 92px; height: 92px; background: #b8291d; border-radius: 9px; color: #f3e9d8;
+          font-family: "Noto Serif SC", serif; font-weight: 700; font-size: 35px; line-height: 43px; text-align: center; padding-top: 3px; box-sizing: border-box;
+          filter: url(#worn); transform: rotate(-2deg); }
+</style>
+</head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+
+<svg width="1080" height="1920" viewBox="0 0 1080 1920">
+  <defs>
+    <filter id="brush" x="-20%" y="-20%" width="140%" height="140%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="6" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.5 0.08" numOctaves="2" seed="2" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  5 0 0 0 -1.15" result="m"/>
+      <feComposite in="d" in2="m" operator="in"/>
+    </filter>
+    <filter id="worn" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="2" seed="9" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  6 0 0 0 -1.5" result="m"/>
+      <feComposite in="SourceGraphic" in2="m" operator="in"/>
+    </filter>
+  </defs>
+
+  <!-- 四种写法：甲骨文、金文、小篆（楷书用字体，见下面的 div） -->
+  <g fill="none" stroke="#171615" stroke-linecap="round" stroke-linejoin="round" filter="url(#brush)">
+    <!-- 甲骨文：三座尖峰立在一条底线上，刻出来的细线 -->
+    <g transform="translate(165 1560)" stroke-width="7">
+      <path d="M-92 62 L-63 -18 L-34 62"/>
+      <path d="M-34 62 L0 -84 L34 62"/>
+      <path d="M34 62 L63 -18 L92 62"/>
+      <path d="M-98 62 L98 62"/>
+    </g>
+    <!-- 金文：铸出来的，三座山填成实心 -->
+    <g transform="translate(415 1560)" fill="#171615" stroke-width="5">
+      <path d="M-96 64 L-90 40 Q-74 -6 -62 -26 Q-52 -4 -38 34 Q-18 -52 0 -92 Q18 -52 38 34 Q52 -4 62 -26 Q74 -6 90 40 L96 64 Z"/>
+    </g>
+    <!-- 小篆：线条匀了，山峰变成三根竖，底下一道弯 -->
+    <g transform="translate(665 1560)" stroke-width="10">
+      <path d="M0 -90 L0 56"/>
+      <path d="M-74 -26 L-74 30 Q-74 60 -44 60 L44 60 Q74 60 74 30 L74 -26"/>
+    </g>
+    <!-- 箭头 -->
+    <g stroke-width="4" stroke="#8a8072">
+      <path d="M270 1560 L306 1560 M296 1550 L308 1560 L296 1570"/>
+      <path d="M520 1560 L556 1560 M546 1550 L558 1560 L546 1570"/>
+      <path d="M770 1560 L806 1560 M796 1550 L808 1560 L796 1570"/>
+    </g>
+  </g>
+</svg>
+
+<div class="vt ser">字里山河 · 第一字</div>
+<div class="vt title">山本来就是<br>一幅画</div>
+<div class="seal">字里<br>山河</div>
+<div class="cap">三千多年前，人把看见的山直接刻了下来</div>
+<div class="kai" style="left:915px">山</div>
+<div class="lab" style="left:165px">甲骨文</div>
+<div class="lab" style="left:415px">金文</div>
+<div class="lab" style="left:665px">小篆</div>
+<div class="lab" style="left:915px">楷书</div>
+
+<script>
+let seed = 31337;
+function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+function rr(a, b) { return a + (b - a) * rnd(); }
+const W = 1080, H = 1920;
+const ctx = document.getElementById('c').getContext('2d');
+
+// ---- 值噪声 ----
+const PERM = new Uint8Array(512); { const p = []; for (let i = 0; i < 256; i++) p.push(i); for (let i = 255; i > 0; i--) { const j = (rnd() * (i + 1)) | 0; [p[i], p[j]] = [p[j], p[i]]; } for (let i = 0; i < 512; i++) PERM[i] = p[i & 255]; }
+function h2(i, j) { return PERM[(PERM[i & 255] + j) & 255] / 255; }
+function sm(t) { return t * t * (3 - 2 * t); }
+function n2(x, y) { const i = Math.floor(x), j = Math.floor(y), fx = sm(x - i), fy = sm(y - j);
+  const a = h2(i, j), b = h2(i + 1, j), c = h2(i, j + 1), d = h2(i + 1, j + 1);
+  return a + (b - a) * fx + (c - a) * fy + (a - b - c + d) * fx * fy; }
+function fbm(x, y, o) { let s = 0, a = 0.5, f = 1, t = 0; for (let k = 0; k < o; k++) { s += a * n2(x * f, y * f); t += a; a *= 0.5; f *= 2; } return s / t; }
+
+// ---- 宣纸 ----
+const img = ctx.createImageData(W, H), px = img.data;
+for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+  const i = (y * W + x) * 4;
+  const lo = fbm(x * 0.0035, y * 0.0035, 3) - 0.5, fib = n2(x * 0.03, y * 0.45) - 0.5, gr = n2(x * 0.8, y * 0.8) - 0.5;
+  const v = lo * 16 + fib * 5 + gr * 5;
+  px[i] = 240 + v; px[i + 1] = 232 + v; px[i + 2] = 215 + v * 1.2; px[i + 3] = 255;
+}
+
+// ---- 一层山：ridge(x) 是山脊线，往下墨色渐渐化进雾里 ----
+function ridgeOf(peaks, base, rough, nseed) {
+  const r = new Float32Array(W);
+  for (let x = 0; x < W; x++) {
+    let h = 0;
+    for (const [c, hh, w] of peaks) { const t = Math.abs(x - c) / w; if (t < 1) h = Math.max(h, hh * Math.pow(1 - Math.pow(t, 1.25), 1.35)); }
+    const n = (fbm(x * 0.012 + nseed, nseed * 3.1, 4) - 0.5) * rough * (0.35 + Math.min(1, h / 200));
+    const n3 = (n2(x * 0.11 + nseed, 7.7) - 0.5) * rough * 0.16;
+    r[x] = base - h - n - n3;
+  }
+  return r;
+}
+function inkLayer(r, col, A, fall, opt = {}) {
+  for (let x = 0; x < W; x++) {
+    const y0 = Math.max(0, Math.floor(r[x]) - 2), slope = r[Math.min(W - 1, x + 36)] - r[Math.max(0, x - 36)];
+    const side = 0.8 + 0.26 / (1 + Math.exp(-slope * 0.05));             // 右坡（背光面）深一点
+    for (let y = y0; y < Math.min(H, y0 + fall * 4.2); y++) {
+      const d = y - r[x]; if (d < -1.5) continue;
+      const aa = Math.min(1, d + 1.5);                                   // 山脊线抗锯齿
+      const wash = Math.exp(-d / fall);
+      const tex = 0.62 + 0.5 * fbm(x * 0.011 + 3, y * 0.02, 3);          // 水渍
+      const dry = 0.8 + 0.2 * n2(x * 0.7, y * 0.7);                      // 纸的颗粒
+      const edge = 0.3 * Math.exp(-Math.pow(d / 5, 2));                  // 墨线在山脊处积一道
+      let a = A * (wash * tex * side + edge) * dry * aa;
+      if (opt.cut) a *= Math.max(0, Math.min(1, (opt.cut[1] - y) / (opt.cut[1] - opt.cut[0])));   // 到山脚收干净
+      if (a <= 0.003) continue; if (a > 1) a = 1;
+      const i = (y * W + x) * 4;
+      px[i] += (col[0] - px[i]) * a; px[i + 1] += (col[1] - px[i + 1]) * a; px[i + 2] += (col[2] - px[i + 2]) * a;
+    }
+  }
+}
+// 一道横着的雾：把墨色洗回纸色
+function mist(yc, half, strength, nseed) {
+  for (let y = Math.max(0, yc - half * 2); y < Math.min(H, yc + half * 2); y++) for (let x = 0; x < W; x++) {
+    const d = (y - yc) / half, m = Math.exp(-d * d) * strength * (0.45 + 0.85 * fbm(x * 0.004 + nseed, y * 0.012, 3));
+    if (m < 0.004) continue; const a = Math.min(1, m), i = (y * W + x) * 4;
+    px[i] += (240 - px[i]) * a; px[i + 1] += (232 - px[i + 1]) * a; px[i + 2] += (215 - px[i + 2]) * a;
+  }
+}
+
+// 红日
+(function sun() {
+  const cx = 250, cy = 520, R = 70;
+  for (let y = cy - R - 3; y < cy + R + 3; y++) for (let x = cx - R - 3; x < cx + R + 3; x++) {
+    const d = Math.hypot(x - cx, y - cy); if (d > R + 1) continue;
+    const a = Math.min(1, R + 1 - d) * (0.7 + 0.22 * n2(x * 0.05, y * 0.05)) * (0.86 + 0.14 * n2(x * 0.8, y * 0.8)), i = (y * W + x) * 4;
+    px[i] += (190 - px[i]) * a; px[i + 1] += (54 - px[i + 1]) * a; px[i + 2] += (38 - px[i + 2]) * a;
+  }
+})();
+
+// 远山（淡青灰）
+const far = ridgeOf([[110, 300, 300], [400, 380, 320], [790, 330, 360], [1040, 260, 260]], 1010, 60, 1.7);
+inkLayer(far, [112, 128, 134], 0.5, 210, { cut: [960, 1130] });
+mist(1000, 90, 0.9, 5.1);
+// 主山：三座峰，中间最高 —— 跟"山"字一个样
+const peaks = [[258, 420, 235], [548, 730, 285], [842, 480, 250]];
+const main = ridgeOf(peaks, 1160, 95, 4.2);
+inkLayer(main, [26, 26, 28], 0.96, 300, { cut: [1120, 1300] });
+mist(1150, 110, 1.15, 9.3);
+// 近处的小坡
+const near = ridgeOf([[90, 150, 330], [1010, 120, 300]], 1262, 40, 8.8);
+inkLayer(near, [20, 20, 22], 0.9, 38, { cut: [1300, 1400] });
+mist(1318, 40, 1.3, 2.2);
+mist(1380, 60, 1.3, 6.6);
+
+ctx.putImageData(img, 0, 0);
+
+// ---- 皴：顺着山势往下拉的干笔 ----
+ctx.lineCap = 'round';
+for (let k = 0; k < 620; k++) {
+  const x0 = rr(40, 1040), yr = main[x0 | 0], hgt = 1160 - yr;
+  if (hgt < 90) continue;
+  const dir = main[Math.min(W - 1, (x0 | 0) + 14)] - main[Math.max(0, (x0 | 0) - 14)] > 0 ? 1 : -1;
+  let x = x0, y = yr + rr(3, hgt * 0.42);
+  const len = rr(26, 100), a0 = rr(0.05, 0.17), lean = dir * rr(0.08, 0.36);
+  ctx.lineWidth = rr(0.8, 2.4);
+  for (let s = 0; s < len; s += 7) {
+    const nx = x + lean * 7 + rr(-1.2, 1.2), ny = y + 7;
+    ctx.strokeStyle = `rgba(14,14,16,${(a0 * (1 - s / len)).toFixed(3)})`;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny); ctx.stroke();
+    x = nx; y = ny;
+  }
+}
+// 山脚再罩一层薄雾，把皴笔的尾巴收掉
+const g = ctx.createLinearGradient(0, 1010, 0, 1200);
+g.addColorStop(0, 'rgba(240,232,215,0)'); g.addColorStop(0.7, 'rgba(240,232,215,0.55)'); g.addColorStop(1, 'rgba(240,232,215,0)');
+ctx.fillStyle = g; ctx.fillRect(0, 1010, W, 190);
+
+// 飞鸟
+ctx.strokeStyle = 'rgba(20,20,22,0.85)'; ctx.lineWidth = 2.6;
+[[420, 352, 15], [462, 322, 12], [496, 364, 10], [366, 316, 9], [530, 332, 8]].forEach(([x, y, s]) => {
+  ctx.beginPath(); ctx.moveTo(x - s, y - s * 0.35); ctx.quadraticCurveTo(x - s * 0.4, y - s * 0.75, x, y);
+  ctx.quadraticCurveTo(x + s * 0.4, y - s * 0.75, x + s, y - s * 0.3); ctx.stroke();
+});
+// 水面几笔、一叶小舟
+ctx.strokeStyle = 'rgba(40,40,44,0.32)'; ctx.lineWidth = 2;
+[[380, 1236, 150], [590, 1252, 240], [470, 1270, 110], [760, 1238, 90]].forEach(([x, y, w]) => { ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + w / 2, y + 3, x + w, y); ctx.stroke(); });
+ctx.fillStyle = 'rgba(18,18,20,0.92)';
+ctx.beginPath(); ctx.moveTo(596, 1226); ctx.quadraticCurveTo(640, 1244, 692, 1224); ctx.quadraticCurveTo(644, 1236, 596, 1226); ctx.fill();   // 船
+ctx.beginPath(); ctx.moveTo(634, 1228); ctx.lineTo(641, 1203); ctx.lineTo(649, 1228); ctx.closePath(); ctx.fill();                      // 人
+ctx.beginPath(); ctx.moveTo(629, 1205); ctx.lineTo(641, 1196); ctx.lineTo(654, 1205); ctx.closePath(); ctx.fill();                      // 斗笠
+ctx.strokeStyle = 'rgba(18,18,20,0.9)'; ctx.lineWidth = 1.8; ctx.beginPath(); ctx.moveTo(650, 1210); ctx.lineTo(684, 1178); ctx.stroke();    // 竿
+
+// 纸边做旧
+const vg = ctx.createRadialGradient(540, 960, 700, 540, 960, 1220);
+vg.addColorStop(0, 'rgba(120,95,60,0)'); vg.addColorStop(1, 'rgba(120,95,60,0.22)');
+ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+
+Promise.all([
+  document.fonts.load('100px "Ma Shan Zheng"', '山本来就是一幅画'),
+  document.fonts.load('700 40px "Noto Serif SC"', '三千多年前，人把看见的山直接刻了下来字里河'),
+  document.fonts.load('400 30px "Noto Serif SC"', '甲骨文金小篆楷书字里山河第一·'),
+]).then(() => { window.__ready = true; });
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "style-proposal-frames",
+  "private": true,
+  "description": "七种画面风格的示例帧：每个 html 是一帧 1080x1920，用 Playwright 截成图",
+  "dependencies": {
+    "@fontsource/long-cang": "*",
+    "@fontsource/ma-shan-zheng": "*",
+    "@fontsource/noto-sans-sc": "*",
+    "@fontsource/noto-serif-sc": "*",
+    "@fontsource/zcool-kuaile": "*",
+    "d3-array": "*",
+    "d3-geo": "*",
+    "three": "*",
+    "topojson-client": "*",
+    "world-atlas": "*"
+  }
+}

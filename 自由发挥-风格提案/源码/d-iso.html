@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/900.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/noto-sans-sc/500.css">
+<style>
+  html, body { margin: 0; }
+  body { width: 1080px; height: 1920px; overflow: hidden; position: relative; font-family: "Noto Sans SC", sans-serif;
+         background: radial-gradient(ellipse 900px 1300px at 50% 55%, #fffaf0 0%, #fdf1df 55%, #f6e2c8 100%); color: #2a3352; }
+  canvas, svg { position: absolute; left: 0; top: 0; }
+  #gl { visibility: hidden; }
+  .tagp { position: absolute; left: 72px; top: 128px; height: 58px; line-height: 58px; padding: 0 26px; border-radius: 29px; background: #2f9be6; color: #fff;
+          font-weight: 700; font-size: 30px; letter-spacing: 4px; }
+  .title { position: absolute; left: 72px; top: 214px; font-weight: 900; font-size: 92px; line-height: 116px; letter-spacing: 2px; }
+  .title em { font-style: normal; color: #2f9be6; }
+  .pill { position: absolute; height: 64px; line-height: 64px; padding: 0 26px 0 12px; border-radius: 32px; background: #fff; white-space: nowrap;
+          font-weight: 900; font-size: 36px; letter-spacing: 4px; box-shadow: 0 8px 22px rgba(120, 80, 30, 0.2); }
+  .pill b { display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 50%; background: #2f9be6; color: #fff; text-align: center;
+            font-size: 28px; letter-spacing: 0; margin-right: 14px; vertical-align: 2px; }
+</style>
+<script type="importmap">{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }</script>
+</head>
+<body>
+<canvas id="gl" width="1080" height="1920"></canvas>
+<canvas id="out" width="1080" height="1920"></canvas>
+<svg id="lines" width="1080" height="1920"></svg>
+<div class="tagp">它是怎么来的 · 第 2 集</div>
+<div class="title">拧开水龙头之前<br>这杯水<em>走了多远</em>？</div>
+<div class="pill" id="l1"><b>1</b>水库</div>
+<div class="pill" id="l2"><b>2</b>水厂</div>
+<div class="pill" id="l3"><b>3</b>你家</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+let seed = 555;
+function rnd() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; }
+function rr(a, b) { return a + (b - a) * rnd(); }
+
+const W = 1080, H = 1920;
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.setClearColor(0x000000, 0);
+
+const scene = new THREE.Scene();
+const HALF = 13.5;                                   // 画面半宽对应 13 个单位
+const cam = new THREE.OrthographicCamera(-HALF, HALF, HALF * H / W, -HALF * H / W, 1, 400);
+const upCam = new THREE.Vector3(-1, 2, -1).normalize();
+const target = upCam.clone().multiplyScalar(4.65);  // 整个场景在画面里往下挪一点，给标题让位置
+cam.position.copy(target).add(new THREE.Vector3(80, 80, 80)); cam.lookAt(target);
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0xf3d8b8, 1.55));
+const sun = new THREE.DirectionalLight(0xfff4e0, 2.5);
+sun.position.set(-8, 46, 38); sun.target.position.set(0, 0, 0); scene.add(sun, sun.target);
+sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096);
+Object.assign(sun.shadow.camera, { left: -36, right: 36, top: 36, bottom: -36, near: 1, far: 160 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.04; sun.shadow.radius = 5;
+
+const M = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.92, metalness: 0 });
+const mat = {
+  grass: M(0xb5dd8e), grass2: M(0xa4d27c), soil: M(0xddb88c), rock1: M(0xc39a70), rock2: M(0xa98360),
+  water: new THREE.MeshStandardMaterial({ color: 0x6cc7f3, roughness: 0.35 }), pipe: M(0x2f9be6), flange: M(0x1c7fca),
+  mount: M(0x9ac0a6), mount2: M(0x86b098), snow: M(0xffffff), conc: M(0xeee7da), tank: M(0xf8f4ec), wall: M(0xffb792), roof: M(0xee8760),
+  apt: M(0xffe2b0), apt2: M(0xfff1d6), glass: M(0x86bfe2), lit: new THREE.MeshStandardMaterial({ color: 0xfff0a0, emissive: 0xffd95e, emissiveIntensity: 0.9 }),
+  road: M(0x7a8090), car: M(0xff6f6f), leaf: M(0x5fb276), leaf2: M(0x74c486), trunk: M(0xa3774f), white: M(0xffffff), dam: M(0xd9d4ca), mint: M(0x9fd8c6), dark: M(0x4a5266),
+};
+function add(g, geo, m, x, y, z, o = {}) {
+  const me = new THREE.Mesh(geo, m); me.position.set(x, y, z); me.castShadow = o.cast !== false; me.receiveShadow = true;
+  if (o.ry) me.rotation.y = o.ry; if (o.rx) me.rotation.x = o.rx; if (o.rz) me.rotation.z = o.rz; if (o.s) me.scale.set(...o.s);
+  g.add(me); return me;
+}
+const box = (w, h, d, r = 0.12) => new RoundedBoxGeometry(w, h, d, 3, Math.min(r, w / 2.01, h / 2.01, d / 2.01));
+const cyl = (r, h, seg = 36) => new THREE.CylinderGeometry(r, r, h, seg);
+
+// ---------- 一座浮岛 ----------
+const S = 9;                                          // 边长
+function island(cx, cz, topMat) {
+  const g = new THREE.Group(); g.position.set(cx, 0, cz); scene.add(g);
+  add(g, box(S, 0.6, S, 0.22), topMat, 0, -0.3, 0);
+  add(g, box(S - 0.3, 1.3, S - 0.3, 0.25), mat.soil, 0, -1.2, 0);
+  add(g, box(S - 1.8, 1.0, S - 1.8, 0.3), mat.rock1, 0, -2.25, 0);
+  add(g, box(S - 4.0, 0.9, S - 4.0, 0.3), mat.rock2, 0, -3.1, 0);
+  // 土里嵌几块石头
+  for (let i = 0; i < 5; i++) add(g, new THREE.DodecahedronGeometry(rr(0.25, 0.45)), mat.rock2, S / 2 - 0.1, rr(-1.7, -0.9), rr(-3.6, 3.6));
+  for (let i = 0; i < 5; i++) add(g, new THREE.DodecahedronGeometry(rr(0.25, 0.45)), mat.rock2, rr(-3.6, 3.6), rr(-1.7, -0.9), S / 2 - 0.1);
+  return g;
+}
+function tree(g, x, z, s = 1, m = mat.leaf) {
+  add(g, cyl(0.1 * s, 0.5 * s, 8), mat.trunk, x, 0.25 * s, z);
+  add(g, new THREE.ConeGeometry(0.55 * s, 1.0 * s, 10), m, x, 0.95 * s, z);
+  add(g, new THREE.ConeGeometry(0.42 * s, 0.85 * s, 10), m, x, 1.5 * s, z);
+}
+function ball(g, x, z, s = 1, m = mat.leaf2) {
+  add(g, cyl(0.09 * s, 0.6 * s, 8), mat.trunk, x, 0.3 * s, z);
+  add(g, new THREE.SphereGeometry(0.55 * s, 20, 14), m, x, 0.95 * s, z);
+}
+function cloud(x, y, z, s = 1) {
+  const g = new THREE.Group(); g.position.set(x, y, z); scene.add(g);
+  [[0, 0, 0, 0.9], [0.9, 0.15, 0.1, 0.7], [-0.9, 0.05, -0.1, 0.65], [0.3, 0.45, 0, 0.6], [1.6, -0.05, 0, 0.45]].forEach(([dx, dy, dz, r]) =>
+    add(g, new THREE.SphereGeometry(r * s, 22, 16), mat.white, dx * s, dy * s, dz * s, { s: [1, 0.72, 1], cast: false }));
+}
+// 水管：一串直管 + 弯头的球 + 法兰
+function pipe(pts, r = 0.3) {
+  const g = new THREE.Group(); scene.add(g);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = new THREE.Vector3(...pts[i]), b = new THREE.Vector3(...pts[i + 1]), d = b.clone().sub(a), len = d.length();
+    const m = add(g, cyl(r, len, 28), mat.pipe, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize());
+    const n = Math.max(1, Math.round(len / 2.6));
+    for (let k = 0; k < n; k++) {                      // 法兰
+      const t = (k + 0.5) / n, f = add(g, cyl(r * 1.38, 0.2, 28), mat.flange, a.x + d.x * t, a.y + d.y * t, a.z + d.z * t);
+      f.quaternion.copy(m.quaternion);
+    }
+    add(g, new THREE.SphereGeometry(r * 1.12, 22, 16), mat.pipe, b.x, b.y, b.z);
+    if (i === 0) add(g, new THREE.SphereGeometry(r * 1.12, 22, 16), mat.pipe, a.x, a.y, a.z);
+  }
+}
+
+const D = 20 / Math.SQRT2, A = 2.4 / Math.SQRT2;
+const I1 = [-D - A, -D + A], I2 = [A, -A], I3 = [D - A, D + A];
+
+// ================= ① 水库 =================
+{
+  const g = island(I1[0], I1[1], mat.grass);
+  // 山
+  [[-2.6, -2.5, 2.5, 3.8, mat.mount], [-0.2, -3.0, 2.0, 3.0, mat.mount2], [-3.1, 0.1, 1.7, 2.5, mat.mount2]].forEach(([x, z, r, h, m]) => {
+    add(g, new THREE.ConeGeometry(r, h, 7), m, x, h / 2, z, { ry: rr(0, 3) });
+    add(g, new THREE.ConeGeometry(r * 0.36, h * 0.36, 7), mat.snow, x, h * 0.83, z, { ry: rr(0, 3) });
+  });
+  // 湖
+  add(g, cyl(2.75, 0.14, 48), mat.soil, 1.0, 0.02, 1.0, { cast: false });
+  add(g, cyl(2.5, 0.16, 48), mat.water, 1.0, 0.05, 1.0, { cast: false });
+  // 坝
+  add(g, box(0.7, 1.3, 4.2, 0.1), mat.dam, 3.75, 0.65, 1.0);
+  add(g, box(0.9, 0.2, 4.4, 0.08), mat.conc, 3.75, 1.36, 1.0);
+  for (let k = -1; k <= 1; k++) add(g, box(0.16, 0.7, 0.5, 0.05), mat.dark, 4.12, 0.5, 1.0 + k * 1.2);
+  tree(g, -3.7, 3.4, 1.1); tree(g, -2.6, 3.9, 0.85, mat.leaf2); tree(g, 3.6, -3.4, 1.0); tree(g, 2.5, -3.9, 0.8, mat.leaf2); tree(g, -1.2, 3.6, 0.7);
+  tree(g, 3.9, 3.9, 0.75, mat.leaf2); tree(g, 1.2, -2.7, 0.7);
+}
+cloud(I1[0] + 11.2, 2.2, I1[1] - 5.2, 1.0);
+cloud(I1[0] - 5.5, 0.6, I1[1] + 6.5, 0.8);
+
+// ================= ② 水厂 =================
+{
+  const g = island(I2[0], I2[1], mat.conc);
+  // 两个沉淀池
+  [[-2.2, -1.7], [1.9, -2.4]].forEach(([x, z]) => {
+    add(g, cyl(1.75, 0.9, 48), mat.tank, x, 0.45, z);
+    add(g, cyl(1.5, 0.1, 48), mat.water, x, 0.9, z, { cast: false });
+    add(g, box(3.3, 0.12, 0.26, 0.04), mat.dark, x, 1.02, z, { ry: 0.6 });
+    add(g, cyl(0.16, 0.36, 12), mat.dark, x, 1.05, z);
+  });
+  // 厂房
+  add(g, box(3.4, 2.0, 2.6, 0.12), mat.wall, 2.2, 1.0, 2.2);
+  add(g, box(3.7, 0.3, 2.9, 0.1), mat.roof, 2.2, 2.12, 2.2);
+  for (let k = 0; k < 3; k++) add(g, box(0.5, 0.7, 0.1, 0.04), mat.glass, 1.2 + k * 1.0, 1.2, 3.52);
+  add(g, box(0.1, 0.7, 0.5, 0.04), mat.glass, 3.92, 1.2, 1.7); add(g, box(0.1, 1.1, 0.6, 0.04), mat.dark, 3.92, 0.55, 2.7);
+  add(g, cyl(0.28, 1.5, 20), mat.conc, 1.2, 2.9, 1.6); add(g, cyl(0.33, 0.14, 20), mat.roof, 1.2, 3.65, 1.6);
+  // 过滤罐
+  for (let k = 0; k < 3; k++) { add(g, cyl(0.5, 1.5, 24), mat.mint, -3.75 + k * 1.25, 0.75, 2.3); add(g, new THREE.SphereGeometry(0.5, 24, 12, 0, 6.3, 0, 1.6), mat.mint, -3.75 + k * 1.25, 1.5, 2.3); }
+  add(g, box(3.3, 0.14, 0.14, 0.04), mat.flange, -2.5, 1.05, 2.82);
+  ball(g, -0.6, 4.0, 0.8); ball(g, 4.0, -0.2, 0.85); ball(g, 3.9, 4.0, 0.7, mat.leaf); ball(g, -4.0, -4.0, 0.75, mat.leaf);
+}
+// ================= ③ 你家 =================
+let homeWin;
+{
+  const g = island(I3[0], I3[1], mat.grass2);
+  // 马路
+  add(g, box(S - 0.4, 0.06, 1.5, 0.02), mat.road, 0, 0.03, 2.9, { cast: false });
+  for (let k = -3; k <= 3; k++) add(g, box(0.6, 0.02, 0.1, 0.01), mat.white, k * 1.2, 0.07, 2.9, { cast: false });
+  add(g, box(1.1, 0.34, 0.6, 0.12), mat.car, -2.2, 0.36, 2.6); add(g, box(0.6, 0.3, 0.52, 0.1), mat.apt2, -2.25, 0.62, 2.6);
+  [[-2.55, 2.32], [-1.85, 2.32], [-2.55, 2.88], [-1.85, 2.88]].forEach(([x, z]) => add(g, cyl(0.14, 0.1, 14), mat.dark, x, 0.17, z, { rx: Math.PI / 2 }));
+  // 居民楼
+  const bx = 1.5, bz = -1.2, bw = 3.6, bh = 6.2, bd = 3.2;
+  add(g, box(bw, bh, bd, 0.14), mat.apt, bx, bh / 2, bz);
+  add(g, box(bw + 0.3, 0.3, bd + 0.3, 0.1), mat.roof, bx, bh + 0.1, bz);
+  add(g, box(0.9, 0.7, 0.9, 0.1), mat.conc, bx + 0.8, bh + 0.6, bz - 0.5); add(g, cyl(0.42, 0.7, 20), mat.pipe, bx - 0.8, bh + 0.6, bz + 0.4);
+  // 窗：朝 +z 的一面（画面左前）和朝 +x 的一面（画面右前）
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 3; c++) {
+    const on = rnd() < 0.3, y = 1.0 + r * 1.08;
+    const isHome = r === 2 && c === 1;
+    const w = add(g, box(0.62, 0.66, 0.1, 0.04), isHome || on ? mat.lit : mat.glass, bx - 1.1 + c * 1.1, y, bz + bd / 2 + 0.03, { cast: false });
+    add(g, box(0.78, 0.08, 0.2, 0.03), mat.apt2, bx - 1.1 + c * 1.1, y - 0.4, bz + bd / 2 + 0.06, { cast: false });
+    if (isHome) homeWin = w;
+  }
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 2; c++) {
+    const on = rnd() < 0.3, y = 1.0 + r * 1.08;
+    add(g, box(0.1, 0.66, 0.62, 0.04), on ? mat.lit : mat.glass, bx + bw / 2 + 0.03, y, bz - 0.6 + c * 1.2, { cast: false });
+    add(g, box(0.2, 0.08, 0.78, 0.03), mat.apt2, bx + bw / 2 + 0.06, y - 0.4, bz - 0.6 + c * 1.2, { cast: false });
+  }
+  // 小房子
+  add(g, box(1.9, 1.3, 1.7, 0.1), mat.white, 3.3, 0.65, 1.25);
+  const rf = add(g, new THREE.ConeGeometry(1.62, 1.0, 4), mat.roof, 3.3, 1.8, 1.25, { ry: Math.PI / 4 });
+  add(g, box(0.4, 0.7, 0.1, 0.03), mat.dark, 3.3, 0.36, 2.13); add(g, box(0.36, 0.36, 0.1, 0.03), mat.lit, 3.9, 0.8, 2.13, { cast: false });
+  ball(g, -4.0, 1.5, 0.9); ball(g, -0.6, -3.9, 0.7, mat.leaf); tree(g, 4.0, 4.0, 0.8); ball(g, -3.9, 4.0, 0.7, mat.leaf); ball(g, -2.6, -3.4, 0.8);
+  // 路灯
+  add(g, cyl(0.05, 1.6, 8), mat.dark, 1.6, 0.8, 1.9); add(g, new THREE.SphereGeometry(0.16, 12, 10), mat.lit, 1.6, 1.65, 1.9, { cast: false });
+}
+cloud(I3[0] - 7.5, 5.2, I3[1] - 2.5, 0.9);
+cloud(I2[0] + 6.5, 4.4, I2[1] - 5.5, 0.85);
+
+// ================= 水管 =================
+const ph = 0.42;
+// 在屏幕上竖直往下 = 在世界里沿 (1,0,1) 朝镜头走
+// 水库 → 水厂：从坝里出来，一路下来，接进第一个沉淀池的背面
+{
+  const e = [I1[0] + 5.3, I1[1] + 1.0], t = 8.4;
+  pipe([[I1[0] + 4.1, ph, I1[1] + 1.0], [e[0], ph, e[1]], [e[0] + t, ph, e[1] + t]]);
+}
+// 水厂 → 你家：从过滤罐出来，下到楼前，拐两个弯接进楼里
+{
+  const e = [I2[0] - 3.88, I2[1] + 5.3];
+  const q = [I3[0] - 1.2, I3[1] + 1.2];                 // 楼前左边的空地
+  pipe([[e[0], ph, I2[1] + 2.9], [e[0], ph, e[1]], [q[0], ph, q[1]], [I3[0] + 0.6, ph, q[1]], [I3[0] + 0.6, ph, I3[1] + 0.5]]);
+}
+
+// ---------- 渲染 ----------
+renderer.render(scene, cam);
+
+// 标签位置：把三维点投到屏幕上
+const toPx = (x, y, z) => { const v = new THREE.Vector3(x, y, z).project(cam); return [(v.x + 1) / 2 * W, (1 - v.y) / 2 * H]; };
+const svg = document.getElementById('lines');
+function label(id, wx, wy, wz, dx, dy) {
+  const [x, y] = toPx(wx, wy, wz), el = document.getElementById(id);
+  el.style.left = (x + dx) + 'px'; el.style.top = (y + dy) + 'px';
+  const bw = el.offsetWidth, ex = dx > 0 ? x + dx : x + dx + bw, ey = y + dy + 32;
+  svg.innerHTML += `<path d="M${x} ${y} L${ex} ${ey}" stroke="#2a3352" stroke-width="3" stroke-dasharray="2 9" stroke-linecap="round" fill="none"/><circle cx="${x}" cy="${y}" r="8" fill="#fff" stroke="#2a3352" stroke-width="3"/>`;
+}
+window.__lab = () => {
+  label('l1', I1[0] + 1.0, 0.2, I1[1] + 1.0, 270, -130);
+  label('l2', I2[0] - 2.2, 1.0, I2[1] - 1.7, -330, -120);
+  const hw = new THREE.Vector3(); homeWin.getWorldPosition(hw);
+  label('l3', hw.x, hw.y, hw.z, -390, -40);
+};
+
+// 移轴：上下两头虚一点，像在拍微缩模型
+const out = document.getElementById('out').getContext('2d'), gl = document.getElementById('gl');
+out.drawImage(gl, 0, 0);
+const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H; const tc = tmp.getContext('2d');
+tc.filter = 'blur(3.5px)'; tc.drawImage(gl, 0, 0); tc.filter = 'none';
+tc.globalCompositeOperation = 'destination-in';
+const mg = tc.createLinearGradient(0, 0, 0, H);
+mg.addColorStop(0, 'rgba(0,0,0,1)'); mg.addColorStop(0.24, 'rgba(0,0,0,0.55)'); mg.addColorStop(0.4, 'rgba(0,0,0,0)'); mg.addColorStop(0.76, 'rgba(0,0,0,0)'); mg.addColorStop(0.92, 'rgba(0,0,0,0.7)'); mg.addColorStop(1, 'rgba(0,0,0,1)');
+tc.fillStyle = mg; tc.fillRect(0, 0, W, H);
+out.drawImage(tmp, 0, 0);
+
+document.fonts.load('900 90px "Noto Sans SC"', '拧开水龙头之前这杯走了多远？库厂你家123').then(() => document.fonts.load('700 30px "Noto Sans SC"', '它是怎么来的第集·2')).then(() => {
+  window.__lab(); window.__ready = true;
+});
+</script>
+</body>
+</html>
