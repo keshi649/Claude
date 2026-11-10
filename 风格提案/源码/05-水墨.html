@@ -1,0 +1,201 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="fonts.css">
+<style>
+  body { background: #cfcabd; position: relative; }
+  canvas { position: absolute; left: 0; top: 0; }
+  .poem { position: absolute; right: 96px; top: 150px; writing-mode: vertical-rl; font-family: "Ma Shan Zheng", "LXGW WenKai", serif;
+          font-size: 86px; line-height: 1.42; letter-spacing: 10px; color: #1b1917; }
+  .poem .dim { opacity: .3; }
+  .seal { position: absolute; right: 486px; top: 676px; width: 84px; height: 84px; background: #b5301f; border-radius: 8px;
+          font-family: "ZCOOL XiaoWei", serif; color: #f6ecdc; font-size: 34px; line-height: 38px; text-align: center; padding-top: 4px; box-sizing: border-box;
+          transform: rotate(-3deg); box-shadow: inset 0 0 0 3px #b5301f, inset 0 0 0 5px rgba(246,236,220,.75); }
+  .tag { position: absolute; left: 84px; top: 160px; writing-mode: vertical-rl; font-family: "Noto Serif SC", serif; font-weight: 700;
+         font-size: 30px; letter-spacing: 16px; color: #3a3632; }
+  .tag i { display: inline-block; width: 4px; height: 70px; background: #b5301f; margin-bottom: 22px; }
+  .author { position: absolute; left: 90px; top: 590px; writing-mode: vertical-rl; font-family: "LXGW WenKai", serif; font-size: 28px; letter-spacing: 10px; color: #5a554e; }
+  .sub { position: absolute; left: 0; right: 0; top: 1528px; text-align: center; font-family: "LXGW WenKai", "Noto Serif SC", serif; font-size: 58px;
+         letter-spacing: 6px; color: #f7f3ea; text-shadow: 0 0 14px rgba(10,10,10,.9), 0 0 4px rgba(10,10,10,.9), 0 2px 2px rgba(10,10,10,.8); }
+</style>
+<canvas id="c" width="1080" height="1920"></canvas>
+<div class="tag"><i></i>一分钟一首诗</div>
+<div class="author">唐 · 柳宗元《江雪》</div>
+<div class="poem"><span class="dim">千山鸟飞绝<br>万径人踪灭</span><br>孤舟蓑笠翁<br>独钓寒江雪</div>
+<div class="seal">江<br>雪</div>
+<div class="sub">孤舟蓑笠翁，独钓寒江雪。</div>
+<script>
+const W = 1080, H = 1920;
+const c = document.getElementById('c'), g = c.getContext('2d');
+function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+// 一维噪声
+function noise1(seed){
+  const r = rng(seed), tab = Array.from({ length: 512 }, () => r());
+  const v = x => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return tab[i & 511] * (1 - u) + tab[(i + 1) & 511] * u; };
+  return (x, oct = 5) => { let a = 0, amp = 0.5, fr = 1, s = 0; for (let o = 0; o < oct; o++){ a += v(x * fr + o * 17.3) * amp; s += amp; amp *= 0.5; fr *= 2.1; } return a / s; };
+}
+const R = rng(1110);
+
+// ---------- 纸和天：一层灰墨，留给雪去白 ----------
+{
+  const sky = g.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, '#b9b5ab'); sky.addColorStop(0.35, '#c9c5ba'); sky.addColorStop(0.6, '#d8d4c9'); sky.addColorStop(0.8, '#cdc9be'); sky.addColorStop(1, '#b4b0a6');
+  g.fillStyle = sky; g.fillRect(0, 0, W, H);
+  // 晕开的墨渍
+  for (let i = 0; i < 46; i++){
+    const x = R() * W, y = R() * H, r = 120 + R() * 320, dark = R() < 0.55;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, dark ? 'rgba(60,62,66,.085)' : 'rgba(246,242,232,.11)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+  // 淡淡一轮冬天的太阳
+  const sun = g.createRadialGradient(300, 430, 0, 300, 430, 120);
+  sun.addColorStop(0, 'rgba(244,236,222,.9)'); sun.addColorStop(0.82, 'rgba(244,236,222,.75)'); sun.addColorStop(1, 'rgba(244,236,222,0)');
+  g.fillStyle = sun; g.beginPath(); g.arc(300, 430, 120, 0, 7); g.fill();
+}
+
+// ---------- 雪山：山头留白，往下皴出墨色，再化进雾里 ----------
+function mountain(o){
+  const n = noise1(o.seed), n2 = noise1(o.seed + 99);
+  const ridge = x => o.base - o.amp * Math.pow(n(x / o.wave + 3), 1.25) * (o.shape ? o.shape(x) : 1);
+  // 白色山体
+  g.save();
+  g.beginPath(); g.moveTo(-10, H);
+  for (let x = -10; x <= W + 10; x += 3) g.lineTo(x, ridge(x));
+  g.lineTo(W + 10, H); g.closePath();
+  const body = g.createLinearGradient(0, o.base - o.amp, 0, o.base + o.fade);
+  body.addColorStop(0, `rgba(243,240,232,${o.white})`); body.addColorStop(0.55, `rgba(238,235,227,${o.white * 0.85})`); body.addColorStop(1, 'rgba(232,229,221,0)');
+  g.fillStyle = body; g.filter = `blur(${o.blur || 0}px)`; g.fill(); g.filter = 'none';
+  g.clip();
+  // 皴：短笔顺着山势往下擦，越往下越淡
+  for (let x = -40; x < W + 40; x += 1.1){
+    const yr = ridge(x), k = n2(x / 46, 3);
+    if (k < 0.36) continue;                     // 留白
+    const slope = Math.max(-0.9, Math.min(0.9, (ridge(x + 8) - ridge(x - 8)) / 16 * 0.9));
+    const snow = o.snow * (0.25 + 1.5 * n2(x / 130 + 40, 2));
+    const depth = Math.pow(R(), 1.8) * o.fade * 0.75;
+    const len = (16 + 90 * k * R()) * o.scale, y0 = yr + snow + depth;
+    const dx = len * (slope + (R() - 0.5) * 0.5), dy = len * (0.75 + R() * 0.4);
+    const a = o.ink * (0.3 + 0.9 * k) * (0.35 + R() * 0.65) * (1 - depth / (o.fade * 0.8));
+    const gr = g.createLinearGradient(x, y0, x + dx, y0 + dy);
+    gr.addColorStop(0, `rgba(${o.col},${a})`); gr.addColorStop(1, `rgba(${o.col},0)`);
+    g.strokeStyle = gr; g.lineWidth = (0.8 + R() * R() * 7) * o.scale;
+    g.beginPath(); g.moveTo(x, y0); g.quadraticCurveTo(x + dx * 0.2, y0 + dy * 0.55, x + dx, y0 + dy); g.stroke();
+  }
+  g.restore();
+  // 山脊一道断断续续的墨线
+  g.lineCap = 'round';
+  for (let x = -10; x < W + 10; x += 4){
+    const k = n2(x / 60 + 7, 3); if (k < 0.42) continue;
+    g.strokeStyle = `rgba(${o.col},${o.ink * 0.9 * k})`; g.lineWidth = (0.8 + 3.2 * k) * o.scale;
+    g.beginPath(); g.moveTo(x, ridge(x)); g.lineTo(x + 4.4, ridge(x + 4.4)); g.stroke();
+  }
+}
+function mist(y, h, a){
+  const gr = g.createLinearGradient(0, y, 0, y + h);
+  gr.addColorStop(0, 'rgba(216,212,202,0)'); gr.addColorStop(0.5, `rgba(220,216,206,${a})`); gr.addColorStop(1, 'rgba(216,212,202,0)');
+  g.fillStyle = gr; g.fillRect(0, y, W, h);
+}
+const bump = (cx, w) => x => 0.25 + 0.95 * Math.exp(-Math.pow((x - cx) / w, 2));
+mountain({ seed: 3,  base: 900,  amp: 330, wave: 260, fade: 260, white: 0.55, ink: 0.16, col: '70,78,88', snow: 30, scale: 0.8, blur: 3, shape: bump(700, 420) });
+mist(760, 240, 0.75);
+mountain({ seed: 8,  base: 1020, amp: 380, wave: 210, fade: 240, white: 0.8,  ink: 0.34, col: '52,58,66', snow: 36, scale: 1.0, blur: 1.5, shape: bump(180, 360) });
+mist(900, 240, 0.8);
+mountain({ seed: 21, base: 1100, amp: 250, wave: 170, fade: 200, white: 0.95, ink: 0.6,  col: '30,33,38', snow: 30, scale: 1.1, shape: bump(930, 330) });
+mist(1040, 260, 0.92);
+
+// ---------- 江面：几笔淡淡的水纹 ----------
+for (let i = 0; i < 70; i++){
+  const y = 1150 + R() * 480, x = R() * W, len = 60 + R() * 260;
+  g.strokeStyle = `rgba(70,76,84,${0.03 + R() * 0.07})`; g.lineWidth = 1 + R() * 2.5;
+  g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + len / 2, y + (R() - 0.5) * 6, x + len, y); g.stroke();
+}
+
+// ---------- 孤舟、蓑笠翁 ----------
+function boat(bx, by, k){
+  g.save(); g.translate(bx, by); g.scale(k, k);
+  // 倒影
+  g.save(); g.filter = 'blur(5px)'; g.fillStyle = 'rgba(30,32,36,.22)';
+  g.beginPath(); g.ellipse(6, 26, 118, 9, 0, 0, 7); g.fill(); g.beginPath(); g.ellipse(-20, 46, 30, 16, 0, 0, 7); g.fill(); g.restore();
+  // 船身
+  g.fillStyle = '#1c1a19';
+  g.beginPath(); g.moveTo(-132, -6); g.quadraticCurveTo(-60, 30, 30, 26); g.quadraticCurveTo(100, 22, 146, -14);
+  g.quadraticCurveTo(96, 6, 20, 8); g.quadraticCurveTo(-64, 10, -132, -6); g.fill();
+  // 船篷
+  g.fillStyle = '#2a2725'; g.beginPath(); g.moveTo(22, 8); g.quadraticCurveTo(30, -46, 62, -46); g.quadraticCurveTo(96, -44, 100, 4); g.closePath(); g.fill();
+  g.fillStyle = 'rgba(246,243,236,.95)'; g.beginPath(); g.moveTo(26, -18); g.quadraticCurveTo(34, -50, 62, -50); g.quadraticCurveTo(92, -48, 98, -16); g.quadraticCurveTo(62, -40, 26, -18); g.fill();
+  // 蓑衣
+  g.fillStyle = '#231f1c'; g.beginPath(); g.moveTo(-58, 10); g.quadraticCurveTo(-56, -34, -30, -52); g.quadraticCurveTo(-6, -34, -2, 10); g.closePath(); g.fill();
+  g.strokeStyle = '#3a342e'; g.lineWidth = 2;
+  for (let i = 0; i < 7; i++){ g.beginPath(); g.moveTo(-50 + i * 7, -8 + (i % 2) * 4); g.lineTo(-54 + i * 7.5, 10); g.stroke(); }
+  // 斗笠，上面积了雪
+  g.fillStyle = '#16140f'; g.beginPath(); g.moveTo(-66, -50); g.lineTo(-30, -76); g.lineTo(8, -50); g.quadraticCurveTo(-30, -42, -66, -50); g.fill();
+  g.fillStyle = '#f6f3ec'; g.beginPath(); g.moveTo(-58, -55); g.lineTo(-30, -77); g.lineTo(0, -55); g.quadraticCurveTo(-30, -62, -58, -55); g.fill();
+  // 钓竿、钓线
+  g.strokeStyle = '#1c1a19'; g.lineWidth = 3; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(-36, -22); g.quadraticCurveTo(-120, -70, -214, -86); g.stroke();
+  g.lineWidth = 1.2; g.strokeStyle = 'rgba(28,26,25,.75)'; g.beginPath(); g.moveTo(-214, -86); g.lineTo(-218, 34); g.stroke();
+  g.strokeStyle = 'rgba(40,44,50,.35)'; g.lineWidth = 1.5;
+  g.beginPath(); g.ellipse(-218, 36, 16, 4, 0, 0, 7); g.stroke(); g.beginPath(); g.ellipse(-218, 36, 32, 7, 0, 0, 7); g.stroke();
+  g.restore();
+}
+boat(770, 1320, 1.0);
+
+// ---------- 前景：一块雪岸，一株枯树 ----------
+function bank(){
+  const n = noise1(77);
+  const top = x => 1650 + 190 * Math.pow(x / 620, 1.5) - 46 * n(x / 90, 4);
+  g.beginPath(); g.moveTo(-10, H + 10);
+  for (let x = -10; x <= 640; x += 4) g.lineTo(x, top(x));
+  g.lineTo(700, H + 10); g.closePath();
+  g.fillStyle = '#efece4'; g.fill();
+  g.save(); g.clip();
+  for (let i = 0; i < 900; i++){
+    const x = R() * 660, y0 = top(x) + 26 + R() * 60, len = 30 + R() * 160;
+    const gr = g.createLinearGradient(x, y0, x - len * 0.3, y0 + len);
+    gr.addColorStop(0, `rgba(20,21,24,${0.06 + R() * 0.3})`); gr.addColorStop(1, 'rgba(20,21,24,0)');
+    g.strokeStyle = gr; g.lineWidth = 2 + R() * 7; g.beginPath(); g.moveTo(x, y0); g.lineTo(x - len * 0.3, y0 + len); g.stroke();
+  }
+  g.restore();
+}
+bank();
+const TR = rng(41);
+function branch(x, y, ang, len, w, depth){
+  if (depth === 0 || len < 9) return;
+  const bend = (TR() - 0.5) * 0.5;
+  const mx = x + Math.cos(ang + bend) * len * 0.5, my = y + Math.sin(ang + bend) * len * 0.5;
+  const ex = x + Math.cos(ang) * len, ey = y + Math.sin(ang) * len;
+  g.strokeStyle = '#141211'; g.lineCap = 'round'; g.lineWidth = w;
+  g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(mx, my, ex, ey); g.stroke();
+  // 枝上的雪：只压在朝上的一侧
+  if (w > 3 && Math.abs(Math.cos(ang)) > 0.25){
+    g.strokeStyle = 'rgba(247,244,237,.96)'; g.lineWidth = Math.max(2.5, w * 0.5);
+    g.beginPath(); g.moveTo(x + (ex - x) * 0.12, y + (ey - y) * 0.12 - w * 0.55);
+    g.quadraticCurveTo(mx, my - w * 0.6, x + (ex - x) * 0.88, y + (ey - y) * 0.88 - w * 0.5); g.stroke();
+  }
+  const kids = depth > 5 ? 2 : (TR() < 0.4 ? 3 : 2);
+  for (let i = 0; i < kids; i++){
+    const spread = (i - (kids - 1) / 2) * (0.5 + TR() * 0.45) + (TR() - 0.5) * 0.3;
+    branch(ex, ey, ang + spread - 0.04, len * (0.66 + TR() * 0.16), w * 0.66, depth - 1);
+  }
+}
+branch(118, 1790, -1.36, 160, 22, 8);
+branch(36, 1840, -1.66, 110, 11, 5);
+
+// ---------- 雪 ----------
+for (let i = 0; i < 520; i++){
+  const far = R() < 0.72, x = R() * W, y = R() * H, r = far ? 1.2 + R() * 2.2 : 3.5 + R() * 5.5;
+  g.save(); if (!far) g.filter = `blur(${(1 + R() * 2.2).toFixed(1)}px)`;
+  g.fillStyle = `rgba(250,248,242,${far ? 0.55 + R() * 0.4 : 0.6 + R() * 0.3})`;
+  g.beginPath(); g.ellipse(x, y, r, r * (far ? 1 : 1.25), 0.4, 0, 7); g.fill(); g.restore();
+}
+
+// ---------- 纸的颗粒、四边压暗 ----------
+{
+  const img = g.getImageData(0, 0, W, H), d = img.data, r = rng(5);
+  for (let i = 0; i < d.length; i += 4){ const n = (r() - 0.5) * 20; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+  g.putImageData(img, 0, 0);
+  const v = g.createRadialGradient(W / 2, H * 0.48, H * 0.3, W / 2, H * 0.5, H * 0.72);
+  v.addColorStop(0, 'rgba(40,36,30,0)'); v.addColorStop(1, 'rgba(40,36,30,.38)');
+  g.fillStyle = v; g.fillRect(0, 0, W, H);
+}
+</script>

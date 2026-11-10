@@ -1,0 +1,92 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="fonts.css">
+<style>
+  body { background: #0a0c11; }
+  .num  { font-family: "Bebas Neue", sans-serif; }
+  .sans { font-family: "Noto Sans SC", sans-serif; }
+</style>
+<div id="stage"></div>
+<script>
+const W = 1080, H = 1920;
+const HI = '#f2a93b', MUTE = '#5f6a84', INK = '#f4f1ea', INK2 = '#9aa3b5';
+const N_ASIA = 59;                       // 联合国 2024 年人口展望：亚洲约占 59%
+const CELL = 84, X0 = 120 + CELL/2, Y0 = 800;
+
+function person(x, y, col, k, op){
+  k = k || 1;
+  return `<g transform="translate(${x},${y}) scale(${k})" fill="${col}" opacity="${op == null ? 1 : op}">
+    <circle cx="0" cy="-22" r="12"/>
+    <path d="M-17,26 C-17,4 -11,-6 0,-6 C11,-6 17,4 17,26 C17,30 14,32 11,32 H-11 C-14,32 -17,30 -17,26 Z"/></g>`;
+}
+
+let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<defs>
+  <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="14"/></filter>
+  <filter id="blur" x="-50%" y="-300%" width="200%" height="700%"><feGaussianBlur stdDeviation="2 12"/></filter>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="5"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.6 0.6 0.6 0 -0.75"/></filter>
+  <radialGradient id="bg" cx="46%" cy="52%" r="62%"><stop offset="0" stop-color="#1c1a1c"/><stop offset=".55" stop-color="#101219"/><stop offset="1" stop-color="#07080c"/></radialGradient>
+  <radialGradient id="warm" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="${HI}" stop-opacity=".16"/><stop offset="1" stop-color="${HI}" stop-opacity="0"/></radialGradient>
+  <linearGradient id="trail" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${HI}" stop-opacity="0"/><stop offset="1" stop-color="${HI}" stop-opacity=".55"/></linearGradient>
+</defs>
+<rect width="${W}" height="${H}" fill="url(#bg)"/>
+<ellipse cx="540" cy="1040" rx="620" ry="420" fill="url(#warm)"/>`;
+
+// 很淡的底格
+for (let i = 0; i <= 10; i++){
+  s += `<line x1="${120 + i*CELL}" y1="${Y0 - CELL/2}" x2="${120 + i*CELL}" y2="${Y0 + CELL*9.5}" stroke="#ffffff" stroke-opacity=".035"/>`;
+  s += `<line x1="120" y1="${Y0 - CELL/2 + i*CELL}" x2="960" y2="${Y0 - CELL/2 + i*CELL}" stroke="#ffffff" stroke-opacity=".035"/>`;
+}
+
+// 100 个人
+let glow = '', lit = '', dim = '', fx = '';
+for (let i = 0; i < 100; i++){
+  const cx = X0 + (i % 10) * CELL, cy = Y0 + Math.floor(i / 10) * CELL;
+  if (i < N_ASIA){
+    // 最后几个正在落位：还悬在半空，拖着一道尾巴
+    const k = i - (N_ASIA - 4);
+    const lift = 0, pop = k > 0 ? 1 + k * 0.08 : 1;
+    glow += `<circle cx="${cx}" cy="${cy - lift}" r="26" fill="${HI}" opacity=".45"/>`;
+    if (i === N_ASIA - 1){   // 刚亮起来的那一个：溅出几粒火星
+      for (let j = 0; j < 9; j++){
+        const a = -Math.PI * (0.12 + 0.76 * j / 8), d = 52 + (j * 37 % 30);
+        fx += `<circle cx="${(cx + Math.cos(a) * d).toFixed(1)}" cy="${(cy - 6 + Math.sin(a) * d).toFixed(1)}" r="${2 + j % 3}" fill="${HI}" opacity="${0.5 + (j % 3) * 0.2}"/>`;
+      }
+    }
+    lit += person(cx, cy - (pop - 1) * 30, HI, pop);
+  } else {
+    dim += person(cx, cy, MUTE, 1, 0.7);
+  }
+}
+s += `<g filter="url(#glow)">${glow}</g>${fx}${dim}${lit}`;
+
+// 第 59 个落下的位置：一圈圈荡开
+{
+  const i = N_ASIA - 1, cx = X0 + (i % 10) * CELL, cy = Y0 + Math.floor(i / 10) * CELL;
+  s += `<ellipse cx="${cx}" cy="${cy + 30}" rx="38" ry="10" fill="none" stroke="${HI}" stroke-width="2.5" opacity=".7"/>
+        <ellipse cx="${cx}" cy="${cy + 30}" rx="62" ry="16" fill="none" stroke="${HI}" stroke-width="1.5" opacity=".35"/>`;
+}
+
+// ---- 字：字都用墨色，颜色只留给小人 ----
+s += `
+<text x="120" y="232" class="sans" font-size="44" font-weight="700" fill="${INK}" letter-spacing="3">如果世界只有 100 个人</text>
+<text x="120" y="286" class="sans" font-size="28" font-weight="400" fill="${INK2}" letter-spacing="6">第三问 · 他们住在哪儿</text>
+<rect x="120" y="322" width="64" height="5" fill="${HI}"/>
+
+<text x="108" y="690" class="num" font-size="400" fill="${INK}" letter-spacing="-4">59</text>
+${person(470, 470, HI, 1.5)}
+<text x="516" y="492" class="sans" font-size="64" font-weight="900" fill="${INK}" letter-spacing="2">个住在亚洲</text>
+<text x="446" y="574" class="sans" font-size="32" font-weight="400" fill="${INK2}" letter-spacing="2">一个小人 ≈ 八千万个真人</text>
+<text x="446" y="626" class="sans" font-size="32" font-weight="400" fill="${INK2}" letter-spacing="2">一个大洲，占了一大半</text>
+
+<g transform="translate(120,1650)" class="sans" font-size="25" fill="${INK2}">
+  ${person(14, 0, HI, 0.62)}<text x="40" y="10" fill="${INK}" font-weight="700">亚洲 59</text>
+  ${person(190, 0, MUTE, 0.62)}<text x="214" y="10">其他 41：非洲 18 · 欧洲 9 · 拉美 8 · 北美 5 · 大洋洲 1</text>
+</g>
+
+<text x="540" y="1780" class="sans" font-size="54" font-weight="700" fill="${INK}" text-anchor="middle" letter-spacing="2">剩下四十一个，分给其余所有大洲。</text>
+<rect width="${W}" height="${H}" filter="url(#grain)" opacity=".07"/>
+</svg>`;
+document.getElementById('stage').innerHTML = s;
+</script>

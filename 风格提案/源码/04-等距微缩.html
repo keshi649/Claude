@@ -1,0 +1,235 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="fonts.css">
+<style>
+  body { background: #fbe8d2; }
+  .hy   { font-family: "ZCOOL QingKe HuangYou", "Noto Sans SC", sans-serif; }
+  .sans { font-family: "Noto Sans SC", sans-serif; }
+</style>
+<div id="stage"></div>
+<script>
+const W = 1080, H = 1920, U = 46;
+let O = { x: 0, y: 0 };
+// 等距投影：x 往右下，y 往左下，z 往上
+const P = (x, y, z = 0) => [O.x + (x - y) * U * 0.866, O.y + (x + y) * U * 0.5 - z * U];
+const pts = a => a.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+const poly = (a, fill, extra = '') => `<polygon points="${pts(a)}" fill="${fill}" ${extra}/>`;
+function shade(hex, f){
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, n >> 8 & 255, n & 255].map(v => Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))));
+  return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+function box(x, y, z, w, d, h, top, left, right){
+  left = left || shade(top, -0.14); right = right || shade(top, -0.28);
+  return poly([P(x, y + d, z + h), P(x + w, y + d, z + h), P(x + w, y + d, z), P(x, y + d, z)], left)
+       + poly([P(x + w, y, z + h), P(x + w, y + d, z + h), P(x + w, y + d, z), P(x + w, y, z)], right)
+       + poly([P(x, y, z + h), P(x + w, y, z + h), P(x + w, y + d, z + h), P(x, y + d, z + h)], top);
+}
+// 朝左下那面墙上的一块（y 固定）
+const onL = (y, x0, x1, z0, z1, fill, extra) => poly([P(x0, y, z1), P(x1, y, z1), P(x1, y, z0), P(x0, y, z0)], fill, extra);
+// 朝右下那面墙上的一块（x 固定）
+const onR = (x, y0, y1, z0, z1, fill, extra) => poly([P(x, y0, z1), P(x, y1, z1), P(x, y1, z0), P(x, y0, z0)], fill, extra);
+// 人字屋顶，屋脊顺着 x
+function roof(x, y, z, w, d, rh, col){
+  return poly([P(x, y, z), P(x + w, y, z), P(x + w, y + d/2, z + rh), P(x, y + d/2, z + rh)], shade(col, 0.12))
+       + poly([P(x, y + d, z), P(x + w, y + d, z), P(x + w, y + d/2, z + rh), P(x, y + d/2, z + rh)], col)
+       + poly([P(x + w, y, z), P(x + w, y + d, z), P(x + w, y + d/2, z + rh)], shade(col, -0.25));
+}
+let gid = 0;
+// 圆柱 / 圆台
+function cyl(x, y, z, r1, r2, h, col, topCol, op){
+  const b = P(x, y, z), t = P(x, y, z + h);
+  const rx1 = r1 * U * 1.2247, ry1 = r1 * U * 0.7071, rx2 = r2 * U * 1.2247, ry2 = r2 * U * 0.7071;
+  const id = 'cg' + (gid++);
+  return `<defs><linearGradient id="${id}" x1="0" x2="1"><stop offset="0" stop-color="${shade(col, 0.18)}"/><stop offset=".45" stop-color="${col}"/><stop offset="1" stop-color="${shade(col, -0.3)}"/></linearGradient></defs>
+    <path d="M${t[0] - rx2},${t[1]} L${b[0] - rx1},${b[1]} A${rx1},${ry1} 0 0 0 ${b[0] + rx1},${b[1]} L${t[0] + rx2},${t[1]} Z" fill="url(#${id})" opacity="${op || 1}"/>
+    <ellipse cx="${t[0]}" cy="${t[1]}" rx="${rx2}" ry="${ry2}" fill="${topCol || shade(col, 0.25)}" opacity="${op || 1}"/>`;
+}
+function ball(x, y, z, r, col){
+  const p = P(x, y, z);
+  return `<circle cx="${p[0]}" cy="${p[1]}" r="${r}" fill="${col}"/><circle cx="${p[0] - r*0.28}" cy="${p[1] - r*0.3}" r="${r*0.55}" fill="${shade(col, 0.22)}"/>`;
+}
+function tree(x, y, z, k = 1, col = '#5fae6a'){
+  const p = P(x, y, z);
+  return `<ellipse cx="${p[0] + 8}" cy="${p[1] + 3}" rx="${20*k}" ry="${8*k}" fill="#3b2a1a" opacity=".18"/>
+    <rect x="${p[0] - 4*k}" y="${p[1] - 30*k}" width="${8*k}" height="${32*k}" rx="3" fill="#8a5a3a"/>`
+    + ball(x, y, z + 1.05*k, 24*k, shade(col, -0.12)) + ball(x - 0.12, y + 0.1, z + 1.45*k, 19*k, col);
+}
+function peg(x, y, z, col, hat){
+  const p = P(x, y, z);
+  let s = `<ellipse cx="${p[0] + 5}" cy="${p[1] + 2}" rx="11" ry="5" fill="#3b2a1a" opacity=".2"/>
+    <rect x="${p[0] - 8}" y="${p[1] - 26}" width="16" height="28" rx="8" fill="${col}"/>
+    <circle cx="${p[0]}" cy="${p[1] - 34}" r="8.5" fill="#f6d2b0"/>`;
+  if (hat) s += `<path d="M${p[0] - 17},${p[1] - 36} L${p[0]},${p[1] - 52} L${p[0] + 17},${p[1] - 36} Q${p[0]},${p[1] - 30} ${p[0] - 17},${p[1] - 36} Z" fill="#f1cf7a"/>`;
+  return s;
+}
+function cloud(cx, cy, k){
+  return `<g transform="translate(${cx},${cy}) scale(${k})" filter="url(#soft)">
+    <ellipse cx="0" cy="0" rx="62" ry="24" fill="#fff"/><circle cx="-22" cy="-14" r="24" fill="#fff"/><circle cx="14" cy="-22" r="30" fill="#fff"/><circle cx="42" cy="-6" r="18" fill="#fff"/></g>`;
+}
+// 一座浮岛：草皮 + 往下收的土
+function island(cx, cy, grass){
+  O = { x: cx, y: cy - 3 * U };
+  const e1 = '#cf9462', e2 = '#aa7245';
+  let s = `<ellipse cx="${cx}" cy="${cy + 300}" rx="230" ry="46" fill="#b9805a" opacity=".22" filter="url(#blur)"/>`;
+  const tip = P(4.6, 4.6, -2.1), l = P(1.2, 5.4, -1.0), r = P(5.4, 1.2, -1.0), m = P(4.2, 5.2, -1.2), m2 = P(5.2, 4.0, -1.3);
+  s += poly([P(0, 6, 0), P(6, 6, 0), tip, m, l], e1) + poly([P(6, 6, 0), P(6, 0, 0), r, m2, tip], e2);
+  s += poly([P(0, 6, -0.02), P(6, 6, -0.02), P(6, 6, -0.4), P(4.3, 6, -0.55), P(2.6, 6, -0.38), P(1.2, 6, -0.5), P(0, 6, -0.3)], shade(e1, -0.18));
+  s += poly([P(6, 6, -0.02), P(6, 0, -0.02), P(6, 0, -0.3), P(6, 1.6, -0.52), P(6, 3.4, -0.36), P(6, 4.8, -0.55), P(6, 6, -0.4)], shade(e2, -0.18));
+  s += box(0, 0, 0, 6, 6, 0.3, grass);
+  return s;
+}
+
+let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fdf0dc"/><stop offset=".55" stop-color="#fbe2cc"/><stop offset="1" stop-color="#f6cdb9"/></linearGradient>
+  <filter id="blur" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="16"/></filter>
+  <filter id="soft" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#b57a55" flood-opacity=".25"/></filter>
+  <filter id="lab" x="-20%" y="-40%" width="140%" height="200%"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#8a5235" flood-opacity=".22"/></filter>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="11"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0.5  0 0 0 0 0.3  0 0 0 0 0.2  0.7 0.7 0.7 0 -0.85"/></filter>
+</defs>
+<rect width="${W}" height="${H}" fill="url(#bg)"/>`;
+// 背景里的大圆和小点
+s += `<circle cx="820" cy="560" r="330" fill="#fff6e6" opacity=".7"/><circle cx="250" cy="1180" r="300" fill="#fff6e6" opacity=".45"/>`;
+for (let i = 0; i < 40; i++){ const x = (i * 263) % 1080, y = 380 + (i * 397) % 1400; s += `<circle cx="${x}" cy="${y}" r="${2 + i % 3}" fill="#fff" opacity=".7"/>`; }
+
+// 三座岛的位置
+const A = [650, 610], B = [410, 1075], C = [660, 1490];
+// 路线：虚线，从一座岛的前沿绕到下一座
+s += `<path d="M${A[0] - 60},${A[1] + 140} C${A[0] - 330},${A[1] + 250} ${B[0] + 380},${B[1] - 330} ${B[0] + 120},${B[1] - 70}" fill="none" stroke="#e8674a" stroke-width="7" stroke-dasharray="4 20" stroke-linecap="round"/>`;
+s += `<path d="M${B[0] + 110},${B[1] + 120} C${B[0] + 20},${B[1] + 360} ${C[0] - 430},${C[1] - 230} ${C[0] - 150},${C[1] - 80}" fill="none" stroke="#e8674a" stroke-width="7" stroke-dasharray="4 20" stroke-linecap="round"/>`;
+
+// ================= 岛一：茶山 =================
+s += island(A[0], A[1], '#bfe08f');
+{
+  const g = ['#b4dc84', '#a2d074', '#90c466', '#7fb85a'];
+  const L = [];
+  for (let i = 0; i < 4; i++){
+    const x = 0.35 + 0.2 * i, w = 5.2 - 1.2 * i, z = 0.3 + 0.56 * i;
+    L.push({ x, w, z: z + 0.56 });
+    s += box(x, x, z, w, w, 0.56, g[i], shade(g[i], -0.24), shade(g[i], -0.4));
+  }
+  // 一垄一垄的茶树，从山顶往下画
+  for (let i = 3; i >= 0; i--){
+    const { x, w, z } = L[i], e = x + w, bushes = [];
+    const rows = i === 3 ? [e - 0.24] : [e - 0.24, e - 0.64];
+    rows.forEach(row => {
+      for (let t = x + 0.26; t < row + 0.01; t += 0.4){ bushes.push([t, row]); if (t < row - 0.2) bushes.push([row, t]); }
+    });
+    bushes.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
+    if (i === 3) s += box(1.25, 1.25, z, 0.8, 0.8, 0.5, '#f7ead2') + roof(1.08, 1.08, z + 0.5, 1.14, 1.14, 0.5, '#e8674a');
+    bushes.forEach(b => { const p = P(b[0], b[1], z);
+      s += `<ellipse cx="${p[0]}" cy="${p[1] - 4}" rx="11.5" ry="8.5" fill="#3f8f4e"/><ellipse cx="${p[0] - 2}" cy="${p[1] - 7}" rx="8" ry="5" fill="#66b468"/>`; });
+    if (i === 1) s += peg(4.2, 2.0, z, '#e8674a', true);
+    if (i === 0) s += peg(1.8, 5.02, z, '#4f8fd0', true) + peg(5.02, 3.3, z, '#f0b23c', true);
+  }
+  s += tree(5.5, 0.6, 0.3, 0.8) + tree(0.6, 5.6, 0.3, 0.7, '#6dbb6f');
+}
+s += cloud(A[0] - 250, A[1] - 130, 0.9) + cloud(A[0] + 260, A[1] - 230, 0.7);
+
+// ================= 岛二：甘蔗田和糖厂 =================
+s += island(B[0], B[1], '#cfe59a');
+{
+  // 田
+  s += poly([P(0.3, 0.3, 0.3), P(3.3, 0.3, 0.3), P(3.3, 5.7, 0.3), P(0.3, 5.7, 0.3)], '#b98a57');
+  for (let y = 0.6; y < 5.7; y += 0.52) s += poly([P(0.3, y, 0.3), P(3.3, y, 0.3), P(3.3, y + 0.12, 0.3), P(0.3, y + 0.12, 0.3)], '#a57848');
+  // 水泥地和路
+  s += poly([P(3.5, 0.3, 0.3), P(5.8, 0.3, 0.3), P(5.8, 3.4, 0.3), P(3.5, 3.4, 0.3)], '#efe3cf');
+  s += poly([P(3.5, 3.9, 0.3), P(6, 3.9, 0.3), P(6, 5.1, 0.3), P(3.5, 5.1, 0.3)], '#8f8a94');
+  for (let x = 3.7; x < 5.9; x += 0.6) s += poly([P(x, 4.46, 0.3), P(x + 0.32, 4.46, 0.3), P(x + 0.32, 4.54, 0.3), P(x, 4.54, 0.3)], '#f4efe6');
+  // 糖厂
+  s += box(3.8, 0.6, 0.3, 1.8, 2.4, 1.35, '#f7ead2', '#f1dcbc', '#dcc19c');
+  s += roof(3.8, 0.6, 1.65, 1.8, 1.2, 0.55, '#e8674a') + roof(3.8, 1.8, 1.65, 1.8, 1.2, 0.55, '#e8674a');
+  for (let i = 0; i < 3; i++) s += onL(3.0, 4.0 + i * 0.55, 4.38 + i * 0.55, 0.85, 1.3, '#7fc4d8');
+  s += onR(5.6, 1.0, 1.55, 0.3, 1.1, '#8a5a3a') + onR(5.6, 2.0, 2.7, 0.8, 1.25, '#7fc4d8');
+  // 烟囱和烟
+  s += cyl(4.3, 1.1, 2.0, 0.2, 0.17, 1.5, '#f4efe6') + cyl(4.3, 1.1, 2.9, 0.19, 0.18, 0.25, '#e8674a') + cyl(4.3, 1.1, 3.4, 0.175, 0.17, 0.1, '#e8674a', '#6b4a3a');
+  const sm = P(4.3, 1.1, 3.6);
+  [[0, -12, 11], [-10, -34, 16], [-30, -58, 21], [-58, -80, 26]].forEach(c => s += `<circle cx="${sm[0] + c[0]}" cy="${sm[1] + c[1]}" r="${c[2]}" fill="#fff" opacity=".92"/>`);
+  // 甘蔗，一根一根
+  const cane = [];
+  for (let y = 0.5; y < 5.6; y += 0.52) for (let x = 0.5; x < 3.2; x += 0.3) cane.push([x, y + 0.18]);
+  cane.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
+  cane.forEach((c, i) => { const a = P(c[0], c[1], 0.3), h = 40 + (i * 7 % 12);
+    s += `<line x1="${a[0]}" y1="${a[1]}" x2="${a[0]}" y2="${a[1] - h}" stroke="#8fba4e" stroke-width="4.5" stroke-linecap="round"/>
+          <path d="M${a[0]},${a[1] - h} q-10,-10 -15,-2 M${a[0]},${a[1] - h} q9,-12 15,-3 M${a[0]},${a[1] - h} q0,-12 2,-16" stroke="#5f9e3e" stroke-width="3.5" fill="none" stroke-linecap="round"/>`; });
+  s += peg(1.9, 5.85, 0.3, '#f0b23c', true);
+  // 货车
+  s += `<ellipse cx="${P(4.9, 4.9, 0.3)[0]}" cy="${P(4.9, 4.9, 0.3)[1] + 4}" rx="74" ry="22" fill="#3b2a1a" opacity=".2"/>`;
+  s += box(3.9, 4.15, 0.42, 1.25, 0.72, 0.72, '#ffffff', '#f1ece4', '#d9d2c8');
+  s += onL(4.87, 3.9, 5.15, 0.6, 0.76, '#5fae6a');
+  s += box(5.2, 4.15, 0.42, 0.5, 0.72, 0.52, '#3aa6b9');
+  s += onR(5.7, 4.25, 4.77, 0.66, 0.9, '#d6f1f5');
+  [[4.2, 4.87], [5.0, 4.87], [5.5, 4.87]].forEach(w => { const p = P(w[0], w[1], 0.44); s += `<ellipse cx="${p[0]}" cy="${p[1]}" rx="9" ry="10" fill="#3a3340"/><ellipse cx="${p[0]}" cy="${p[1]}" rx="4" ry="4.5" fill="#c9c3cf"/>`; });
+  s += tree(0.55, 0.6, 0.3, 0.7);
+}
+
+// ================= 岛三：楼下的奶茶店 =================
+s += island(C[0], C[1], '#d9e6a6');
+{
+  // 人行道
+  s += poly([P(0.3, 3.4, 0.3), P(5.7, 3.4, 0.3), P(5.7, 5.7, 0.3), P(0.3, 5.7, 0.3)], '#f3e6d2');
+  for (let x = 0.3; x < 5.7; x += 0.9) s += poly([P(x, 3.4, 0.3), P(x + 0.04, 3.4, 0.3), P(x + 0.04, 5.7, 0.3), P(x, 5.7, 0.3)], '#e2d0b6');
+  s += tree(0.9, 1.0, 0.3, 0.95) + tree(1.7, 0.6, 0.3, 0.7, '#6dbb6f');
+  // 店
+  const sx = 2.5, sy = 0.5, sw = 3.0, sd = 2.5, fy = sy + sd;
+  s += box(sx, sy, 0.3, sw, sd, 1.9, '#fff3e0', '#fde5c8', '#e9c8a2');
+  s += box(sx - 0.1, sy - 0.1, 2.2, sw + 0.2, sd + 0.2, 0.14, '#f08a6c');
+  s += onL(fy, sx + 0.3, sx + 1.0, 0.3, 1.45, '#8a5a3a') + onL(fy, sx + 0.42, sx + 0.88, 0.75, 1.33, '#f9dcae');
+  s += onL(fy, sx + 1.35, sx + 2.75, 0.78, 1.45, '#8fd3e0') + onL(fy, sx + 1.35, sx + 2.75, 0.68, 0.78, '#8a5a3a');
+  s += onR(sx + sw, sy + 0.4, sy + 2.0, 0.8, 1.5, '#8fd3e0');
+  // 条纹雨棚
+  for (let i = 0; i < 8; i++){
+    const x0 = sx + i * sw / 8, x1 = x0 + sw / 8;
+    s += poly([P(x0, fy, 1.95), P(x1, fy, 1.95), P(x1, fy + 0.75, 1.6), P(x0, fy + 0.75, 1.6)], i % 2 ? '#fff7ec' : '#f08a6c');
+    s += poly([P(x0, fy + 0.75, 1.6), P(x1, fy + 0.75, 1.6), P(x1, fy + 0.75, 1.47), P(x0, fy + 0.75, 1.47)], i % 2 ? '#eadfce' : '#d66f52');
+  }
+  // 屋顶招牌
+  const sg = P(sx + sw / 2, sy + sd / 2, 2.34);
+  s += `<rect x="${sg[0] - 44}" y="${sg[1] - 46}" width="6" height="46" fill="#8a5a3a"/><rect x="${sg[0] + 38}" y="${sg[1] - 46}" width="6" height="46" fill="#8a5a3a"/>
+    <g filter="url(#lab)"><rect x="${sg[0] - 84}" y="${sg[1] - 112}" width="168" height="72" rx="14" fill="#6b3f2a"/></g>
+    <text x="${sg[0]}" y="${sg[1] - 60}" class="hy" font-size="46" fill="#ffe9c2" text-anchor="middle" letter-spacing="8">奶茶</text>`;
+  // 排队的人
+  s += peg(3.0, 4.3, 0.3, '#4f8fd0') + peg(3.6, 4.35, 0.3, '#f0b23c') + peg(4.2, 4.3, 0.3, '#9a7ad6') + peg(4.8, 4.4, 0.3, '#e8674a') + peg(5.4, 4.35, 0.3, '#3aa6b9');
+  // 一大杯奶茶，立在左前角
+  const cx = 1.25, cy = 4.7, r1 = 0.52, r2 = 0.8, ch = 2.15;
+  const cup = P(cx, cy, 0.3), top = P(cx, cy, 0.3 + ch), RX = r2 * U * 1.2247, RY = r2 * U * 0.7071;
+  s += `<ellipse cx="${cup[0] + 16}" cy="${cup[1] + 6}" rx="70" ry="30" fill="#3b2a1a" opacity=".2"/>`;
+  s += cyl(cx, cy, 0.3, r1, r2, ch, '#e6bd92', '#d9a877');
+  // 杯底的珍珠
+  [[-20, 6], [-4, 12], [14, 9], [-26, -8], [-10, -4], [8, -6], [24, -6], [-18, -22], [0, -20], [18, -22], [-8, -36], [12, -37], [-26, -36], [26, -34]].forEach(b =>
+    s += `<circle cx="${cup[0] + b[0]}" cy="${cup[1] + b[1] - 2}" r="8.5" fill="#4a2c20"/><circle cx="${cup[0] + b[0] - 2.5}" cy="${cup[1] + b[1] - 5}" r="2.5" fill="#8a5a46"/>`);
+  // 杯身上的一颗心
+  s += `<path d="M0,14 L-18,-4 a10,10 0 0 1 18,-10 a10,10 0 0 1 18,10 Z" fill="#f08a6c" transform="translate(${cup[0] - 2},${cup[1] - ch * U * 0.58}) scale(1.15)"/>`;
+  // 盖子、吸管
+  s += `<path d="M${top[0] - RX - 5},${top[1]} v-12 a${RX + 5},${RY + 3} 0 0 1 ${2 * RX + 10},0 v12 a${RX + 5},${RY + 3} 0 0 1 ${-2 * RX - 10},0 z" fill="#f3ebdf"/>
+        <path d="M${top[0] - RX - 5},${top[1]} a${RX + 5},${RY + 3} 0 0 0 ${2 * RX + 10},0 v-12 a${RX + 5},${RY + 3} 0 0 1 ${-2 * RX - 10},0 z" fill="#e2d6c4"/>
+        <ellipse cx="${top[0]}" cy="${top[1] - 12}" rx="${RX + 5}" ry="${RY + 3}" fill="#fffdf8"/>
+        <ellipse cx="${top[0]}" cy="${top[1] - 14}" rx="${RX * 0.62}" ry="${RY * 0.62}" fill="#f3ebdf"/>
+        <line x1="${top[0] + 4}" y1="${top[1] - 12}" x2="${top[0] + 40}" y2="${top[1] - 124}" stroke="#e8674a" stroke-width="15" stroke-linecap="round"/>
+        <line x1="${top[0] + 0}" y1="${top[1] - 14}" x2="${top[0] + 36}" y2="${top[1] - 124}" stroke="#f6a38d" stroke-width="4" stroke-linecap="round"/>`;
+}
+s += cloud(C[0] + 300, C[1] - 250, 0.75);
+
+// 标签
+function label(x, y, n, t1, t2, w){
+  return `<g transform="translate(${x},${y})"><g filter="url(#lab)"><rect x="0" y="-36" width="${w}" height="72" rx="36" fill="#fffaf2"/></g>
+    <circle cx="36" cy="0" r="24" fill="#e8674a"/><text x="36" y="12" class="hy" font-size="34" fill="#fff" text-anchor="middle">${n}</text>
+    <text x="74" y="-2" class="sans" font-size="27" font-weight="900" fill="#5a3524">${t1}</text>
+    <text x="74" y="24" class="sans" font-size="19" font-weight="500" fill="#a67a5f" letter-spacing="1">${t2}</text></g>`;
+}
+s += label(96, 560, 1, '茶山', '茶叶从这儿下山', 250);
+s += label(716, 1040, 2, '糖厂', '甘蔗在这儿变成糖', 266);
+s += label(84, 1330, 3, '楼下', '最后摇进你这一杯', 266);
+
+// 字
+s += `
+<text x="84" y="210" class="hy" font-size="132" fill="#5a3524" letter-spacing="4">一杯奶茶</text>
+<text x="88" y="338" class="hy" font-size="92" fill="#e8674a" letter-spacing="4">翻了几座山？</text>
+<text x="92" y="396" class="sans" font-size="26" font-weight="500" fill="#a67a5f" letter-spacing="8">小东西的大旅行 · 第一站</text>
+<text x="540" y="1806" class="sans" font-size="52" font-weight="900" fill="#5a3524" text-anchor="middle" letter-spacing="2" stroke="#fff6e6" stroke-width="12" stroke-linejoin="round" paint-order="stroke">到你手里之前，它已经换了三趟车。</text>
+<rect width="${W}" height="${H}" filter="url(#grain)" opacity=".28" style="mix-blend-mode:multiply"/>
+</svg>`;
+document.getElementById('stage').innerHTML = s;
+</script>

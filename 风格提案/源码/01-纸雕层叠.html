@@ -1,0 +1,264 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="fonts.css">
+<style>
+  body { background: #06121f; }
+  svg { display: block; }
+  .t-title { font-family: "ZCOOL XiaoWei", "Noto Serif SC", serif; }
+  .t-num   { font-family: "Bebas Neue", sans-serif; }
+  .t-sans  { font-family: "Noto Sans SC", sans-serif; }
+  .t-serif { font-family: "Noto Serif SC", serif; }
+</style>
+<div id="stage"></div>
+<script>
+// ---------- 小工具 ----------
+function rng(seed){ return function(){ seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const R = rng(20261110);
+const W = 1080, H = 1920;
+
+// 一张纸的下沿：几条正弦叠起来，像手撕的波浪边
+function wavyEdge(y, amp, seed){
+  const r = rng(seed);
+  const p1 = r()*6.28, p2 = r()*6.28, p3 = r()*6.28;
+  const f1 = 1.2 + r()*0.8, f2 = 2.6 + r()*1.4, f3 = 5 + r()*3;
+  let pts = [];
+  for (let x = W; x >= 0; x -= 12){
+    const u = x / W * 6.28;
+    const yy = y + amp*Math.sin(u*f1+p1) + amp*0.45*Math.sin(u*f2+p2) + amp*0.18*Math.sin(u*f3+p3);
+    pts.push(x.toFixed(1)+','+yy.toFixed(1));
+  }
+  return `M0,-40 H${W} V${y} L${pts.join(' L')} Z`;
+}
+
+// 两侧的岩壁：越往下越往中间收
+function cliff(side, top, maxw, seed, rough){
+  const r = rng(seed);
+  let pts = [];
+  let x = 0;
+  for (let y = top; y <= H + 20; y += 26 + r()*30){
+    const t = (y - top) / (H - top);
+    const target = maxw * Math.pow(t, 0.75);
+    x += (target - x) * 0.35 + (r() - 0.5) * rough;
+    x = Math.max(0, x);
+    pts.push([x, y]);
+  }
+  const d = pts.map(p => (side < 0 ? p[0] : W - p[0]).toFixed(1)+','+p[1].toFixed(1)).join(' L');
+  const edge = side < 0 ? -30 : W + 30;
+  return `M${edge},${top-10} L${d} L${edge},${H+30} Z`;
+}
+
+const fish = (x, y, s, fill, flip, op) =>
+  `<g transform="translate(${x},${y}) scale(${flip? -s : s},${s})" fill="${fill}" opacity="${op||1}">
+     <path d="M0,0 C14,-15 42,-15 58,0 C42,15 14,15 0,0 Z"/><path d="M54,0 L74,-13 L70,0 L74,13 Z"/></g>`;
+
+// ---------- 画 ----------
+const bands = [   // 下沿 y、颜色
+  { y: 250,  c: '#f5e3bf' },  // 天
+  { y: 540,  c: '#79cfc9' },  // 透光带
+  { y: 880,  c: '#3c9fb4' },  // 暮光带
+  { y: 1250, c: '#1d6d92' },  // 午夜带
+  { y: 1590, c: '#124a70' },  // 深渊带
+];
+let s = '';
+s += `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<defs>
+  <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="14" stdDeviation="10" flood-color="#00101e" flood-opacity=".5"/></filter>
+  <filter id="shs" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#00101e" flood-opacity=".45"/></filter>
+  <filter id="shx" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="6" dy="10" stdDeviation="9" flood-color="#000a14" flood-opacity=".6"/></filter>
+  <filter id="glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="16"/></filter>
+  <filter id="glow2" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="6"/></filter>
+  <filter id="paper" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" seed="7" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.5  0 0 0 0 0.5  0 0 0 0 0.5  0.9 0.9 0.9 0 -0.95"/>
+  </filter>
+  <filter id="fiber" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.012 0.35" numOctaves="2" seed="3" result="n"/>
+    <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0.5 0.5 0.5 0 -0.62"/>
+  </filter>
+  <linearGradient id="deep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2f4c"/><stop offset="1" stop-color="#040c18"/></linearGradient>
+  <linearGradient id="cliffA" gradientUnits="userSpaceOnUse" x1="0" y1="300" x2="0" y2="1920">
+    <stop offset="0" stop-color="#4fb3a8"/><stop offset=".2" stop-color="#2f8a98"/><stop offset=".42" stop-color="#17587a"/><stop offset=".65" stop-color="#0b2c49"/><stop offset="1" stop-color="#040d1a"/></linearGradient>
+  <linearGradient id="cliffB" gradientUnits="userSpaceOnUse" x1="0" y1="700" x2="0" y2="1920">
+    <stop offset="0" stop-color="#1f6d84"/><stop offset=".3" stop-color="#0e3f60"/><stop offset=".65" stop-color="#071d33"/><stop offset="1" stop-color="#02070f"/></linearGradient>
+  <linearGradient id="ray" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <linearGradient id="beam" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9a0" stop-opacity=".75"/><stop offset="1" stop-color="#ffe9a0" stop-opacity="0"/></linearGradient>
+  <radialGradient id="vig" cx="50%" cy="45%" r="75%"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></radialGradient>
+  <radialGradient id="sun" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd27a"/><stop offset="1" stop-color="#f6a94e"/></radialGradient>
+</defs>`;
+
+// 最深一层垫底：超深渊带
+s += `<rect width="${W}" height="${H}" fill="url(#deep)"/>`;
+
+// 海雪
+for (let i = 0; i < 120; i++){
+  const x = R()*W, y = 1250 + R()*670, r = 0.8 + R()*2.2;
+  s += `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${r.toFixed(1)}" fill="#cfe6ee" opacity="${(0.08+R()*0.3).toFixed(2)}"/>`;
+}
+
+// --- 超深渊带里的东西：发光的小点、海沟底的狮子鱼 ---
+for (let i = 0; i < 22; i++){
+  const x = 240 + R()*600, y = 1640 + R()*240;
+  const col = R() < .5 ? '#7ef3e0' : '#9fd0ff';
+  s += `<circle cx="${x}" cy="${y}" r="9" fill="${col}" opacity=".35" filter="url(#glow2)"/><circle cx="${x}" cy="${y}" r="2.6" fill="${col}"/>`;
+}
+// 狮子鱼（海沟里住得最深的鱼）：蝌蚪似的一条
+s += `<g transform="translate(600,1800) rotate(-8)" filter="url(#shs)">
+  <path d="M0,0 C8,-26 52,-30 84,-16 C130,-8 176,-6 222,-2 C176,6 130,12 84,20 C52,30 8,24 0,0 Z" fill="#e9c9cf" opacity=".92"/>
+  <circle cx="26" cy="-6" r="4.5" fill="#1a2433"/>
+</g>`;
+
+// --- 深渊带（1250~1590）---
+s += `<g filter="url(#sh)"><path d="${wavyEdge(bands[4].y, 22, 44)}" fill="${bands[4].c}"/></g>`;
+// --- 午夜带 ---
+s += `<g filter="url(#sh)"><path d="${wavyEdge(bands[3].y, 24, 33)}" fill="${bands[3].c}"/></g>`;
+// --- 暮光带 ---
+s += `<g filter="url(#sh)"><path d="${wavyEdge(bands[2].y, 26, 22)}" fill="${bands[2].c}"/></g>`;
+// --- 透光带 ---
+s += `<g filter="url(#sh)"><path d="${wavyEdge(bands[1].y, 26, 11)}" fill="${bands[1].c}"/></g>`;
+
+// 阳光
+s += `<g style="mix-blend-mode:screen">
+  <polygon points="300,250 420,250 250,900 60,900" fill="url(#ray)"/>
+  <polygon points="520,250 600,250 620,980 470,980" fill="url(#ray)"/>
+  <polygon points="700,250 830,250 1040,860 880,860" fill="url(#ray)"/>
+</g>`;
+
+// 岩壁，后一层浅、前一层深
+s += `<g filter="url(#shx)"><path d="${cliff(-1, 330, 250, 5, 56)}" fill="url(#cliffA)"/></g>`;
+s += `<g filter="url(#shx)"><path d="${cliff( 1, 300, 270, 9, 56)}" fill="url(#cliffA)"/></g>`;
+
+// 海带，长在岩壁上
+function kelp(x, y, h, lean, col){
+  let d = `M${x},${y}`; const n = 6;
+  let left = '', right = '';
+  for (let i = 1; i <= n; i++){
+    const t = i/n, yy = y - h*t, xx = x + lean*t + Math.sin(i*1.7)*16*(1-t*0.3);
+    left += ` L${(xx - 12*(1-t)).toFixed(1)},${yy.toFixed(1)}`;
+    right = ` L${(xx + 12*(1-t)).toFixed(1)},${yy.toFixed(1)}` + right;
+  }
+  return `<path d="${d}${left}${right} Z" fill="${col}" stroke-linejoin="round"/>`;
+}
+s += `<g filter="url(#shs)">${kelp(40,520,170,40,'#2e8f7a')}${kelp(84,560,130,-10,'#3aa98a')}${kelp(14,500,200,28,'#237a6c')}
+  ${kelp(1040,500,180,-46,'#2e8f7a')}${kelp(1000,540,130,6,'#3aa98a')}${kelp(1066,480,210,-30,'#237a6c')}</g>`;
+
+s += `<g filter="url(#shx)"><path d="${cliff(-1, 760, 180, 17, 46)}" fill="url(#cliffB)"/></g>`;
+s += `<g filter="url(#shx)"><path d="${cliff( 1, 720, 190, 21, 46)}" fill="url(#cliffB)"/></g>`;
+
+// --- 透光带：鱼群、海龟一样的小东西 ---
+let school = '';
+const sc = rng(5);
+for (let i = 0; i < 26; i++){
+  const x = 560 + (sc()-0.5)*420, y = 400 + (sc()-0.5)*150 + (x-560)*0.12;
+  school += fish(x, y, 0.42 + sc()*0.28, i%4==0 ? '#ffd9a0' : '#fdf3df', true);
+}
+s += `<g filter="url(#shs)">${school}</g>`;
+let school2 = '';
+for (let i = 0; i < 9; i++){ school2 += fish(170 + sc()*200, 450 + sc()*70, 0.5 + sc()*0.25, '#f48d6b', false); }
+s += `<g filter="url(#shs)">${school2}</g>`;
+
+// --- 暮光带：水母 ---
+function jelly(x, y, k, col, rot){
+  let t = '';
+  for (let i = -3; i <= 3; i++){
+    const x0 = i*11, len = 90 + Math.abs(i%2)*40 + (3-Math.abs(i))*12;
+    t += `<path d="M${x0},4 q${8},${len*0.25} 0,${len*0.5} t0,${len*0.5}" fill="none" stroke="${col}" stroke-width="${i%2?3:4.5}" stroke-linecap="round" opacity=".85"/>`;
+  }
+  return `<g transform="translate(${x},${y}) rotate(${rot}) scale(${k})">
+    <ellipse cx="0" cy="-10" rx="70" ry="60" fill="${col}" opacity=".35" filter="url(#glow)"/>
+    <g filter="url(#shs)">${t}
+    <path d="M-46,4 C-50,-62 50,-62 46,4 Q35,16 23,4 Q12,16 0,4 Q-12,16 -23,4 Q-35,16 -46,4 Z" fill="${col}"/>
+    <path d="M-30,-14 C-28,-42 14,-48 26,-30" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" opacity=".55"/></g></g>`;
+}
+s += jelly(250, 700, 1.15, '#f6b3c4', -12) + jelly(390, 800, 0.7, '#f9cfd9', 10) + jelly(820, 650, 0.85, '#c9b5f2', 14);
+
+// --- 午夜带上沿：抹香鲸往下扎 ---
+s += `<g transform="translate(170,930) rotate(13) scale(1.0)" filter="url(#shx)">
+  <path d="M8,62 C6,24 40,8 112,10 C204,13 282,30 338,58 C358,48 384,30 404,18 C400,44 394,60 382,70 C394,80 402,98 404,116 C384,102 360,90 338,84 C280,102 200,114 122,112 C60,110 10,102 8,62 Z" fill="#e9f1f0"/>
+  <path d="M132,108 q22,36 58,32 q-20,-18 -14,-36 z" fill="#cfdedd"/>
+  <path d="M16,84 C60,92 96,92 128,86" fill="none" stroke="#9fb6b8" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="92" cy="70" r="4.5" fill="#1a3140"/>
+  <path d="M40,22 C90,16 170,22 250,40" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".7"/>
+</g>`;
+// 鲸鱼吐的一串泡
+[[196,900,9],[176,868,6],[206,842,5],[186,812,4],[200,786,3]].forEach(b => s += `<circle cx="${b[0]}" cy="${b[1]}" r="${b[2]}" fill="none" stroke="#e9f6f6" stroke-width="2.2" opacity=".8"/>`);
+
+// --- 午夜带：鮟鱇鱼，头上一盏灯 ---
+s += `<g transform="translate(800,1120)">
+  <circle cx="-108" cy="-66" r="60" fill="#ffe88a" opacity=".55" filter="url(#glow)"/>
+  <g filter="url(#shx)">
+    <path d="M-70,-4 C-66,-58 -10,-84 44,-66 C84,-54 104,-22 110,2 C122,-12 142,-22 160,-24 C152,-6 150,10 158,30 C140,28 122,20 110,10 C100,40 60,64 16,62 C-20,60 -52,44 -66,22 L-28,10 Z" fill="#0a2740"/>
+    <path d="M-70,-4 L-52,2 L-56,-8 L-40,4 L-44,-8 L-28,10 L-44,14 L-40,24 L-56,14 L-54,24 L-66,22" fill="#f2ead8"/>
+    <path d="M-20,-78 C-40,-110 -80,-112 -104,-74" fill="none" stroke="#0a2740" stroke-width="6" stroke-linecap="round"/>
+    <path d="M30,60 q10,26 34,24 q-10,-12 -6,-28 z" fill="#0d3250"/>
+  </g>
+  <circle cx="-18" cy="-36" r="11" fill="#f2ead8"/><circle cx="-20" cy="-36" r="5" fill="#0a1a28"/>
+  <circle cx="-106" cy="-68" r="13" fill="#fff6c8"/><circle cx="-106" cy="-68" r="20" fill="#ffe88a" opacity=".6" filter="url(#glow2)"/>
+  <path d="M-30,-66 C6,-80 60,-66 92,-30" fill="none" stroke="#3f7fa3" stroke-width="4" stroke-linecap="round" opacity=".8"/>
+</g>`;
+
+// --- 深渊带：黄色潜水器，打着灯 ---
+s += `<g transform="translate(420,1400)">
+  <polygon points="96,10 520,250 300,330" fill="url(#beam)" style="mix-blend-mode:screen"/>
+  <g filter="url(#shx)">
+    <rect x="-70" y="-38" width="170" height="80" rx="38" fill="#f4c531"/>
+    <rect x="-30" y="-62" width="70" height="30" rx="10" fill="#e0ad1c"/>
+    <rect x="-96" y="-14" width="30" height="30" rx="5" fill="#c9951a"/>
+    <path d="M-110,-30 q-12,30 0,62 l10,-4 q-9,-27 0,-54 z" fill="#f2ead8"/>
+    <rect x="-40" y="42" width="110" height="12" rx="6" fill="#c9951a"/>
+  </g>
+  <circle cx="52" cy="0" r="27" fill="#0d3250"/><circle cx="52" cy="0" r="20" fill="#9fe0ea"/><path d="M40,-8 a14,14 0 0 1 14,-8" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <circle cx="98" cy="12" r="8" fill="#fff6c8"/><circle cx="98" cy="12" r="18" fill="#ffe88a" opacity=".7" filter="url(#glow2)"/>
+  <circle cx="-8" cy="2" r="9" fill="#0d3250"/><circle cx="-8" cy="2" r="6" fill="#9fe0ea"/>
+</g>`;
+// 一只路过的大王乌贼，剪影
+s += `<g transform="translate(840,1440) rotate(-62) scale(.9)" filter="url(#shs)" fill="#e2664f">
+  <path d="M0,-90 C22,-70 26,-30 20,10 L-20,10 C-26,-30 -22,-70 0,-90 Z"/><path d="M-20,-70 L-40,-52 L-20,-44 Z M20,-70 L40,-52 L20,-44 Z"/>
+  <path d="M-18,10 q-10,50 -2,100 M-8,10 q-4,60 4,120 M2,10 q4,56 -4,112 M12,10 q10,52 6,104 M18,10 q18,70 30,150" fill="none" stroke="#e2664f" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="-9" cy="-4" r="5" fill="#fff3e2"/><circle cx="9" cy="-4" r="5" fill="#fff3e2"/>
+</g>`;
+
+// --- 天：最上面一张纸，下沿是浪 ---
+let wave = `M0,-40 H${W} V236`;
+for (let x = W; x > 0; x -= 90){ wave += ` q-22,26 -45,2 q-23,-24 -45,-2`; }
+wave += ' Z';
+s += `<g filter="url(#sh)"><path d="${wave}" fill="${bands[0].c}"/></g>`;
+s += `<g filter="url(#shs)"><circle cx="840" cy="118" r="62" fill="url(#sun)"/></g>`;
+s += `<g filter="url(#shs)" fill="#fffaf0"><path d="M606,52 a16,16 0 0 1 28,-10 a22,22 0 0 1 40,8 a14,14 0 0 1 4,26 h-74 a12,12 0 0 1 2,-24 z" opacity=".95"/>
+      <path d="M930,60 a16,16 0 0 1 28,-10 a22,22 0 0 1 40,8 a14,14 0 0 1 4,26 h-74 a12,12 0 0 1 2,-24 z" opacity=".9"/></g>`;
+// 小船
+s += `<g transform="translate(690,206)" filter="url(#shs)">
+  <path d="M-58,0 H62 L42,30 H-40 Z" fill="#d9573f"/><rect x="-4" y="-78" width="6" height="80" fill="#6b4a36"/>
+  <path d="M4,-76 L52,-10 H4 Z" fill="#fffaf0"/><path d="M-6,-64 L-40,-10 H-6 Z" fill="#f3e2c0"/>
+</g>`;
+
+// 纸的纹理、暗角
+s += `<rect width="${W}" height="${H}" filter="url(#paper)" opacity=".5" style="mix-blend-mode:multiply"/>`;
+s += `<rect width="${W}" height="${H}" filter="url(#fiber)" opacity=".10" style="mix-blend-mode:overlay"/>`;
+s += `<rect width="${W}" height="${H}" fill="url(#vig)"/>`;
+
+// --- 字 ---
+// 片名
+s += `<g filter="url(#shs)"><text x="64" y="150" class="t-title" font-size="96" fill="#143a5a" letter-spacing="4">往下一万米</text></g>`;
+s += `<text x="70" y="196" class="t-sans" font-size="26" font-weight="500" fill="#7a5d3a" letter-spacing="10">第一集 · 阳光到哪里为止</text>`;
+
+// 右侧深度尺
+const marks = [[250,'0'],[540,'200'],[880,'1000'],[1250,'4000'],[1590,'6000']];
+const zones = [[395,'透光带'],[710,'暮光带'],[1065,'午夜带'],[1420,'深渊带'],[1760,'超深渊带']];
+s += `<line x1="1016" y1="250" x2="1016" y2="1890" stroke="#f3ead8" stroke-width="2" opacity=".55"/>`;
+for (let y = 250; y < 1890; y += 34){ s += `<line x1="1008" y1="${y}" x2="1016" y2="${y}" stroke="#f3ead8" stroke-width="2" opacity=".4"/>`; }
+marks.forEach(m => { s += `<line x1="990" y1="${m[0]}" x2="1016" y2="${m[0]}" stroke="#fff6e0" stroke-width="4"/>
+   <text x="1004" y="${m[0]+44}" text-anchor="end" class="t-num" font-size="44" fill="#fff6e0" letter-spacing="2">${m[1]}<tspan font-size="24" dx="4">M</tspan></text>`; });
+zones.forEach(z => { s += `<text x="1040" y="${z[0]}" class="t-sans" font-size="24" font-weight="500" fill="#fff6e0" opacity=".8" letter-spacing="8" writing-mode="vertical-rl" text-anchor="middle">${z[1]}</text>`; });
+
+// 当前深度：大数字
+s += `<g transform="translate(64,1308)">
+  <text class="t-num" font-size="150" fill="#fff6e0" letter-spacing="3" y="0">−4,500<tspan font-size="64" dx="10">M</tspan></text>
+  <rect x="2" y="22" width="92" height="7" fill="#f4c531"/>
+</g>`;
+// 字幕
+s += `<g transform="translate(540,1700)">
+  <text class="t-sans" font-size="52" font-weight="700" fill="#fff" text-anchor="middle" stroke="#03111d" stroke-width="10" stroke-linejoin="round" paint-order="stroke" letter-spacing="2">从这里往下，灯是唯一的光。</text>
+</g>`;
+s += `</svg>`;
+document.getElementById('stage').innerHTML = s;
+</script>

@@ -1,0 +1,97 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="fonts.css">
+<style>
+  body { background: #f2e8d5; }
+  .serif { font-family: "Noto Serif SC", serif; }
+  .kai { font-family: "LXGW WenKai", "Noto Serif SC", serif; }
+</style>
+<div id="stage"></div>
+<script>
+const W = 1080, H = 1920, G = 1290;   // G：地平线
+// 树冠：一圈鼓出去的弧，一笔绕回树干
+function crown(cx, cy, r, n, a0, a1){
+  let d = '', prev = null;
+  for (let i = 0; i <= n; i++){
+    const a = (a0 + (a1 - a0) * i / n) * Math.PI / 180;
+    const jitter = 1 + 0.16 * Math.sin(i * 2.3 + 1);
+    const x = cx + Math.cos(a) * r * jitter, y = cy + Math.sin(a) * r * 0.92 * jitter;
+    if (prev){
+      const ch = Math.hypot(x - prev[0], y - prev[1]);
+      d += ` A${(ch*0.58).toFixed(1)},${(ch*0.58).toFixed(1)} 0 1 1 ${x.toFixed(1)},${y.toFixed(1)}`;
+    } else d += ` L${x.toFixed(1)},${y.toFixed(1)}`;
+    prev = [x, y];
+  }
+  return d;
+}
+// 整幅画只有这一条线，从左边进来，停在气球的线头上
+const line = [
+  `M-30,${G}`,
+  `C40,${G} 70,${G-6} 110,${G-2}`,
+  // 小坡
+  `C150,${G} 170,${G-34} 214,${G-30} C240,${G-28} 250,${G-6} 268,${G}`,
+  // 房子：左墙、屋顶、烟囱、一缕烟绕上去再回来、右墙
+  `L268,${G-210} L250,${G-198} L392,${G-318} L448,${G-271}`,
+  `L448,${G-340}`,
+  `C440,${G-400} 500,${G-430} 470,${G-486} C448,${G-528} 520,${G-548} 512,${G-500} C504,${G-452} 496,${G-404} 484,${G-340}`,
+  `L484,${G-240} L534,${G-198} L516,${G-210} L516,${G}`,
+  // 门（一笔拐进去又出来）
+  `L420,${G} L420,${G-112} C420,${G-150} 364,${G-150} 364,${G-112} L364,${G} L516,${G}`,
+  // 走到树下
+  `C560,${G+2} 590,${G-4} 640,${G}`,
+  `C642,${G-60} 636,${G-120} 644,${G-176}`,
+  crown(668, G-290, 112, 9, 104, 436),
+  `C690,${G-120} 684,${G-60} 688,${G}`,
+  // 走到人脚下
+  `C730,${G+3} 770,${G-3} 812,${G}`,
+  // 人：一条腿上去，另一条腿下来再原路回去，身子、头、举起的手
+  `L832,${G-74} L856,${G} L832,${G-74}`,
+  `C826,${G-110} 836,${G-140} 834,${G-160}`,
+  `a26,27 0 1 1 6,1`,
+  `L836,${G-138} C860,${G-150} 880,${G-176} 892,${G-206}`,
+  // 气球的线
+  `C886,${G-300} 968,${G-360} 930,${G-470}`,
+  // 气球，绕一圈回到线头，打个小结
+  `C850,${G-500} 838,${G-650} 930,${G-652} C1022,${G-650} 1008,${G-500} 932,${G-470}`,
+  `l-12,18 l22,2`
+].join(' ');
+
+let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+<defs>
+  <filter id="wob" x="-5%" y="-5%" width="110%" height="110%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+  </filter>
+  <filter id="grain" x="0" y="0" width="100%" height="100%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" seed="9"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.28  0 0 0 0 0.2  0.8 0.8 0.8 0 -0.9"/>
+  </filter>
+  <filter id="rough" x="-10%" y="-10%" width="120%" height="120%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="2" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="10"/>
+  </filter>
+  <radialGradient id="vig" cx="50%" cy="50%" r="72%"><stop offset=".6" stop-color="#b08a55" stop-opacity="0"/><stop offset="1" stop-color="#b08a55" stop-opacity=".22"/></radialGradient>
+</defs>
+<rect width="${W}" height="${H}" fill="#f2e8d5"/>
+<!-- 一轮很淡的太阳，垫在后面 -->
+<circle cx="372" cy="${G-470}" r="238" fill="#ead9b8" filter="url(#rough)"/>
+<!-- 气球的红，故意印歪一点 -->
+<path d="M930,${G-470} C850,${G-500} 838,${G-650} 930,${G-652} C1022,${G-650} 1008,${G-500} 932,${G-470} Z" fill="#e2452c" transform="translate(-13,9)" filter="url(#rough)"/>
+<g filter="url(#wob)">
+  <path d="${line}" fill="none" stroke="#26221e" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+<!-- 线头：还在往前画 -->
+<rect width="${W}" height="${H}" filter="url(#grain)" opacity=".55" style="mix-blend-mode:multiply"/>
+<rect width="${W}" height="${H}" fill="url(#vig)"/>
+
+<!-- 字 -->
+<text x="92" y="250" class="serif" font-size="30" font-weight="700" fill="#26221e" letter-spacing="14">一 笔 画 短 片</text>
+<line x1="92" y1="282" x2="152" y2="282" stroke="#e2452c" stroke-width="6"/>
+<text x="88" y="420" class="serif" font-size="128" font-weight="900" fill="#26221e" letter-spacing="10">一条线</text>
+<text x="94" y="486" class="kai" font-size="36" fill="#6f6252" letter-spacing="6">从头到尾，笔不离纸</text>
+
+<text x="540" y="1560" class="kai" font-size="54" fill="#26221e" text-anchor="middle" letter-spacing="4">那年他以为，线的另一头是远方。</text>
+<text x="540" y="1790" class="serif" font-size="24" fill="#8c7c66" text-anchor="middle" letter-spacing="10">00:21 ───────●────────────── 01:00</text>
+</svg>`;
+document.getElementById('stage').innerHTML = s;
+</script>
