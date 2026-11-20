@@ -412,6 +412,8 @@ def voice_track():
         # 每句先调到差不多的响度，句与句之间不忽大忽小
         x *= 10 ** ((VOICE_LUFS - lufs(np.vstack([x, x]))) / 20)
         i = int((l['t0'] - .05) * SR)
+        if i < 0:                         # 开场不留白时第一句从 0 秒开始：提前的 0.05 秒剪掉
+            x, i = x[-i:], 0
         n = max(0, min(len(x), N - i))
         v[i:i + n] += x[:n]
         gate[max(0, int((l['t0'] - .12) * SR)):int((l['t1'] + .15) * SR)] = 1
