@@ -152,7 +152,9 @@ function fallSwing(g, t) {
   g.fillStyle = '#0A0612'; g.fillRect(cx - 18, cy - R - 10, 36, 2 * R + 20);
   for (let y = cy - R; y < cy + R; y += 30) { g.fillStyle = 'rgba(255,255,255,.12)'; g.fillRect(cx - 18, y, 36, 4); }
   placeTag(g, cx + 140, cy - R + 10, '你家', C.gold, { px: 32 });
-  placeTag(g, cx + 160, cy + R + 100, '阿根廷', '#B8F0C8', { px: 32 });
+  // 出口在下面：标签放在出口右边、字幕上方（放在出口下面会压到字幕）
+  g.fillStyle = C.ink; g.fillRect(cx + 18, cy + R - 35, 62, 6);
+  ptag(g, cx + 84, cy + R - 32, '阿根廷', 32, { fill: '#B8F0C8', align: 'left' });
   // 来回掉：一来一回 3 秒（示意）
   const ph = ((t - t0) / 3) * TAU, y = cy + Math.cos(ph) * (R - 30);
   crabAt(g, cx, y + 70, 5, youO(t, { firesuit: true, arms: 'up', eyes: 'wide' }));
