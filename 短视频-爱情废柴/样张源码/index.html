@@ -2,10 +2,18 @@
 <link rel="stylesheet" href="fonts/msz/index.css">
 <link rel="stylesheet" href="fonts/zk/index.css">
 <link rel="stylesheet" href="fonts/zq/index.css">
+<link rel="stylesheet" href="fonts/nss/200.css">
+<link rel="stylesheet" href="fonts/nsf/900.css">
+<link rel="stylesheet" href="fonts/nsf/700.css">
+<link rel="stylesheet" href="fonts/tn/index.css">
+<link rel="stylesheet" href="fonts/zx/index.css">
+<link rel="stylesheet" href="fonts/ds/index.css">
+<link rel="stylesheet" href="fonts/pc/index.css">
 <style>
 @font-face { font-family: FusionPixel; src: url(fonts/FusionPixel12.woff2) format('woff2'); }
 html,body{margin:0;background:#111} canvas{display:block}
 </style></head><body><canvas id="cv" width="1920" height="1080"></canvas>
+<script>var NEED = '';</script>
 <script src="pixlib.js"></script>
 <script src="chars.js"></script>
 <script src="vchar.js"></script>
@@ -13,12 +21,17 @@ html,body{margin:0;background:#111} canvas{display:block}
 <script src="d2.js"></script>
 <script src="d3.js"></script>
 <script src="d4.js"></script>
+<script src="d5.js"></script>
+<script src="d6.js"></script>
+<script src="d7.js"></script>
+<script src="d8.js"></script>
 <script>
 (async () => {
   const id = new URLSearchParams(location.search).get('f') || '1b';
   const cv = document.getElementById('cv'), main = cv.getContext('2d');
   const TXT = '圣诞节剩下单人的剩单节过条街最好又给我下起雪这么衰这么刚好这么狼狈要不要拍成干脆淡淡忧伤还是最美剧情是你在写有点无解我们之间踏着雪不知不觉走了很远绕着圈我叛逆点起一根烟一整天我旋律哼了一千遍千遍一律我不醉不归没有你的冬天我会一直唱着唱着直到你出现为你封麦只唱你爱哭个痛快曲终人散你也走散我承认我是爱情里的废柴你的离开喊得太快我的依赖还在耍赖眼泪打转转不回来你的笑容灿烂甜菜出品周杰伦第页一二三四五六七八九十咻啪嗒沙呜哇啊咚锵轰唰嗡叮哗！？…—「」《》·，。、ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  await Promise.all(['12px FusionPixel', '40px "Ma Shan Zheng"', '40px "ZCOOL KuaiLe"', '40px "ZCOOL QingKe HuangYou"'].map(f => document.fonts.load(f, TXT)));
+  const ALL = TXT + NEED;
+  await Promise.all(['12px FusionPixel', '40px "Ma Shan Zheng"', '40px "ZCOOL KuaiLe"', '40px "ZCOOL QingKe HuangYou"', '200 40px "Noto Sans SC"', '900 40px "Noto Serif SC"', '700 40px "Noto Serif SC"', '40px "Tilt Neon"', '40px "ZCOOL XiaoWei"', '40px "Dancing Script"', '40px "Pacifico"'].map(f => document.fonts.load(f, ALL)));
   await document.fonts.ready;
   try { await FRAMES[id](main); window.DONE = 1; } catch (e) { console.error(e.stack || e); window.DONE = 'ERR ' + e; }
 })();

@@ -3,19 +3,19 @@
    男主"废柴"：蓬蓬的深色头发、一撮呆毛、红围巾、姜黄色大衣。  女主"你"：白色毛线帽、短发、淡紫大衣、红手套。
    chibi(g, cx, 脚底y, 身高H, o)：按身高现画，H=28 是街上的小人，H 越大细节越多；外面描一圈深色边。
    o：hair coat pants scarf skin 颜色；girl 短发到肩；hat 帽色（pom 帽球色）；ahoge 呆毛；
-      eyes 'n' 'shut' 'happy' 'wide' 'up' 'dn' 'sad'；mouth 'flat' 'o' 'smile' 'frown' 'none'；
+      eyes 'n' 'shut' 'happy' 'wide' 'up' 'dn' 'sad'；back 背影；sit 坐着；mouth 'flat' 'o' 'smile' 'frown' 'none'；
       arms 'down' 'up' 'upR' 'mic'；mitt 手套色；step 1|2 走路；wind 围巾往右飘；snow 头上肩上有雪；
       tear 眼泪；blush 脸红（默认有）；rim 侧光色；tint [色, 比例] 整体偏色；buf 只返回画好的小画布 */
 const HERO = { hair: '#3B2A38', coat: '#E3A23C', scarf: '#D8323C', pants: '#2E3A5E', ahoge: 1 };
 const GIRL = { hair: '#6A4636', coat: '#B7A6F0', scarf: '#F7F1E8', pants: '#5A4A7A', girl: 1, hat: '#FFFFFF', pom: '#FF6A8A', mitt: '#D8323C' };
-function chibi(g, cx, fy, H, o = {}) {
+function chibiBuild(H, o = {}) {
   const u = H / 28, r = Math.round, W = Math.ceil(H * 1.9), HT = Math.ceil(H * 1.6), t = mk(W, HT), ox = fl(W / 2), by = HT - 2;
   const skin = o.skin || '#F9DABF', skinS = '#EDB79C', hair = o.hair || '#3B2A38', hairH = lt(hair, .2), coat = o.coat || '#E3A23C', coatS = dk(coat, .18), coatD = dk(coat, .36);
   const pants = o.pants || '#2E3A5E', boots = o.boots || '#4A2A1E', scarf = o.scarf || '#D8323C', scarfS = dk(scarf, .22), mitt = o.mitt || skin, OL = o.ol || '#2A1622';
   const one = Math.max(1, r(u * .9));
-  if (o.girl) { const hy0 = by - r(5 * u) - r(10 * u) + one - r(1.6 * u) - r(5.6 * u); ell(t, ox, hy0 + 2.6 * u, 8.3 * u + 1.5 * u, 7.7 * u + 2.2 * u, hair); R(t, r(ox - 9.6 * u), r(hy0), r(19.2 * u), r(9.6 * u), hair); }
+  if (o.girl) { const hy0 = by - r((o.sit ? 2.6 : 5) * u) - r(10 * u) + one - r(1.6 * u) - r(5.6 * u); ell(t, ox, hy0 + 2.6 * u, 8.3 * u + 1.5 * u, 7.7 * u + 2.2 * u, hair); R(t, r(ox - 9.6 * u), r(hy0), r(19.2 * u), r(9.6 * u), hair); }
   // 腿和靴子
-  const lw = r(4 * u), lh = r(5 * u), gap = Math.max(1, r(u)), bh = Math.max(2, r(2 * u));
+  const lw = r(4 * u), lh = r((o.sit ? 2.6 : 5) * u), gap = Math.max(1, r(u)), bh = Math.max(2, r(2 * u));
   [[-1, 1], [1, 2]].forEach(([sd, id]) => { const up = o.step === id ? one : 0, x = sd < 0 ? ox - gap - lw : ox + gap; R(t, x, by - lh, lw, lh - bh - up, pants); R(t, x + (sd > 0 ? lw - one : 0), by - lh, one, lh - bh - up, dk(pants, .25)); R(t, x - (sd < 0 ? one : 0), by - bh - up, lw + one, bh, boots); R(t, x - (sd < 0 ? one : 0), by - bh - up, lw + one, 1, lt(boots, .2)); });
   // 大衣
   const th = r(10 * u), ty = by - lh - th + one, hwT = 6 * u, hwB = 7.6 * u;
@@ -57,7 +57,9 @@ function chibi(g, cx, fy, H, o = {}) {
     R(t, r(hcx - rx - 1.4 * u), r(brimY), r(2 * rx + 2.8 * u), bh2, o.brim || dk(hc, .1)); R(t, r(hcx - rx - 1.4 * u), r(brimY), r(2 * rx + 2.8 * u), one, lt(o.brim || hc, .5)); R(t, r(hcx - rx - 1.4 * u), r(brimY) + bh2 - one, r(2 * rx + 2.8 * u), one, dk(o.brim || hc, .25));
     disc(t, hcx, top - .6 * u, 2.3 * u, o.pom || hc); disc(t, hcx - .5 * u, top - 1.1 * u, 1.1 * u, lt(o.pom || hc, .4));
   }
+  if (o.back) { ell(t, hcx, hcy + .4 * u, rx + .2 * u, ry + .2 * u, hair); for (let i = -2; i <= 2; i++) R(t, r(hcx + i * 2.8 * u), r(hcy - 2 * u), one, r(6 * u), dk(hair, .18)); }
   // 脸
+  if (!o.back) {
   const ey0 = hcy + 1.3 * u, ew = Math.max(2, r(1.9 * u)), eh = Math.max(2, r(2.9 * u)), ed = 3.9 * u, em = o.eyes || 'n', EC = '#231620';
   [-1, 1].forEach(sd => {
     let ex = r(hcx + sd * ed - ew / 2), ey = r(ey0 - eh / 2); const q = Math.max(1, r(.7 * u));
@@ -76,6 +78,7 @@ function chibi(g, cx, fy, H, o = {}) {
   if (mm === 'o') { ell(t, hcx, my + .6 * u, Math.max(1, 1.1 * u), Math.max(1, 1.4 * u), '#7A2A34'); if (u >= 1.5) R(t, r(hcx - .5 * u), my + r(u), r(u), one, '#F0808A'); }
   if (mm === 'smile') { R(t, hcx - one, my + one, 2 * one, one, MC); R(t, hcx - 2 * one, my, one, one, MC); R(t, hcx + one, my, one, one, MC); }
   if (mm === 'frown') { R(t, hcx - one, my, 2 * one, one, MC); R(t, hcx - 2 * one, my + one, one, one, MC); R(t, hcx + one, my + one, one, one, MC); }
+  }
   // 拿麦克风的右手：横在胸前，举到嘴边
   if (a === 'mic') {
     const x = ox + r(hwT) - one; for (let j = 0; j < r(4 * u); j++) R(t, x, sh + j, aw, 1, coat);
@@ -94,9 +97,17 @@ function chibi(g, cx, fy, H, o = {}) {
   }
   if (o.tint) { const tc = h2(o.tint[0]), tt = o.tint[1]; for (let k = 0; k < out.length; k += 4) if (out[k + 3]) { out[k] += (tc[0] - out[k]) * tt; out[k + 1] += (tc[1] - out[k + 1]) * tt; out[k + 2] += (tc[2] - out[k + 2]) * tt; } }
   d.data.set(out); t.putImageData(d, 0, 0);
+  return t;
+}
+/* 画好的人按参数存起来，同一个姿势只算一次 */
+const _chib = {};
+function chibi(g, cx, fy, H, o = {}) {
+  const key = H + JSON.stringify(o), t = _chib[key] || (_chib[key] = chibiBuild(H, o)), u = H / 28;
   if (o.buf) return t;
-  g.drawImage(t.canvas, Math.round(cx) - ox, Math.round(fy) - by);
-  return { hx: Math.round(cx), hy: Math.round(fy) - by + hcy, top: Math.round(fy) - by + r(hcy - ry - 2 * u) };
+  const W = t.canvas.width, HT = t.canvas.height; cx = Math.round(cx); fy = Math.round(fy);
+  g.drawImage(t.canvas, cx - fl(W / 2), fy - (HT - 2));
+  const up = o.arms === 'up', sit = o.sit ? 2.4 * u : 0;
+  return { x: cx, head: fy - 22.4 * u + sit, top: fy - (o.hat ? 34 : 31) * u + sit, hL: [cx - (up ? 10 : 8.6) * u, fy - (up ? 21 : 7.2) * u + sit], hR: [cx + (up || o.arms === 'upR' ? 10 : 8.6) * u, fy - (up || o.arms === 'upR' ? 21 : 7.2) * u + sit], mouth: fy - 18.5 * u + sit, u };
 }
 /* 很小的小人（远处的路人、橱窗里的剪影、相框里的合照）：7×11 */
 const MINI = ['..HHH..', '.HHHHH.', '.HSSSH.', '.SeSeS.', '.RRRRR.', 'CCCCCCC', 'CCCCCCC', '.CCCCC.', '.PP.PP.', '.PP.PP.', '.BB.BB.'];
