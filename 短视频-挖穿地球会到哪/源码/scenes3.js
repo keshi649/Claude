@@ -15,7 +15,7 @@ function guide(g, t) {
   pbox(g, 60, 280, 840, 640, { k: 6 });
   g.fillStyle = '#3E9E4F'; g.fillRect(72, 292, 816, 72);
   ptext(g, '★ 你家对面是哪？★', 480, 346, 48, C.white, { align: 'center', sh: 1 });
-  const rows = [[S('g2') - .2, '纬度：北纬 → {南纬}', 470], [S('g3') - .2, '经度：{180 减}，东经 → {西经}', 570], [CH('g3', 2) - .2, '再去地图上{搜一下}', 670]];
+  const rows = [[S('g2') - .2, '纬度：北纬 → {南纬}', 470], [S('g3') - .2, '经度：{180 减}，东经 → {西经}', 570], [S('g3') + .1, '再去地图上{搜一下}', 670]];   // 第三行跟着第二行出来：整张卡要完整地停 ≥ 3 秒（攻略卡）
   rows.forEach(([t0, s, y]) => {
     const u = pop(t, t0 - .1, .35); if (u <= 0) return;
     withAlpha(g, u, () => { g.fillStyle = C.green; g.fillRect(100, y - 32, 36, 36); g.fillStyle = C.ink; g.fillRect(106, y - 26, 24, 24); if (t > t0 + .4) checkMark(g, 104, y - 30, 4, C.green); prich(g, s, 160, y, 44, C.white, C.gold); });
