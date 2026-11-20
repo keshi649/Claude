@@ -136,7 +136,7 @@ function hookHemi(g, t) {
   const [x0, y0, x1, y1] = throughLine(g, cx, cy, R, a, u, '#FFD34E');
   crabAt(g, x0, y0 - 6, 6, youO(t, { arms: 'upR', eyes: 'happy' }));
   placeTag(g, x0 + 110, y0 - 40, '你家', C.gold, { px: 32 });
-  if (u >= 1) { sparkBurst(g, x1, y1, t, t0 + 1.9, { r: 120 }); popTag(g, t, t0 + 1.9, x1 - 140, y1 + 60, '出口在这', 32, { fill: '#B8F0C8' }); }
+  if (u >= 1) { sparkBurst(g, x1, y1, t, t0 + 1.9, { r: 120 }); popTag(g, t, t0 + 1.9, x1 - 200, y1 - 64, '出口在这', 32, { fill: '#B8F0C8' }); }   // 放在出口左上：放下面会被字幕挡住
 }
 /* 4. 机场大厅：翻牌子的出发屏，"出发 → 到达"一行行翻出来；外面飞机起飞；"你"拖着行李箱 */
 function hookBoard(g, t) {
