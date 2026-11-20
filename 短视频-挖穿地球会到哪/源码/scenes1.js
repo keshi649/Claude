@@ -173,8 +173,45 @@ function hookHole(g, t) {
   popTag(g, t, S('h5') - .05, 480, 250, '那要是真跳下去……', 44, { fill: C.gold });
 }
 /* 封面：院子 + 挖好的洞里冒出奶牛 + 大标题 + 红章"阿根廷" */
+/* 封面下半截（只在封面上画）：地面的剖面，一层层的土石越往下越红；洞正下方的竖井一直通下去，井底透着地心的光；
+   土里埋着水管、骨头、化石、蚯蚓。下半截原来只有草地，空了三分之一 */
+function coverCut(g) {
+  const top = 1330, hx = 640, sw = 130, x0 = hx - sw / 2;
+  const bands = ['#6B4630', '#5E3D2A', '#6A5A50', '#5A4A44', '#7A3A2A', '#A8452A', '#D2622A'];
+  const bh = Math.ceil((H - top) / bands.length / 5) * 5;
+  bands.forEach((c, i) => {
+    const y0 = top + i * bh;
+    g.fillStyle = c; g.fillRect(0, y0, W, bh + 5);
+    if (i > 0) for (let x = 0; x < W; x += 5) { g.fillStyle = bands[i - 1]; g.fillRect(x, y0, 5, Math.round(hash(x, i) * 3) * 5); }   // 层和层的边参差不齐
+    for (let j = 0; j < 26; j++) { g.fillStyle = shadeOf(c, 1.18); g.fillRect(Math.round(hash(i * 7, j) * W / 5) * 5, y0 + 10 + Math.round(hash(j, i * 3) * (bh - 25) / 5) * 5, 15, 5); }   // 小石子
+  });
+  // 越往下越热
+  const hot = g.createLinearGradient(0, top + 200, 0, H);
+  hot.addColorStop(0, 'rgba(255,120,40,0)'); hot.addColorStop(1, 'rgba(255,170,60,.5)');
+  g.fillStyle = hot; g.fillRect(0, top + 200, W, H - top - 200);
+  // 草皮的边
+  g.fillStyle = '#3F7F2E'; g.fillRect(0, top - 10, W, 15);
+  for (let x = 0; x < W; x += 5) g.fillRect(x, top + 5, 5, Math.round(hash(x, 99) * 2) * 5);
+  // 水管（被竖井截断）
+  g.fillStyle = '#8E98A8'; g.fillRect(0, 1445, x0, 30); g.fillStyle = '#6E7888'; g.fillRect(0, 1470, x0, 5);
+  for (let x = 60; x < x0 - 20; x += 140) { g.fillStyle = '#5E6878'; g.fillRect(x, 1435, 20, 50); }
+  // 骨头
+  g.fillStyle = '#F2EBDD'; g.fillRect(150, 1545, 90, 15); g.fillRect(140, 1535, 15, 15); g.fillRect(140, 1555, 15, 15); g.fillRect(235, 1535, 15, 15); g.fillRect(235, 1555, 15, 15);
+  // 化石（一圈圈的菊石）
+  pixOval(g, 330, 1720, 45, 45, 5, '#B8A98E'); pixOval(g, 333, 1720, 32, 32, 5, '#8F7F66'); pixOval(g, 336, 1720, 24, 24, 5, '#B8A98E'); pixOval(g, 339, 1720, 12, 12, 5, '#8F7F66');
+  // 蚯蚓
+  for (let i = 0; i < 9; i++) { g.fillStyle = i === 8 ? '#C9667A' : '#E58FA0'; g.fillRect(840 + i * 10, 1400 + Math.round(Math.sin(i * .9)) * 10, 10, 10); }
+  // 竖井：洞的正下方一直通下去，井壁深一点
+  g.fillStyle = '#140A08'; g.fillRect(x0, top - 10, sw, H - top + 10);
+  g.fillStyle = '#2E1A12'; g.fillRect(x0, top - 10, 10, H - top + 10); g.fillRect(x0 + sw - 10, top - 10, 10, H - top + 10);
+  glow(g, hx, H - 30, 300, 'rgba(255,190,90,.8)');
+  // 井里往下掉的土块、井底往上飘的火星
+  [[610, 1400], [665, 1480], [630, 1590], [655, 1660]].forEach(([x, y]) => { g.fillStyle = '#7A5236'; g.fillRect(x, y, 15, 15); });
+  [[600, 1800], [680, 1760], [640, 1720], [700, 1850], [585, 1700]].forEach(([x, y], i) => { g.fillStyle = i % 2 ? '#FFD34E' : '#FF8A3D'; g.fillRect(x, y, 10, 10); });
+}
 function coverArt(g, t) {
   hookYard(g, 3.0, true);
+  coverCut(g);
   sparkBurst(g, 480, 640, 1.2, 1.0, { r: 280 });
   bigStamp(g, 1, 0, 480, 640, '阿根廷', { px: 108 });
 }
