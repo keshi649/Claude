@@ -7,7 +7,7 @@ const EDL = [
   { shot: 'tideCity', t0: S('t2') - .15, t1: S('t3') - .12 },
   { shot: 'floodClose', t0: S('t3') - .12, t1: SS('orbit') },
   { shot: 'orbit', t0: SS('orbit'), t1: SS('break') },
-  { shot: 'breakup', t0: SS('break'), t1: SS('ring'), trans: { kind: 0, d: .6 } },
+  { shot: 'breakup', t0: SS('break'), t1: SS('ring'), trans: { kind: 2, d: .4 } },
   { shot: 'ringSpace', t0: SS('ring'), t1: SS('night'), trans: { kind: 2, d: .5 } },
   { shot: 'nightRing', t0: SS('night'), t1: SS('mars'), trans: { kind: 1, d: .7 } },
   { shot: 'mars', t0: SS('mars'), t1: SS('twist'), trans: { kind: 2, d: .8 } },
@@ -62,7 +62,9 @@ function segAt(t) {
 
 function drawOverlays(seg, t, opt) {
   OV.begin();
-  const shots = seg.b ? [[seg.a, 1 - seg.mix], [seg.b, seg.mix]] : [[seg.a, 1]];
+  // 叠化时两个镜头的字各按比例；白闪、经过黑时只画当时那个镜头的字，跟着画面一起暗下去 / 亮起来
+  const pk = Math.sin(Math.PI * seg.mix);
+  const shots = !seg.b ? [[seg.a, 1]] : seg.kind === 0 ? [[seg.a, 1 - seg.mix], [seg.b, seg.mix]] : [[seg.mix < .5 ? seg.a : seg.b, 1 - pk]];
   for (const [e, w] of shots) {
     const sh = SHOTS[e.shot];
     if (sh.overlay && w > 0.001) { OV.setMul(w); sh.overlay(t, t - e.t0); }

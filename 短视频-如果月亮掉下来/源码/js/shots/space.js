@@ -289,7 +289,7 @@ SHOTS.orbit = {
     const e = project(cam, [0, 0, 0]);
     if (e) OV.text('地球', e[0], e[1] + 150, { size: 34, weight: 500, alpha: a * .9 });
     const m = project(cam, ORB.pos(t));
-    if (m) OV.text('月亮', m[0], m[1] - 60, { size: 34, weight: 500, alpha: a * .9 });
+    if (m) OV.text('月亮', m[0], m[1] - 118, { size: 34, weight: 500, alpha: a * .9 });
   },
 };
 

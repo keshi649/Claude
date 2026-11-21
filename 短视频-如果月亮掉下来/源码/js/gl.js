@@ -219,7 +219,7 @@ void main(){
   vec3 c = mix(a, b, uMix);
   float pk = sin(3.14159*uMix);
   if (uKind > .5) c = uMix < .5 ? a : b;                                     // 白闪、经过黑：在最亮 / 最暗的那一刻换镜头，不叠影
-  if (uKind > .5 && uKind < 1.5) c += vec3(1.)*.55*pk*pk;                  // 白闪
+  if (uKind > .5 && uKind < 1.5) c += vec3(1.)*.32*pk*pk;                  // 白闪
   if (uKind > 1.5) c *= 1. - pk;                                            // 经过黑
   fragColor = vec4(c, 1.);
 }`;
