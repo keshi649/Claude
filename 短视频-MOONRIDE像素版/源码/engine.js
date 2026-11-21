@@ -264,7 +264,7 @@ function bloom(strength, radius, thresh) {
 function grade(fn) { const d = F.d; for (let i = 0; i < W * H; i++) { const k = i * 3; const o = fn(d[k], d[k + 1], d[k + 2], i % W, (i / W) | 0); d[k] = o[0]; d[k + 1] = o[1]; d[k + 2] = o[2]; } }
 function tint(c, a, mode) { c = C(c); const b = BM; blend(mode || 'n'); const o = [OX, OY]; OX = 0; OY = 0; rect(0, 0, W, H, c, a); OX = o[0]; OY = o[1]; BM = b; }
 function vignette(a, c) { // 四角压暗，量化成几级
-  c = C(c || '#000000'); const steps = 6;
+  c = C(c || '#000000'); const steps = 14;
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const dx = (x + .5 - W / 2) / (W / 2), dy = (y + .5 - H / 2) / (H / 2);
     let v = sat((dx * dx * .8 + dy * dy * 1.1 - .55) / .9); if (v <= 0) continue;
@@ -354,6 +354,8 @@ function comp(b, x, y, opt) {
     const ox = x0 + xx + OX, oy = y0 + yy + OY;
     if (opt.dither) { if (aa < bay(ox, oy)) continue; pp(ox, oy, [r, g, bl], 1); }
     else pp(ox, oy, [r, g, bl], aa);
+    // 挡住后面的光：画在前面的人、道具，把发光层里它身后的光清掉（不然路灯、窗光会透过脸）
+    if (T === F && aa > .5 && ox >= CX0 && oy >= CY0 && ox < CX1 && oy < CY1 && (!MASK || MASK[oy * W + ox])) { const k = (oy * W + ox) * 3; GL.d[k] = 0; GL.d[k + 1] = 0; GL.d[k + 2] = 0; }
   }
 }
 // 按轮廓给层加一侧的亮边（逆光）

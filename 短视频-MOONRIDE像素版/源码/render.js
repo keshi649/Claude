@@ -2,6 +2,7 @@
 //   node render.js video 起始帧 结束帧          → 往 stdout 写 480×270 的 RGB24 原始帧（交给 ffmpeg 放大、编码）
 //   node render.js sheet 时刻,时刻,… 输出.ppm [列数] [倍数]   → 拼一张预览图（左上角写时刻）
 //   node render.js check                        → 查各文件有没有重名函数
+//   node render.js cover 输出.ppm                → 封面（1920×1080）
 'use strict';
 const vm = require('vm'), fs = require('fs'), path = require('path');
 const FILES = ['engine.js', 'girls.js', 'props.js', 'scenes1.js', 'scenes2.js', 'scenes3.js', 'scenes4.js', 'main.js'];
@@ -55,5 +56,11 @@ else if (mode === 'sheet') {
     for (const ch of lab) { const g = G[ch]; for (let r = 4; r < 16; r++) for (let k = 0; k < g.rows[r].length; k++) if (g.rows[r][k] === '1') { const d = ((oy + r - 4) * cols * SW + cx + k) * 3; sheet[d] = 255; sheet[d + 1] = 230; sheet[d + 2] = 0; } cx += g.adv; }
   });
   writePPM(file, cols * SW, rows * SH, sheet);
+}
+else if (mode === 'cover') { // node render.js cover 输出.ppm → 1920×1080
+  vm.runInThisContext('resetState(); F.d.fill(0); GL.d.fill(0); shCover(1.3); resetState(); overlays(1);');
+  globalThis.toRGB(out); const S = 4, big = new Uint8Array(W * S * H * S * 3);
+  for (let y = 0; y < H * S; y++) for (let x = 0; x < W * S; x++) { const s = ((y / S | 0) * W + (x / S | 0)) * 3, d = (y * W * S + x) * 3; big[d] = out[s]; big[d + 1] = out[s + 1]; big[d + 2] = out[s + 2]; }
+  writePPM(process.argv[3], W * S, H * S, big);
 }
 else { console.error('用法见文件开头'); process.exit(2); }

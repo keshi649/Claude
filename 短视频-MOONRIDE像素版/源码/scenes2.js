@@ -27,7 +27,7 @@ function shHeartCrater(lt, d) {
 function shFrozenPony(lt, d) {
   rect(0, 0, W, H, '#1a2450');
   iceBlock(-10, -10, W + 20, H + 20, {
-    inner: (L) => { vgrad(0, 0, L.w, L.h, [[0, '#4a5aa0'], [1, '#9aa8e0']], 8); pony(L.w * .52 + lt * 3, L.h * .98, 7.2, { dir: 1, amb: ['#a0b8ff', .3] }); },
+    inner: (L) => { vgrad(0, 0, L.w, L.h, [[0, '#4a5aa0'], [1, '#9aa8e0']], 8); pony(L.w * .42 + lt * 3, L.h * .93, 5.4, { dir: 1, amb: ['#a0b8ff', .3] }); },
     bg: [[0, '#4a5aa0'], [1, '#9aa8e0']], frost: .3, cracks: 9, seed: 13,
   });
   // 冰面上的冷光扫过
@@ -39,9 +39,8 @@ function shFrozenPony(lt, d) {
 // ================= 冰块、车站 =================
 function silhouette(L, pose, col) { fig(0, L.w / 2, L.h - 3, L.h * .82, { pose: pose || {}, top: 'blouse', col: 'navy', skirt: 'pants', amb: [col || '#1a1430', .85] }); }
 function shBusStop(lt, d) {
-  const pan = lt * 12; OX = -Math.round(pan);
+  const pan = lt * 12;
   purpleGround(lt, 130, { bushes: 18, seed: 71 });
-  OX = 0;
   // 车站：棚子 + 发光的灯箱
   const sx = 300 - pan;
   rect(sx, 120, 120, 6, '#e8e4f4'); rect(sx + 4, 126, 112, 2, '#a8a0c8');
@@ -66,7 +65,7 @@ function shHandGlass(lt, d, o) {
   meadow(91, 120, 0, W, 196, H + 4, lt, { cols: ['#c8a6ff', '#9a7ad8', '#e4d0ff'], lav: 1, h: 18, stem: '#3a2c5c' });
   const push = smooth(ramp(lt, 0, d)) * 14;
   bust(o.g, 250, 100, 32, { cloth: 'blouse', col: 'white', mouth: 'n', look: [0, 0], amb: ['#a088e0', .18],
-    after: (L, ox, oy, s) => { const hx = ox - .9 * s, hy = oy + .9 * s - push * .3; thick(ox - 1.7 * s, oy + 3.4 * s, hx, hy + 1 * s, .45 * s, SKIN.b); ell(hx, hy, .75 * s, .9 * s, SKIN.b); for (let f = -1.5; f <= 1.5; f++) thick(hx + f * .32 * s, hy - .5 * s, hx + f * .4 * s, hy - 1.55 * s, .17 * s, SKIN.b); thick(hx + .7 * s, hy + .1 * s, hx + 1.25 * s, hy - .5 * s, .17 * s, SKIN.b); line(hx - .2 * s, hy + .2 * s, hx + .3 * s, hy + .5 * s, SKIN.s); } });
+    after: (L, ox, oy, s) => { const hx = ox - 1.75 * s, hy = oy + 1.5 * s - push * .3; thick(ox - 1.6 * s, oy + 3.6 * s, hx, hy + 1 * s, .45 * s, SKIN.b); ell(hx, hy, .75 * s, .9 * s, SKIN.b); for (let f = -1.5; f <= 1.5; f++) thick(hx + f * .32 * s, hy - .5 * s, hx + f * .4 * s, hy - 1.55 * s, .17 * s, SKIN.b); thick(hx + .7 * s, hy + .1 * s, hx + 1.25 * s, hy - .5 * s, .17 * s, SKIN.b); line(hx - .2 * s, hy + .2 * s, hx + .3 * s, hy + .5 * s, SKIN.s); } });
   // 冰面：四周的霜
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const e = Math.min(x, W - x, y * 1.5, (H - y) * 1.5); if (e < 40) { const k = (1 - e / 40); if (k > bay(x, y) * .9) pp(x, y, mixc([210, 225, 255], [255, 255, 255], h2(x, y, 3)), .5 * k + .2); } }
   rect(0, 0, W, H, '#dce8ff', .08);
@@ -90,7 +89,7 @@ function clockGate(x, y, s, lt, o) { // (x,y) 底中；s 倍
   rect(X(-16), Y(-66), 32 * s, 66 * s, '#c28274'); ell(X(0), Y(-66), 16 * s, 14 * s, '#c28274');
   // 门洞：透出光
   rect(X(-8), Y(-34), 16 * s, 34 * s, '#ffe8c0'); ell(X(0), Y(-34), 8 * s, 8 * s, '#ffe8c0');
-  glow(X(0), Y(-20), 22 * s, [255, 220, 160], o.light || .8); glowRect(X(-8), Y(-40), 16 * s, 40 * s, [255, 230, 170], (o.light || .8) * .8);
+  glow(X(0), Y(-20), 18 * s, [255, 220, 160], o.light || .3); glowRect(X(-8), Y(-40), 16 * s, 40 * s, [255, 230, 170], (o.light || .3) * .5);
   // 钟
   circ(X(0), Y(-64), 9 * s, '#fff4e0'); circ(X(0), Y(-64), 8 * s, '#ffe8d0'); heart(X(0), Y(-64), 4 * s, '#d8566e');
   const a = lt * .7; line(X(0), Y(-64), X(0) + Math.sin(a) * 6 * s, Y(-64) - Math.cos(a) * 6 * s, '#5a3030'); line(X(0), Y(-64), X(0) + Math.sin(a * 12) * 4 * s, Y(-64) - Math.cos(a * 12) * 4 * s, '#5a3030');
@@ -121,7 +120,7 @@ function shGateProfiles(lt, d) {
   sunsetSky(lt, H, { seed: 111, stops: [[0, '#6a4ab0'], [.5, '#b478c0'], [1, '#f0a8b8']], n: 5 });
   floatHearts(112, 7, lt, [0, 10, W, 180]);
   hills(113, 200, 14, .01, '#8a62a8'); rect(0, 200, W, H, '#7a5296');
-  clockGate(400, 210, 1.3, lt, { light: 1 + lt * .8 });
+  clockGate(400, 210, 1.3, lt, { light: .35 + lt * .2 });
   const g0 = [[4, 140, 108, 34], [2, 236, 116, 28], [0, 320, 122, 24]];
   for (let i = g0.length - 1; i >= 0; i--) { const [g, x, y, s] = g0[i]; profBust(g, x + lt * 2, y, s, { dir: 1, cloth: i === 1 ? 'off' : 'strap', col: i === 1 ? 'white' : 'pink', wind: .4, ph: lt * 2 + i, rim: ['#ffe0b0', 1, 0, .7], amb: ['#c090d0', .12], eyes: i === 0 && lt > 1.2 && lt < 1.32 ? 'closed' : 'open' }); }
   bloom(1.1, 4, .88);
@@ -134,7 +133,7 @@ function capsule(x, y, w, h, lt, o) { // (x,y) 底中
   o = o || {}; const x0 = x - w / 2, y0 = y - h;
   rect(x0 - 3, y0 - 8, w + 6, 10, '#8ad0c0'); rect(x0 - 3, y0 - 8, w + 6, 2, '#bff0e4'); rect(x0 - 3, y - 4, w + 6, 6, '#8ad0c0');
   rect(x0, y0 + 2, w, h - 6, '#ffd8e4'); vgrad(x0, y0 + 2, w, h - 6, [[0, '#ffe8f0'], [1, '#f4a8c4']], 6);
-  glowRect(x0, y0, w, h, [255, 170, 210], o.glow || .6);
+  glowRect(x0, y0, w, h, [255, 170, 210], o.glow || .22);
   // 里面三个人
   const gs = o.girls || [4, 2, 0];
   gs.forEach((g, i) => fig(g, x - w * .28 + i * w * .28, y - 5, h * .72, { top: i === 1 ? 'off' : 'strap', col: i === 1 ? 'white' : 'pink', skirt: 'puffy', scol: 'white', shoes: 'boots', pose: o.dance ? POSE.dance(lt, i * 2) : POSE.stand(), mouth: 'smile' }));
@@ -175,23 +174,26 @@ function shShaft(lt, d) {
   const blue = smooth(ramp(lt, 4.5, 4.9)), dark = Math.sin(Math.PI * sat(lt / d)) * .5;
   const base = mixc(mixc('#3a3e24', '#1c1e14', dark), '#14244a', blue), lineC = mixc(mixc('#6a6e40', '#3a3c24', dark), '#2a4a8a', blue);
   rect(0, 0, W, H, base);
+  // 分三段换景别：近 → 远（看得到更多层架子）→ 近 + 蓝光
+  const far = lt > 2.0 && lt < 4.0, gap = far ? 34 : 60;
   // 一层层往上掠过的架子（透视）
-  const speed = 110, off = (lt * speed) % 60;
-  for (let k = -1; k < 6; k++) {
-    const y = H - (k * 60 + off) * 1;
+  const speed = far ? 70 : 110, off = (lt * speed) % gap;
+  for (let k = -1; k < (far ? 10 : 6); k++) {
+    const y = H - (k * gap + off) * 1;
     const t = (y - 135) / 135;
     poly([0, y - 10, W, y - 10, W, y, 0, y], lineC);
     rect(0, y - 10, W, 2, lit(lineC, .25));
     // 架子上的黑色轮胎和粉色挡板
-    for (let i = 0; i < 6; i++) { const x = (i * 97 + k * 41) % W; ring(x, y - 18, 9, 5, '#0c0c10'); rect(x + 20, y - 34, 18, 24, mixc('#d88aa0', '#5a7ad0', blue)); }
+    const sc = far ? .6 : 1; for (let i = 0; i < (far ? 9 : 6); i++) { const x = (i * (far ? 61 : 97) + k * 41) % W; ring(x, y - 18 * sc, 9 * sc, 5 * sc, '#0c0c10'); rect(x + 20 * sc, y - 34 * sc, 18 * sc, 24 * sc, mixc('#d88aa0', '#5a7ad0', blue)); }
   }
   // 两边的竖梁
-  for (const x of [60, 150, 330, 420]) { rect(x - 6, 0, 12, H, shade(lineC, .8)); rect(x - 6, 0, 2, H, lit(lineC, .2)); }
+  for (const x of (far ? [40, 110, 180, 300, 370, 440] : [60, 150, 330, 420])) { rect(x - (far ? 4 : 6), 0, far ? 8 : 12, H, shade(lineC, .8)); rect(x - (far ? 4 : 6), 0, 2, H, lit(lineC, .2)); }
+  // 掉下来的火花
+  for (let i = 0; i < 14; i++) { const r = rng(1300 + i); const y = ((r() * H + lt * (60 + r() * 80)) % (H + 20)) - 10, x = r() * W; px(x, y, '#ffe8a0', .8); glow(x, y, 2, [255, 220, 150], .4); }
   // 中间的胶囊：跟着往下（在画面里基本不动，轻轻晃）
   const wob = Math.sin(lt * 3) * 2;
-  capsule(240 + wob, 215, 70, 128, lt + 43.4, { dance: 1, glow: .9 });
-  // 胶囊上下的钢索
-  line(240 + wob, 0, 240 + wob, 80, '#9a9a8a');
+  if (far) { capsule(240 + wob, 190, 42, 78, lt + 43.4, { dance: 1, glow: .32 }); line(240 + wob, 0, 240 + wob, 104, '#9a9a8a'); }
+  else { capsule(240 + wob, 215, 70, 128, lt + 43.4, { dance: 1, glow: .32 }); line(240 + wob, 0, 240 + wob, 80, '#9a9a8a'); }
   // 光圈扫过
   const ry = (lt * 140) % 340 - 40; blend('screen'); rect(0, ry, W, 6, mixc([200, 200, 120], [120, 170, 255], blue), .25); blend();
   bloom(1, 4, .85); vignette(.75);
@@ -203,17 +205,18 @@ function shBlack(lt, d) { rect(0, 0, W, H, '#000000'); }
 function shBath(lt, d) {
   vgrad(0, 0, W, H, [[0, '#ffe6ea'], [1, '#ffd0dc']], 6);
   // 圆窗
-  for (const x of [60, 420]) { circ(x, 70, 30, '#ffffff'); circ(x, 70, 26, '#cfeaff'); glow(x, 70, 30, [255, 255, 255], .5); }
+  for (const x of [60, 420]) { circ(x, 70, 30, '#ffffff'); circ(x, 70, 26, '#cfeaff'); circ(x - 6, 62, 8, '#e8f6ff'); glow(x, 70, 26, [255, 255, 255], .12); }
   // 柱子
   for (const x of [130, 350]) { rect(x - 8, 0, 16, 200, '#bfe2f2'); rect(x - 8, 0, 4, 200, '#e4f6ff'); }
   // 中间的胶囊
-  capsule(240, 196, 62, 116, lt + 50, { dance: 1, glow: .5 });
+  capsule(240, 196, 62, 116, lt + 50, { dance: 1, glow: .2 });
   // 池子
   rect(0, 196, W, H, '#bfe8f8'); for (let y = 198; y < H; y += 4) line(0, y + Math.sin(lt * 3 + y) * 2, W, y + Math.sin(lt * 3 + y + 1) * 2, '#e4f8ff');
   // S 形气球
   const sx = 340, sy = 160 + Math.sin(lt * 2) * 3;
-  const sp = []; for (let i = 0; i <= 30; i++) { const t = i / 30; const a = Math.PI * 1.25 - t * Math.PI * 2.5; sp.push([sx + Math.cos(a) * 18 * (t < .5 ? 1 : 1), sy + (t - .5) * 70 + Math.sin(a) * 0]); }
-  for (const [x, y] of sp) circ(x, y, 9, '#ff7aa8'); for (const [x, y] of sp) circ(x - 2, y - 2, 4, '#ffb8d0');
+  const sp = []; for (let i = 0; i <= 24; i++) { const a = (-20 - i * 250 / 24) * Math.PI / 180; sp.push([sx + Math.cos(a) * 15, sy - 15 + Math.sin(a) * 15]); }
+  for (let i = 0; i <= 24; i++) { const a = (-90 + i * 250 / 24) * Math.PI / 180; sp.push([sx + Math.cos(a) * 15, sy + 15 + Math.sin(a) * 15]); }
+  for (const [x, y] of sp) circ(x, y, 7, '#e85a8a'); for (const [x, y] of sp) circ(x - 1, y - 1, 6, '#ff7aa8'); for (const [x, y] of sp) circ(x - 2, y - 2, 2, '#ffc8dc');
   // 小黄鸭、游泳圈
   for (const [x, y, s] of [[90, 214, 1], [170, 230, 1.3], [400, 240, 1.1]]) { const yy = y + Math.sin(lt * 3 + x) * 2; ell(x, yy, 9 * s, 6 * s, '#ffd84a'); circ(x + 6 * s, yy - 7 * s, 5 * s, '#ffd84a'); rect(x + 10 * s, yy - 7 * s, 4 * s, 2 * s, '#ff8a3a'); px(x + 7 * s, yy - 9 * s, '#2a1a10'); }
   ring(280, 236, 16, 8, '#ff6a8a'); for (let a = 0; a < 6.28; a += 1.57) circ(280 + Math.cos(a) * 16, 236 + Math.sin(a) * 16, 3, '#ffffff');
@@ -235,7 +238,7 @@ function shPinkLake(lt, d) {
   const by = 176 + Math.sin(lt * 2) * 2;
   heart(240, by, 30, '#e0507a'); heart(237, by - 2, 27, '#ff6f96'); heart(228, by - 10, 10, '#ffb0c8'); px(224, by - 14, '#ffffff'); px(225, by - 15, '#ffffff');
   ell(240, by + 26, 30, 4, '#c05878', .5);
-  glow(240, by, 40, [255, 140, 180], .5);
+  glow(240, by, 36, [255, 140, 180], .22);
   // 前景的花
   meadow(133, 150, 0, W, 232, H + 4, lt, { cols: ['#ffffff', '#ffb0c8', '#ff8fb0', '#ffe8a0'], h: 30, stem: '#6a9a6a' });
   // 蝴蝶
@@ -310,16 +313,15 @@ function shShatter(lt, d) {
     const a = r() * 6.28, sp = 30 + r() * 120, s = 4 + r() * 18, rot = r() * 6;
     const dist = sp * (.25 + lt), x = 240 + Math.cos(a) * dist, y = 135 + Math.sin(a) * dist * .8;
     const isH = r() < .35;
-    const c1 = [255, 240, 248], c2 = [220, 200, 230], c3 = [180, 150, 190];
+    const c1 = [255, 240, 248], c2 = [214, 190, 226], c3 = [150, 110, 160];
     if (isH) { heart(x, y, s, c3, 1, rot + lt * 2); heart(x - 1, y - 1, s * .85, c2, 1, rot + lt * 2); heart(x - s * .3, y - s * .3, s * .3, c1, 1, rot + lt * 2); }
     else { const p = []; for (let k = 0; k < 4; k++) { const aa = rot + lt * 3 + k * 1.57 + (k % 2) * .4; p.push(x + Math.cos(aa) * s * (k % 2 ? .45 : 1), y + Math.sin(aa) * s * (k % 2 ? .45 : 1)); } poly(p, c2); poly([p[0], p[1], x, y, p[6], p[7]], c1); }
-    if (r() < .4) glow(x, y, s, [255, 220, 240], .3);
+    if (r() < .25) glow(x, y, s * .7, [255, 220, 240], .15);
   }
   // 中间一颗大的心形晶体
-  const s = 60 + lt * 20; heart(240, 135, s, [190, 160, 200], 1, Math.sin(lt) * .1); heart(238, 133, s * .88, [236, 222, 240], 1, Math.sin(lt) * .1); heart(224, 116, s * .3, [255, 255, 255], 1, Math.sin(lt) * .1);
-  for (let i = 0; i < 6; i++) line(240, 135, 240 + Math.cos(i) * s, 135 + Math.sin(i * 1.3) * s * .8, [170, 140, 190]);
+  const s = 34 + lt * 50, cr = sat(lt * 3); heart(240, 135, s, [150, 110, 160], 1 - cr, Math.sin(lt) * .1); heart(238, 133, s * .88, [220, 200, 230], 1 - cr, Math.sin(lt) * .1);
   sparkles(172, 50, 0, 0, W, H, lt, { col: '#ffffff' });
-  bloom(1.2, 4, .8); vignette(.5);
+  bloom(.8, 3, .93); vignette(.5);
 }
 
 // ================= 后视镜 =================
@@ -340,7 +342,7 @@ function shMirror(lt, d, o) {
   const m = new Uint8Array(W * H); { const t0 = T; const tmp = { w: W, h: H, d: new Float32Array(W * H * 3), a: null }; T = tmp; frame(0, [255, 0, 0]); T = t0; for (let i = 0; i < W * H; i++) m[i] = tmp.d[i * 3] > 0 ? 1 : 0; }
   withMask(m, () => {
     rect(0, 0, W, H, tone === 'green' ? '#44583a' : tone === 'warm' ? '#7a4a2a' : '#2a2830');
-    const s = 120;
+    const s = o.lips ? 120 : 96;
     if (o.lips) bust(o.g, mx + 30, my - s * .55, s, { cloth: 'black', col: 'black', turn: .35, mouth: 'pout', amb: ['#3a3040', .35], ear: '#f0e0c0' });
     else bust(o.g, mx + (tone === 'warm' ? -10 : 0), my + 10 + s * .02, s, { cloth: 'blouse', col: 'white', turn: tone === 'warm' ? .3 : 0, look: [Math.sin(lt * 1.5) * .3, 0], eyes: lt % 2.2 > 2.05 ? 'closed' : 'open', amb: tone === 'green' ? ['#a8d890', .35] : ['#ffb070', .3] });
     // 镜面的光
@@ -380,7 +382,7 @@ function pillar(x, yTop, w, h, o) { // 古典柱子：柱头在 yTop
 }
 function shPillar(lt, d) {
   sky([[0, '#6a7ad0'], [.45, '#d8a0c0'], [.75, '#ffc0a0'], [1, '#ffe0b0']], 0, 200);
-  const sun = [300, 186]; glow(sun[0], sun[1], 40, [255, 220, 160], 1.2); circ(sun[0], sun[1], 10, '#fff4d8');
+  const sun = [300, 186]; glow(sun[0], sun[1], 30, [255, 220, 160], .4); halo(sun[0], sun[1], 60, '#fff0c8', .25, 5); circ(sun[0], sun[1], 10, '#fff4d8');
   for (let i = 0; i < 5; i++) cloud(i * 110 + 40 - lt * 4, 60 + (i % 2) * 30, 100, 12, ['#b088c0', '#e8a8c0', '#ffd0d0', '#fff0ea'], 190 + i);
   cloudSea(lt, 186, { seed: 191 });
   pillar(150, 120, 22, 120);
@@ -402,14 +404,14 @@ function shPillarSit(lt, d) {
   for (let i = 0; i < 4; i++) cloud(i * 140 + 30 - lt * 6, 60 + (i % 2) * 40, 120, 16, ['#b088c0', '#e8a8c0', '#ffd0d0', '#fff0ea'], 210 + i);
   cloudSea(lt, 230, { seed: 211, drift: 4 });
   pillar(240, 196, 90, 80, {});
-  fig(3, 240, 198, 120, { pose: Object.assign(POSE.sit(), { la: [.5, -.6], ra: [.5, -.6] }), top: 'strap', col: 'blush', skirt: 'puffy', scol: 'blush', shoes: 'boots', bow: '#f4b8a8', mouth: 'n', wind: .3, ph: lt * 2 });
+  fig(3, 240, 230, 120, { pose: Object.assign(POSE.sit(), { la: [.5, -.6], ra: [.5, -.6] }), top: 'strap', col: 'blush', skirt: 'puffy', scol: 'blush', shoes: 'boots', bow: '#f4b8a8', mouth: 'n', wind: .3, ph: lt * 2 });
   bloom(.9, 3, .92); vignette(.35);
 }
 function shPillarLow(lt, d) {
   sky([[0, '#5a70c8'], [.7, '#c8a0d8'], [1, '#ffd0c8']]);
   for (let i = 0; i < 4; i++) cloud(i * 150 - lt * 8, 40 + (i % 2) * 50, 140, 18, ['#9a88c8', '#d8a8d8', '#ffd8e0', '#fff4f6'], 220 + i);
   pillar(240, 210, 150, 80, {});
-  fig(3, 240, 214, 190, { pose: Object.assign(POSE.sit(), { la: [.3, -1.2], ra: [.35, -1.3] }), top: 'strap', col: 'blush', skirt: 'puffy', scol: 'blush', shoes: 'boots', bow: '#f4b8a8', mouth: 'smile', turn: .15 });
+  fig(3, 240, 264, 190, { pose: Object.assign(POSE.sit(), { la: [.3, -1.2], ra: [.35, -1.3] }), top: 'strap', col: 'blush', skirt: 'puffy', scol: 'blush', shoes: 'boots', bow: '#f4b8a8', mouth: 'smile', turn: .15 });
   bloom(.9, 3, .92); vignette(.35);
 }
 function shArchWindow(lt, d) {
@@ -427,13 +429,15 @@ function shArchWindow(lt, d) {
   line(X + 10, Y - 116, X + 10, Y - 4, '#8a4a3a', 1, 3); line(X - 46, Y - 60, X + 66, Y - 60, '#8a4a3a', 1, 3);
   // 两边的小拱窗
   for (const sx of [X - 110, X + 110]) { rect(sx, Y + 20, 26, 60, '#8a4a3a'); ell(sx + 13, Y + 20, 13, 13, '#8a4a3a'); }
+  floatHearts(261, 8, lt, [0, 40, 200, 260], ['#ff8aa8', '#ff6a8e', '#ffb0c8']);
+  const sw = (lt / d) * 520 - 60; blend('screen'); poly([sw, 0, sw + 26, 0, sw - 60, H, sw - 86, H], [255, 230, 210], .18); blend();
   bloom(.8, 3, .95); vignette(.4);
 }
 
 // ================= 毛绒心堆 =================
 function shHeartCushion(lt, d) {
   sky([[0, '#6a6ad0'], [.5, '#d0a0d0'], [1, '#ffc8b0']]);
-  const sun = [380, 150]; glow(sun[0], sun[1], 40, [255, 220, 170], 1);
+  const sun = [380, 150]; glow(sun[0], sun[1], 30, [255, 220, 170], .35); halo(sun[0], sun[1], 50, '#fff0c8', .2, 5); circ(sun[0], sun[1], 8, '#fff4dc');
   cloudSea(lt, 150, { seed: 241, drift: 3 });
   floatHearts(242, 10, lt, [0, 10, W, 140], ['#ff7aa0', '#ff5a80', '#ffa8c0']);
   // 后面的毛绒心
@@ -445,12 +449,13 @@ function shHeartCushion(lt, d) {
 }
 function shHeartCushionBack(lt, d) {
   sky([[0, '#5a5ac8'], [.5, '#c898c8'], [1, '#ffc0a0']], 0, 170);
-  glow(320, 160, 50, [255, 220, 170], 1.2); circ(320, 160, 9, '#fff2d8');
+  glow(320, 160, 30, [255, 220, 170], .4); halo(320, 160, 50, '#fff0c8', .22, 5); circ(320, 160, 9, '#fff2d8');
   cloudSea(lt, 156, { seed: 251, drift: 3 });
   pillar(420, 120, 10, 40, {});
   floatHearts(252, 12, lt, [0, 10, W, 150], ['#ff7aa0', '#ff5a80', '#ffa8c0']);
   // 心堆
-  for (const [x, y, s, c] of [[180, 230, 50, '#d8405e'], [300, 236, 54, '#e85a7a'], [240, 210, 46, '#ff7a98'], [120, 260, 50, '#ff92ae'], [370, 262, 52, '#ff7a98'], [240, 268, 58, '#e84a6c']]) plushHeart(x, y, s, c);
-  fig(2, 240, 214, 66, { view: 'back', pose: POSE.sit(), top: 'strap', col: 'pink', skirt: 'mid', scol: 'pink', rim: ['#ffd0a0', 1, 0, .6] });
+  for (const [x, y, s, c] of [[180, 230, 50, '#d8405e'], [300, 236, 54, '#e85a7a'], [240, 214, 46, '#ff7a98']]) plushHeart(x, y, s, c);
+  fig(2, 240, 232, 66, { view: 'back', pose: POSE.sit(), top: 'strap', col: 'pink', skirt: 'mid', scol: 'pink', rim: ['#ffd0a0', 1, 0, .6] });
+  for (const [x, y, s, c] of [[120, 262, 50, '#ff92ae'], [370, 264, 52, '#ff7a98'], [240, 276, 58, '#e84a6c']]) plushHeart(x, y, s, c);
   bloom(1, 3, .9); vignette(.4);
 }

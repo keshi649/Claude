@@ -132,12 +132,12 @@ function plushHeart(x, y, s, col, o) {
   const R = Math.ceil(s * 1.4);
   for (let yy = -R; yy <= R; yy++) for (let xx = -R; xx <= R; xx++) {
     const u = (xx + .5) / s, v = (yy + .5) / s;
-    const fuzz = (h2(xx + Math.round(x), yy + Math.round(y), 5) - .5) * .22;
+    const fuzz = (h2(xx + Math.round(x), yy + Math.round(y), 5) - .5) * (s > 30 ? .1 : .2);
     if (!inHeart(u * (1 - fuzz), v * (1 - fuzz))) continue;
     let cc = c;
-    const shadeK = u * .5 + v * .7;
-    if (shadeK > .45) cc = d; else if (shadeK < -.45) cc = l;
-    if (h2(xx, yy, 9) > .85) cc = shadeK > .2 ? shade(c, .75) : lit(c, .15);
+    const shadeK = u * .5 + v * .7 + (bay(xx & 3, yy & 3) - .5) * .18;
+    if (shadeK > .45) cc = d; else if (shadeK < -.42) cc = l;
+    if (h2(xx, yy, 9) > .96) cc = shadeK > .2 ? shade(c, .75) : lit(c, .15);
     px(x + xx, y + yy, cc, o.a);
   }
 }
@@ -160,7 +160,7 @@ function suvSide(x, y, k, o) {
   line(X(-46), Y(-17), X(48), Y(-17), bodyL); line(X(0), Y(-29), X(0), Y(-8), trim); line(X(-26), Y(-29), X(-26), Y(-8), trim);
   rect(Math.min(X(6), X(10)), Y(-23), 4 * k, 1, lit(body, .25)); rect(Math.min(X(-20), X(-16)), Y(-23), 4 * k, 1, lit(body, .25));
   // 灯
-  rect(Math.min(X(44), X(48)), Y(-24), 4 * k, 2 * k, o.lights ? '#fff6d8' : '#c8ccd8'); if (o.lights) glow(X(48), Y(-23), 8 * k, [255, 240, 200], .8);
+  rect(Math.min(X(44), X(48)), Y(-24), 4 * k, 2 * k, o.lights ? '#fff6d8' : '#c8ccd8'); if (o.lights) glow(X(48), Y(-23), 6 * k, [255, 240, 200], .4);
   rect(Math.min(X(-48), X(-45)), Y(-24), 3 * k, 2 * k, '#c0303a'); if (o.lights) glow(X(-48), Y(-23), 5 * k, [255, 60, 60], .5);
   // 轮子
   for (const wx of [-30, 31]) {
@@ -183,7 +183,7 @@ function suvFront(x, y, k, o) {
   rect(X(-16), Y(-24), 32 * k, 9 * k, '#0b0b10'); for (let i = 0; i < 6; i++) line(X(-15 + i * 6), Y(-23), X(-13 + i * 6), Y(-16), '#2a2c36');
   const lc = o.lights ? '#ffffff' : '#c9d0e0';
   line(X(-28), Y(-27), X(-17), Y(-26), lc, 1, Math.max(1, Math.round(k))); line(X(17), Y(-26), X(28), Y(-27), lc, 1, Math.max(1, Math.round(k)));
-  if (o.lights) { glow(X(-24), Y(-26), 9 * k, [255, 250, 235], .8); glow(X(24), Y(-26), 9 * k, [255, 250, 235], .8); }
+  if (o.lights) { glow(X(-24), Y(-26), 6 * k, [255, 250, 235], .35); glow(X(24), Y(-26), 6 * k, [255, 250, 235], .35); }
   rect(X(-8), Y(-13), 16 * k, 4 * k, '#dcdde6'); // 车牌（空白）
   // 轮子
   rect(X(-30), Y(-8), 8 * k, 8 * k, '#09090c'); rect(X(22), Y(-8), 8 * k, 8 * k, '#09090c');
@@ -315,3 +315,17 @@ function bush(x, y, s, cols, seed) {
   rect(x - s, y - 1, s * 2, 2, cs[0]);
   for (let i = 0; i < s; i++) px(x + (r() - .5) * s * 1.8, y - r() * s * .8, r() < .5 ? cs[2] : (cs[3] || cs[2]));
 }
+
+// 焦外的花园：大块柔和的绿、光斑，给近景的人当背景
+function bokehGarden(lt, o) {
+  o = o || {};
+  sky(o.sky || [[0, '#f4d0b0'], [.5, '#fbe2c4'], [1, '#e8d0a8']]);
+  const r = rng(o.seed || 1);
+  for (let i = 0; i < 14; i++) { const x = r() * W, y = 60 + r() * 180, s = 30 + r() * 40, c = r() < .5 ? '#7aa060' : '#94b878'; ell(x, y, s, s * .8, c, .9); ell(x - s * .2, y - s * .2, s * .6, s * .5, lit(C(c), .12), .7); }
+  if (o.heart) { heart(o.heart[0], o.heart[1], o.heart[2], '#6a9050', .9); heart(o.heart[0] - 3, o.heart[1] - 3, o.heart[2] * .8, '#86aa68', .8); }
+  for (let i = 0; i < 24; i++) { const x = r() * W, y = r() * H, s = 4 + r() * 9, c = ['#fff4d8', '#ffd8e4', '#ffe8b0', '#ffffff'][i % 4], a = .25 + .2 * Math.sin(lt * 2 + i); circ(x, y, s, c, a); ring(x, y, s, 1, c, a * .8); }
+  const fl = ['#ff9ab8', '#ffffff', '#c8a0f0', '#ffb070'];
+  for (let i = 0; i < 40; i++) { const x = r() * W, y = 200 + r() * 70; circ(x, y, 3 + r() * 4, fl[i % 4], .6); }
+}
+// 白色的心形石栏
+function heartRail(y, s, n, x0, dx) { for (let i = 0; i < n; i++) { const x = x0 + i * dx; heart(x, y, s, '#e8dccc'); heart(x - 1, y - 1, s * .82, '#fbf4ea'); heart(x, y + s * .05, s * .45, '#d8ccbc'); } rect(x0 - dx, y + s * .8, dx * (n + 1), 6, '#e8dccc'); }

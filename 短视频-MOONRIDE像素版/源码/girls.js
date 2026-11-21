@@ -233,7 +233,9 @@ function drawFace(g, o, s, ox, oy, turn) {
   for (const sd of [-1, 1]) {
     const kk = sd * turn > 0 ? 1 - .35 * Math.abs(turn) : 1;
     const bx = X(sd * .45 * kk), bw = .3 * s * kk;
-    if (s >= 9) line(bx - bw, Y(browY + .04), bx + bw, Y(browY - (sd > 0 ? .02 : .02)), mixc(g.hair[1], SKIN.s, .35), 1, s > 30 ? 2 : 1);
+    const bc = mixc(g.hair[1], SKIN.s, .35);
+    if (s >= 30) { const pts = [[1, .08], [.35, -.03], [-.4, -.04], [-1, 0]].map(([u, v]) => [bx + u * bw * sd, Y(browY + v)]); for (let k = 0; k < 3; k++) line(pts[k][0], pts[k][1], pts[k + 1][0], pts[k + 1][1], bc, 1, k === 2 ? 1 : 2); }
+    else if (s >= 9) line(bx - bw, Y(browY + .04), bx + bw, Y(browY - .02), bc, 1, 1);
   }
   // 眼睛
   for (const sd of [-1, 1]) {
@@ -244,63 +246,79 @@ function drawFace(g, o, s, ox, oy, turn) {
   const ny = Y(.42);
   if (s < 9) { }
   else if (s < 26) { px(X(-ld * .07), ny, SKIN.s); if (s > 14) px(X(-ld * .07), ny - 1, SKIN.s); }
-  else { const nx = X(-ld * .06 + turn * .1); line(nx, ny - .18 * s, nx - ld * .04 * s, ny, SKIN.s, 1, Math.max(1, Math.round(s / 30))); rect(nx - .05 * s, ny, .12 * s, Math.max(1, s * .03), SKIN.d); px(X(ld * .05 + turn * .1), ny - .1 * s, SKIN.h); }
+  else { const nx = X(-ld * .05 + turn * .1); line(nx - ld * .03 * s, ny - .2 * s, nx - ld * .05 * s, ny - .02 * s, SKIN.s, 1, Math.max(1, Math.round(s / 34)));
+    ell(nx, ny + .02 * s, .08 * s, Math.max(1, .025 * s), SKIN.s); rect(nx - .07 * s, ny + .02 * s, .03 * s + 1, 1, SKIN.d); rect(nx + .05 * s, ny + .02 * s, .03 * s + 1, 1, SKIN.d);
+    rect(X(ld * .03 + turn * .1), ny - .16 * s, 1, .1 * s, SKIN.h); }
   // 嘴
   mouth(X(turn * .05), Y(.7), s, o.mouth || 'n');
 }
 function eye(ex, ey, s, kk, sd, o, g) {
   const ew = .19 * s * kk, eh = .25 * s; const st = o.eyes || 'open';
   const lash = SKIN.lash; const ic = C(g.eye || [80, 50, 40]);
-  const lw = Math.max(1, Math.round(s / 14));
+  const big = s >= 30, lw = Math.max(1, Math.round(s / (big ? 24 : 14)));
   if (st === 'closed' || st === 'happy' || (st === 'wink' && sd > 0)) {
     // 闭眼：∪ 是安静地闭着，∩ 是笑眯眯
     const up = st === 'happy' ? -1 : 1; const n = Math.max(3, Math.round(ew * 2.2));
-    for (let i = 0; i <= n; i++) { const t = i / n * 2 - 1; const xx = ex + t * ew * 1.1, yy = ey + up * (1 - t * t) * eh * .35 * (up < 0 ? 1 : .8) + (up < 0 ? eh * .15 : 0); rect(xx, yy, lw, lw, lash); }
-    if (s > 20) { rect(ex + sd * ew * 1.15, ey - (up > 0 ? 0 : eh * .05), lw, lw, lash); }
+    for (let i = 0; i <= n; i++) { const t = i / n * 2 - 1; const xx = ex + t * ew * 1.1, yy = ey + up * (1 - t * t) * eh * .35 * (up < 0 ? 1 : .8) + (up < 0 ? eh * .15 : 0); rect(xx, yy, lw + (big && Math.abs(t) < .6 ? 1 : 0), lw, lash); }
+    if (s > 20) { rect(ex + sd * ew * 1.15, ey - (up > 0 ? 0 : eh * .05), lw, lw, lash); if (big && up > 0) for (let k = 0; k < 3; k++) line(ex + (k - 1) * ew * .5, ey + eh * .3, ex + (k - 1) * ew * .5 + sd, ey + eh * .45, lash); }
     return;
   }
-  if (s < 9) { // 很小：两个黑点
-    rect(Math.round(ex - .5), Math.round(ey - 1), 1, Math.max(1, Math.round(s * .3)), lash);
-    return;
-  }
+  if (s < 9) { rect(Math.round(ex - .5), Math.round(ey - 1), 1, Math.max(1, Math.round(s * .3)), lash); return; }
   const look = o.look || [0, 0], half = st === 'half' ? .35 : st === 'down' ? .5 : 0;
   const x0 = Math.floor(ex - ew * 1.3), x1 = Math.ceil(ex + ew * 1.3), y0 = Math.floor(ey - eh * 1.3), y1 = Math.ceil(ey + eh * 1.2);
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
     const u = (x + .5 - ex) / ew, v = (y + .5 - ey) / eh;
-    const lid = -.8 + half * 1.2 + (u * sd > .3 ? (u * sd - .3) * .25 : 0); // 上眼皮
+    const lid = -.8 + half * 1.2 + (u * sd > .3 ? (u * sd - .3) * .25 : 0);
     if (u * u + v * v * .9 > 1.05 || v < lid) continue;
-    // 眼白、虹膜、瞳孔
-    const iu = (u - look[0] * .35) / .78, iv = (v - .05 - look[1] * .2) / .98;
+    const iu = (u - look[0] * .35) / .8, iv = (v - .05 - look[1] * .2) / 1.0, ir = iu * iu + iv * iv;
     let c = [250, 246, 250];
-    if (iu * iu + iv * iv <= 1) {
+    if (ir <= 1) {
       const t = sat((v + .6) / 1.5);
-      c = mixc(shade(ic, .45), lit(ic, .35), t);
-      if ((iu * .7) * (iu * .7) * 4 + (iv - .05) * (iv - .05) * 3.2 < .9) c = shade(ic, .25);
-      if (v > .45 && Math.abs(iu) < .6) c = mixc(c, lit(ic, .55), .5);
-    } else if (v > .5) c = [236, 226, 236];
+      c = mixc(shade(ic, .4), lit(ic, .4), t * t);
+      if (big && ir > .72) c = shade(ic, .35);                       // 虹膜的深色外圈
+      if ((iu * .7) * (iu * .7) * 4 + (iv - .05) * (iv - .05) * 3.2 < .9) c = shade(ic, .2);   // 瞳孔
+      if (v > .4 && Math.abs(iu) < .62 && ir < .8) c = mixc(c, lit(ic, .6), .55);               // 下面一弯亮
+      if (v < lid + .35) c = mixc(c, [30, 20, 30], .45);                                        // 上眼皮投下的影子
+    } else if (v > .45) c = [236, 226, 236];
+    else if (v < lid + .3) c = [214, 204, 220];
     pp(x + OX, y + OY, c);
   }
-  // 上睫毛（粗）+ 眼尾往外挑
-  const n = Math.round(ew * 2.8);
+  // 上睫毛：中间细，眼尾粗、往外挑
+  const n = Math.round(ew * 3);
   for (let i = 0; i <= n; i++) {
     const t = i / n * 2 - 1; const u = t * 1.08; const v = Math.max(-.8 + half * 1.2, -Math.sqrt(Math.max(0, 1.05 - u * u) / .9)) - .05;
-    rect(ex + u * ew - (lw > 1 ? .5 : 0), ey + v * eh - lw + 1, lw, lw + (Math.abs(t) < .7 && s > 16 ? 1 : 0), SKIN.lash);
+    const outer = t * sd > .2 ? 1 : 0;
+    rect(ex + u * ew - (lw > 1 ? .5 : 0), ey + v * eh - lw + 1 - outer * (big ? 1 : 0), lw, lw + outer * (big ? 1 : 0) + (Math.abs(t) < .7 && s > 16 && !big ? 1 : 0), SKIN.lash);
   }
-  rect(ex + sd * ew * 1.2, ey - eh * .7, lw, lw, SKIN.lash);
-  if (s > 18) rect(ex + sd * ew * 1.38, ey - eh * .88, lw, lw, SKIN.lash);
+  rect(ex + sd * ew * 1.2, ey - eh * .72, lw + (big ? 1 : 0), lw, SKIN.lash);
+  if (s > 18) rect(ex + sd * ew * 1.38, ey - eh * .9, lw, lw, SKIN.lash);
+  if (big) { for (let k = 0; k < 3; k++) line(ex + sd * ew * (.55 + k * .25), ey - eh * (.95 - k * .05), ex + sd * ew * (.75 + k * .32), ey - eh * (1.25 - k * .08), SKIN.lash);
+    // 双眼皮的折痕
+    for (let i = 0; i <= n; i++) { const t = i / n * 2 - .9; if (Math.abs(t) > .95) continue; const u = t; px(ex + u * ew, ey - eh * (1.18 - .1 * u * u * 0) - Math.sqrt(Math.max(0, 1 - u * u)) * eh * .12, SKIN.s); } }
   // 下睫毛（淡）
   if (s > 14) for (let i = -2; i <= 2; i++) px(ex + i * ew * .32, ey + eh * .98, mixc(SKIN.lash, SKIN.s, .5));
+  if (big) px(ex + sd * ew * .9, ey + eh * .85, mixc(SKIN.lash, SKIN.s, .3));
   // 高光
   if (half < .4) {
     const hx = ex - .32 * ew + look[0] * ew * .25, hy = ey - .3 * eh;
     rect(hx, hy, Math.max(1, Math.round(ew * .38)), Math.max(1, Math.round(eh * .3)), '#ffffff');
     if (s > 16) rect(ex + .3 * ew, ey + .38 * eh, Math.max(1, Math.round(ew * .2)), Math.max(1, Math.round(eh * .14)), '#ffffff', .9);
+    if (big) px(hx + ew * .55, hy + eh * .1, '#ffffff');
   }
 }
 function mouth(mx, my, s, m) {
   const lip = SKIN.lip, lipd = SKIN.lipd;
   if (s < 9) { if (m === 'open' || m === 'grin') px(mx, my, lipd); return; }
   const w = Math.max(2, s * .2), t = Math.max(1, Math.round(s / 22));
+  if (s >= 30 && (m === 'n' || m === 'pout')) { // 大特写：上下唇
+    const lw2 = w * (m === 'pout' ? .55 : .62);
+    ell(mx, my + s * .045, lw2, s * .055, lip);                         // 下唇
+    rect(mx - lw2 * .45, my + s * .03, lw2 * .9, Math.max(1, s * .015), lit(lip, .35));   // 下唇的高光
+    const n = Math.round(lw2 * 2);
+    for (let i = 0; i <= n; i++) { const u = i / n * 2 - 1; const yy = my - s * .02 - Math.abs(Math.sin(u * Math.PI)) * s * .018 + Math.abs(u) * s * .01; rect(mx + u * lw2, yy, 1, Math.max(1, s * .025), lip); }
+    rect(mx - lw2 * .9, my + s * .005, lw2 * 1.8, Math.max(1, s * .012), lipd);           // 唇缝
+    return;
+  }
   if (m === 'n') { rect(mx - w / 2, my, w, t, lip); if (s > 24) rect(mx - w / 3, my + t, w * .66, t, mixc(lip, SKIN.b, .4)); }
   else if (m === 'smile' || m === 'grin') {
     const n = Math.round(w * 1.4);
@@ -455,6 +473,7 @@ function fig(gi, x, footY, Hh, o) {
       const r1 = lw(hh * (mini ? .14 : .15)), r2 = lw(hh * (mini ? .11 : .11));
       const col = back ? shade(legCol, .85) : legCol;
       thick(hx, hipY, kx, ky, r1, col); thick(kx, ky, ax, ay, r2, col);
+      if (sit && view !== 'side' && !mini) { ell(kx, ky, r1 * 1.15, r1 * .9, col); ell(kx - r1 * .3, ky - r1 * .3, r1 * .5, r1 * .35, lit(col, .2)); }
       if (o.legs === 'socks') thick(kx + (ax - kx) * .55, ky + (ay - ky) * .55, ax, ay, r2, '#f6f4fa');
       const sh = o.shoes || 'mary';
       if (sh === 'boots') { thick(kx + (ax - kx) * .15, ky + (ay - ky) * .15, ax, ay, r2 + (mini ? 0 : .6), '#16141c'); }
@@ -489,8 +508,8 @@ function fig(gi, x, footY, Hh, o) {
     // ---- 裙子 ----
     const waistY = hipY - hh * .32, sk = o.skirt || 'mid';
     if (sk !== 'pants') {
-      const len = { short: .55, mid: .95, long: 1.55, puffy: .7, gown: legL / hh + .05 }[sk] * hh * (sit ? .7 : 1);
-      const hemY = hipY + len, hw0 = hipW * .82, hw1 = hipW * ({ short: 1.45, mid: 1.6, long: 1.7, puffy: 2.0, gown: 2.1 }[sk]) * (sit ? 1.2 : 1);
+      const len = sit && view !== 'side' ? hh * .3 : { short: .55, mid: .95, long: 1.55, puffy: .7, gown: legL / hh + .05 }[sk] * hh;
+      const hemY = hipY + len, hw0 = hipW * .82, hw1 = hipW * (sit && view !== 'side' ? 2.15 : { short: 1.45, mid: 1.6, long: 1.7, puffy: 2.0, gown: 2.1 }[sk]);
       const sw_ = (o.sway || 0) * hh * .25;
       const pts = [];
       if (view === 'side' && sit) { const kx = fx + dir * legL * .45, ky = hipY + hh * .05;

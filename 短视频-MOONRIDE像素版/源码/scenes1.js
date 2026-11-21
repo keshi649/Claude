@@ -87,12 +87,11 @@ function shTitle(lt, d, o, T_) {
   }
   stars(3, 70, 0, 0, W, VY - 5, lt, { big: .1 });
   // 霓虹片名
-  neonTitle(240, 22, 40, lt, { on: smooth(ramp(lt, .05, .9)) });
-  const hk = smooth(ramp(lt, .7, 1.3));
+  neonTitle(240, 22, 40, lt, { on: .24 + .76 * smooth(ramp(lt, .0, .8)) });
+  const hk = .35 + .65 * smooth(ramp(lt, .2, 1.0));
   if (hk > 0) { text('HEARTS2HEARTS', 240, 226, [255, 230, 240], { al: 'c', a: hk, sp: 1 }); onGlow(() => text('HEARTS2HEARTS', 240, 226, [255, 120, 170], { al: 'c', a: hk * .9, sp: 1 })); }
   bloom(1.1, 3, .92);
   vignette(.55);
-  if (lt < .12) flash('#000000', 1 - lt / .12);
 }
 // 霓虹的 MOONRIDE：O 是两颗心
 const NEON = {
@@ -247,7 +246,7 @@ function shCarCamera(lt, d) {
     after1: (L, ox, oy, s) => { const hx = ox + .9 * s, hy = oy + 1.2 * s; rect(hx - .3 * s, hy - .6 * s, .9 * s, 1.6 * s, '#ff8fb8'); rect(hx - .1 * s, hy - 1.3 * s, .2 * s, .7 * s, '#ff8fb8'); px(hx, hy - .3 * s, '#ffffff'); thick(hx, hy + 1 * s, hx + .3 * s, hy + 2.6 * s, .32 * s, SKIN.b); },
   });
   meadow(33, 60, -10, W + 10, 236, 290, lt, { cols: ['#f2b25a', '#e86a4a', '#c79af0'], h: 50, stem: '#243c30' });
-  if (fl > 0) { glow(160, 110, 60, [255, 255, 255], 3 * fl); flash('#ffffff', fl * .8); }
+  if (fl > 0) { glow(150, 150, 18, [255, 255, 255], 1.5 * fl); flash('#ffffff', fl * .7); }
   bloom(1, 3, .95); vignette(.55);
 }
 
@@ -373,9 +372,7 @@ function lily(x, y, s, lt, col) { // 前景的大百合（暗紫）
 }
 function shIceWide(lt, d) {
   const pan = lt * 10;
-  OX = -Math.round(pan);
-  purpleGround(lt, 140, { moon: [440, 34, 9], bushes: 22 });
-  OX = 0;
+  purpleGround(lt, 140, { moon: [440 - pan * .3, 34, 9], bushes: 22 });
   monolith(120 - pan, 222, 46, 112, lt, { steps: true });
   iceBlock(250 - pan, 128, 52, 96, { inner: (L) => fig(0, L.w / 2, L.h - 4, 70, { top: 'strap', col: 'pink', skirt: 'mid', pose: { la: [2.6, .3], ra: [2.6, .3] } }), bg: [[0, '#6a58a8'], [1, '#b89ad8']], frost: .35 });
   for (const [hx, ph] of [[360, 0], [420, 1]]) horseSil(hx - pan * .6, 168, 1.4, '#3c2c6a', lt * 2 + ph);
