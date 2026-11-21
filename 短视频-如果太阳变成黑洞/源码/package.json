@@ -1,0 +1,9 @@
+{
+  "name": "ruguo-yueliang-diao-xialai",
+  "private": true,
+  "description": "《如果月亮掉下来》：WebGL2 着色器 + 无头 Chromium 逐帧渲染",
+  "dependencies": {
+    "@fontsource/noto-serif-sc": "5.3.1",
+    "@fontsource/cormorant-garamond": "5.3.0"
+  }
+}
