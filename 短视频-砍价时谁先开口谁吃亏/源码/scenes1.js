@@ -156,7 +156,16 @@ function hookTeaser(g, t) {
 function coverArt(g, t) {
   const T = 1.6;
   marketScene(g, T, { tag: '4870', tagCol: '#9FE3B8', you: { eyes: 'squint', mouth: 'smile' }, seller: { eyes: 'wide', mouth: 'o' } });
-  titleBlock(g, T);
+  titleBlock(g, T, 300);   // 往下挪 50：主页按 3:4 从中间裁（y 240~1680）时，"砍价时"不被切掉
   bigStamp(g, 1, 0, 440, 640, '先开口赢', { px: 84 });
   sayBubble(g, T, 0, 300, 900, '4870！', 280, 1000, { px: 60 });
+  // 下面三分之一原来是空的地砖：放第二个钩子——整数价签打叉 → 带零头的价签
+  priceTag(g, T, 250, 1440, '5000', 80, { face: 'sweat', col: '#FFD0C8', rot: -.06 });
+  g.strokeStyle = '#FF4B3E'; g.lineWidth = 18; g.lineCap = 'square';
+  g.beginPath(); g.moveTo(140, 1350); g.lineTo(370, 1530); g.stroke();
+  g.beginPath(); g.moveTo(370, 1350); g.lineTo(140, 1530); g.stroke();
+  g.fillStyle = C.white; g.fillRect(420, 1428, 80, 24);
+  for (let i = 0; i < 6; i++) g.fillRect(500 + i * 8, 1404 + i * 8, 8, 72 - i * 16);
+  priceTag(g, T, 740, 1440, '4870', 80, { face: 'smart', col: '#C8F0D4', rot: .05 });
+  ptag(g, 480, 1622, '这个数，别报整的', 44, { fill: C.gold });
 }

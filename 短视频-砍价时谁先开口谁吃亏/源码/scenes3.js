@@ -24,7 +24,9 @@ function counter(g, t) {
     anchorIcon(g, 140, lerp(260, 380, E.in(d2)), 4, '我的：5000');
     sayBubble(g, t, CH('c1', 4) - .2, 330, 900, '5000！', 290, 1000, { px: 56 });
   }
-  source(g, '出处：Galinsky、Mussweiler，2001（想着自己的目标价，对方先报价的优势就没了）', 880, 1238);
+  // 下面整排是小怪、吉他和摊子，出处放到上面的夜空里（两只锚落下的路线中间）
+  source(g, '出处：Galinsky、Mussweiler，2001', 480, 258, { align: 'center' });
+  source(g, '（想着自己的目标价，对方先报价的优势就没了）', 480, 292, { align: 'center' });
 }
 
 /* ================= 攻略卡 ================= */

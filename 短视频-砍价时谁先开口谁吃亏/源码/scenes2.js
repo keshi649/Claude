@@ -27,7 +27,7 @@ function ebayData(g, t) {
     g.fillStyle = round ? '#FFE3E0' : '#E0F6E6'; g.fillRect(cx + 20, cy + 186, 200, 48);
     ptext(g, prices[i], cx + 120, cy + 224, 40, round ? '#E5322D' : '#2E7A3C', { align: 'center' });
   }
-  popTag(g, t, S('n1') - .05, 480, 1250 - 60, '1050 万件', 44, { fill: C.gold });
+  popTag(g, t, S('n1') - .05, 480, 1156, '1050 万件', 44, { fill: C.gold });   // 别压住下面的出处
   // 结果卡片：整百的便宜 5%~8%，但卖得更快
   if (t > CH('n1', 3) - .25) {
     const p = pop(t, CH('n1', 3) - .25, .35);
@@ -35,9 +35,9 @@ function ebayData(g, t) {
     pbox(g, 100, 500, 760, 520, { k: 6, fill: 'rgba(27,23,48,.96)' });
     ptext(g, '最后卖出的价', 480, 570, 36, C.white, { align: 'center' });
     const u = E.out(clamp((t - CH('n1', 4) + .2) / .6));
-    g.fillStyle = '#2E7A3C'; g.fillRect(200, 620, 520, 60); ptext(g, '带零头', 180, 664, 32, '#CFC6E8', { align: 'right' });
-    g.fillStyle = '#E5322D'; g.fillRect(200, 720, Math.round(520 * (1 - .065 * u) / 6) * 6, 60); ptext(g, '整百', 180, 764, 32, '#CFC6E8', { align: 'right' });
-    if (u > .9) ptext(g, '便宜 5%~8%', 690, 765, 36, C.gold, { align: 'right', ol: C.ink, olw: 5 });
+    g.fillStyle = '#2E7A3C'; g.fillRect(230, 620, 500, 60); ptext(g, '带零头', 212, 664, 32, '#CFC6E8', { align: 'right' });
+    g.fillStyle = '#E5322D'; g.fillRect(230, 720, Math.round(500 * (1 - .065 * u) / 6) * 6, 60); ptext(g, '整百', 212, 764, 32, '#CFC6E8', { align: 'right' });
+    if (u > .9) ptext(g, '便宜 5%~8%', 696, 765, 36, C.gold, { align: 'right', ol: C.ink, olw: 5 });
     if (t > CH('n1', 6) - .25) {
       const q = pop(t, CH('n1', 6) - .25, .3);
       g.save(); g.translate(480, 900); g.scale(q, q);
@@ -75,7 +75,8 @@ function ebayPhone(g, t) {
   appListing(g, t, 440, 300, 440, price, chats);
   // 标签贴在价格右边，不盖住新价格 4870
   if (t > tC) { const p = pop(t, tC, .3); g.save(); g.translate(752, 732); g.scale(p, p); ptag(g, 0, 0, '改成带零头', 32, { fill: C.gold }); g.restore(); }
-  ptext(g, '（示意）', 860, 1230, 24, '#9C8C78', { align: 'right' });
-  source(g, '出处：Mason 等，2013，实验社会心理学杂志（1254 人模拟谈判）', 880, 1200, { col: '#7A6A58' });
+  // 出处分两行、右对齐在商品页下面，不压在小怪身上
+  source(g, '出处：Mason 等，2013，实验社会心理学杂志', 880, 1196, { col: '#7A6A58' });
+  source(g, '（1254 人模拟谈判；买家还价是示意）', 880, 1228, { col: '#7A6A58' });
   dialogBox(g, t, 'd2', PORTRAIT.youShock);
 }
