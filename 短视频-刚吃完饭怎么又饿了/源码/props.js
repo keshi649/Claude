@@ -339,6 +339,12 @@ function labRoomBG(b, t) {
   b.fillStyle = '#C9D3DE'; b.fillRect(0, 250, 216, 134); b.fillStyle = '#BCC6D2'; for (let y = 254; y < 384; y += 12) for (let x = ((y / 12) % 2) * 12; x < 216; x += 24) b.fillRect(x, y, 12, 12);
   // 时钟
   b.fillStyle = '#FFFFFF'; pdisc(b, 170, 60, 12, '#2B2547'); pdisc(b, 170, 60, 10, '#FFFFFF');
+  // 左墙的海报（大脑和几行字），右墙的架子上三罐饼干（伏笔：后面要尝饼干）
+  b.fillStyle = '#2B2547'; b.fillRect(18, 58, 44, 56); b.fillStyle = '#FFFFFF'; b.fillRect(20, 60, 40, 52);
+  pdisc(b, 33, 74, 7, '#FF9DB5'); pdisc(b, 45, 74, 7, '#C77F9E'); b.fillStyle = '#5A1E3A'; b.fillRect(38, 67, 1, 14);
+  b.fillStyle = '#9AA6C0'; for (let i = 0; i < 4; i++) b.fillRect(24, 88 + i * 5, i === 3 ? 18 : 32, 2);
+  b.fillStyle = '#8E6036'; b.fillRect(146, 124, 60, 4); b.fillStyle = '#6E4A2E'; b.fillRect(150, 128, 3, 6); b.fillRect(200, 128, 3, 6);
+  [152, 170, 188].forEach((x, i) => { b.fillStyle = 'rgba(220,236,250,.9)'; b.fillRect(x, 104, 14, 20); b.fillStyle = '#C9D3DE'; b.fillRect(x, 102, 14, 3); b.fillStyle = ['#E0A85A', '#C98A4A', '#E8B870'][i]; b.fillRect(x + 2, 112, 10, 11); b.fillStyle = '#7A4A2E'; b.fillRect(x + 4, 114, 2, 2); b.fillRect(x + 8, 118, 2, 2); });
 }
 
 /* ---------- 晚上的家（结尾）：暖灯、窗外夜景、餐桌 ---------- */

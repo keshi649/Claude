@@ -12,7 +12,7 @@ function labTwo(g, t) {
   const b = pbuf('labroom', 216, 384); labRoomBG(b, t); blit(g, 'labroom', 5);
   const tB = S('n2') - .15, tC = S('n3') - .2, k = 15;
   const L = 300, Rr = 740;
-  crabAt(g, L, 1130, k, person(0, { eyes: Math.floor(t * 2) % 3 ? 'l' : 'up', mouth: Math.floor(t * 4) % 2 ? 'chew' : 'flat' }));
+  crabAt(g, L, 1130, k, person(0, { hat: undefined, eyes: Math.floor(t * 2) % 3 ? 'l' : 'up', mouth: Math.floor(t * 4) % 2 ? 'chew' : 'flat' }));
   crabAt(g, Rr, 1130, k, person(1, { eyes: 'dn', mouth: Math.floor(t * 3) % 2 ? 'chew' : 'smile' }));
   // 桌子
   g.fillStyle = '#E8ECF2'; g.fillRect(40, 1070, 470, 40); g.fillRect(540, 1070, 400, 40); g.fillStyle = '#C9D3DE'; g.fillRect(40, 1110, 470, 400); g.fillRect(540, 1110, 400, 400);

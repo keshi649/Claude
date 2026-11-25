@@ -72,7 +72,7 @@ function guide(g, t) {
 function endScene(g, t) {
   const b = pbuf('home', 216, 384); homeBG(b, t); blit(g, 'home', 5);
   glow(g, 370, 260, 520, 'rgba(255,210,140,.35)');
-  const cx = 480, by = 1240, k = 15;
+  const cx = 480, by = 1190, k = 15;
   crabAt(g, cx, by, k, youO(t, { eyes: t > S('z1') ? 'happy' : 'wide', mouth: Math.floor(t * 4) % 2 ? 'chew' : 'smile' }));
   g.fillStyle = '#E8A94A'; g.fillRect(40, 1150, 900, 50); g.fillStyle = '#F2C27A'; g.fillRect(40, 1150, 900, 8); g.fillStyle = '#B07E4A'; g.fillRect(40, 1200, 900, 400);
   tray(g, 420, 1110, .75, clamp((t - SS('end')) / 6));
