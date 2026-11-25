@@ -147,8 +147,22 @@ function hookSnack(g, t) {
   if (t > CH('h5', 3) - .2) bigStamp(g, t, CH('h5', 3) - .2, 640, 640, '下一顿', { px: 72, rot: -.06 });
 }
 
-/* ================= 封面（不带字幕）：办公桌、标题、红章"大脑忘了"、泡泡里空着的账本、冒出来的馋虫 ================= */
+/* ================= 封面（不带字幕，单独构图）：标题、见底的饱腹度、红章"大脑忘了"、中间一个大泡泡（账本"午饭"那行空着、记账的小人在看手机），
+   下面大号的"你"捧着手机、空外卖盒和奶茶，旁边冒出来的馋虫 ================= */
 function coverArt(g, t) {
-  hookDesk(g, 2.6, true);
-  g.save(); g.translate(250, 880); chanchong(g, 2.6, 0, 0, 9, { angry: true }); g.restore();
+  const T = 2.6, b = pbuf('office', 216, 384); officeBG(b, T, {}); blit(g, 'office', 5);
+  glow(g, 870, 320, 420, 'rgba(255,250,220,.3)');
+  wallClock(g, 900, 560, 46, 12 * 60 + 40);
+  const cx = 480, by = 1640, k = 20;
+  crabAt(g, cx, by, k, youO(T, { eyes: 'wide', mouth: 'o' }));
+  g.fillStyle = '#C8955E'; g.fillRect(0, 1560, W, 60); g.fillStyle = '#DDAA72'; g.fillRect(0, 1560, W, 10); g.fillStyle = '#A0703E'; g.fillRect(0, 1620, W, 300);
+  { const [px, py] = crabPt(cx, by, k, 7, 3); phoneHeld(g, T, px, py, 1.15); }
+  g.fillStyle = '#FFFFFF'; g.fillRect(740, 1440, 200, 120); g.fillStyle = '#E5322D'; g.fillRect(740, 1480, 200, 18); ptext(g, '外卖', 840, 1545, 36, '#E5322D', { align: 'center' });
+  g.fillStyle = '#F4F4F4'; g.fillRect(728, 1376, 224, 16); g.fillStyle = '#C9A06A'; g.fillRect(760, 1404, 170, 6); g.fillRect(766, 1416, 170, 6);
+  g.save(); g.translate(170, 1330); chanchong(g, T, 0, 0, 12, { angry: true }); g.restore();
+  titleBlock(g, T);
+  hungerBar(g, 330, 500, 300, .08);
+  bubble(g, 560, 900, 290, 190, 470, 1260);
+  ledger(g, T, 560, 890, 1.15, { rows: ['早饭 ✓'], blank: true, distract: true });
+  bigStamp(g, 1, 0, 420, 640, '大脑忘了', { px: 84 });
 }
