@@ -1,5 +1,5 @@
 'use strict';
-/* scenes2.js：别报整的（eBay 上 1050 万件能砍价的商品：标整百的最后卖得便宜 5%~8%，但卖得更快 →
+/* scenes2.js：别报整的（eBay 上 1050 万件能砍价的商品：标价是整百的最后卖得便宜 5%~8%，但卖得更快 →
    两张会说话的价签："5000：我急着卖，多少都行"、"4870：这个价有讲究" → "那我挂 5000 的吉他……"→ 换成 4870，还价就不敢砍太狠）。 */
 
 function ebay(g, t) {
@@ -73,7 +73,8 @@ function ebayPhone(g, t) {
   const chats = t < tC ? [['4000 卖不卖？', clamp((t - S('d2') - .3) / .3)], ['3800 行吗？', clamp((t - S('d2') - .8) / .3)]]
     : [['4700 可以吗？', clamp((t - CH('n3', 2) + .1) / .3)], ['4800 我直接拍', clamp((t - CH('n3', 3) + .1) / .3)]];
   appListing(g, t, 440, 300, 440, price, chats);
-  if (t > tC) { const p = pop(t, tC, .3); g.save(); g.translate(560, 750); g.scale(p, p); ptag(g, 0, 0, '改成带零头', 32, { fill: C.gold }); g.restore(); }
+  // 标签贴在价格右边，不盖住新价格 4870
+  if (t > tC) { const p = pop(t, tC, .3); g.save(); g.translate(752, 732); g.scale(p, p); ptag(g, 0, 0, '改成带零头', 32, { fill: C.gold }); g.restore(); }
   ptext(g, '（示意）', 860, 1230, 24, '#9C8C78', { align: 'right' });
   source(g, '出处：Mason 等，2013，实验社会心理学杂志（1254 人模拟谈判）', 880, 1200, { col: '#7A6A58' });
   dialogBox(g, t, 'd2', PORTRAIT.youShock);
