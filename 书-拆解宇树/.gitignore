@@ -1,0 +1,3 @@
+# 构建中间文件，都能重新生成（bash 排版/build.sh all、bash 排版/封面/做封面.sh、bash 图/build_figs.sh）
+排版/build/
+图/build/

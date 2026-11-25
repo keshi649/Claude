@@ -1,0 +1,26 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm,
+  layer/.style={dark, minimum width=19mm, minimum height=8.5mm, font=\footnotesize\bfseries},
+  role/.style={boxw, minimum height=7mm, font=\scriptsize, inner sep=2pt},
+]
+  % 从下往上七层：(y, 层名, 角色列表)
+  \foreach \y/\name/\roles in {
+     0/本体/{机械结构,关节执行器,电机控制,嵌入式软件,硬件},
+    10/小脑/{运动控制,强化学习},
+    20/感知/{SLAM 定位,视觉感知},
+    30/大脑/{具身大模型,世界模型},
+    40/数据与基础设施/{数据采集,数据管线,数据评估,AI Infra},
+    50/软件/{系统软件,应用和前后端},
+    60/交付/{测试验证,技术支持,解决方案,产品和项目,产品安全}} {
+    \node[layer, font=\scriptsize\bfseries, align=center, text width=17mm] (L\y) at (9.5,\y) {\name};
+    \foreach \r [count=\i] in \roles {
+      \node[role, anchor=west, minimum width=17mm, text width=16mm] at ({20.5+(\i-1)*18.5},\y) {\r};
+    }
+  }
+  % 右侧的分组括号
+  \draw[decorate, decoration={brace, amplitude=1.8mm}, semithick, mid] (114,64) -- (114,36) node[midway, right=2.5mm, lbl, text width=9mm] {让它\\卖出去\\用起来};
+  \draw[decorate, decoration={brace, amplitude=1.8mm}, semithick, mid] (114,34) -- (114,-4) node[midway, right=2.5mm, lbl, text width=9mm] {机器人\\自己};
+\end{tikzpicture}
+\end{document}

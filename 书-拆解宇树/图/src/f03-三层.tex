@@ -1,0 +1,34 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{layer/.style={draw=ink, rounded corners=2pt, minimum width=78mm, minimum height=15mm, align=left, inner sep=3mm, anchor=west},
+           side/.style={font=\scriptsize, text=mid, align=left, anchor=west}}
+  \node[layer, fill=white] (b) at (0,40) {};
+  \node[layer, fill=pale] (c) at (0,22) {};
+  \node[layer, fill=black!18] (t) at (0,4) {};
+  % 层名
+  \node[font=\small\bfseries, anchor=west] at (3,43) {大脑};
+  \node[font=\scriptsize, anchor=west, text width=60mm] at (16,40) {理解环境、听懂指令、拆解任务、做决策\\具身大模型（VLA、世界模型）};
+  \node[font=\small\bfseries, anchor=west] at (3,25) {小脑};
+  \node[font=\scriptsize, anchor=west, text width=60mm] at (16,22) {站稳、走路、跑跳、摔倒爬起、全身协调\\运动控制、强化学习策略};
+  \node[font=\small\bfseries, anchor=west] at (3,7) {本体};
+  \node[font=\scriptsize, anchor=west, text width=60mm] at (16,4) {骨架、关节、电池、传感器、算力板\\“身体”};
+  % 频率
+  \node[side] at (82,43) {每秒几次};
+  \node[side] at (82,25) {每秒几十到上千次};
+  \node[side] at (82,7) {关节电流每秒上万次};
+  % 本书对应
+  \node[side, text=ink] at (82,38.5) {本书第四部};
+  \node[side, text=ink] at (82,20.5) {本书第三部};
+  \node[side, text=ink] at (82,2.5) {本书第二部};
+  % 箭头：指令下行、状态上行
+  \draw[arr] (-4,36) -- node[left, font=\tiny, text=mid, align=right] {任务\\指令} (-4,26);
+  \draw[arr] (-4,18) -- node[left, font=\tiny, text=mid, align=right] {关节\\目标} (-4,8);
+  \draw[arr] (-8,8) -- node[left, font=\tiny, text=mid, align=right] {状态} (-8,36);
+  % 宇树强项标记
+  \draw[decorate, decoration={brace, amplitude=2mm, mirror}, ink, line width=0.6pt] (108,-3) -- (108,29);
+  \node[font=\scriptsize\bfseries, anchor=west, align=left] at (112,13) {宇树的\\强项};
+  \node[font=\scriptsize, anchor=west, align=left, text=mid] at (112,40) {正在追};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,78 @@
+% 正封图案：画在 (0,0)–(170,240)（单位 mm，不含出血），被 封面-*.tex 引用
+% 颜色：cbg 底色、cink 墨色、cacc 橙色、cline 线条灰
+\begin{scope}
+  % 底色（向外多铺 3 mm 出血）
+  \fill[cbg] (-3,-3) rectangle (173,243);
+  \begin{scope}
+    \clip (-3,-3) rectangle (173,243);
+    \draw[cline!35, line width=0.15pt] (-3,-3) grid[step=10] (173,243);
+  \end{scope}
+  % 顶部小字
+  \node[anchor=north west, font=\heiti\fontsize{10.5}{12}\selectfont, text=cink!85] at (16,227) {看懂具身智能，也看清这一行的门在哪};
+  \draw[cacc, line width=1.8pt] (16,219.5) -- (42,219.5);
+  % 书名
+  \node[anchor=north west, inner sep=0, font=\heitiblack\fontsize{96}{100}\selectfont, text=cink] at (13.5,214) {拆解宇树};
+  % 副书名
+  \node[anchor=north west, inner sep=0, font=\heiti\bfseries\fontsize{17}{20}\selectfont, text=cacc] at (16,172) {从一颗电机到会翻跟头的机器人};
+
+  % ===== 爆炸图：一个关节沿斜轴拆开 =====
+  % \disk{沿轴位置}{半径}{厚度}{侧面色}{正面色}{正面装饰（在“压扁的圆盘”坐标里画）}
+  \newcommand{\disk}[6]{%
+    \begin{scope}[shift={({#1*0.76},{#1*0.65})}]
+      \begin{scope}[shift={({#3*0.76},{#3*0.65})}, rotate=-50, yscale=0.38]
+        \fill[#4] (0,0) circle (#2);
+      \end{scope}
+      \fill[#4] (-50:#2) -- ($({#3*0.76},{#3*0.65})+(-50:#2)$) -- ($({#3*0.76},{#3*0.65})+(130:#2)$) -- (130:#2) -- cycle;
+      \begin{scope}[rotate=-50, yscale=0.38]
+        \filldraw[fill=#5, draw=cink, line width=0.7pt] (0,0) circle (#2);
+        #6
+      \end{scope}
+    \end{scope}}
+  \begin{scope}[shift={(30,40)}]
+    \draw[cline, line width=0.6pt, dash pattern=on 4pt off 2pt on 1pt off 2pt] (-14,-12) -- (124,106);
+    % 从远到近画：输出法兰 → 编码器 → 行星减速器 → 转子 → 定子 → 外壳
+    \disk{146}{17}{5}{cink!70}{cink!12}{%
+      \foreach \a in {45,135,225,315} \fill[cink] (\a:10) circle (1.7);
+      \filldraw[fill=cink, draw=cink] (0,0) circle (4);}
+    \disk{124}{13}{2}{cink!55}{cbg}{%
+      \foreach \a in {0,15,...,345} \draw[cink, line width=0.6pt] (\a:7) -- (\a:11);
+      \fill[cink] (0,0) circle (2.5);}
+    \disk{98}{20}{6}{cacc!75!black}{cacc}{%
+      \fill[cbg] (0,0) circle (15.5);
+      \foreach \a in {90,210,330} \filldraw[fill=cacc!65, draw=cink, line width=0.5pt] (\a:8.6) circle (5.6);
+      \filldraw[fill=cink, draw=cink] (0,0) circle (3.2);}
+    \disk{68}{14}{8}{cink!80}{cink}{%
+      \foreach \a/\c in {0/cacc,90/cbg,180/cacc,270/cbg} \fill[\c] (\a+12:7) -- (\a+12:12) arc (\a+12:\a+78:12) -- (\a+78:7) arc (\a+78:\a+12:7) -- cycle;
+      \fill[cbg] (0,0) circle (3);}
+    \disk{36}{22}{6}{cink!55}{cline!40}{%
+      \foreach \a in {0,30,...,330} \draw[cink, line width=2.2pt] (\a:10) -- (\a:17.5);
+      \fill[cbg] (0,0) circle (9);}
+    \disk{0}{26}{7}{cink!72}{cbg}{%
+      \draw[cink, line width=0.7pt] (0,0) circle (19);
+      \foreach \a in {0,60,...,300} \fill[cink] (\a:22.5) circle (1.3);}
+    % 标注
+    \tikzset{cl/.style={font=\heiti\fontsize{8}{9}\selectfont, text=cink!80}}
+    \node[cl, anchor=north west] at ($(0,0)+(-50:24)$) {外壳};
+    \node[cl, anchor=north west] at ($({36*0.76},{36*0.65})+(-50:21)$) {定子};
+    \node[cl, anchor=north west] at ($({68*0.76},{68*0.65})+(-50:14)$) {转子};
+    \node[cl, anchor=north west] at ($({98*0.76},{98*0.65})+(-50:20)$) {行星减速器};
+    \node[cl, anchor=west] at ($({124*0.76},{124*0.65})+(-30:13)$) {编码器};
+    \node[cl, anchor=west] at ($({146*0.76},{146*0.65})+(-20:16)$) {输出法兰};
+  \end{scope}
+
+  % ===== 右下角：一只简笔机器狗 =====
+  \begin{scope}[shift={(112,24)}, scale=0.68]
+    \filldraw[fill=cink, draw=cink, rounded corners=3pt] (0,20) rectangle (46,32);
+    \filldraw[fill=cink, draw=cink, rounded corners=2pt] (44,26) rectangle (57,36);
+    \fill[cacc] (53,31) circle (1.7);
+    \foreach \x in {10,20,34,44} {
+      \draw[cink, line width=3.2pt, line cap=round] (\x,21) -- (\x-6,10) -- (\x,0);
+      \filldraw[fill=cacc, draw=cink, line width=0.6pt] (\x-6,10) circle (2);
+      \fill[cink] (\x,0) circle (2.2);
+    }
+  \end{scope}
+  \draw[cink, line width=0.8pt] (100,22.5) -- (160,22.5);
+
+  % 作者
+  \node[anchor=south west, font=\heiti\bfseries\fontsize{15}{18}\selectfont, text=cink] at (16,11) {甜菜　著};
+\end{scope}

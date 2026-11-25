@@ -1,0 +1,18 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[
+    width=118mm, height=55mm, xmin=2.0, xmax=2.2, ymin=-110, ymax=-101,
+    xlabel={时间（秒）}, ylabel={左前腿膝关节角（度）}, label style={font=\scriptsize},
+    tick label style={font=\scriptsize, /pgf/number format/fixed}, axis lines=left, axis line style={ink},
+    xtick={2.0,2.05,2.1,2.15,2.2}, ymajorgrids, grid style={black!12},
+    legend style={font=\scriptsize, draw=none, fill=white, fill opacity=0.85, text opacity=1, at={(0.99,0.99)}, anchor=north east, cells={anchor=west}, legend columns=3},
+    every axis plot/.append style={line width=1.0pt},
+  ]
+    \addplot[ink!35, dashed] table[x=t, y=target, col sep=comma] {data/p1_delay.csv}; \addlegendentry{目标}
+    \addplot[ink, line width=1.3pt] table[x=t, y=kd3, col sep=comma] {data/p1_delay.csv}; \addlegendentry{kd=3}
+    \addplot[mid] table[x=t, y=kd8, col sep=comma] {data/p1_delay.csv}; \addlegendentry{kd=8}
+  \end{axis}
+\end{tikzpicture}
+\end{document}

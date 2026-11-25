@@ -1,0 +1,45 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=11.2mm,y=1mm]
+  % 年份带
+  \foreach \y in {0,...,10} {
+    \pgfmathtruncatemacro{\yr}{2016+\y}
+    \pgfmathsetmacro{\shade}{mod(\y,2)==0 ? 94 : 100}
+    \fill[black!6] (\y,-3.5) rectangle (\y+1,3.5);
+    \draw[white, line width=0.8pt] (\y,-3.5) -- (\y,3.5);
+    \node[font=\scriptsize\bfseries, text=ink] at (\y+0.5,0) {\yr};
+  }
+  % 泳道标签
+  \node[anchor=west, font=\scriptsize\bfseries, text=mid] at (0,27) {四足机器人};
+  \node[anchor=west, font=\scriptsize\bfseries, text=mid] at (0,-9) {人形机器人与组件};
+  \tikzset{q/.style={box, font=\scriptsize, minimum height=4.6mm, inner sep=1.6pt},
+           h/.style={dark, font=\scriptsize, minimum height=4.6mm, inner sep=1.6pt},
+           c/.style={boxw, font=\scriptsize, minimum height=4.6mm, inner sep=1.6pt},
+           pin/.style={mid, densely dotted}}
+  % 四足（上方）
+  \foreach \x/\yy/\t in {1.5/9/Laikago, 3.5/9/AlienGo, 4.5/16/A1, 5.45/9/Go1, 6.5/16/B1,
+                         7.5/9/Go2, 7.85/21/B2, 8.5/14/B2-W, 9.6/9/A2} {
+    \draw[pin] (\x,3.5) -- (\x,\yy-2.3);
+    \node[q] at (\x,\yy) {\t};
+  }
+  % 人形与组件（下方）
+  \foreach \x/\yy/\t in {7.6/-9/H1, 8.35/-16/G1, 9.5/-9/R1, 9.8/-21/H2} {
+    \draw[pin] (\x,-3.5) -- (\x,\yy+2.3);
+    \node[h] at (\x,\yy) {\t};
+  }
+  \foreach \x/\yy/\t in {5.5/-9/Z1 机械臂, 7.2/-16/L1 雷达} {
+    \draw[pin] (\x,-3.5) -- (\x,\yy+2.3);
+    \node[c] at (\x,\yy) {\t};
+  }
+  % 公司大事：单独一条细轴
+  \node[anchor=west, font=\scriptsize\bfseries, text=mid] at (0,-31) {大事};
+  \draw[mid, line width=0.5pt] (0,-35) -- (11,-35);
+  \tikzset{ev/.style={font=\scriptsize, text=ink, align=center}}
+  \foreach \x/\yy/\t in {0.6/-37/成立\\2016.8, 8.2/-37/H1 后空翻\\2024.3, 9.05/-46/春晚《秧BOT》\\2025.1, 10.1/-37/春晚《武BOT》\\2026.2, 10.62/-46/科创板上市\\2026.8} {
+    \fill[ink] (\x,-35) circle (0.55mm);
+    \draw[pin] (\x,-35) -- (\x,\yy);
+    \node[ev, anchor=north] at (\x,\yy) {\t};
+  }
+\end{tikzpicture}
+\end{document}

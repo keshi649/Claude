@@ -1,0 +1,54 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{
+    bone/.style={line width=2.2pt, ink, line cap=round},
+    pro/.style={rectangle, draw=ink, fill=white, line width=0.7pt, minimum size=3mm, inner sep=0pt},
+    ext/.style={rectangle, draw=ink, fill=ink, line width=0.7pt, minimum size=3mm, inner sep=0pt},
+    tagl/.style={font=\scriptsize, align=left, text=ink, anchor=west},
+    tagr/.style={font=\scriptsize, align=right, text=ink, anchor=east},
+    lead/.style={mid, line width=0.4pt}}
+  % 机器人轮廓
+  \draw[ink, line width=0.8pt, fill=pale] (0,79) circle (6);
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=2pt] (-9,46) rectangle (9,71);
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=2pt] (-8,38) rectangle (8,44.5);
+  \draw[bone] (-9,67) -- (-17,55) -- (-20,43);
+  \draw[bone] (9,67) -- (17,55) -- (20,43);
+  \draw[bone] (-5,38) -- (-6,22) -- (-6,6);
+  \draw[bone] (5,38) -- (6,22) -- (6,6);
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=1pt] (-11,1.5) rectangle (-1,4.5);
+  \draw[ink, line width=0.8pt, fill=pale, rounded corners=1pt] (1,1.5) rectangle (11,4.5);
+  \draw[ink, line width=0.8pt, fill=pale] (-20,41) circle (2.6);
+  \draw[ink, line width=0.8pt, fill=pale] (20,41) circle (2.6);
+  % 传感器
+  \node[ext] (lidar) at (0,84.5) {};
+  \node[ext] (cam) at (3,79) {};
+  \node[ext] (mic) at (-4,76) {};
+  \node[pro] (imu) at (0,41.2) {};
+  \node[pro] (enc) at (-6,22) {};
+  \node[pro] (enc2) at (-17,55) {};
+  \node[pro] (bat) at (0,58) {};
+  \node[ext] (tac) at (20,41) {};
+  \node[pro] (foot) at (6,3) {};
+  % 左侧标注（本体感知）
+  \node[tagr] (a) at (-30,58) {电源和电池状态};
+  \node[tagr] (b) at (-30,46) {关节编码器 + 电机电流：\\每个关节的角度、速度、扭矩};
+  \node[tagr] (c) at (-30,30) {IMU：身体倾斜和角速度\\（常装在骨盆或躯干里）};
+  \draw[lead] (a.east) -- (bat.west); \draw[lead] (b.east) -- (enc2.west);
+  \draw[lead] (-30,46) -- (enc.west);
+  \draw[lead] (c.east) -- (imu.west);
+  % 右侧标注（外部感知）
+  \node[tagl] (d) at (28,86) {3D 激光雷达：看周围和脚下};
+  \node[tagl] (e) at (28,78) {深度相机、彩色相机：认东西};
+  \node[tagl] (f) at (28,70) {麦克风阵列：听指令};
+  \node[tagl] (g) at (28,41) {手上的触觉传感器（灵巧手）};
+  \node[tagl] (h) at (28,6) {脚底接触：由电机电流估算，\\或装足底力传感器};
+  \draw[lead] (d.west) -- (lidar.east); \draw[lead] (e.west) -- (cam.east);
+  \draw[lead] (f.west) -- (mic.north east); \draw[lead] (g.west) -- (tac.east);
+  \draw[lead] (h.west) -- (foot.east);
+  % 图例
+  \node[pro] at (-44,-6) {}; \node[tagl] at (-42,-6) {本体感知：感受自己};
+  \node[ext] at (2,-6) {}; \node[tagl] at (4,-6) {外部感知：感受环境};
+\end{tikzpicture}
+\end{document}

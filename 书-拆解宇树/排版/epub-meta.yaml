@@ -1,0 +1,14 @@
+title:
+  - type: main
+    text: 拆解宇树
+  - type: subtitle
+    text: 从一颗电机到会翻跟头的机器人
+creator:
+  - role: author
+    text: 甜菜
+lang: zh-CN
+date: 2026-10
+rights: 本书为独立写作，与宇树科技股份有限公司无隶属、授权或赞助关系。书中商标归各自所有者所有。
+description: 以宇树机器狗和人形机器人为主线，从关节电机、减速器、电池、传感器一路拆到强化学习和具身大模型，再用招股书数据讲清这门生意，最后给想转行的人一张岗位地图和 90 天项目计划。
+subject: 机器人；具身智能；人形机器人；科普
+toc-title: 目录

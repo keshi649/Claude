@@ -1,0 +1,172 @@
+% 《具身智能求职手册》内文模板：pandoc 用，XeLaTeX 编译（由《拆解宇树》的模板改来）
+% 开本 170×240 mm（小 16 开），黑白印刷
+\documentclass[fontset=none,zihao=5,twoside,openright,UTF8]{ctexbook}
+
+% ---------- 字体（Noto CJK 的 TTC 里第 3 个面 FontIndex=2 才是简体中文字形） ----------
+\setCJKmainfont{NotoSerifCJK-Regular.ttc}[
+  Path=/usr/share/fonts/opentype/noto/, FontIndex=2,
+  BoldFont=NotoSerifCJK-Bold.ttc, BoldFeatures={FontIndex=2},
+  ItalicFont=NotoSerifCJK-Regular.ttc, ItalicFeatures={FontIndex=2}]
+\setCJKsansfont{NotoSansCJK-Regular.ttc}[
+  Path=/usr/share/fonts/opentype/noto/, FontIndex=2,
+  BoldFont=NotoSansCJK-Bold.ttc, BoldFeatures={FontIndex=2}]
+\setCJKmonofont{NotoSansCJK-Regular.ttc}[
+  Path=/usr/share/fonts/opentype/noto/, FontIndex=7]
+\newCJKfontfamily\heiti{NotoSansCJK-Medium.ttc}[
+  Path=/usr/share/fonts/opentype/noto/, FontIndex=2,
+  BoldFont=NotoSansCJK-Bold.ttc, BoldFeatures={FontIndex=2}]
+\newCJKfontfamily\heitiblack{NotoSansCJK-Black.ttc}[
+  Path=/usr/share/fonts/opentype/noto/, FontIndex=2]
+\setmainfont{TeX Gyre Pagella}
+\setsansfont{TeX Gyre Heros}
+\setmonofont{DejaVu Sans Mono}[Scale=0.80]
+\usepackage{unicode-math}
+\setmathfont{TeX Gyre Pagella Math}
+
+% ---------- 版心 ----------
+\usepackage[paperwidth=170mm,paperheight=240mm,
+  inner=21mm,outer=17mm,top=21mm,bottom=20mm,
+  headheight=14pt,headsep=5mm,footskip=9mm]{geometry}
+\linespread{1.32}
+\setlength{\parskip}{0.25ex plus 0.2ex}
+\ctexset{punct=quanjiao}
+% 中文引号、破折号、省略号一律按全角中文标点排
+\xeCJKDeclareCharClass{FullLeft}{"2018,"201C}
+\xeCJKDeclareCharClass{FullRight}{"2019,"201D}
+\xeCJKDeclareCharClass{CJK}{"2014,"2026,"2460->"2473}
+
+% ---------- 颜色（黑白印刷，只用灰阶） ----------
+\usepackage{xcolor}
+\definecolor{ink}{gray}{0.10}
+\definecolor{mid}{gray}{0.45}
+\definecolor{light}{gray}{0.90}
+\definecolor{faint}{gray}{0.96}
+
+% ---------- 标题 ----------
+\setcounter{secnumdepth}{0}
+\setcounter{tocdepth}{1}
+\ctexset{
+  part/pagestyle = empty,
+  part/format = \centering,
+  part/name = {第,部},
+  part/number = \chinese{part},
+  part/nameformat = \heiti\Large\color{mid},
+  part/titleformat = \heitiblack\Huge,
+  part/aftername = \par\vspace{8mm},
+  chapter/pagestyle = chapteropen,
+  chapter/format = \raggedright,
+  chapter/name = {第,章},
+  chapter/number = \arabic{chapter},
+  chapter/nameformat = \heiti\large\color{mid},
+  chapter/titleformat = \heitiblack\LARGE,
+  chapter/aftername = \par\vspace{5mm},
+  chapter/beforeskip = 18mm,
+  chapter/afterskip = 14mm,
+  section/format = \heiti\bfseries\large\raggedright,
+  section/beforeskip = 3.2ex plus 1ex minus .2ex,
+  section/afterskip = 1.6ex plus .2ex,
+  subsection/format = \heiti\bfseries\normalsize\raggedright,
+  subsection/beforeskip = 2.2ex plus .8ex minus .2ex,
+  subsection/afterskip = 1.0ex plus .2ex,
+  appendix/name = {附录,},
+  appendix/number = \Alph{chapter},
+}
+
+% ---------- 页眉页脚 ----------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\small\heiti\color{mid}\thepage\quad 具身智能求职手册}
+\fancyhead[RO]{\small\heiti\color{mid}\nouppercase{\leftmark}\quad\thepage}
+\renewcommand{\headrulewidth}{0pt}
+\fancypagestyle{chapteropen}{\fancyhf{}\fancyfoot[C]{\small\color{mid}\thepage}}
+\fancypagestyle{plain}{\fancyhf{}\fancyfoot[C]{\small\color{mid}\thepage}}
+\ctexset{chapter/name={第,章}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{#1}}
+% 空白页不带页眉
+\makeatletter
+\def\cleardoublepage{\clearpage\if@twoside \ifodd\c@page\else
+  \hbox{}\thispagestyle{empty}\newpage\if@twocolumn\hbox{}\newpage\fi\fi\fi}
+\makeatother
+
+% ---------- 小框 ----------
+\usepackage[most]{tcolorbox}
+\tcbset{boxcommon/.style={breakable, enhanced, arc=0mm, outer arc=0mm,
+  left=3.5mm, right=3.5mm, top=2mm, bottom=2mm, before skip=3.5mm, after skip=3.5mm,
+  fonttitle=\heiti\bfseries\small, coltitle=ink}}
+\newtcolorbox{engineerbox}[1]{boxcommon, colback=faint, colframe=mid,
+  boxrule=0pt, leftrule=1.2mm, toprule=0pt, bottomrule=0pt, rightrule=0pt,
+  title={工程师视角\ifx\relax#1\relax\else｜#1\fi}, attach title to upper={\par\smallskip},
+  fontupper=\small}
+\newtcolorbox{examinerbox}[1]{boxcommon, colback=faint, colframe=ink,
+  boxrule=0pt, leftrule=1.2mm, toprule=0pt, bottomrule=0pt, rightrule=0pt,
+  title={考官视角\ifx\relax#1\relax\else｜#1\fi}, attach title to upper={\par\smallskip},
+  fontupper=\small}
+\newtcolorbox{takeawaybox}[1]{boxcommon, colback=white, colframe=ink,
+  boxrule=0pt, toprule=0.8pt, bottomrule=0.8pt, leftrule=0pt, rightrule=0pt,
+  title={本章一句话}, attach title to upper={\quad}, fontupper=\heiti\bfseries}
+\newtcolorbox{careerbox}[1]{boxcommon, colback=white, colframe=mid,
+  boxrule=0.5pt, borderline={0.5pt}{0.8mm}{mid,dashed},
+  title={转行者笔记\ifx\relax#1\relax\else｜#1\fi}, attach title to upper={\par\smallskip},
+  fontupper=\small}
+\newtcolorbox{trybox}[1]{boxcommon, colback=light!55, colframe=light!55, boxrule=0pt,
+  title={动手试试\ifx\relax#1\relax\else｜#1\fi}, attach title to upper={\par\smallskip},
+  fontupper=\small}
+\newtcolorbox{notebox}[1]{boxcommon, colback=white, colframe=mid, boxrule=0.4pt,
+  title={#1}, attach title to upper={\par\smallskip}, fontupper=\small}
+
+% ---------- 列表、表格、图 ----------
+\usepackage{enumitem}
+\setlist{nosep, leftmargin=2em, itemsep=0.3ex}
+\usepackage{longtable,booktabs,array,calc,multirow}
+\renewcommand{\arraystretch}{1.25}
+\usepackage{caption}
+\captionsetup{labelformat=empty, font={small,sf}, labelfont=sf, skip=2mm}
+\captionsetup[table]{position=top}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>0.62\textheight 0.62\textheight\else\Gin@nat@height\fi}
+\makeatother
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\usepackage{float}
+\setcounter{topnumber}{2}
+\renewcommand{\topfraction}{0.85}
+\renewcommand{\textfraction}{0.12}
+\renewcommand{\floatpagefraction}{0.75}
+
+% ---------- 代码 ----------
+\usepackage{fancyvrb,framed}
+\definecolor{shadecolor}{gray}{0.95}
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+\providecommand{\tightlist}{\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\providecommand{\pandocbounded}[1]{#1}
+\makeatletter
+\@ifundefined{Highlighting}%
+  {\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\footnotesize}}%
+  {\RecustomVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\},fontsize=\footnotesize}}
+\@ifundefined{Shaded}{\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}}{}
+\makeatother
+
+% ---------- 其他 ----------
+\usepackage{amsmath}
+\usepackage{xurl}
+\usepackage[hidelinks,bookmarksnumbered,unicode]{hyperref}
+\hypersetup{pdftitle={具身智能求职手册：岗位、面试题和不买真机的作品集},pdfauthor={甜菜}}
+\usepackage{bookmark}
+\widowpenalty=10000 \clubpenalty=10000
+\setlength{\emergencystretch}{2em}
+\uchyph=0 % 大写字母开头的西文词（CycloneDDS、MOSFET、Hugging）不断词
+\raggedbottom
+
+\begin{document}
+\frontmatter
+\input{排版/前置页.tex}
+\tableofcontents
+% 正文里用 \mainmatter、\appendix 切换（写在 Markdown 的 raw latex 块里）
+$body$
+% 印刷要偶数页：最后不够就补一张空白页
+\cleardoublepage
+\end{document}

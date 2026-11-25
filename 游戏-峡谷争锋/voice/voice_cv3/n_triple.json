@@ -1,0 +1,24 @@
+{
+ "id": "triple",
+ "shown": "三杀",
+ "say": "三杀！",
+ "mode": "instruct-retake",
+ "style": 1,
+ "chars": [
+  [
+   "三",
+   0.23,
+   0.47
+  ],
+  [
+   "杀",
+   0.51,
+   0.725
+  ]
+ ],
+ "asr": "三杀",
+ "cer": 0,
+ "seed": 15676,
+ "last_slope": -275,
+ "last_median": 358
+}

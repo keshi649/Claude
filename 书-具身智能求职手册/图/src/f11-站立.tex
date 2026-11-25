@@ -1,0 +1,21 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[
+    width=118mm, height=62mm, xmin=0.4, xmax=5, ymin=0.08, ymax=0.30,
+    xlabel={时间（秒）}, ylabel={机身高度（米）}, label style={font=\scriptsize},
+    tick label style={font=\scriptsize}, axis lines=left, axis line style={ink},
+    ymajorgrids, grid style={black!12},
+    legend style={font=\scriptsize, draw=none, at={(0.5,1.03)}, anchor=south, legend columns=4},
+    every axis plot/.append style={line width=1.1pt},
+  ]
+    \fill[black!8] (axis cs:3,0.08) rectangle (axis cs:4,0.30);
+    \node[font=\scriptsize, text=mid] at (axis cs:3.5,0.29) {压 60 牛};
+    \addplot[ink] table[x=t, y=kp300, col sep=comma] {data/p1_height.csv}; \addlegendentry{kp=300，kd=3}
+    \addplot[ink!70, dashed] table[x=t, y=kp100, col sep=comma] {data/p1_height.csv}; \addlegendentry{kp=100，kd=2}
+    \addplot[mid, densely dotted] table[x=t, y=kp40, col sep=comma] {data/p1_height.csv}; \addlegendentry{kp=40，kd=1}
+    \addplot[soft, dash dot] table[x=t, y=kp10, col sep=comma] {data/p1_height.csv}; \addlegendentry{kp=10，kd=0.5}
+  \end{axis}
+\end{tikzpicture}
+\end{document}

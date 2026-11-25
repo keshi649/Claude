@@ -1,0 +1,9 @@
+% 正封单页（含 3 mm 出血）：176×246 mm。用来出电子书封面图和预览
+\documentclass[tikz,border=0pt]{standalone}
+\input{排版/封面/公共.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \useasboundingbox (-3,-3) rectangle (173,243);
+  \input{排版/封面/正面.tex}
+\end{tikzpicture}
+\end{document}

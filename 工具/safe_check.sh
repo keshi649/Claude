@@ -8,4 +8,5 @@ mkdir -p "$O"; rm -f "$O"/f_*.png
 ovs=()
 for t in "$@"; do ffmpeg -v error -y -ss "$t" -i "$F" -frames:v 1 "$O/f_$t.png"; ovs+=("$O/f_${t}_ov.png"); done
 python3 "$H/safe_overlay.py" "$O"/f_*[0-9].png
-python3 "$H/sheet.py" "$O/safe.jpg" 8 .25 "${ovs[@]}"
+W=$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of csv=p=0 "$F")
+if [ "$W" -gt 1500 ]; then python3 "$H/sheet.py" "$O/safe.jpg" 3 .33 "${ovs[@]}"; else python3 "$H/sheet.py" "$O/safe.jpg" 8 .25 "${ovs[@]}"; fi

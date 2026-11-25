@@ -1,0 +1,25 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}
+  \begin{axis}[
+    width=118mm, height=62mm, ybar, bar width=7mm, ymin=0, ymax=3800,
+    xtick={0,1,2,3}, xticklabels={原始环境,躯干重 1.5 倍,摩擦减半,电机力气八成}, xmin=-0.6, xmax=3.6,
+    ylabel={测试得分（3 个种子平均）}, label style={font=\scriptsize},
+    tick label style={font=\scriptsize}, axis lines=left, axis line style={ink},
+    ymajorgrids, grid style={black!12}, scaled y ticks=false,
+    yticklabel style={/pgf/number format/.cd, fixed, 1000 sep={,}},
+    legend style={font=\scriptsize, draw=none, at={(0.99,0.99)}, anchor=north east, legend columns=2},
+    error bars/error bar style={ink, semithick}, error bars/error mark options={rotate=90, mark size=1.5pt},
+  ]
+    \addplot[fill=soft, draw=ink, error bars/.cd, y dir=both, y explicit]
+      table[x expr=\coordindex, y=nodr, y error plus expr=\thisrow{nodr_max}-\thisrow{nodr},
+            y error minus expr=\thisrow{nodr}-\thisrow{nodr_min}, col sep=comma] {data/p3_eval.csv};
+    \addlegendentry{不加域随机化}
+    \addplot[fill=ink, draw=ink, error bars/.cd, y dir=both, y explicit]
+      table[x expr=\coordindex, y=dr, y error plus expr=\thisrow{dr_max}-\thisrow{dr},
+            y error minus expr=\thisrow{dr}-\thisrow{dr_min}, col sep=comma] {data/p3_eval.csv};
+    \addlegendentry{加域随机化}
+  \end{axis}
+\end{tikzpicture}
+\end{document}

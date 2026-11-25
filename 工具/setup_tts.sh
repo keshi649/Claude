@@ -45,7 +45,7 @@ x-transformers==2.11.24
 wetext==0.0.4
 wget==3.2
 huggingface_hub
-funasr>=1.1
+funasr==1.4.16
 pypinyin
 setuptools<70
 gdown==5.1.0

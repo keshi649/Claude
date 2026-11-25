@@ -1,11 +1,15 @@
 """看配音里某几个字的声调（音高曲线）。按拼音比对查不出声调错，多音字和有两个读音的字（估、角、调、兴、空……）要用它看一眼。
-用法：/home/user/tts/venv/bin/python 工具/tone_check.py 源码目录 编号 字[字...] [--vot]
+用法：/home/user/tts/venv/bin/python 工具/tone_check.py 源码目录 编号 [字[字...]] [--vot] [--all]
 怎么看（女声，单位 Hz；同一句里前面的字整体偏高）：
   一声：高而平；二声：往上升；三声：低，先降后升（在别的字前面只剩低降）；四声：从高处往下掉。
   例："高估"的"估"该是一声，第一版从 339 掉到 174，像四声 gù；加拼音重合成后在 360~400 之间，平中略升（问句）。
 --vot：再打印这个字前后 0.1 秒、每 10 ms 一格的"低频/高频"能量（dB）。
   送气音（t、p、k、q、ch、c）在元音前有 50~80 ms 高频比低频还强的一段；不送气（d、b、g、j、zh、z）只有 10 ms 左右。
-  例："调不够"的"调"该念 tiáo（送气 t），diào 是不送气的 d。"""
+  例："调不够"的"调"该念 tiáo（送气 t），diào 是不送气的 d。
+--all：不给字也行，打印整句每个字的音高（隔一帧取一个），连着前后字一起看：
+  句子有下倾，前面的字整体高；三声在别的字前面只剩低；二声在轻声前，上升会拖到下一个字里（"调得出"）。
+注意：送气段（t、c、q 的气流声）里 harvest 会给出假的高音（"藏"开头的 343、422），要从浊音开始的地方看起，
+  浊音从哪儿开始，用 --vot 看低频能量跳起来的那一格。"""
 import json
 import os
 import sys
@@ -15,7 +19,10 @@ import pyworld as pw
 import soundfile as sf
 from scipy.signal import butter, sosfilt
 
-src, lid, chs = sys.argv[1], sys.argv[2], sys.argv[3]
+args = [a for a in sys.argv[1:] if not a.startswith('--')]
+src, lid = args[0], args[1]
+chs = args[2] if len(args) > 2 else ''
+ALL = '--all' in sys.argv or not chs
 base = os.path.join(src, 'voice_cv3', 'n_' + lid)
 d = json.load(open(base + '.json', encoding='utf-8'))
 x, sr = sf.read(base + '.wav')
@@ -26,6 +33,10 @@ hi = sosfilt(butter(4, [2500, 8000], 'band', fs=sr, output='sos'), x)
 db = lambda v: 10 * np.log10(np.mean(v ** 2) + 1e-12)
 print(d['say'])
 for c, a, b in d['chars']:
+    if ALL and c not in chs:
+        sel = (t >= a) & (t <= b) & (f0 > 0)
+        print(f"{c} {a:.2f}~{b:.2f}s {np.round(f0[sel]).astype(int).tolist()[::2]}")
+        continue
     if c not in chs:
         continue
     sel = (t >= a) & (t <= b + .02) & (f0 > 0)

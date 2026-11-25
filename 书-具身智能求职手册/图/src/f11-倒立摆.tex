@@ -1,0 +1,22 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}
+  \pgfplotsset{every axis/.append style={width=118mm, height=42mm, xmin=0, xmax=8,
+    label style={font=\scriptsize}, tick label style={font=\scriptsize}, axis lines=left, axis line style={ink},
+    ymajorgrids, grid style={black!12}, every axis plot/.append style={line width=1.0pt}}}
+  \begin{axis}[name=top, ymin=-7, ymax=7, ylabel={摆角（度）}, xticklabels={},
+      legend style={font=\scriptsize, draw=none, at={(0.99,0.97)}, anchor=north east, legend columns=2}]
+    \draw[soft, densely dashed] (axis cs:2,-7) -- (axis cs:2,7);
+    \node[font=\scriptsize, text=mid, anchor=south west] at (axis cs:2.05,4.5) {侧推一把};
+    \addplot[mid, dashed] table[x=t, y=theta_deg, col sep=comma] {data/p2_pid.csv}; \addlegendentry{只管摆角的 PID}
+    \addplot[ink] table[x=t, y=theta_deg, col sep=comma] {data/p2_lqr.csv}; \addlegendentry{LQR}
+  \end{axis}
+  \begin{axis}[at={(top.south west)}, anchor=north west, yshift=-4mm, ymin=-0.55, ymax=0.45,
+      xlabel={时间（秒）}, ylabel={小车位置（米）}]
+    \draw[soft, densely dashed] (axis cs:2,-0.55) -- (axis cs:2,0.45);
+    \addplot[mid, dashed] table[x=t, y=x, col sep=comma] {data/p2_pid.csv};
+    \addplot[ink] table[x=t, y=x, col sep=comma] {data/p2_lqr.csv};
+  \end{axis}
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,31 @@
+% 插图公用样式：黑白灰，思源黑体（SC 字形），按实际尺寸画（版心宽 132 mm）
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont{NotoSansCJK-Regular.ttc}[Path=/usr/share/fonts/opentype/noto/,FontIndex=2,
+  BoldFont=NotoSansCJK-Bold.ttc,BoldFeatures={FontIndex=2}]
+\setCJKsansfont{NotoSansCJK-Regular.ttc}[Path=/usr/share/fonts/opentype/noto/,FontIndex=2,
+  BoldFont=NotoSansCJK-Bold.ttc,BoldFeatures={FontIndex=2}]
+\setmainfont{TeX Gyre Heros}
+\xeCJKDeclareCharClass{CJK}{"2460->"2473}
+\xeCJKDeclareCharClass{FullLeft}{"2018,"201C}
+\xeCJKDeclareCharClass{FullRight}{"2019,"201D}
+\setsansfont{TeX Gyre Heros}
+\usepackage{amsmath}
+\usetikzlibrary{arrows.meta,positioning,calc,shapes.geometric,shapes.misc,decorations.pathmorphing,
+  decorations.pathreplacing,decorations.markings,patterns,fit,backgrounds,matrix,shadows}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\definecolor{ink}{gray}{0.12}
+\definecolor{mid}{gray}{0.45}
+\definecolor{soft}{gray}{0.75}
+\definecolor{pale}{gray}{0.92}
+\tikzset{
+  every node/.style={font=\footnotesize},
+  box/.style={draw=ink, fill=pale, rounded corners=1.5pt, align=center, inner sep=3.5pt, minimum height=7mm},
+  boxw/.style={draw=ink, fill=white, rounded corners=1.5pt, align=center, inner sep=3.5pt, minimum height=7mm},
+  dark/.style={draw=ink, fill=ink, text=white, rounded corners=1.5pt, align=center, inner sep=3.5pt, minimum height=7mm},
+  arr/.style={-{Stealth[length=2mm,width=1.6mm]}, semithick, ink},
+  darr/.style={{Stealth[length=2mm,width=1.6mm]}-{Stealth[length=2mm,width=1.6mm]}, semithick, ink},
+  lbl/.style={font=\scriptsize, text=mid, align=center},
+  title/.style={font=\small\bfseries, text=ink},
+}

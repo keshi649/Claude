@@ -1,0 +1,19 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}
+  \pgfplotsset{every axis/.append style={width=118mm, xmin=2.0, xmax=3.0,
+    label style={font=\scriptsize}, tick label style={font=\scriptsize}, axis lines=left, axis line style={ink},
+    ymajorgrids, grid style={black!12}, every axis plot/.append style={line width=1.0pt}}}
+  \begin{axis}[name=top, height=50mm, ymode=log, ymin=1e-3, ymax=1e4, ylabel={最快关节速度（rad/s）}, xticklabels={},
+      legend style={font=\scriptsize, draw=none, at={(0.5,1.03)}, anchor=south, legend columns=3}]
+    \addplot[mid, dashed] table[x=t, y=speed, col sep=comma] {data/p5_pinv.csv}; \addlegendentry{伪逆}
+    \addplot[ink] table[x=t, y=speed, col sep=comma] {data/p5_dls.csv}; \addlegendentry{阻尼最小二乘}
+    \addplot[soft, densely dotted, domain=2:3, samples=2] {3.1416}; \addlegendentry{π rad/s}
+  \end{axis}
+  \begin{axis}[at={(top.south west)}, anchor=north west, yshift=-4mm, height=36mm, ymin=0, ymax=0.1,
+      xlabel={时间（秒）}, ylabel={雅可比最小奇异值}, yticklabel style={/pgf/number format/fixed}]
+    \addplot[ink] table[x=t, y=sigma, col sep=comma] {data/p5_dls.csv};
+  \end{axis}
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,13 @@
+{
+  "name": "chaijie-yushu-promo",
+  "private": true,
+  "description": "《拆解宇树》宣传片：three.js + 无头 Chromium 逐帧渲染",
+  "scripts": {
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "@fontsource/bebas-neue": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "three": "0.186.1"
+  }
+}

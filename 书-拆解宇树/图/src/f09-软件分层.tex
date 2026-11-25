@@ -1,0 +1,33 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  \tikzset{fl/.style={draw=ink, minimum width=62mm, minimum height=10mm, anchor=west, align=left, inner sep=2.5mm, font=\scriptsize},
+           hz/.style={font=\scriptsize, text=mid, anchor=west},
+           where/.style={draw=mid, rounded corners=2pt, align=center, font=\scriptsize, inner sep=1.5mm}}
+  \node[fl, fill=white] (l5) at (0,48) {\textbf{5　应用}：导航、对话、任务规划、App};
+  \node[fl, fill=black!5] (l4) at (0,36) {\textbf{4　运动服务}：“往前走 0.5 m/s”→ 步态与平衡};
+  \node[fl, fill=black!12] (l3) at (0,24) {\textbf{3　低层控制}：每个关节的 q、dq、kp、kd、tau};
+  \node[fl, fill=black!22] (l2) at (0,12) {\textbf{2　关节控制}：按 PD 公式算出要多大电流};
+  \node[fl, fill=black!35] (l1) at (0,0) {\textbf{1　电流控制}：FOC};
+  \node[hz] at (64,48) {每秒几次};
+  \node[hz] at (64,36) {每秒几十到几百次};
+  \node[hz] at (64,24) {每秒 500–1000 次};
+  \node[hz] at (64,12) {每秒数千次};
+  \node[hz] at (64,0) {每秒上万次};
+  % 跑在哪
+  \draw[mid, line width=0.5pt] (99,53) -- (99,-5);
+  \node[where] at (113,48) {开发板 / 云端};
+  \node[where] at (113,30) {主控电脑};
+  \node[where] at (113,6) {关节里的\\驱动芯片};
+  \draw[decorate, decoration={brace, amplitude=1.6mm}, mid] (101,41) -- (101,19);
+  \draw[decorate, decoration={brace, amplitude=1.6mm}, mid] (101,17) -- (101,-5);
+  % 谁能碰
+  \draw[ink, line width=0.6pt, densely dashed] (-3,30) -- (-3,54);
+  \node[font=\tiny, text=ink, align=right, anchor=east] at (-4,48) {普通用户};
+  \draw[ink, line width=0.6pt] (-8,18) -- (-8,54);
+  \node[font=\tiny, text=ink, align=right, anchor=east] at (-9,30) {EDU 版\\开发者};
+  % DDS
+  \node[font=\tiny, text=mid, align=center] at (31,57) {各层之间用 DDS 话题传消息（lowcmd / lowstate / sportmodestate …）};
+\end{tikzpicture}
+\end{document}

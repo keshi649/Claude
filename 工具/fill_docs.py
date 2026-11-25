@@ -1,6 +1,6 @@
 """交付前把 README.md / 脚本.md 里的占位符 ⟨…⟩ 换成真实的数（先渲染完、把成片复制到集目录）。
 写文档时时间先空着，写成占位符：
-  ⟨编号⟩       这句开始的时刻，m:ss（开头表格里的 ⟨d1⟩ ⟨h2⟩ … ⟨h5⟩ 写成秒，如 2.9s）
+  ⟨编号⟩       这句开始的时刻，m:ss（开头这一幕里的句子和对话框，如 ⟨d1⟩ ⟨h2⟩ ⟨h3b⟩，写成秒，如 2.9s）
   ⟨幕名⟩       这一幕的起止，m:ss–m:ss；⟨card⟩ 只给开始时刻；⟨endc⟩ 是结尾到片尾卡
   ⟨DUR⟩ 约几分几秒   ⟨SEC⟩ 总秒数   ⟨MB⟩ 成片大小   ⟨stamp⟩ 盖章（h2）的秒数，两位小数
   ⟨NLINES⟩ 旁白句数   ⟨CUTS⟩ 前 20 秒切镜头的时刻（ffmpeg 测）   ⟨ASR⟩ 第二个参数（查读错的说明）
@@ -18,7 +18,7 @@ LN = {l['id']: l for l in tl['lines']}
 SC = {s['name']: s for s in tl['scenes']}
 mmss = lambda x: f'{int(x) // 60}:{int(x) % 60:02d}'
 vals = {
-    'DUR': f"{int(tl['duration']) // 60} 分 {int(tl['duration']) % 60} 秒",
+    'DUR': f"{round(tl['duration']) // 60} 分 {round(tl['duration']) % 60} 秒",      # 四舍五入，和 ⟨SEC⟩ 对得上
     'SEC': f"{tl['duration']:.0f}",
     'NLINES': str(sum(1 for l in tl['lines'] if l['kind'] == 'N')),
 }
@@ -32,9 +32,10 @@ if mp4:
     vals['CUTS'] = '、'.join(f'{float(x):.1f}' for x in re.findall(r'pts_time:([0-9.]+)', r.stderr))
 if len(sys.argv) > 2:
     vals['ASR'] = sys.argv[2]
-for k in ('d1', 'h2', 'h3', 'h4', 'h5'):        # 开头表格用秒
-    if k in LN:
-        vals[k] = f"{LN[k]['t0']:.1f}s"
+hook_end = SC['hook']['t1'] if 'hook' in SC else 0
+for k, l in LN.items():                         # 开头表格用秒（开头这一幕里的每一句、每个对话框）
+    if l['t0'] < hook_end and k != 'h1':
+        vals[k] = f"{l['t0']:.1f}s"
 if 'end' in SC and 'card' in SC:
     vals['endc'] = f"{mmss(SC['end']['t0'])}–{mmss(SC['card']['t1'])}"
 for k, l in LN.items():

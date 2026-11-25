@@ -1,0 +1,47 @@
+\documentclass[tikz,border=1.5mm]{standalone}
+\input{src/_preamble.tex}
+\begin{document}
+\begin{tikzpicture}[x=1mm,y=1mm]
+  % 左：俯视高度图（16×12 格，每格 4 mm），右侧是三级台阶，中间有一个坑
+  \begin{scope}
+    \foreach \i in {0,...,15} {
+      \foreach \j in {0,...,11} {
+        \pgfmathsetmacro{\h}{(\i>=10 ? (\i>=12 ? (\i>=14 ? 54 : 40) : 26) : 10)}
+        \pgfmathsetmacro{\hh}{((\i>=4 && \i<=6 && \j>=7 && \j<=9) ? 0 : \h)}
+        \fill[black!\hh] (\i*4,\j*4) rectangle (\i*4+4,\j*4+4);
+      }
+    }
+    \draw[white, line width=0.3pt] (0,0) grid[step=4] (64,48);
+    \draw[ink, line width=0.6pt] (0,0) rectangle (64,48);
+    % 机器狗俯视
+    \draw[ink, line width=0.8pt, fill=white, rounded corners=2pt] (14,18) rectangle (34,30);
+    \node[font=\tiny] at (24,24) {机器狗};
+    \draw[arr] (34,24) -- (40,24);
+    % 落脚点：候选和选中
+    \foreach \x/\y in {37,33, 37,15, 41,33, 41,15} \draw[ink, line width=0.6pt] (\x,\y) circle (1.4);
+    \fill[ink] (37,33) circle (1.4); \fill[ink] (37,15) circle (1.4);
+    \draw[ink, line width=0.6pt, densely dashed] (16,38) circle (1.4);
+    \node[font=\tiny, text=ink, align=center, anchor=south] at (16,40) {坑旁边\\不踩};
+    \node[font=\scriptsize\bfseries, anchor=south west] at (0,49) {俯视：每格记一个高度};
+  \end{scope}
+  % 图例
+  \begin{scope}[shift={(0,-9)}]
+    \foreach \c/\t/\x in {0/坑/0, 10/地面/10, 26/台阶 1/22, 40/台阶 2/38, 54/台阶 3/54} {
+      \fill[black!\c] (\x,0) rectangle (\x+3.5,3.5); \draw[mid, line width=0.3pt] (\x,0) rectangle (\x+3.5,3.5);
+      \node[font=\tiny, anchor=west] at (\x+4,1.75) {\t};
+    }
+  \end{scope}
+  % 右：侧视剖面
+  \begin{scope}[shift={(76,8)}]
+    \node[font=\scriptsize\bfseries, anchor=south west] at (0,33) {侧视：同一排格子的高度};
+    \draw[mid, line width=0.6pt] (0,0) -- (52,0);
+    \fill[black!20] (24,0) rectangle (52,6);
+    \fill[black!35] (32,6) rectangle (52,12);
+    \fill[black!50] (40,12) rectangle (52,18);
+    \draw[ink, line width=0.8pt] (0,0) -- (24,0) -- (24,6) -- (32,6) -- (32,12) -- (40,12) -- (40,18) -- (52,18);
+    \foreach \x/\h in {2/0,6/0,10/0,14/0,18/0,22/0,26/6,30/6,34/12,38/12,42/18,46/18,50/18}
+      \fill[ink] (\x,\h+1.2) circle (0.7);
+    \node[font=\tiny, text=mid, align=left, anchor=west] at (0,-6) {黑点：每个格子估出的高度\\台阶就是一排高度突变的格子};
+  \end{scope}
+\end{tikzpicture}
+\end{document}
